@@ -10,7 +10,9 @@
     "test:unit": "vitest",
     "build-only": "vite build",
     "type-check": "vue-tsc --build --force",
-    "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore"
+    "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d dist"
   },
   "dependencies": {
     "idb-keyval": "^6.2.1",
@@ -30,6 +32,7 @@
     "eslint-config-google": "^0.14.0",
     "eslint-import-resolver-alias": "^1.1.2",
     "eslint-plugin-vue": "^9.17.0",
+    "gh-pages": "^6.1.1",
     "jsdom": "^23.0.1",
     "node-sass": "^9.0.0",
     "normalize.css": "^8.0.1",
