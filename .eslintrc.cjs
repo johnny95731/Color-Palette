@@ -1,14 +1,22 @@
 /* eslint-env node */
-require('@rushstack/eslint-patch/modern-module-resolution')
+require('@rushstack/eslint-patch/modern-module-resolution');
 
 module.exports = {
-  root: true,
+  'root': true,
   'extends': [
     'plugin:vue/vue3-essential',
     'eslint:recommended',
-    '@vue/eslint-config-typescript'
+    'google',
+    '@vue/eslint-config-typescript',
   ],
-  parserOptions: {
-    ecmaVersion: 'latest'
-  }
-}
+  'parserOptions': {
+    'ecmaVersion': 'latest',
+  },
+  'rules': {
+    'linebreak-style': 'off',
+    'semi': 'error',
+    'require-jsdoc': 'off',
+    'valid-jsdoc': 'off',
+    'func-call-spacing': 'off',
+  },
+};

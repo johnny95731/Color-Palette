@@ -1,6 +1,18 @@
-import './assets/main.css'
+import {createPinia} from 'pinia';
 
-import { createApp } from 'vue'
-import App from './App.vue'
+import 'normalize.css';
+import './assets/main.scss';
 
-createApp(App).mount('#app')
+import {createApp} from 'vue';
+import App from './App.vue';
+import useFavStore from './features/stores/useFavStore';
+
+const app = createApp(App);
+app.use(createPinia());
+// Loading databases.
+const favState = useFavStore();
+favState.initializeColors();
+favState.initializePlts();
+
+app.mount('#app');
+

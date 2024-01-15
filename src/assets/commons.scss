@@ -1,0 +1,55 @@
+$defaultFontSize: 14px;
+
+%verticalCenter {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+}
+%horizontalCenter {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+%center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+// media
+@mixin desktop {
+  @media only screen and (min-width: 1960px) {
+    @content;
+  }
+}
+@mixin laptop {
+  @media only screen and (max-width: 1440px) {
+    @content;
+  }
+}
+@mixin small {
+  @media only screen and (max-width: 900px) {
+    @content;
+  }
+}
+@mixin mobile {
+  @media only screen and (max-width: 426px) {
+    @content;
+  }
+}
+
+:root{
+  --smallSize: 900px;
+  --headerHeight: 60px;
+  @include small {
+    --headerHeight: 40px;
+  }
+}
+
+// Color scheme
+$color1: #FAFAFA;
+$color2: #EAEAEA;
+$color3: #DDD;
+$color4: #D5D5D5;
+$color5: #1D1D57;

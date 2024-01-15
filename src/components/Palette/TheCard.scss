@@ -1,0 +1,210 @@
+@import "@/assets/commons.scss";
+
+.cardContainer {
+  position: relative;
+  flex: 1 1 auto;
+
+  &:hover .toolContainer {
+    display: block;
+  }
+
+  @include small {
+    display: flex;
+    align-items: center;
+  }
+}
+
+.toolContainer {
+  @extend %horizontalCenter;
+  display: none;
+  bottom: 37%;
+  user-select: none;
+  .icon {
+    display: block;
+    margin: 27px auto;
+    height: 27px;
+  }
+  @include desktop {
+    bottom: 38%;
+    .icon {
+      margin: 48px auto;
+      height: 40px;
+    }
+  }
+  @include laptop {
+    margin-bottom: 25px;
+    .icon {
+      margin: 20px auto 0;
+      height: 20px;
+    }
+  }
+  @include small {
+    flex: 1 0 240px; // Total icon width + margin
+    display: block;
+    position: static;
+    margin-bottom: 0;
+    margin-left: 20px;
+    transform: none;
+    .icon {
+      display: inline;
+      height: 20px;
+      margin: 5px 10px;
+    }
+  }
+  @include mobile {
+    flex: 0 0 111px;
+    .icon {
+      height: 17px;
+      margin: 5px 10px;
+    }
+  }
+}
+
+.textDisplay {
+  @extend %horizontalCenter;
+  top: 63%;
+  width: 50%;
+  text-align: center;
+  >div {
+    cursor: pointer;
+    .icon {
+      opacity: 0;
+    }
+    &:hover .icon {
+      opacity: 1;
+    }
+  }
+
+  @include small {
+    flex: 1 1 auto;
+    position: relative;
+    top: auto;
+    left: auto;
+    transform: none;
+  }
+}
+
+$hexSize: 20px;
+$rgbSize: 12px;
+$hexSize1024: 18px;
+$rgbSize1024: 12px;
+$hexSize2560: 39px;
+$rgbSize2560: 19px;
+
+%textPosition {
+  position: relative;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min-content;
+  .icon {
+    position: absolute;
+    top: 50%;
+  }
+}
+@mixin textSize($iconHeight, $iconMargin, $fontSize: 16px) {
+  font-size: $fontSize;
+  .icon {
+    height: $iconHeight;
+    transform: translateX(calc(-100% - #{$iconMargin})) translateY(-50%);
+  }
+}
+
+.hexText {
+  @extend %textPosition;
+  @include textSize($hexSize - 4px, 3px, $hexSize);
+
+  @include desktop {
+    @include textSize(25px, 6px, $hexSize2560);
+  }
+  @include laptop {
+    @include textSize(16px, 4px, $hexSize1024);
+  }
+  @include small {
+    @include textSize(16px, 4px, $hexSize1024);
+  }
+}
+
+.rgbText {
+  @extend %textPosition;
+  @include textSize(10px, 2px, $rgbSize);
+  margin-top: 4px;
+
+  @include desktop {
+    @include textSize(13px, 4px, $rgbSize2560);
+  }
+  @include laptop {
+    @include textSize(9px, 3px, $rgbSize1024);
+  }
+  @include small {
+    @include textSize(9px, 3px, $rgbSize1024);
+  }
+}
+
+.editing {
+  @extend %horizontalCenter;
+  top: 63%;
+  width: 150px;
+  padding: 5px 10px;
+  border-radius: 10px;
+  background-color: $color1;
+  box-sizing: border-box;
+  z-index: 1;
+  >div {
+    height: 25px;
+    width: 100%;
+    border-radius: 7px;
+    margin-bottom: 7px;
+  }
+  @include small {
+    position: fixed;
+    top: auto;
+    bottom: 0;
+    width: 100%;
+    max-width: 500px;;
+    >div {
+      height: 30px;
+      margin-bottom: 10px;
+    }
+  }
+}
+
+.hexInput {
+  display: inline;
+  width: 100%;
+  border-radius: 7px;
+  border-width: 1px;
+  padding: 0px 8px;
+  margin: 0 auto 15px;
+  box-sizing: border-box;
+  font-size: $hexSize;
+  user-select: text;
+  cursor: text;
+
+  @include desktop {
+    font-size: $hexSize;
+  }
+  @include laptop {
+    font-size: $hexSize1024;
+  }
+  @include small {
+    margin: 0 auto 7px;
+    bottom: auto;
+    font-size: $hexSize1024;
+  }
+}
+
+.sliders {
+  display: inline-block;
+  font-size: $rgbSize;
+  input {
+    width: 100%;
+    margin-top: 5px;
+    margin-bottom: 10px;
+  }
+  @include desktop {
+    font-size: 25px;
+  }
+  @include laptop {
+    font-size: 14px;
+  }
+}
