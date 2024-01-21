@@ -1,8 +1,8 @@
 import {defineStore} from 'pinia';
 // Utils
-import {rgb2gray, rgb2hex} from '../../utils/colors.ts';
-import {shuffle, inversion} from '../../utils/helpers.ts';
-import {blendBy} from '../../utils/blend.ts';
+import {rgb2gray, rgb2hex} from '@/utils/colors.ts';
+import {shuffle, inversion} from '@/utils/helpers.ts';
+import {blendBy} from '@/utils/blend.ts';
 import {newCard} from '../types/pltType.ts';
 // Types
 import type {

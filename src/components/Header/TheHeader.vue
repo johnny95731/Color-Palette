@@ -13,20 +13,20 @@
           <TheIcon type="refresh" />All
         </span>
         <DropupMenu icon="sort" class="btn"
-          :contents="sortAction" :current-val="sortBy"
-          :hotkeys="sortAction.map((str) => str[0])"
+          :contents="SORTING_ACTIONS" :current-val="sortBy"
+          :hotkeys="SORTING_ACTIONS.map((str) => str[0])"
           :item-click="sorting"
         >
           <template #title>Sort</template>
         </DropupMenu>
         <DropupMenu icon="blend" class="btn"
-          :contents="BlendModeList" :current-val="blendMode"
+          :contents="BLEND_MODES" :current-val="blendMode"
           :item-click="setBlendMode"
         >
           <template #title>Blend</template>
         </DropupMenu>
         <DropupMenu icon="edit" class="btn"
-          :contents="ColorSpacesList" :current-val="colorSpace"
+          :contents="COLOR_SPACES" :current-val="colorSpace"
           :item-click="setColorSpace"
           letterCase="all-caps"
         >
@@ -50,8 +50,10 @@ import {showPopupMenu, preventDefault} from '@/utils/helpers.ts';
 // Stores / Contexts
 import usePltStore from '@/features/stores/usePltStore.ts';
 import useOptionsStore from '@/features/stores/useOptionsStore.ts';
-import {sortAction} from '@/features/types/pltType.ts';
-import {ColorSpacesList, BlendModeList} from '@/features/types/optionsType.ts';
+import {} from '@/features/types/pltType.ts';
+import {
+  COLOR_SPACES, BLEND_MODES, SORTING_ACTIONS,
+} from '@/utils/constants';
 // Types
 import type {SortActionType} from '@/features/types/pltType.ts';
 import type {

@@ -1,7 +1,9 @@
+import NAMED_COLORS from './named-color.json';
+
 /**
  * The modulo function. Equivalent to
  *   `let a = n % m;
- *   if (a < 0) a += m;`
+ *    if (a < 0) a += m;`
  * @param {Number} n Dividend.
  * @param {Number} m Divisor.
  * @return {Number} Signed remainder.
@@ -10,12 +12,37 @@ export const mod = (n: number, m: number): number => {
   return ((n % m) + m) % m;
 };
 
+/**
+ * Capitalize a text.
+ */
 export const capitalize = (text: string) => {
   const words = text.split(' ');
   words.forEach((str, i, arr) => {
     arr[i] = `${str[0].toUpperCase()}${str.slice(1)}`;
   });
   return words.join(' ');
+};
+
+/**
+ * Get closet name of css named color. The distance is evaluate by L_1 norm.
+ * @param rgb
+ * @returns {keyof typeof NAMED_COLORS}
+ */
+export const closestName = (rgb: number[]) => {
+  let name: string = '';
+  let minDist = Infinity;
+  let dist: number;
+  for (const [key, vals] of Object.entries(NAMED_COLORS)) {
+    dist = 0;
+    for (let i = 0; i < 3; i++) {
+      dist += Math.abs(rgb[i] - vals[i]);
+    }
+    if (dist < minDist) {
+      name = key;
+      minDist = dist;
+    }
+  }
+  return name;
 };
 
 // Sorting

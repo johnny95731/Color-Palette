@@ -1,3 +1,4 @@
+import {SORTING_ACTIONS} from '@/utils/constants';
 import {hex2rgb, randRgbGen, rgb2hex} from '../../utils/colors.ts';
 
 /**
@@ -5,11 +6,7 @@ import {hex2rgb, randRgbGen, rgb2hex} from '../../utils/colors.ts';
  */
 export type orderStateType = 'gray' | 'random';
 
-/**
- * Action argument.
- */
-export const sortAction = ['gray', 'random', 'inversion'] as const;
-export type SortActionType = typeof sortAction[number];
+export type SortActionType = typeof SORTING_ACTIONS[number];
 
 export type cardType = {
   /**

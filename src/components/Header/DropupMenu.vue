@@ -49,7 +49,7 @@ const currentVal = toRef(props, 'currentVal');
 
 const menuItems = computed(() => {
   /**
-   * Convert leter case.
+   * Convert letter case.
    */
   let converter = (x: string) => x; // origin
   if (letterCase === 'all-caps') {

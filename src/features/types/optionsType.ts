@@ -1,10 +1,8 @@
-export const ColorSpacesList = ['rgb', 'hsl', 'hsb', 'cmyk'] as const;
-export type ColorSpacesType = typeof ColorSpacesList[number];
+import {COLOR_SPACES, BLEND_MODES} from '@/utils/constants';
 
-export const BlendModeList = [
-  'mean', 'brighter', 'deeper', 'soft light', 'random',
-] as const;
-export type BlendingType = typeof BlendModeList[number];
+export type ColorSpacesType = typeof COLOR_SPACES[number];
+
+export type BlendingType = typeof BLEND_MODES[number];
 
 /**
  * Maximums of each color space. The range of color space is

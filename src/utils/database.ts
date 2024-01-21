@@ -1,11 +1,11 @@
-import {createStore} from "idb-keyval";
+import {createStore} from 'idb-keyval';
 
 // Favorite
-export const favoritesDb = createStore("Palette", "Favorites");
+export const favoritesDb = createStore('Palette', 'Favorites');
 // -Key: Favorite Colors
-export const FAV_COLORS = "Colors";
+export const FAV_COLORS = 'Colors';
 // -Key: Favorite Palettes
-export const FAV_PLTS = "Plts";
+export const FAV_PLTS = 'Plts';
 
 // Options, include mixing mode, edit mode
-export const optionsDb = createStore("Palette", "Options");
+export const optionsDb = createStore('Palette', 'Options');
