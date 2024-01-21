@@ -1,5 +1,5 @@
 # Color-Palette
-[Color-Palette](https://github.com/johnny95731/Color-Palette)的vue版本。
+[React版本連結](https://github.com/johnny95731/Color-Palette)。
 網頁配色調色盤工具。
 
 ## Header工具列
