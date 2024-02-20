@@ -66,10 +66,6 @@ type StateType = {
    * mode.
    */
   colorSpace: ColorSpacesType;
-  /**
-   * Randomly play palettes.
-   */
-  isPlaying: boolean;
 }
 
 const initialState: StateType = {
@@ -81,7 +77,6 @@ const initialState: StateType = {
   isEditingPlt: false,
   blendMode: 'mean',
   colorSpace: INIT_COLOR_SPACE,
-  isPlaying: false,
 };
 
 const usePltStore = defineStore('plt', {
@@ -228,9 +223,6 @@ const usePltStore = defineStore('plt', {
         this.cards[i].color = converter(newRgbs[i]);
         this.cards[i].hex = rgb2hex(newRgbs[i]);
       }
-    },
-    setIsPlaying() {
-      this.isPlaying = !this.isPlaying;
     },
   },
 });

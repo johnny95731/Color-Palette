@@ -33,8 +33,8 @@
         <template #title>Space</template>
         </DropupMenu>
         <span class="btn playBtn" @click="haldleClick">
-          <TheIcon :type="pltState.isPlaying ? 'pause' : 'play'" />{{
-            pltState.isPlaying ? 'Pause' : 'Play'
+          <TheIcon :type="isRunning ? 'pause' : 'play'" />{{
+            isRunning ? 'Pause' : 'Play'
         }}</span>
 
         <div class='empty'></div>
@@ -111,34 +111,31 @@ watchEffect((cleanup) => {
 });
 
 const isRunning = ref<boolean>(false);
-const timeoutId = ref<number | null>(null);
+const intervalId = ref<number | null>(null);
 
 const delay = computed(() => Math.max(settingState.transition.color, 1000));
-function play() {
-  pltState.refreshCard(-1);
-  timeoutId.value = window.setTimeout(() => {
-    isRunning.value && play();
+function intervalPlay() {
+  intervalId.value = window.setInterval(() => {
+    isRunning.value && pltState.refreshCard(-1);
   }, delay.value);
 }
 function haldleClick() {
-  if (pltState.isPlaying) {
-    isRunning.value = false;
-    if (timeoutId.value !== null) window.clearTimeout(timeoutId.value);
-    timeoutId.value = null;
+  if (isRunning.value) {
+    if (intervalId.value !== null) window.clearInterval(intervalId.value);
+    intervalId.value = null;
   } else {
-    isRunning.value = true;
-    play();
+    intervalPlay();
+    pltState.refreshCard(-1);
   }
-  pltState.setIsPlaying();
+  isRunning.value = !isRunning.value;
+  pltState.setIsPending(isRunning.value);
 }
 watch(
     () => settingState.transition.color,
     () => {
-      if (!pltState.isPlaying) return;
-      if (timeoutId.value !== null) window.clearTimeout(timeoutId.value);
-      timeoutId.value = window.setTimeout(() => {
-        isRunning.value && play();
-      }, delay.value);
+      if (!isRunning.value) return;
+      if (intervalId.value !== null) window.clearInterval(intervalId.value);
+      intervalPlay();
     },
 );
 </script>
@@ -236,6 +233,7 @@ watch(
 .btn {
   @extend %btn;
   padding: 5px 10px 5px 7px;
+  text-align: center;
 }
 
 .btnMenu {
