@@ -1,5 +1,3 @@
-@import "@/assets/commons.scss";
-
 // Containers
 .favOffcanvas {
   position: fixed;
@@ -149,7 +147,7 @@ $appendPltHeight: 30px;
   }
 }
 
-$paddingTop: calc((#{$appendPltHeight - $defaultFontSize}) / 2 - 2px);
+$paddingTop: calc((#{$appendPltHeight - var(--font-body)}) / 2 - 2px);
 .appendPlt {
   display: block;
   border-top: 1px solid black;
@@ -163,7 +161,7 @@ $paddingTop: calc((#{$appendPltHeight - $defaultFontSize}) / 2 - 2px);
   cursor: pointer;
   >.icon {
     margin-right: 3px;
-    height: $defaultFontSize + 3px;
+    height: var(--font-body) + 3px;
     vertical-align: text-bottom;
   }
 }

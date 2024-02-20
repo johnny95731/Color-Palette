@@ -21,7 +21,7 @@
 </template>
 
 <script lang="ts" setup>
-import {computed, toRef, withDefaults, defineProps} from 'vue';
+import {computed, toRef, withDefaults} from 'vue';
 import TheIcon from '../TheIcon.vue';
 import {showPopupMenu, capitalize} from '@/utils/helpers.ts';
 import TriangleUrl from '@/assets/icons/triangle-down.svg';

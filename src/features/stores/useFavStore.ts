@@ -1,7 +1,9 @@
 import {defineStore} from 'pinia';
 import {get, update, set} from 'idb-keyval';
 
-import {favoritesDb, FAV_COLORS, FAV_PLTS} from '../../utils/database.ts';
+import {
+  favoritesDb, STORE_FAV_COLORS, STORE_FAV_PLTS,
+} from '../../utils/database.ts';
 
 type state = {
   /**
@@ -28,18 +30,18 @@ const useFavStore = defineStore('favorites', {
   state: (): state => initialState,
   actions: {
     async initializeColors() {
-      const colors = await get<string[]>(FAV_COLORS, favoritesDb);
+      const colors = await get<string[]>(STORE_FAV_COLORS, favoritesDb);
       if (!colors) { // First time enter this site.
-        set(FAV_PLTS, [], favoritesDb);
+        set(STORE_FAV_PLTS, [], favoritesDb);
       } else {
         this.colors = colors;
       }
       this.isInitialized[0] = true;
     },
     async initializePlts() {
-      const plts = await get<string[]>(FAV_PLTS, favoritesDb);
+      const plts = await get<string[]>(STORE_FAV_PLTS, favoritesDb);
       if (!plts) { // First time enter this site.
-        set(FAV_PLTS, [], favoritesDb);
+        set(STORE_FAV_PLTS, [], favoritesDb);
       } else {
         this.plts = plts;
       }
@@ -48,7 +50,7 @@ const useFavStore = defineStore('favorites', {
     favColorsChanged(targetHex: string) {
       const isIncluding = this.colors.includes(targetHex);
       // Update database
-      update<string[]>(FAV_COLORS, (prev) => {
+      update<string[]>(STORE_FAV_COLORS, (prev) => {
         if (!prev) return [];
         let newFav: string[];
         if (isIncluding) { // Favoriting => Non-Favoriting
@@ -69,7 +71,7 @@ const useFavStore = defineStore('favorites', {
     },
     favPltsChanged(targetPlt: string) {
       // Update database
-      update<string[]>(FAV_PLTS, (prev) => {
+      update<string[]>(STORE_FAV_PLTS, (prev) => {
         if (!prev) return [];
         let newFav: string[];
         if (prev.includes(targetPlt)) { // Favoriting => Non-Favoriting

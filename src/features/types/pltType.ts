@@ -1,22 +1,48 @@
-import {SORTING_ACTIONS} from '@/utils/constants';
-import {hex2rgb, randRgbGen, rgb2hex} from '../../utils/colors.ts';
+import {
+  SORTING_ACTIONS, COLOR_SPACES, BLEND_MODES, CONTRAST_METHODS,
+} from '@/utils/constants';
+
 
 /**
  * The current order of cards.
  */
-export type orderStateType = 'gray' | 'random';
-
+export type OrderStateType = 'gray' | 'random';
 export type SortActionType = typeof SORTING_ACTIONS[number];
+/**
+ * Support color spaces.
+ */
+export type ColorSpacesType = typeof COLOR_SPACES[number];
+/**
+ * Support blend modes.
+ */
+export type BlendingType = typeof BLEND_MODES[number];
 
-export type cardType = {
+/**
+ * Support contrast adjusting methods.
+ */
+export type ContrastMethods = typeof CONTRAST_METHODS[number];
+
+export type CardType = {
   /**
-   * RGB sapce value, [red, green, blue].
+   * Order of card in palette.
    */
-  rgb: number[];
+  order: number;
   /**
-   * RGB sapce value in hex code.
+   * RGB hex code.
    */
   hex: string;
+  /**
+   * Color array in specific color space.
+   */
+  color: number[];
+  /**
+   * Stores hex before editing the palette.
+   */
+  originHex: string;
+  /**
+   * Stores color before editing the palette.
+   */
+  originColor: number[];
   /**
    * The card is lock (can't refresh the card).
    */
@@ -29,29 +55,4 @@ export type cardType = {
    * The card is in editing mode.
    */
   isEditing: boolean;
-};
-
-/**
- * Create a new state object.
- * @return {cardType} State object.
- */
-export const newCard = (hex?: string): cardType => {
-  if (!hex) {
-    const rgb = randRgbGen();
-    return {
-      rgb,
-      hex: rgb2hex(rgb),
-      isLock: false,
-      isFav: false,
-      isEditing: false,
-    };
-  } else {
-    return {
-      rgb: hex2rgb(hex) as number[],
-      hex,
-      isLock: false,
-      isFav: false,
-      isEditing: false,
-    };
-  }
 };

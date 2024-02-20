@@ -13,6 +13,93 @@ export const mod = (n: number, m: number): number => {
 };
 
 /**
+ * Convert a number `val` to percentage form, that is, `val*100%`.
+ * @param num A number.
+ * @param digits Digit of output number.
+ * @return Percentage number.
+ */
+export const round = (num: number, digits: number = 0): number => {
+  return Math.round(10**(digits) * num) / 10**(digits);
+};
+
+/**
+ * Convert a number `val` to percentage form, that is, `val*100%`.
+ * @param num A number.
+ * @param digits Digit of output number.
+ * @return Percentage number.
+ */
+export const toPercent = (num: number, digits: number = 0): number => {
+  return round(100 * num, digits);
+};
+
+/**
+ * Clip the number in the range `[min, max]`.
+ * @param num A number to clip.
+ * @param min Minimum value.
+ * @param max maximum value.
+ * @returns Clipped number.
+ */
+export const clip = (num: number, min?: number, max?: number): number => {
+  if (max !== undefined && num > max) return max;
+  else if (min !== undefined && num < min) return min;
+  else return num;
+};
+
+/**
+ * Linear mapping a number from a range to another range.
+ * @param val The value that be transform.
+ * @param min Minimum of original range.
+ * @param max Maximum of original range.
+ * @param newMin Minimum of new range.
+ * @param newMax Maximum of new range.
+ */
+export const rangeMapping = (
+    val: number, min: number, max: number,
+    newMin: number, newMax: number,
+) => {
+  const ratio = clip((val - min) / (max - min), 0, 1);
+  return newMin + ratio * (newMax - newMin);
+};
+
+/**
+ * Check whether two object has same keys.
+ */
+export const hasSameKeys = (obj1: object, obj2: object): boolean => {
+  const keys1 = Object.keys(obj1);
+  const keys2 = Object.keys(obj2);
+  const allKeys = new Set([...keys1, ...keys2]);
+  if (!allKeys.size) return true;
+  if (!(allKeys.size === keys1.length && allKeys.size === keys2.length)) {
+    return false;
+  }
+  // Deep check
+  for (const key of allKeys) {
+    // @ts-expect-error Already deal `undefined` case.
+    const item1 = typeof obj1[key] === 'object' ? obj1[key] : {};
+    // @ts-expect-error Already deal `undefined` case.
+    const item2 = typeof obj2[key] === 'object' ? obj2[key] : {};
+    if (!hasSameKeys(item1, item2)) false;
+  }
+  return true;
+};
+
+/**
+ * Evaluate length that are divided evenly by `num`.
+ * @param num Total number.
+ */
+export const evalLength = (num: number): string => {
+  return `${toPercent(1 / num, 2)}%`;
+};
+
+/**
+ * Divide evenly by `num` and return the `idx`-th position.
+ * @param num Total number.
+ */
+export const evalPosition = (idx: number, num: number): string => {
+  return `${toPercent(idx / num, 2)}%`;
+};
+
+/**
  * Capitalize a text.
  */
 export const capitalize = (text: string) => {
@@ -28,7 +115,7 @@ export const capitalize = (text: string) => {
  * @param rgb
  * @returns {keyof typeof NAMED_COLORS}
  */
-export const closestName = (rgb: number[]) => {
+export const getClosestName = (rgb: number[]) => {
   let name: string = '';
   let minDist = Infinity;
   let dist: number;
@@ -45,6 +132,8 @@ export const closestName = (rgb: number[]) => {
   return name;
 };
 
+export const identity = <T>(x: T[]): T[] => Array.from(x);
+
 // Sorting
 /**
  * Shuffle an array by Fisher-Yates shuffle. The process will change the input
@@ -56,19 +145,6 @@ export const shuffle = <T>(arr: Array<T>): void => {
   for (let i = arr.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [arr[i], arr[j]] = [arr[j], arr[i]];
-  }
-};
-
-/**
- * Invert the order of an array. The process will change the input
- * array.
- * @template T
- * @param {Array<T>} arr The array be inverted.
- */
-export const inversion = <T>(arr: Array<T>): void => {
-  const lastIdx = arr.length - 1;
-  for (let i = 0; i < arr.length / 2; i++) {
-    [arr[i], arr[lastIdx - i]] = [arr[lastIdx - i], arr[i]];
   }
 };
 
@@ -88,19 +164,15 @@ export const elementwiseMean = (arr1: number[], arr2: number[]): number[] => {
 };
 
 // Events
-export const preventDefault = (e: Event) => {
+export const preventDefault = (e: MouseEvent) => {
   e.preventDefault();
-};
-export const stopPropagation = (e: Event) => {
-  e.stopPropagation();
+  return false;
 };
 /**
  * Remove non-hex text and add '#' to first word.
  * @param e Triggered mouse event.
  */
-export const hexTextEdited = (
-    e: Event,
-): void => {
+export const hexTextEdited = (e: Event): void => {
   const textInput = e.currentTarget as HTMLInputElement;
   let text = (textInput.value).toUpperCase();
   text = text.replace(/[^A-F0-9]/g, '');
@@ -110,9 +182,7 @@ export const hexTextEdited = (
  * Copy Hex text to clipboard (excludes '#').
  * @param e Triggered mouse event.
  */
-export const copyHex = (
-    e: MouseEvent,
-): void => {
+export const copyHex = (e: MouseEvent): void => {
   const target = e.currentTarget as HTMLElement;
   if (!target) return;
   const text = target.innerText;
@@ -127,14 +197,15 @@ export const copyHex = (
   try {
     navigator.clipboard.writeText(hex);
   } catch (err) {
-    console.log(err);
+    console.error('copy hex:', err);
   }
 };
 
-/**
- * For DropupMenu.vue.
- */
-export function showPopupMenu(e: MouseEvent | FocusEvent) {
+export const stopPropagation = (e: Event) => e.stopPropagation();
+
+export const showPopupMenu = (
+    e: MouseEvent | FocusEvent,
+) => {
   const target = e.currentTarget as HTMLElement;
   const content = target.lastChild as HTMLElement;
   if ((e as FocusEvent).type === 'blur') {
@@ -156,13 +227,6 @@ export function showPopupMenu(e: MouseEvent | FocusEvent) {
   if (!content.contains(e.target as Node)) {
     e.stopPropagation();
   }
-  // const display = content.style.display;
-  // if (display === 'block') {
-  //   content.style.display = '';
-  //   target.blur();
-  // } else {
-  //   content.style.display = 'block';
-  // }
   const height = content.style.maxHeight;
   if (height === '') {
     content.style.maxHeight = '100vh';
@@ -170,4 +234,4 @@ export function showPopupMenu(e: MouseEvent | FocusEvent) {
     content.style.maxHeight = '';
     target.blur();
   }
-}
+};

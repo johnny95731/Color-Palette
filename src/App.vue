@@ -1,17 +1,23 @@
 <template>
-  <TheHeader @fav-showing="favShowingChanged" />
+  <TheHeader
+    @show-fav="showFavOffcanvas"
+    @show-settings="showSettings"
+  />
   <ThePalette />
   <!-- Mask for  -->
   <div id="mask"
-    @click="favShowingChanged"
+    @click="handleClickMask"
     :style="{
-      display: isFavShowing ? undefined : 'none',
+      display: isMasking ? undefined : 'none',
     }"
+  />
+  <SettingDialog v-if="isSettingsShowing"
+    @show-settings="showSettings"
   />
   <FavOffcanvas :style="{
       transform: isFavShowing ? 'translateX(-100%)' : '',
     }"
-    @fav-showing="favShowingChanged"
+    @fav-showing="showFavOffcanvas"
   />
 </template>
 
@@ -19,23 +25,40 @@
 import {provide, ref, watchEffect, computed} from 'vue';
 import TheHeader from './components/Header/TheHeader.vue';
 import ThePalette from './components/Palette/ThePalette.vue';
+import SettingDialog from './components/SettingDialog/SettingDialog.vue';
 import FavOffcanvas from './components/FavOffcanvas/FavOffcanvas.vue';
 // Store and Context
 import usePltStore from './features/stores/usePltStore';
 import mediaContent from './features/useMedia.ts';
 
 // Display / Hide fav-offcanvas
+const isSettingsShowing = ref(false);
 const isFavShowing = ref(false);
-function favShowingChanged() {
-  isFavShowing.value = !isFavShowing.value;
-}
+const isMasking = ref(false);
+
+const handleClickMask = () => {
+  isSettingsShowing.value = false;
+  pltState.setPltIsEditing('cancel');
+  isFavShowing.value = false;
+  isMasking.value = false;
+};
+const showSettings = () => {
+  const newVal = !isSettingsShowing.value;
+  isSettingsShowing.value = newVal;
+  isMasking.value = newVal;
+};
+const showFavOffcanvas = () => {
+  const newVal = !isFavShowing.value;
+  isFavShowing.value = newVal;
+  isMasking.value = newVal;
+};
 
 provide('media', mediaContent);
 
 // Connect hotkey.
 const pltState = usePltStore();
 const someCardIsEditing = computed(() => {
-  return pltState.cards.some((card) => card.isEditing);
+  return pltState.cards.some((card) => card.isEditing) || pltState.isPending;
 });
 watchEffect((cleanup) => {
   const body = document.body;
@@ -65,90 +88,6 @@ watchEffect((cleanup) => {
 
 
 <style lang='scss'>
-@import '@/assets/commons.scss';
-
-.main {
-  position: absolute;
-  display: flex;
-  width: 100%;
-  height: calc(100% - 60px);
-  overflow: hidden;
-
-  @include small {
-    flex-direction: column;
-    height: calc(100% - 40px);
-  }
-}
-
-.insertWrapper {
-  position: absolute;
-  height: 100%;
-  width: 70px;
-  transform: translateX(-50%);
-  user-select: none;
-  >div {
-    @extend %center;
-    display: none;
-    height: 25px;
-    border-radius: 15px;
-    padding: 10px;
-    background-color: #ffffffd0;
-    cursor: pointer;
-  }
-  :global(.icon) {
-    height: 100%;
-  }
-  &:hover >div {
-    display: block;
-  }
-
-  @include small {
-    height: 35px;
-    width: 100%;
-    transform: translateY(-50%);
-    >div {
-      display: block;
-      height: 13px;
-      padding: 7px;
-      border-radius: 10px;
-      background-color: #fff;
-      opacity: 0.6;
-      :global(.icon) {
-        transform: rotate(90deg);
-      }
-    }
-    &:focus >div {
-      opacity: 1;
-    }
-  }
-  @include mobile {
-    height: 30px;
-    >div {
-      padding: 7px;
-      .icon {
-        transform: rotate(90deg);
-      }
-    }
-  }
-}
-
-.dragging {
-  position: relative;
-  box-shadow: 0px 0px 20px black;
-  border-width: 0px 1px;
-  border-style: solid;
-  border-color: #fff;
-  transform: translateX(-50%);
-  pointer-events: none;
-  overscroll-behavior: none;
-  z-index: 1;
-
-  @include small {
-    border-width: 1px 0px;
-    transform: translateY(-50%);
-  }
-}
-
 #mask {
   position: fixed;
   top: 0;
@@ -158,5 +97,4 @@ watchEffect((cleanup) => {
   background-color: #0005;
   z-index: 1;
 }
-
 </style>

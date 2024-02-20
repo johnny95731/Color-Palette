@@ -26,6 +26,10 @@ import UnfavPalleteUrl from '@/assets/icons/bookmark-dash.svg?url';
 import BookmarkUrl from '@/assets/icons/bookmarks.svg?url';
 import ListUrl from '@/assets/icons/list.svg?url';
 import caretUrl from '@/assets/icons/caret-left-fill.svg?url';
+import SettingUrl from '@/assets/icons/gear.svg?url';
+import PlayUrl from '@/assets/icons/play.svg?url';
+import PauseUrl from '@/assets/icons/pause-fill.svg?url';
+import type {CSSProperties} from 'vue';
 
 const urls = {
   close: CloseUrl,
@@ -46,13 +50,16 @@ const urls = {
   bookmark: BookmarkUrl,
   list: ListUrl,
   caret: caretUrl,
+  setting: SettingUrl,
+  play: PlayUrl,
+  pause: PauseUrl,
 } as const;
 export type IconType = keyof typeof urls;
 
 interface Prop {
     type: IconType;
     show?: boolean;
-    style?: Partial<CSSStyleValue>;
+    style?: CSSProperties;
     class?: String;
     onClick?: (e: MouseEvent) => any
 }

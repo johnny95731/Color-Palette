@@ -8,7 +8,7 @@
   </div>
   <input type="text" maxlength="7" class="hexInput"
     :value="card.hex"
-    :id="`card${props.cardId}-hex`"
+    :id="`card${props.cardIdx}-hex`"
     @change="hexTextEdited($event)"
     @blur="handleHexEditingFinished($event)"
     @keydown="handleHexEditingFinished($event)"
@@ -17,37 +17,39 @@
     <template v-for="(val, i) in props.colorArr"
       :key="`card${props.cardId}-label${i}`"
     >
-      <label v-text="`${spaceInfo.labels[i]}: ${val}`">
+      <label v-text="`${space.labels[i]}: ${val}`">
       </label>
-      <input
-        type="range" min="0" :max="spaceInfo.maxes[i]" step="0.01"
-        :id="`card${props.cardId}-slider${i}`"
+      <TheSlider
+        :showRange="false" :showVal="false"
+        :trackerBackground="gradientGen(props.colorArr, i, colorSpace)"
+        :min="0" :max="space.maxes[i]" :step="1" :digit="0"
         :value="val"
-        @input="handleSliderChange($event, i)"
-        @change="handleSliderChange($event, i)"
+        @change="(newVal: number) => handleSliderChange(newVal, i)"
       />
     </template>
   </div>
 </div>
 </template>
 
-<script lang='ts' setup>
+<script setup lang='ts'>
 import {computed, inject, watchEffect, ref, onMounted} from 'vue';
+import TheSlider from '../Custom/TheSlider.vue';
 // Utils
 import {hexTextEdited, stopPropagation} from '@/utils/helpers';
-import {hex2rgb, rgb2hex, getSpaceInfos, isValidHex} from '@/utils/colors';
+import {
+  hex2rgb, rgb2hex, getSpaceInfos, getSpaceTrans, isValidHex,
+  gradientGen,
+} from '@/utils/colors';
 // Stores
 import usePltStore from '@/features/stores/usePltStore';
-import useOptionsStore from '@/features/stores/useOptionsStore';
 // Types
 import type {Ref} from 'vue';
-import type {cardType} from '@/features/types/pltType';
-import type {ColorSpacesType} from '@/features/types/optionsType';
+import type {CardType, ColorSpacesType} from '@/features/types/pltType';
 import type {MediaContextType} from '@/features/types/mediaType.ts';
 
 type Props = {
-  cardId: number;
-  card: cardType;
+  cardIdx: number;
+  card: CardType;
   colorSpace: ColorSpacesType
   colorArr: number[];
 }
@@ -56,8 +58,12 @@ const props = defineProps<Props>();
 const containerRef = ref<HTMLDivElement>();
 
 const pltState = usePltStore();
-const optionsState = useOptionsStore();
-const spaceInfo = getSpaceInfos(optionsState.colorSpace);
+const space = computed(() => {
+  return {
+    ...getSpaceInfos(pltState.colorSpace),
+    ...getSpaceTrans(pltState.colorSpace),
+  };
+});
 
 /**
  * Close dialog when blurred.
@@ -65,7 +71,7 @@ const spaceInfo = getSpaceInfos(optionsState.colorSpace);
 const handleDialogBlurred = (e: FocusEvent) => {
   if (props.card.isEditing && e.relatedTarget === null) {
     handleHexEditingFinished(e);
-    pltState.setIsEditing(props.cardId, false);
+    pltState.setIsEditing(props.cardIdx);
   }
 };
 // Focus after created.
@@ -85,12 +91,12 @@ const handleHexEditingFinished = function(e: FocusEvent | KeyboardEvent) {
   if (isValidHex(text)) {
     const newRGB = hex2rgb(text);
     if (!newRGB) return;
-    const newModeColor = spaceInfo.converter(newRGB);
-    pltState.editCard({idx: props.cardId, color: newRGB});
+    const newModeColor = space.value.converter(newRGB);
+    pltState.editCard({idx: props.cardIdx, color: newRGB});
     let slider;
     for (let i = 0; i < 4; i++) {
       slider = (
-        document.getElementById(`card${props.cardId}-slider${i}`) as
+        document.getElementById(`card${props.cardIdx}-slider${i}`) as
         HTMLInputElement
       );
       if (slider) slider.value = String(newModeColor[i]);
@@ -105,17 +111,16 @@ const handleHexEditingFinished = function(e: FocusEvent | KeyboardEvent) {
 /**
  * Slider changed event.
  */
-const handleSliderChange = function(e: Event, idx: number) {
-  const target = e.target as HTMLInputElement;
-  const newColorArr = spaceInfo.converter(props.card.rgb);
-  newColorArr[idx] = Number(target.value);
-  const newRGB = spaceInfo.inverter(newColorArr);
-  pltState.editCard({idx: props.cardId, color: newRGB});
+const handleSliderChange = function(newVal: number, idx: number) {
+  const newColorArr = [...props.card.color];
+  newColorArr[idx] = newVal;
+  pltState.editCard({idx: props.cardIdx, color: newColorArr});
   // Set hex to hex input.
   const textInput = (
-    document.getElementById(`card${props.cardId}-hex`) as HTMLInputElement
+    document.getElementById(`card${props.cardIdx}-hex`) as HTMLInputElement
   );
-  textInput.value = rgb2hex(newRGB);
+  const rgb = space.value.inverter(newColorArr);
+  textInput.value = rgb2hex(rgb);
 };
 
 // Check container is out of window or not.
@@ -163,7 +168,7 @@ watchEffect(() => {
     let slider;
     for (let i = 0; i < 4; i++) {
       slider = (
-        document.getElementById(`card${props.cardId}-slider${i}`)
+        document.getElementById(`card${props.cardIdx}-slider${i}`)
       );
       if (slider) {
         (slider as HTMLInputElement).value = String(props.colorArr[i]);

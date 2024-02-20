@@ -5,15 +5,17 @@
   "compilerOptions": {
     "composite": true,
     "noEmit": true,
-    "baseUrl": ".",
+    "baseUrl": "./",
     "allowImportingTsExtensions": true,
     "moduleResolution": "node",
     "lib": [
-      "es2016",
+      "es2022",
       "dom"
     ],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "types/*": ["./src/features/types/*", "./src/types/*"],
+      "stores/*": ["./src/features/stores/*"]
     }
   }
 }

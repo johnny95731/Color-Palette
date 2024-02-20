@@ -13,28 +13,37 @@
           <TheIcon type="refresh" />All
         </span>
         <DropupMenu icon="sort" class="btn"
-          :contents="SORTING_ACTIONS" :current-val="sortBy"
+          :contents="SORTING_ACTIONS" :current-val="pltState.sortBy"
           :hotkeys="SORTING_ACTIONS.map((str) => str[0])"
           :item-click="sorting"
         >
           <template #title>Sort</template>
         </DropupMenu>
         <DropupMenu icon="blend" class="btn"
-          :contents="BLEND_MODES" :current-val="blendMode"
+          :contents="BLEND_MODES" :current-val="pltState.blendMode"
           :item-click="setBlendMode"
         >
           <template #title>Blend</template>
         </DropupMenu>
         <DropupMenu icon="edit" class="btn"
-          :contents="COLOR_SPACES" :current-val="colorSpace"
+          :contents="COLOR_SPACES" :current-val="pltState.colorSpace"
           :item-click="setColorSpace"
           letterCase="all-caps"
         >
-          <template #title>Space</template>
+        <template #title>Space</template>
         </DropupMenu>
+        <span class="btn playBtn" @click="haldleClick">
+          <TheIcon :type="pltState.isPlaying ? 'pause' : 'play'" />{{
+            pltState.isPlaying ? 'Pause' : 'Play'
+        }}</span>
+
+        <div class='empty'></div>
         <!-- Float right -->
-        <span class="btn btnR" @click="$emit('fav-showing')">
+        <span class="btn" @click="$emit('show-fav')">
           <TheIcon type="bookmark" />Bookmarks
+        </span>
+        <span class="btn" @click="$emit('show-settings')">
+          <TheIcon type="setting" />Settings
         </span>
       </div>
     </div>
@@ -42,31 +51,31 @@
 </template>
 
 <script setup lang='ts'>
-import {ref, watchEffect, inject, computed} from 'vue';
-import type {Ref} from 'vue';
+import {ref, watch, watchEffect, inject, computed} from 'vue';
 import TheIcon from '../TheIcon.vue';
-import DropupMenu from './DropupMenu.vue';
+import DropupMenu from '../Custom/DropupMenu.vue';
 import {showPopupMenu, preventDefault} from '@/utils/helpers.ts';
 // Stores / Contexts
-import usePltStore from '@/features/stores/usePltStore.ts';
-import useOptionsStore from '@/features/stores/useOptionsStore.ts';
-import {} from '@/features/types/pltType.ts';
+import usePltStore from 'stores/usePltStore.ts';
+import useSettingStore from 'stores/useSettingStore.ts';
 import {
   COLOR_SPACES, BLEND_MODES, SORTING_ACTIONS,
 } from '@/utils/constants';
 // Types
-import type {SortActionType} from '@/features/types/pltType.ts';
-import type {
-  BlendingType, ColorSpacesType,
-} from '@/features/types/optionsType.ts';
-import type {MediaContextType} from '@/features/types/mediaType.ts';
+import type {Ref} from 'vue';
+import type {SortActionType} from 'types/pltType.ts';
+import type {BlendingType, ColorSpacesType} from 'types/pltType.ts';
+import type {MediaContextType} from 'types/mediaType.ts';
 
-// Media Events
+const media = inject('media') as Ref<MediaContextType>;
+const pltState = usePltStore();
+const settingState = useSettingStore();
+
 const menuRef = ref<HTMLDivElement>();
 const menuContentRef = ref<HTMLDivElement>();
-const media = inject('media') as Ref<MediaContextType>;
 const isSmall = computed(() => media.value.isSmall);
 
+// Media Events
 watchEffect(() => { // add / remove class.
   const content = menuContentRef.value;
   if (!content) return;
@@ -80,22 +89,16 @@ watchEffect(() => { // add / remove class.
     content.classList.remove('menuContentR');
   }
 });
-// Menu Events
-const pltState = usePltStore();
-const optionsState = useOptionsStore();
-// -Get Values
-const sortBy = computed(() => pltState.sortBy);
-const blendMode = computed(() => optionsState.blendMode);
-const colorSpace = computed(() => optionsState.colorSpace);
+// Events in menus.
 // -Create Events
 const sorting = (sortBy: SortActionType) => {
   pltState.sortCards(sortBy);
 };
 const setBlendMode = (newMode: BlendingType) => {
-  optionsState.setBlendMode(newMode);
+  pltState.setBlendMode(newMode);
 };
 const setColorSpace = (newColorSpace: ColorSpacesType) => {
-  optionsState.setColorSpace(newColorSpace);
+  pltState.setColorSpace(newColorSpace);
 };
 watchEffect((cleanup) => {
   const menu = menuRef.value;
@@ -106,19 +109,56 @@ watchEffect((cleanup) => {
     });
   }
 });
+
+const isRunning = ref<boolean>(false);
+const timeoutId = ref<number | null>(null);
+
+const delay = computed(() => Math.max(settingState.transition.color, 1000));
+function play() {
+  pltState.refreshCard(-1);
+  timeoutId.value = window.setTimeout(() => {
+    isRunning.value && play();
+  }, delay.value);
+}
+function haldleClick() {
+  if (pltState.isPlaying) {
+    isRunning.value = false;
+    if (timeoutId.value !== null) window.clearTimeout(timeoutId.value);
+    timeoutId.value = null;
+  } else {
+    isRunning.value = true;
+    play();
+  }
+  pltState.setIsPlaying();
+}
+watch(
+    () => settingState.transition.color,
+    () => {
+      if (!pltState.isPlaying) return;
+      if (timeoutId.value !== null) window.clearTimeout(timeoutId.value);
+      timeoutId.value = window.setTimeout(() => {
+        isRunning.value && play();
+      }, delay.value);
+    },
+);
 </script>
 
-<style src="./DropupMenu.scss"></style>
-<style lang='scss'>
-@import '@/assets/commons.scss';
-
+<style src="../Custom/DropupMenu.scss"></style>
+<style lang='scss' scoped>
 .header {
   display: inline-flex;
   align-items: center;
-  width: 100%;
-  height: var(--headerHeight);
+  // position
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1;
+  // shape
+  width: 100vw;
+  height: var(--header-height);
   padding: 0 30px 0 60px;
   box-sizing: border-box;
+
   background-color: $color2;
   user-select: none;
   @include small {
@@ -127,40 +167,46 @@ watchEffect((cleanup) => {
   }
 }
 
-$titleFontSize: 24px;
 .title {
-  font-size: $titleFontSize;
+  font-size: var(--font-heading);
   font-weight: 900;
   color: $color5;
   margin: 0;
-  @include small {
-    font-size: 20px;
-  }
 }
 
 .menubar {
   flex: 1 0 auto;
-  display: table;
   color: $color5;
   margin: auto 0 auto 20px;
-
+  >div {
+    display: flex;
+    width: 100%;
+    @include small {
+      display: block;
+      width: 100vw;
+    }
+  }
+  .empty {
+    flex-grow: 1;
+  }
   @include small {
-    flex: 0 0 var(--headerHeight);
+    flex: 0 0 var(--header-height);
     position: relative;
     height: 100%;
     margin: 0;
     float: right;
-    background-color: $color3;
+    background-color: $color1;
   }
 }
 
-.btn {
+%btn {
+  margin: 0 2px;
   float: left;
-  padding: 5px 8px;
-  border-radius: 8px;
+  border-radius: $radius-lg;
+  box-sizing: border-box;
   background-color: inherit;
   cursor: pointer;
-  .icon {
+  :deep(.icon) {
     margin-left: 0;
     margin-right: 3px;
     height: 18px;
@@ -171,18 +217,33 @@ $titleFontSize: 24px;
   }
   @include small {
     position: relative;
+    margin: 0;
+    // shape
     min-height: 30px;
     width: 100%;
     padding: 7px 0;
-    box-sizing: border-box;
     &:hover, &:focus {
       background-color: $color3;
     }
   }
 }
+.list {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
 
-.btnR {
-  float: right;
-  margin: 0;
+.btn {
+  @extend %btn;
+  padding: 5px 10px 5px 7px;
+}
+
+.btnMenu {
+  @extend %btn;
+  padding: 5px 6px 5px 8px;
+}
+
+.playBtn {
+  width: 75px;
 }
 </style>

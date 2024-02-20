@@ -1,7 +1,8 @@
-import {getSpaceInfos, HSL_MAXES} from './colors.ts';
+import {HSL_MAXES} from './constants.ts';
+import {getSpaceTrans} from './colors.ts';
 import {elementwiseMean} from './helpers.ts';
-import type {ColorSpacesType} from '@/features/types/optionsType.ts';
-type blend = (c1: number[], c2: number[]) => number[];
+import type {Blender} from 'types/utilTypes.ts';
+import type {ColorSpacesType} from 'types/pltType.ts';
 
 /**
  * Blending two colors by evaluate their average.
@@ -10,10 +11,10 @@ type blend = (c1: number[], c2: number[]) => number[];
  * @param colorSpace Color space.
  * @returns The mean value of color1 and color2.
  */
-export const meanBlend = (
+const meanBlend = (
     color1: number[], color2: number[], colorSpace: ColorSpacesType,
 ): number[] => {
-  const {converter, inverter} = getSpaceInfos(colorSpace);
+  const {converter, inverter} = getSpaceTrans(colorSpace);
   const newColor = elementwiseMean(
       converter(color1), converter(color2),
   );
@@ -27,7 +28,7 @@ const GAMMA_CONST = 2**(- 2 / 255);
  * @param color2 Numeric of a color.
  * @returns The mean value of color1 and color2.
  */
-const softLightBlend: blend = (color1, color2) => {
+const softLightBlend: Blender = (color1, color2) => {
   const newColor = new Array(color1.length);
   for (let i = 0; i < color1.length; i++) {
     newColor[i] = 255 * (color1[i] / 255) ** (2 * GAMMA_CONST**color2[i]);
@@ -44,7 +45,7 @@ const softLightBlend: blend = (color1, color2) => {
  *   The color is brighter if gamma < 1.
  * @returns The blend color of color1 and color2.
  */
-const gammaBlend = (
+const blendNGamma = (
     color1: number[], color2: number[], gamma: number = 0.3,
 ) => {
   /**
@@ -52,20 +53,22 @@ const gammaBlend = (
    */
   const sacleCoeff = HSL_MAXES.slice(1).map(
       (val) => Math.pow(val, (1 - gamma)));
-  const {converter, inverter} = getSpaceInfos('hsl');
   const mean = elementwiseMean(color1, color2);
+  const {converter, inverter} = getSpaceTrans('hsl');
   const [hue, sat, lum] = converter(mean);
   const newSat = Math.pow(sat, gamma) * sacleCoeff[0];
   const newLum = Math.pow(lum, gamma) * sacleCoeff[1];
   return inverter([hue, newSat, newLum]);
 };
 
-const brighter: blend = (color1, color2) => gammaBlend(color1, color2);
-const deeperBlend: blend = (color1, color2) => gammaBlend(color1, color2, 1.5);
+const brighter: Blender = (color1, color2) => blendNGamma(color1, color2);
+const deeperBlend: Blender = (color1, color2) => {
+  return blendNGamma(color1, color2, 1.5);
+};
 
-export const blendBy = {
+export const blenders = Object.freeze({
   'mean': meanBlend,
   'brighter': brighter,
   'deeper': deeperBlend,
   'soft light': softLightBlend,
-};
+});

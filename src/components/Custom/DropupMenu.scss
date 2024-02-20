@@ -1,0 +1,130 @@
+@import "@/assets/commons.scss";
+
+$transDuration: 120ms;
+
+.popupMenu, .selectMenu {
+  position: relative;
+  // shape
+  padding: 5px 8px;
+  box-sizing: border-box;
+  border-radius: $radius-md;
+  // style
+  transition: border-radius $transDuration;
+  cursor: pointer;
+  .triangle {
+    animation: rotation-out $transDuration 1 linear;
+  }
+  &:focus {
+    border-radius: $radius-md $radius-md 0 0;
+    .triangle {
+      transform: rotate(180deg);
+      animation: rotation-in $transDuration 1 linear;
+    }
+  }
+  @include small {
+    &:focus .menuTitle {
+      padding-bottom: 5px;
+      transition: padding-bottom $transDuration ease-in-out;
+    }
+  }
+}
+
+.selectMenu {
+  width: 100%;
+  box-sizing: border-box;
+  color: $color5;
+  background-color: $color1;
+  &:focus, &:hover {
+    background-color: $color2;
+  }
+  .triangle {
+    float: right;
+  }
+}
+
+// select value
+.currentVal {
+  width: auto;
+  height: fit-content;
+}
+
+// popup menu title
+.menuTitle {
+  font-size: var(--font-body);
+  transition: padding-bottom $transDuration ease-in-out;
+}
+
+.triangle {
+  margin-left: 2px;
+  vertical-align: top;
+}
+
+%menuContent {
+  // position
+  position: absolute;
+  top: 100%;
+  z-index: 1;
+  // shape
+  height: fit-content;
+  width: max-content;
+  max-height: 0;
+  min-width: 100%;
+  border-radius: $radius-md;
+  overflow: hidden;
+
+  background-color: $color1;
+  cursor: pointer;
+  transition: max-height $transDuration ease-in-out;
+
+  >* {
+    height: fit-content;
+    width: 100%;
+    font-weight: 600;
+    padding: 5px 10px;
+    border-width: 1px 0;
+    background-color: $color1;
+    text-align: center;
+    text-wrap: no-wrap;
+    box-sizing: border-box;
+    &:hover {
+      background-color: $color3;
+    }
+  }
+  :global(.icon) {
+    position: absolute;
+    transform: translateX(-100%);
+    z-index: 10;
+  }
+  
+  @include small {
+    background-color: $color1;
+    >* {
+      padding: 10px 10px;
+    }
+  }
+}
+
+.menuContent { // Align center
+  @extend %menuContent;
+  left: 0;
+  // transform: translateX(-50%);
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  
+  @include small {
+    position: relative;
+    top: 0;
+    width: 100%;
+    box-shadow: none;
+  }
+}
+
+.menuContentR { // Align right.
+  left: auto;
+  right: 0;
+  transform: none;
+}
+
+.mobileMenuContent {
+  @extend %menuContent;
+  width: 100vw;
+}

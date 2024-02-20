@@ -24,6 +24,7 @@ import TheIcon from '../TheIcon.vue';
 import {hex2rgb, rgb2gray} from '@/utils/colors';
 import {copyHex} from '@/utils/helpers';
 import useFavStore from '@/features/stores/useFavStore';
+import type {CSSProperties} from 'vue';
 
 type Props = {
   hex: string;
@@ -33,8 +34,8 @@ const props = defineProps<Props>();
 const isLight = computed(() => {
   return rgb2gray(hex2rgb(props.hex) as number[]) > 127.5;
 });
-const iconFilterStyle = computed(() => (
-  {filter: isLight.value ? '' : 'invert(1)'} as Partial<CSSStyleValue>
+const iconFilterStyle = computed<CSSProperties>(() => (
+  {filter: isLight.value ? '' : 'invert(1)'}
 ));
 
 const favState = useFavStore();

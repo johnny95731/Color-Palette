@@ -1,7 +1,7 @@
 <template>
   <div className="toolContainer" :style="props.fgFilter">
     <TheIcon type="close" :style="closeIconStyle"
-      @click="delCard"
+      @click="$emit('remove')"
     />
     <TheIcon :type="isLockIcon"
       @click="isLockChanged"
@@ -10,7 +10,7 @@
       @click="handleFavClick"
     />
     <TheIcon type="move" style="cursor: grab;"
-      @mousedown="$emit('dragging-card', $event)"
+      @mousedown="$emit('dragging', $event)"
     />
     <TheIcon type="refresh"
       @click="refreshCard"
@@ -28,13 +28,13 @@ import TheIcon from '../TheIcon.vue';
 import usePltStore from '@/features/stores/usePltStore.ts';
 import useFavStore from '@/features/stores/useFavStore.ts';
 // Types
-import type {cardType} from '@/features/types/pltType.ts';
+import type {CSSProperties} from 'vue';
+import type {CardType} from '@/features/types/pltType.ts';
 
 type Props = {
-  cardId: number
-  numOfCards: number;
-  card: cardType;
-  fgFilter: Partial<CSSStyleValue>;
+  cardIdx: number
+  card: CardType;
+  fgFilter: CSSProperties;
 }
 const props = defineProps<Props>();
 // States / Consts
@@ -44,32 +44,29 @@ const isFav = computed(() => {
   return favState.colors.includes(props.card.hex);
 });
 
-const closeIconStyle = computed(() => {
-  return props.numOfCards === 2 ?
+const closeIconStyle = computed<CSSProperties>(() => {
+  return pltState.numOfCards === 2 ?
     {
       opacity: '0',
       cursor: 'default',
-    } as Partial<CSSStyleValue> :
-    undefined;
+    } :
+    {};
 });
 const isLockIcon = computed(() => props.card.isLock ? 'lock' : 'unlock');
 const isFavIcon = computed(() => isFav.value ? 'fav' : 'unfav');
 
 // Icon Events
-function delCard() {
-  pltState.delCard(props.cardId);
-}
 function isLockChanged() {
-  pltState.setIsLock(props.cardId);
+  pltState.setIsLock(props.cardIdx);
 }
 function handleFavClick() {
   favState.favColorsChanged(props.card.hex);
 }
 function refreshCard() {
-  pltState.refreshCard(props.cardId);
+  pltState.refreshCard(props.cardIdx);
 }
 function isEditingChanged() {
-  pltState.setIsEditing(props.cardId);
+  pltState.setIsEditing(props.cardIdx);
 }
 </script>
 

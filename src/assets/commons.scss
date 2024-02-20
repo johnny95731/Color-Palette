@@ -1,4 +1,5 @@
-$defaultFontSize: 14px;
+// Small vieport
+$view-sm: 900px;
 
 %verticalCenter {
   position: absolute;
@@ -15,6 +16,23 @@ $defaultFontSize: 14px;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+}
+
+@keyframes rotation-in {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(180deg);
+  }
+}
+@keyframes rotation-out {
+  from {
+    transform: rotate(180deg);
+  }
+  to {
+    transform: rotate(0deg);
+  }
 }
 
 // media
@@ -39,17 +57,36 @@ $defaultFontSize: 14px;
   }
 }
 
+// Font weighht
+$normal-weight: 600;
+$bold-weight: 800;
+
+// Border-radius
+$radius-xl: 15px;
+$radius-lg: 10px;
+$radius-md: 7px;
+$radius-sm: 5px;
+
 :root{
-  --smallSize: 900px;
-  --headerHeight: 60px;
+  --font-sm: 12px;
+  --font-body: 14px;
+  --font-subheading: 18px;
+  --font-heading: 25px;
+  --header-height: 60px;
+  @include desktop {
+    --font-sm: 14px;
+    --font-subheading: 20px;
+  }
   @include small {
-    --headerHeight: 40px;
+    --font-subheading: 16px;
+    --font-heading: 20px;
+    --header-height: 40px;
   }
 }
 
 // Color scheme
 $color1: #FAFAFA;
 $color2: #EAEAEA;
-$color3: #DDD;
-$color4: #D5D5D5;
+$color3: #C0C0C0;
+$color4: #707070;
 $color5: #1D1D57;
