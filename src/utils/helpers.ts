@@ -62,6 +62,15 @@ export const rangeMapping = (
 };
 
 /**
+ * Dot product of two arrays.
+ */
+export const dot = (a: readonly number[], b: readonly number[]): number => {
+  let s = 0;
+  for (let i = 0; i < a.length; i++) s += a[i] * b[i];
+  return s;
+};
+
+/**
  * Check whether two object has same keys.
  */
 export const hasSameKeys = (obj1: object, obj2: object): boolean => {

@@ -188,11 +188,6 @@ $point-size: 14px;
   background-color: transparent;
 }
 
-%focus-point {
-  border: solid 3px white;
-  outline: solid 1px $color5;
-}
-
 .tracker {
   // position
   position: relative;
@@ -206,9 +201,6 @@ $point-size: 14px;
   background-color: $color5;
   cursor: pointer;
   user-select: none;
-  &:focus .point {
-    @extend %focus-point;
-  }
   &:hover .tooltip {
     display: block;
   }
@@ -219,11 +211,10 @@ $point-size: 14px;
   height: $point-size;
   aspect-ratio: 1 / 1;
   border-radius: 100%;
+  border: solid 3px white;
+  outline: solid 1px $color5;
   box-sizing: border-box;
   background-color: $color5;
-  &:hover {
-    @extend %focus-point;
-  }
 }
 
 .limit {
