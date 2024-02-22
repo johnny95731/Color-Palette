@@ -206,17 +206,17 @@ const usePltStore = defineStore('plt', {
     setBlendMode(newBlendMode: BlendingType) {
       this.blendMode = newBlendMode;
     },
-    adjustContrast(method: string, gamma?: number) {
+    adjustContrast(method: string, coeff?: number) {
       if (!this.isEditingPlt) return;
       const {converter, inverter} = getSpaceTrans(this.colorSpace);
       const originRgbs = this.cards.map((card) => inverter(card.originColor));
       let newRgbs = originRgbs;
       switch (method) {
         case 'multiplication':
-          newRgbs = scaling(originRgbs, gamma as number) as number[][];
+          newRgbs = scaling(originRgbs, coeff as number) as number[][];
           break;
         case 'gamma':
-          newRgbs = gammaCorrection(originRgbs, gamma as number) as number[][];
+          newRgbs = gammaCorrection(originRgbs, coeff as number) as number[][];
           break;
       }
       for (let i = 0; i < this.numOfCards; i++) {

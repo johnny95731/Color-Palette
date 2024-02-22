@@ -1,4 +1,4 @@
-import {computed, ref, onMounted} from 'vue';
+import {ref} from 'vue';
 import type {MediaContextType} from './types/mediaType.ts';
 
 /**
@@ -6,7 +6,7 @@ import type {MediaContextType} from './types/mediaType.ts';
  */
 const maxSmallSize = Number( // Get var(--smallSize) in css.
     getComputedStyle(document.documentElement)
-        .getPropertyValue('--smallSize')
+        .getPropertyValue('--small-view')
         .slice(0, -2),
 );
 

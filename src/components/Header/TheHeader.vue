@@ -79,7 +79,7 @@ const isSmall = computed(() => media.value.isSmall);
 watchEffect(() => { // add / remove class.
   const content = menuContentRef.value;
   if (!content) return;
-  if (isSmall.value) {
+  if (media.value.isSmall) {
     menuRef.value?.classList.add('popupMenu');
     content.classList.add('mobileMenuContent');
     content.classList.add('menuContentR');
@@ -243,5 +243,8 @@ watch(
 
 .playBtn {
   width: 75px;
+  @include small {
+    width: 100%;
+  }
 }
 </style>

@@ -71,6 +71,11 @@ $transDuration: 120ms;
   min-width: 100%;
   border-radius: $radius-md;
   overflow: hidden;
+  
+  list-style-type: none;
+  margin-block-start: 0em;
+  margin-block-end: 0em;
+  padding-inline-start: 0px;
 
   background-color: $color1;
   cursor: pointer;

@@ -8,14 +8,14 @@
     currentVal
   }}<img :src="TriangleUrl" alt="clickable" :class="$style.triangle" />
   </div>
-  <div :class="$style.menuContent">
-    <div v-for="(val) in options" :key="`Option ${val}`"
+  <ul :class="$style.menuContent">
+    <li v-for="(val) in options" :key="`Option ${val}`"
       @click="handleSelect(val)"
       :style="val === currentVal ? CURRENT_OPTION_WEIGHT : undefined"
     >{{
       val
-    }}</div>
-  </div>
+    }}</li>
+  </ul>
 </span>
 </template>
 

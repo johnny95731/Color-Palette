@@ -77,7 +77,12 @@ const currentVal = ref<number>((() => {
 const pos = ref<number>(pointRadius);
 
 function updateValue(newVal: number, newPos?: number) {
-  if (currentVal.value !== newVal) emit('change', newVal);
+  if (currentVal.value !== newVal) {
+    try {
+      emit('change', newVal);
+    // eslint-disable-next-line
+    } catch {}
+  }
   if (newPos === undefined) {
     const rect = trackerRef.value?.getBoundingClientRect() as DOMRect;
     if (!rect) return;

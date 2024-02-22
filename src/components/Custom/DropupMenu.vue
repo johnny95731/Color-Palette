@@ -9,14 +9,14 @@
         <slot name="title" />
       <img :src="TriangleUrl" alt="clickable" class="triangle" />
     </div>
-    <div class="menuContent">
-      <div v-for="item in menuItems" :key="item.val"
+    <ul class="menuContent">
+      <li v-for="item in menuItems" :key="item.val"
         :style="item.style"
         @click="itemClick ? itemClick(item.val) : undefined"
       >
         {{ item.name }}
-      </div>
-    </div>
+      </li>
+    </ul>
   </span>
 </template>
 

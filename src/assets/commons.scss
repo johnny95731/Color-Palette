@@ -47,7 +47,7 @@ $view-sm: 900px;
   }
 }
 @mixin small {
-  @media only screen and (max-width: 900px) {
+  @media only screen and (max-width: $view-sm) {
     @content;
   }
 }
@@ -68,6 +68,7 @@ $radius-md: 7px;
 $radius-sm: 5px;
 
 :root{
+  --small-view: #{$view-sm};
   --font-sm: 12px;
   --font-body: 14px;
   --font-subheading: 18px;
