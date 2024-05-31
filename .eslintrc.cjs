@@ -10,6 +10,7 @@ module.exports = {
     '@vue/eslint-config-typescript',
   ],
   'parserOptions': {
+    'tsconfigRootDir': __dirname,
     'ecmaVersion': 'latest',
   },
   'rules': {
