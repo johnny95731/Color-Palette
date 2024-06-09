@@ -1,9 +1,9 @@
-import {createPinia} from 'pinia';
+import { createPinia } from 'pinia';
 
 import 'normalize.css';
 import './assets/main.scss';
 
-import {createApp} from 'vue';
+import { createApp } from 'vue';
 import App from './App.vue';
 import useFavStore from './features/stores/useFavStore';
 

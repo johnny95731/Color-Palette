@@ -13,7 +13,10 @@
       <menu
         :class="$style.menubar"
       >
-        <HeaderBtns />
+        <HeaderBtns
+          @show-fav="$emit('show-fav')"
+          @show-settings="$emit('show-settings')"
+        />
       </menu>
     </div>
     <DropdownMenu
@@ -27,7 +30,10 @@
       hideTriangle
     >
       <template #items>
-        <HeaderBtns />
+        <HeaderBtns
+          @show-fav="$emit('show-fav')"
+          @show-settings="$emit('show-settings')"
+        />
       </template>
     </DropdownMenu>
   </header>
