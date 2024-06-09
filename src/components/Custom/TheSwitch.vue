@@ -1,14 +1,14 @@
 <template>
-<div
-  :class="`${$style.wrapper} ${isOn ? $style.active : ''}`"
-  @click="handleClick"
->
-  <div :class="$style.circle"
-    :style="switchStyle[isOn ? 'on' : 'off']"
+  <div
+    :class="`${$style.wrapper} ${isOn ? $style.active : ''}`"
+    @click="handleClick"
   >
+    <div
+      :class="$style.circle"
+      :style="switchStyle[isOn ? 'on' : 'off']"
+    />
+    <span v-if="msg">{{ isOn ? msg[0] : msg[1] }}</span>
   </div>
-  <span v-if="msg">{{isOn ? msg[0] : msg[1]}}</span>
-</div>
 </template>
 
 <script lang="ts">
@@ -25,7 +25,7 @@ const switchStyle = {
 </script>
 
 <script setup lang="ts">
-import {computed, ref, useCssModule, withDefaults} from 'vue';
+import { computed, ref, useCssModule, withDefaults } from 'vue';
 
 type Props = {
   onClick?: (isOn: boolean) => void;

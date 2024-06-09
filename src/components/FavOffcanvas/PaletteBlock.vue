@@ -1,22 +1,30 @@
 <template>
-<li class="paletteBlock">
-  <div :style='{background: bgGrad}' >
-    <div class="caretWrapper" >
-      <TheIcon type="caret" @click="handleSetPlt()" />
+  <li class="paletteBlock">
+    <div :style="{background: bgGrad}">
+      <div class="caretWrapper">
+        <TheIcon
+          type="caret"
+          @click="handleSetPlt()"
+        />
+      </div>
+      <span class="delWrapper">
+        <TheIcon
+          type="del"
+          @click="removeFavPlt()"
+        />
+      </span>
     </div>
-    <span class="delWrapper">
-      <TheIcon type="del" @click="removeFavPlt()" />
-    </span>
-  </div>
-  <div @click="copyHex">{{ plt }}</div>
-</li>
+    <div @click="copyHex">
+      {{ plt }}
+    </div>
+  </li>
 </template>
 
 <script lang="ts" setup>
-import {computed} from 'vue';
+import { computed } from 'vue';
 import TheIcon from '../TheIcon.vue';
-import {isValidHex} from '@/utils/colors';
-import {copyHex} from '@/utils/helpers';
+import { isValidHex } from '@/utils/colors';
+import { copyHex } from '@/utils/eventHandler';
 import useFavStore from '@/features/stores/useFavStore';
 import usePltStore from '@/features/stores/usePltStore';
 
@@ -34,7 +42,7 @@ const bgGrad = computed(() => {
     acc += `${hex} ${i * diff.value}%,${hex} ${(i+1) * diff.value}%,`;
     return acc;
   }, '')
-      .slice(0, -1);
+    .slice(0, -1);
   return `linear-gradient(90deg, ${midPoint})`;
 });
 

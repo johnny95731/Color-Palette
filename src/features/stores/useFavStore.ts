@@ -1,5 +1,5 @@
-import {defineStore} from 'pinia';
-import {get, update, set} from 'idb-keyval';
+import { defineStore } from 'pinia';
+import { get, update, set } from 'idb-keyval';
 
 import {
   favoritesDb, STORE_FAV_COLORS, STORE_FAV_PLTS,
@@ -61,7 +61,7 @@ const useFavStore = defineStore('favorites', {
         }
         return newFav;
       }, favoritesDb)
-          .catch((e) => console.error(e));
+        .catch((e) => console.error(e));
       // Update state
       if (isIncluding) { // Favoriting => Non-Favoriting
         this.colors = this.colors.filter((hex) => hex != targetHex);
@@ -82,7 +82,7 @@ const useFavStore = defineStore('favorites', {
         }
         return newFav;
       }, favoritesDb)
-          .catch((e) => console.error(e));
+        .catch((e) => console.error(e));
       // Update state
       if (this.plts.includes(targetPlt)) { // Favoriting => Non-Favoriting
         this.plts = this.plts.filter((plt) => plt != targetPlt);

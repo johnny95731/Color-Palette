@@ -35,6 +35,7 @@ export type CardType = {
    * Color array in specific color space.
    */
   color: number[];
+  nameIdx?: number;
   /**
    * Stores hex before editing the palette.
    */
@@ -51,8 +52,4 @@ export type CardType = {
    * The card is in bookmarks.
    */
   isFav: boolean;
-  /**
-   * The card is in editing mode.
-   */
-  isEditing: boolean;
 };

@@ -1,10 +1,11 @@
 <template>
-  <img :src='urls[type]' :alt='type'
-    :style='style ? style : undefined'
-    :class='className'
-    draggable='false'
-    @click='onClick && onClick($event)'
-  />
+  <img
+    :src="urls[type]"
+    :alt="type"
+    class="icon"
+    draggable="false"
+    @click="onClick ? onClick($event) : $emit('click', $event)"
+  >
 </template>
 
 <script setup lang='ts'>
@@ -29,7 +30,6 @@ import caretUrl from '@/assets/icons/caret-left-fill.svg?url';
 import SettingUrl from '@/assets/icons/gear.svg?url';
 import PlayUrl from '@/assets/icons/play.svg?url';
 import PauseUrl from '@/assets/icons/pause-fill.svg?url';
-import type {CSSProperties} from 'vue';
 
 const urls = {
   close: CloseUrl,
@@ -56,22 +56,20 @@ const urls = {
 } as const;
 export type IconType = keyof typeof urls;
 
-interface Prop {
-    type: IconType;
-    show?: boolean;
-    style?: CSSProperties;
-    class?: String;
-    onClick?: (e: MouseEvent) => any
+type Prop = {
+  type: IconType;
+  onClick?: (e?: MouseEvent) => any
 }
 
-const {type, style, class: class_, onClick} = defineProps<Prop>();
-
-const className = `icon ${typeof class_ === 'string' ? class_ : ''}`;
+defineProps<Prop>();
+defineEmits<{
+  (e: 'click', val?: MouseEvent): void
+}>();
 </script>
 
 <style lang='scss'>
-  .icon {
-    height: 100%;
-    cursor: pointer;
-  }
+.icon {
+  height: 100%;
+  cursor: pointer;
+}
 </style>

@@ -17,8 +17,14 @@ html, body {
 
 * {
   &:focus {
-    outline: none;;
+    outline: none;
   }
+}
+
+button {
+  border: none;
+  padding: 0;
+  background-color: transparent;
 }
 
 #root {

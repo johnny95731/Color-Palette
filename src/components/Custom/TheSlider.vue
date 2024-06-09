@@ -1,39 +1,47 @@
 <template>
-<div :class="$style.sliderWrapper">
-  <div :class="$style.tracker" ref="trackerRef" tabindex="0"
-    :style="{
-      background: trackerBackground,
-    }"
-    @mousedown="handleDrag"
-    @touchstart="handleDrag"
-    @keydown="handleKeyDown"
-  >
-    <template v-if="showRange">
-      <span :class="$style.limit">{{min}}</span>
-      <span :class="$style.limit">{{max}}</span>
-    </template>
-    <div :class="$style.point"
+  <div :class="$style.sliderWrapper">
+    <div
+      :class="$style.tracker"
+      ref="trackerRef"
+      tabindex="0"
       :style="{
-        left: `${pos}px`,
-        background: pointBackground,
+        background: trackerBackground,
       }"
+      @mousedown="handleDrag"
+      @touchstart="handleDrag"
+      @keydown="handleKeyDown"
     >
-      <div v-if="showVal"
-        :class="$style.tooltip" ref="tooltipRef"
+      <template v-if="showRange">
+        <span :class="$style.limit">{{ min }}</span>
+        <span :class="$style.limit">{{ max }}</span>
+      </template>
+      <div
+        :class="$style.point"
         :style="{
-          display: isDragging ? 'block' : '',
+          left: `${pos}px`,
+          background: pointBackground,
         }"
-      >{{
-        currentVal
-      }}</div>
+      >
+        <div
+          v-if="showVal"
+          :class="$style.tooltip"
+          ref="tooltipRef"
+          :style="{
+            display: isDragging ? 'block' : '',
+          }"
+        >
+          {{
+            currentVal
+          }}
+        </div>
+      </div>
     </div>
   </div>
-</div>
 </template>
 
 <script setup lang="ts">
-import {onMounted, watchEffect, ref, useCssModule} from 'vue';
-import {clip, round, rangeMapping} from '@/utils/helpers';
+import { onMounted, watchEffect, ref, useCssModule } from 'vue';
+import { clip, round, rangeMapping } from '@/utils/helpers';
 
 type Props = {
   min: number;
@@ -51,6 +59,7 @@ type Props = {
 const props = withDefaults(defineProps<Props>(), {
   min: 0,
   max: 100,
+  defaultValue: undefined,
   digit: 3,
   showRange: true,
   showVal: true,
@@ -67,11 +76,11 @@ const isDragging = ref<boolean>(false);
 
 const currentVal = ref<number>((() => {
   const val = props.defaultValue !== undefined ?
-  props.defaultValue :
-      (props.value !== undefined ?
-          props.value :
-          (props.max + props.min) / 2
-      );
+    props.defaultValue :
+    (props.value !== undefined ?
+      props.value :
+      (props.max + props.min) / 2
+    );
   return clip(val, props.min, props.max);
 })());
 const pos = ref<number>(pointRadius);
@@ -87,8 +96,8 @@ function updateValue(newVal: number, newPos?: number) {
     const rect = trackerRef.value?.getBoundingClientRect() as DOMRect;
     if (!rect) return;
     newPos = round(rangeMapping(
-        newVal, props.min, props.max,
-        pointRadius, rect.width - pointRadius,
+      newVal, props.min, props.max,
+      pointRadius, rect.width - pointRadius,
     ));
   }
   pos.value = newPos as number;
@@ -102,12 +111,12 @@ onMounted(() => {
 // Handle prop `value`, `min`, and `max` changed.
 watchEffect(() => {
   const newVal = round(
-      clip(
-        props.value !== undefined ? props.value : currentVal.value,
-        props.min,
-        props.max,
-      ),
-      props.digit,
+    clip(
+      props.value !== undefined ? props.value : currentVal.value,
+      props.min,
+      props.max,
+    ),
+    props.digit,
   );
   if (newVal === currentVal.value) return;
   updateValue(newVal);
@@ -117,8 +126,8 @@ watchEffect(() => {
 const increment = (num: number = 1) => {
   const unitVal = props.step ? props.step : 10**(-props.digit);
   const newVal = round(
-      clip(currentVal.value + num * unitVal, props.min, props.max),
-      props.digit,
+    clip(currentVal.value + num * unitVal, props.min, props.max),
+    props.digit,
   );
   updateValue(newVal);
 };
@@ -127,7 +136,7 @@ const increment = (num: number = 1) => {
 // -Mouse down / Touch start.
 // -Mouse move / Touch move.
 const handleDrag = (
-    e: MouseEvent | TouchEvent,
+  e: MouseEvent | TouchEvent,
 ) => {
   if (!e.type.endsWith('move')) { // touch start / mouse down
     (e.currentTarget as HTMLDivElement).focus();
@@ -141,17 +150,17 @@ const handleDrag = (
   );
   // Evaluate value.
   const pointPos = clip(
-      clientX - rect.left, pointRadius, rect.width - pointRadius,
+    clientX - rect.left, pointRadius, rect.width - pointRadius,
   );
   const valBias = rangeMapping(
-      pointPos, pointRadius, rect.width - pointRadius,
-      0, props.max - props.min,
+    pointPos, pointRadius, rect.width - pointRadius,
+    0, props.max - props.min,
   );
   let val: number;
   if (props.step) {
     val = round(
-        props.min + Math.floor(valBias / props.step) * props.step,
-        props.digit,
+      props.min + Math.floor(valBias / props.step) * props.step,
+      props.digit,
     );
   } else val = round(props.min + valBias, props.digit);
   updateValue(val, pointPos);

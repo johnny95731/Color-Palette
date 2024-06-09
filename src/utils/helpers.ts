@@ -1,5 +1,3 @@
-import NAMED_COLORS from './named-color.json';
-
 /**
  * The modulo function. Equivalent to
  *   `let a = n % m;
@@ -19,6 +17,7 @@ export const mod = (n: number, m: number): number => {
  * @return Percentage number.
  */
 export const round = (num: number, digits: number = 0): number => {
+  if (!digits) return Math.round(num);
   return Math.round(10**(digits) * num) / 10**(digits);
 };
 
@@ -54,8 +53,8 @@ export const clip = (num: number, min?: number, max?: number): number => {
  * @param newMax Maximum of new range.
  */
 export const rangeMapping = (
-    val: number, min: number, max: number,
-    newMin: number, newMax: number,
+  val: number, min: number, max: number,
+  newMin: number, newMax: number,
 ) => {
   const ratio = clip((val - min) / (max - min), 0, 1);
   return newMin + ratio * (newMax - newMin);
@@ -87,7 +86,7 @@ export const hasSameKeys = (obj1: object, obj2: object): boolean => {
     const item1 = typeof obj1[key] === 'object' ? obj1[key] : {};
     // @ts-expect-error Already deal `undefined` case.
     const item2 = typeof obj2[key] === 'object' ? obj2[key] : {};
-    if (!hasSameKeys(item1, item2)) false;
+    if (!hasSameKeys(item1, item2)) return false;
   }
   return true;
 };
@@ -96,7 +95,7 @@ export const hasSameKeys = (obj1: object, obj2: object): boolean => {
  * Evaluate length that are divided evenly by `num`.
  * @param num Total number.
  */
-export const evalLength = (num: number): string => {
+export const equallyLength = (num: number): string => {
   return `${toPercent(1 / num, 2)}%`;
 };
 
@@ -117,28 +116,6 @@ export const capitalize = (text: string) => {
     arr[i] = `${str[0].toUpperCase()}${str.slice(1)}`;
   });
   return words.join(' ');
-};
-
-/**
- * Get closet name of css named color. The distance is evaluate by L_1 norm.
- * @param rgb
- * @returns {keyof typeof NAMED_COLORS}
- */
-export const getClosestName = (rgb: number[]) => {
-  let name: string = '';
-  let minDist = Infinity;
-  let dist: number;
-  for (const [key, vals] of Object.entries(NAMED_COLORS)) {
-    dist = 0;
-    for (let i = 0; i < 3; i++) {
-      dist += Math.abs(rgb[i] - vals[i]);
-    }
-    if (dist < minDist) {
-      name = key;
-      minDist = dist;
-    }
-  }
-  return name;
 };
 
 export const identity = <T>(x: T[]): T[] => Array.from(x);
@@ -170,77 +147,4 @@ export const elementwiseMean = (arr1: number[], arr2: number[]): number[] => {
     newColor[i] = 0.5 * (arr1[i] + arr2[i]);
   }
   return newColor;
-};
-
-// Events
-export const preventDefault = (e: MouseEvent) => {
-  e.preventDefault();
-  return false;
-};
-/**
- * Remove non-hex text and add '#' to first word.
- * @param e Triggered mouse event.
- */
-export const hexTextEdited = (e: Event): void => {
-  const textInput = e.currentTarget as HTMLInputElement;
-  let text = (textInput.value).toUpperCase();
-  text = text.replace(/[^A-F0-9]/g, '');
-  textInput.value = `#${text}`;
-};
-/**
- * Copy Hex text to clipboard (excludes '#').
- * @param e Triggered mouse event.
- */
-export const copyHex = (e: MouseEvent): void => {
-  const target = e.currentTarget as HTMLElement;
-  if (!target) return;
-  const text = target.innerText;
-  const brIdx = text.indexOf('\n'); // index of break.
-  const start = text.startsWith('#') ? 1 : 0;
-  let hex: string;
-  if (brIdx > -1) {
-    hex = text.slice(start, brIdx);
-  } else {
-    hex = text.slice(start);
-  }
-  try {
-    navigator.clipboard.writeText(hex);
-  } catch (err) {
-    console.error('copy hex:', err);
-  }
-};
-
-export const stopPropagation = (e: Event) => e.stopPropagation();
-
-export const showPopupMenu = (
-    e: MouseEvent | FocusEvent,
-) => {
-  const target = e.currentTarget as HTMLElement;
-  const content = target.lastChild as HTMLElement;
-  if ((e as FocusEvent).type === 'blur') {
-    content.style.maxHeight = '';
-    return;
-  }
-  /**
-   * For small size device, menu has 2 layers. The outer mune content contains
-   * menu (inner menu) and non-menu (button). And both layers' menu connet to
-   * this function. Click outer menu content has following 3 cases.
-   * 1. Click non-menu: target === (outer menu). Trigger button event and close
-   *    outer content.
-   * In case 2 and 3, target === (inner menu).
-   * 2. Click inner menu: content === (inner menu content). Hence, stop
-   *    propagation to outer menu and open inner menu content.
-   * 3. Click inner menu content: (!content.contains(e.target) === false).
-   *    Hence, do propagation => close outer menu content.
-   */
-  if (!content.contains(e.target as Node)) {
-    e.stopPropagation();
-  }
-  const height = content.style.maxHeight;
-  if (height === '') {
-    content.style.maxHeight = '100vh';
-  } else {
-    content.style.maxHeight = '';
-    target.blur();
-  }
 };

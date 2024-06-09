@@ -5,16 +5,20 @@
   />
   <ThePalette />
   <!-- Mask for  -->
-  <div id="mask"
-    @click="handleClickMask"
+  <div
+    id="overlay"
     :style="{
-      display: isMasking ? undefined : 'none',
+      display: isShowOverlay ? undefined : 'none',
+      backgroundColor: pltState.isEditing ? 'transparent' : undefined,
     }"
+    @click="handleClickMask"
   />
-  <SettingDialog v-if="isSettingsShowing"
+  <SettingDialog
+    v-if="isSettingsShowing"
     @show-settings="showSettings"
   />
-  <FavOffcanvas :style="{
+  <FavOffcanvas
+    :style="{
       transform: isFavShowing ? 'translateX(-100%)' : '',
     }"
     @fav-showing="showFavOffcanvas"
@@ -22,7 +26,7 @@
 </template>
 
 <script setup lang='ts'>
-import {provide, ref, watchEffect, computed} from 'vue';
+import { provide, ref, watchEffect, computed } from 'vue';
 import TheHeader from './components/Header/TheHeader.vue';
 import ThePalette from './components/Palette/ThePalette.vue';
 import SettingDialog from './components/SettingDialog/SettingDialog.vue';
@@ -34,51 +38,60 @@ import mediaContent from './features/useMedia.ts';
 // Display / Hide fav-offcanvas
 const isSettingsShowing = ref(false);
 const isFavShowing = ref(false);
-const isMasking = ref(false);
+const isShowOverlay = ref(false);
+
+const pltState = usePltStore();
+const isDuringEvent = computed(() => {
+  return pltState.isEditing || pltState.isPending || isShowOverlay.value;
+});
+
+watchEffect(() => {
+  isShowOverlay.value = pltState.isEditing;
+});
 
 const handleClickMask = () => {
+  isShowOverlay.value = false;
+  if (pltState.isEditing) {
+    pltState.setEditingIdx();
+    return;
+  }
+  pltState.setIsAdjustingPlt('cancel');
   isSettingsShowing.value = false;
-  pltState.setPltIsEditing('cancel');
   isFavShowing.value = false;
-  isMasking.value = false;
 };
 const showSettings = () => {
   const newVal = !isSettingsShowing.value;
   isSettingsShowing.value = newVal;
-  isMasking.value = newVal;
+  isShowOverlay.value = newVal;
+  pltState.setIsAdjustingPlt('cancel');
 };
 const showFavOffcanvas = () => {
   const newVal = !isFavShowing.value;
   isFavShowing.value = newVal;
-  isMasking.value = newVal;
+  isShowOverlay.value = newVal;
 };
 
 provide('media', mediaContent);
 
 // Connect hotkey.
-const pltState = usePltStore();
-const someCardIsEditing = computed(() => {
-  return pltState.cards.some((card) => card.isEditing) || pltState.isPending;
-});
 watchEffect((cleanup) => {
   const body = document.body;
   const keyDownEvent = (e: KeyboardEvent) => {
     // Prevent trigger hotkey/shortcut when editing card.
-    if (someCardIsEditing.value) return;
-
+    if (isDuringEvent.value) return;
     switch (e.key.toLowerCase()) {
-      case ' ':
-        pltState.refreshCard(-1);
-        break;
-      case 'g':
-        pltState.sortCards('gray');
-        break;
-      case 'r':
-        pltState.sortCards('random');
-        break;
-      case 'i':
-        pltState.sortCards('inversion');
-        break;
+    case ' ':
+      pltState.refreshCard(-1);
+      break;
+    case 'g':
+      pltState.sortCards('gray');
+      break;
+    case 'r':
+      pltState.sortCards('random');
+      break;
+    case 'i':
+      pltState.sortCards('inversion');
+      break;
     }
   };
   body.addEventListener('keydown', keyDownEvent);
@@ -86,9 +99,8 @@ watchEffect((cleanup) => {
 });
 </script>
 
-
 <style lang='scss'>
-#mask {
+#overlay {
   position: fixed;
   top: 0;
   left: 0;

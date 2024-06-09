@@ -1,3 +1,4 @@
+
 .cardContainer {
   position: absolute;
   height: 100%;
@@ -10,11 +11,23 @@
   &:hover .toolContainer {
     display: block;
   }
+  &.first {
+    border-left: none !important;
+  }
+  &.last {
+    border-right: none !important;
+  }
   @include small {
     display: flex;
     align-items: center;
     border-style: solid none;
     transition-property: top, height, background-color;
+    &.first {
+      border-top: none !important;
+    }
+    &.last {
+      border-bottom: none !important;
+    }
   }
 }
 
@@ -92,7 +105,6 @@
   position: relative;
   left: 50%;
   transform: translateX(-50%);
-  width: min-content;
   .icon {
     position: absolute;
     top: 50%;
@@ -111,17 +123,18 @@
   @include textSize(var(--font-subheading) - 4px, 4px, var(--font-subheading));
 }
 
-.rgbText {
+.detailText {
   @extend %textPosition;
   @include textSize(calc(var(--font-sm) - 3px), 3px, var(--font-sm));
   margin-top: 4px;
+  text-wrap: nowrap;
 }
 
-.editing {
+.editor {
   // position
   @extend %horizontalCenter;
   top: 63%;
-  z-index: 1;
+  z-index: 999;
   // shape
   width: 150px;
   padding: 5px 10px;
@@ -129,9 +142,11 @@
   box-sizing: border-box;
 
   background-color: $color1;
+  >* {
+    width: 100%;
+  }
   >div:first-of-type {
     height: 10px;
-    width: 100%;
     border-radius: $radius-lg;
     margin-bottom: 7px;
   }
@@ -148,9 +163,30 @@
   }
 }
 
+.nameSelectTitle {
+  width: 100%;
+}
+
+.nameSelectContent {
+  >menu {
+    padding: 8px 0;
+  }
+  button {
+    width: 100%;
+    text-align: start !important;
+    text-overflow: ellipsis;
+    >span {
+      display: inline-block;
+      height: 12px;
+      margin-right: 4px;
+      aspect-ratio: 1 / 1;
+      outline: 1px solid black;
+    }
+  }
+}
+
 .hexInput {
   display: inline;
-  width: 100%;
   border-radius: $radius-md;
   border-width: 1px;
   padding: 0px 8px;
@@ -168,7 +204,6 @@
 
 .sliderContainer {
   display: inline-block;
-  width: 100%;
   font-size: var(--font-sm);
   >div {
     width: 100%;

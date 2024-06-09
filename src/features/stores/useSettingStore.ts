@@ -1,6 +1,6 @@
-import {defineStore} from 'pinia';
-import {hasSameKeys} from '@/utils/helpers';
-import type {BorderStyleType, TransitionType} from 'types/settingType.ts';
+import { defineStore } from 'pinia';
+import { hasSameKeys } from '@/utils/helpers';
+import type { BorderStyleType, TransitionType } from 'types/settingType.ts';
 
 
 type StateType = {

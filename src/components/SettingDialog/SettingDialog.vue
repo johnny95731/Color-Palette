@@ -1,79 +1,105 @@
 <template>
-  <div :class="$style.settingDialog" >
+  <div :class="$style.settingDialog">
     <header :class="$style.header">
       <h5>Settings</h5>
-      <TheIcon type="close" @Click="$emit('show-settings')"/>
+      <TheIcon
+        type="close"
+        @Click="$emit('show-settings')"
+      />
     </header>
     <div :class="$style.menubar">
-      <div v-for="(opt, i) in SETTINGS"
+      <div
+        v-for="(opt, i) in SETTINGS"
         :key="`setting-${opt}`"
         :style="page === i ? currentPageStyle : undefined"
         @click="pageChanged(i)"
-      >{{
-        opt
-      }}</div>
+      >
+        {{
+          opt
+        }}
+      </div>
     </div>
     <div :class="$style.content">
       <!-- Page 0: Card -->
       <template v-if="page === 0">
         <h6>Border</h6>
-        <label>Show</label>
+        <span>Show</span>
         <TheSwitch
           :defaultValue="showBorder"
           @click="handleSwitchStyle"
         />
-          <template v-if="showBorder">
-            <label :class="$style.subOption">┠ Width(px)</label>
-            <TheSlider
-              :min="1" :max="BORDER_MAX_WIDTH" :step="1" :digit="0"
-              :value="currentWidth"
-              @change="handleWidth($event)"
-            />
-            <label :class="$style.subOption">┖ Color</label>
-            <TheSelect
-              :class="$style.subOption"
-              :options="BORDER_COLOR"
-              @select="handleSelectColor($event)"
-            />
-          </template>
+        <template v-if="showBorder">
+          <span :class="$style.subOption">┠ Width(px)</span>
+          <TheSlider
+            :min="1"
+            :max="BORDER_MAX_WIDTH"
+            :step="1"
+            :digit="0"
+            :value="currentWidth"
+            @change="handleWidth($event)"
+          />
+          <span :class="$style.subOption">┖ Color</span>
+          <SelectMenu
+            :class="$style.subOption"
+            :options="BORDER_COLOR"
+            @update:model-value="handleSelectColor($event)"
+          />
+        </template>
         <h6>Transition</h6>
-        <label>Position(ms)</label>
+        <span>Position(ms)</span>
         <TheSlider
-          :min="0" :max="TRANSITION_MAX_POS" :digit="0" :step="50"
+          :min="0"
+          :max="TRANSITION_MAX_POS"
+          :digit="0"
+          :step="50"
           :value="posTime"
           @change="handleTransitionChanged($event, 'pos')"
         />
-        <label>Color(ms)</label>
-        <TheSlider :min="0" :max="TRANSITION_MAX_COLOR" :digit="0" :step="50"
+        <span>Color(ms)</span>
+        <TheSlider
+          :min="0"
+          :max="TRANSITION_MAX_COLOR"
+          :digit="0"
+          :step="50"
           :value="colorTime"
           @change="handleTransitionChanged($event, 'color')"
         />
       </template>
       <!-- Page 1: Contrast -->
       <template v-else-if="page === 1">
-        <label>Method</label>
-        <TheSelect
-          :options="CONTRAST_METHODS" :value="contrastArgs.method"
-          @select="contrastChanged({
+        <span>Method</span>
+        <SelectMenu
+          :options="CONTRAST_METHODS"
+          :value="contrastArgs.method"
+          @update:model-value="contrastChanged({
             method: $event as ContrastMethods,
           })"
         />
-        <label>{{
+        <span>{{
           contrastArgs.method === "gamma" ? "gamma" : "scale"
-        }}</label>
-        <TheSlider :min="0" :max="contrastCoeffMax" :value="contrastArgs.coeff"
+        }}</span>
+        <TheSlider
+          :min="0"
+          :max="contrastCoeffMax"
+          :value="contrastArgs.coeff"
           @change="contrastChanged({
             coeff: $event
           })"
         />
         <div :class="$style.buttons">
-          <button type="button" :class="$style.applyBtn"
+          <button
+            type="button"
+            :class="$style.applyBtn"
             @click="contrastBtnEvent('start')"
-          >Apply
+          >
+            Apply
           </button>
-          <button type="button" :class="$style.resetBtn"
+          <button
+            type="button"
+            :class="$style.resetBtn"
             @click="contrastBtnEvent('reset')"
-          >Reset
+          >
+            Reset
           </button>
         </div>
       </template>
@@ -82,9 +108,9 @@
 </template>
 
 <script setup lang="ts" scoped>
-import {useCssModule, ref, reactive} from 'vue';
+import { useCssModule, ref, reactive } from 'vue';
 import TheIcon from '../TheIcon.vue';
-import TheSelect from '../Custom/TheSelect.vue';
+import SelectMenu from '../Custom/SelectMenu.vue';
 import TheSwitch from '../Custom/TheSwitch.vue';
 import TheSlider from '../Custom/TheSlider.vue';
 import {
@@ -95,9 +121,13 @@ import {
 import usePltStore from 'stores/usePltStore';
 import useSettingStore from 'stores/useSettingStore';
 // Types
-import type {CSSProperties} from 'vue';
-import type {TransitionType} from 'types/settingType';
-import type {ContrastMethods} from 'types/pltType';
+import type { CSSProperties } from 'vue';
+import type { TransitionType } from 'types/settingType';
+import type { ContrastMethods } from 'types/pltType';
+
+defineEmits<{
+  (e: 'show-settings'): void
+}>();
 
 const pltState = usePltStore();
 const settingsState = useSettingStore();
@@ -127,9 +157,9 @@ const page = ref(0);
 const pageChanged = (i: number) => {
   // Page 1 is contrast.
   if (i === 1) {
-    pltState.setPltIsEditing('start');
+    pltState.setIsAdjustingPlt('start');
     contrastChanged(contrastArgs);
-  } else if (page.value === 1) pltState.setPltIsEditing('cancel');
+  } else if (page.value === 1) pltState.setIsAdjustingPlt('cancel');
   page.value = i;
 };
 
@@ -154,7 +184,7 @@ const handleSelectColor = (val: string) => {
   settingsState.setBorder('color', val);
 };
 const handleTransitionChanged = (
-    val: number, attr: keyof TransitionType,
+  val: number, attr: keyof TransitionType,
 ) => {
   if (attr === 'pos') posTime.value = val;
   else colorTime.value = val;
@@ -162,13 +192,13 @@ const handleTransitionChanged = (
 };
 // page 1: Contrast
 const contrastBtnEvent = (ev: 'start' | 'reset') => {
-  pltState.setPltIsEditing(ev);
-  contrastChanged({coeff: 1});
+  pltState.setIsAdjustingPlt(ev);
+  contrastChanged({ coeff: 1 });
 };
 const contrastCoeffMax = (
   contrastArgs.method === 'gamma' ?
-      GAMMA_MAX :
-      MULTIPLICATION_MAX
+    GAMMA_MAX :
+    MULTIPLICATION_MAX
 );
 </script>
 
@@ -207,8 +237,7 @@ $header-height: 34px;
 
     user-select: none;
   }
-  .icon {
-    height: 21px;
+  :global(.icon) {
     margin: 6px;
     // shape
     height: 13px;
@@ -217,7 +246,7 @@ $header-height: 34px;
 
     filter: invert(1);
     &:hover {
-      filter: invert(0);
+      filter: none;
       background-color: $color3;
     }
   }
@@ -269,7 +298,7 @@ $header-height: 34px;
   box-sizing: border-box;
 
   background-color: $color1;
-  >label:not([class]), >div:not([class]), >input:not([class]) {
+  >label, >div, >input {
     max-height: min-content;
     font-size: var(--font-body);
   }

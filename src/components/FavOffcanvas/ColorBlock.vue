@@ -1,30 +1,35 @@
 <template>
-<li class="colorBlock"
-  :style="{
-    backgroundColor: props.hex,
-    color: isLight ? '#000' : '#fff',
-  }"
->
-  <div @click="copyHex">
-    <TheIcon type="copy"
-      :style="iconFilterStyle"
-    />{{
-      props.hex
-    }}
-  </div>
-  <span class="delWrapper">
-    <TheIcon type="del" @click="delFavColor" />
-  </span>
-</li>
+  <li
+    class="colorBlock"
+    :style="{
+      backgroundColor: props.hex,
+      color: isLight ? '#000' : '#fff',
+    }"
+  >
+    <div @click="copyHex">
+      <TheIcon
+        type="copy"
+        :style="iconFilterStyle"
+      />{{
+        props.hex
+      }}
+    </div>
+    <span class="delWrapper">
+      <TheIcon
+        type="del"
+        @click="delFavColor"
+      />
+    </span>
+  </li>
 </template>
 
 <script lang="ts" setup>
-import {computed} from 'vue';
+import { computed } from 'vue';
 import TheIcon from '../TheIcon.vue';
-import {hex2rgb, rgb2gray} from '@/utils/colors';
-import {copyHex} from '@/utils/helpers';
+import { hex2rgb, rgb2gray } from '@/utils/colors';
+import { copyHex } from '@/utils/eventHandler';
 import useFavStore from '@/features/stores/useFavStore';
-import type {CSSProperties} from 'vue';
+import type { CSSProperties } from 'vue';
 
 type Props = {
   hex: string;
@@ -35,7 +40,7 @@ const isLight = computed(() => {
   return rgb2gray(hex2rgb(props.hex) as number[]) > 127.5;
 });
 const iconFilterStyle = computed<CSSProperties>(() => (
-  {filter: isLight.value ? '' : 'invert(1)'}
+  { filter: isLight.value ? '' : 'invert(1)' }
 ));
 
 const favState = useFavStore();
