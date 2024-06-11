@@ -15,7 +15,7 @@
       :aria-expanded="isOpened || undefined"
     >
       <div>
-        {{ modelValue ?? currentVal }}
+        {{ showValue ? (modelValue ?? currentVal) : (title ?? 'menu') }}
       </div>
       <img
         :src="TriangleUrl"
@@ -60,10 +60,12 @@ import { CURRENT_OPTION_WEIGHT } from '@/utils/constants';
 
 const styles = useCssModule();
 type Props = {
-  isMobile?: boolean
-  options: readonly string[];
-  titleClass?: string;
-  contentClass?: string;
+  isMobile?: boolean,
+  options: readonly string[],
+  title?: string,
+  showValue?: boolean,
+  titleClass?: string,
+  contentClass?: string,
 }
 
 const props = defineProps<Props>();

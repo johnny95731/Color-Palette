@@ -1,6 +1,7 @@
 import {fileURLToPath, URL} from 'node:url';
 import {defineConfig} from 'vite';
 import vue from '@vitejs/plugin-vue';
+import autoprefixer from 'autoprefixer'
 
 const metaUrl = import.meta.url;
 // https://vitejs.dev/config/
@@ -33,6 +34,11 @@ export default defineConfig({
     },
   },
   css: {
+    postcss: {
+      plugins: [
+        autoprefixer({}) // add options if needed
+      ],
+    },
     preprocessorOptions: {
       scss: {
         additionalData: '@import "@/assets/commons.scss";',

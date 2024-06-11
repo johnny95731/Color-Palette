@@ -40,17 +40,16 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, watchEffect, inject, computed, useCssModule } from 'vue';
+import { ref, watchEffect, computed, useCssModule } from 'vue';
 import DropdownMenu from '../Custom/DropdownMenu.vue';
 import { preventDefault } from '@/utils/eventHandler.ts';
 // Stores / Contexts
+import media from '@/features/useMedia';
 // Types
-import type { MediaContextType } from 'types/mediaType.ts';
 import HeaderBtns from './HeaderBtns.vue';
 
 const $style = useCssModule();
 
-const media = inject('media') as MediaContextType;
 defineEmits<{
   (e: 'show-fav'): void,
   (e: 'show-settings'): void

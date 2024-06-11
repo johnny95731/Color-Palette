@@ -47,7 +47,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, inject, ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 // Components
 import TheIcon from '../TheIcon.vue';
 import ToolBar from './ToolBar.vue';
@@ -58,10 +58,10 @@ import { equallyLength, evalPosition } from '@/utils/helpers';
 import { copyHex } from '@/utils/eventHandler';
 // Stores
 import usePltStore from '@/features/stores/usePltStore';
+import media from '@/features/useMedia';
 // Types
 import type { CSSProperties } from 'vue';
 import type { CardType } from '@/features/types/pltType';
-import type { MediaContextType } from '@/features/types/mediaType';
 
 type Props = {
   cardIdx: number;
@@ -80,7 +80,6 @@ defineEmits<{
 }>();
 
 const pltState = usePltStore();
-const media = inject('media') as MediaContextType;
 
 const isLight = computed(() => {
   const { inverter } = pltState.spaceInfos;

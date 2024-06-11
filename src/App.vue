@@ -11,18 +11,19 @@
       display: isShowOverlay ? undefined : 'none',
       backgroundColor: pltState.isEditing ? 'transparent' : undefined,
     }"
-    @click="handleClickMask"
-  />
-  <SettingDialog
-    v-if="isSettingsShowing"
-    @show-settings="showSettings"
-  />
-  <FavOffcanvas
-    :style="{
-      transform: isFavShowing ? 'translateX(-100%)' : '',
-    }"
-    @fav-showing="showFavOffcanvas"
-  />
+    @click="$event.currentTarget === $event.target && handleOverlayChanged()"
+  >
+    <SettingDialog
+      v-if="isSettingsShowing"
+      @show-settings="showSettings"
+    />
+    <FavOffcanvas
+      :style="{
+        transform: isFavShowing ? 'translateX(-100%)' : '',
+      }"
+      @fav-showing="showFavOffcanvas"
+    />
+  </div>
 </template>
 
 <script setup lang='ts'>
@@ -33,7 +34,7 @@ import SettingDialog from './components/SettingDialog/SettingDialog.vue';
 import FavOffcanvas from './components/FavOffcanvas/FavOffcanvas.vue';
 // Store and Context
 import usePltStore from './features/stores/usePltStore';
-import mediaContent from './features/useMedia.ts';
+import media from './features/useMedia.ts';
 
 // Display / Hide fav-offcanvas
 const isSettingsShowing = ref(false);
@@ -41,15 +42,15 @@ const isFavShowing = ref(false);
 const isShowOverlay = ref(false);
 
 const pltState = usePltStore();
-const isDuringEvent = computed(() => {
-  return pltState.isEditing || pltState.isPending || isShowOverlay.value;
+const isCardPending = computed(() => {
+  return pltState.isEditing || pltState.isPending;
 });
 
 watchEffect(() => {
   isShowOverlay.value = pltState.isEditing;
 });
 
-const handleClickMask = () => {
+const handleOverlayChanged = () => {
   isShowOverlay.value = false;
   if (pltState.isEditing) {
     pltState.setEditingIdx();
@@ -71,15 +72,19 @@ const showFavOffcanvas = () => {
   isShowOverlay.value = newVal;
 };
 
-provide('media', mediaContent);
+provide('media', media);
 
 // Connect hotkey.
 watchEffect((cleanup) => {
   const body = document.body;
   const keyDownEvent = (e: KeyboardEvent) => {
-    // Prevent trigger hotkey/shortcut when editing card.
-    if (isDuringEvent.value) return;
-    switch (e.key.toLowerCase()) {
+    const key = e.key.toLowerCase();
+    if (key === 'escape' && !isCardPending.value && isShowOverlay.value) {
+      handleOverlayChanged();
+    }
+    // Prevent trigger hotkey when editing or add/remove/move (transition) card.
+    if (isCardPending.value || isShowOverlay.value) return;
+    switch (key) {
     case ' ':
       pltState.refreshCard(-1);
       break;

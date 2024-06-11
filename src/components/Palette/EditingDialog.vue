@@ -63,7 +63,7 @@
 </template>
 
 <script setup lang='ts'>
-import { computed, inject, watchEffect, ref, watch } from 'vue';
+import { computed, watchEffect, ref, watch } from 'vue';
 import TheSlider from '../Custom/TheSlider.vue';
 import SelectMenu from '../Custom/SelectMenu.vue';
 // Utils
@@ -73,9 +73,9 @@ import {
 } from '@/utils/colors';
 // Stores
 import usePltStore from '@/features/stores/usePltStore';
+import media from '@/features/useMedia';
 // Types
 import type { CardType, ColorSpacesType } from '@/features/types/pltType';
-import type { MediaContextType } from '@/features/types/mediaType.ts';
 
 type Props = {
   cardIdx: number;
@@ -146,7 +146,6 @@ const handleSliderChange = function(newVal: number, idx: number) {
 };
 
 // Check container is out of window or not.
-const media = inject('media') as MediaContextType;
 watch(
   () => media.windowSize,
   () => {

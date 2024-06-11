@@ -1,5 +1,5 @@
 import {HSL_MAXES} from './constants.ts';
-import {getSpaceTrans} from './colors.ts';
+import {getSpaceInfos} from './colors.ts';
 import {elementwiseMean} from './helpers.ts';
 import type {Blender} from 'types/utilTypes.ts';
 import type {ColorSpacesType} from 'types/pltType.ts';
@@ -14,7 +14,7 @@ import type {ColorSpacesType} from 'types/pltType.ts';
 const meanBlend = (
     color1: number[], color2: number[], colorSpace: ColorSpacesType,
 ): number[] => {
-  const {converter, inverter} = getSpaceTrans(colorSpace);
+  const {converter, inverter} = getSpaceInfos(colorSpace);
   const newColor = elementwiseMean(
       converter(color1), converter(color2),
   );
@@ -54,7 +54,7 @@ const blendNGamma = (
   const sacleCoeff = HSL_MAXES.slice(1).map(
       (val) => Math.pow(val, (1 - gamma)));
   const mean = elementwiseMean(color1, color2);
-  const {converter, inverter} = getSpaceTrans('hsl');
+  const {converter, inverter} = getSpaceInfos('hsl');
   const [hue, sat, lum] = converter(mean);
   const newSat = Math.pow(sat, gamma) * sacleCoeff[0];
   const newLum = Math.pow(lum, gamma) * sacleCoeff[1];

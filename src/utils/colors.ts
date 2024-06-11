@@ -392,84 +392,57 @@ export const isValidHex = (str: string): boolean => {
 };
 
 /**
- * Returns informations about color space which will be display under hex code
- * and be used in edit mode.
- * @param space Color space.
- * @return ColorSpaceInfo
+ * Return labels(name of channels), range, converter(from RGB to space),
+ * and inverter(to RGB)
  */
-export const getSpaceInfos = (space: ColorSpacesType): ColorSpaceInfos => {
+export const getSpaceInfos = (space: ColorSpacesType): ColorSpaceInfos & ColorSpaceTrans => {
   switch (space) {
   case 'hsl':
     return {
       labels: ['Hue', 'Saturation', 'Luminance'],
       range: [...HSL_MAXES],
-    };
-  case 'hsb': // hsb = hsv
-    return {
-      labels: ['Hue', 'Saturation', 'Brightness'],
-      range: [...HSB_MAXES],
-    };
-  case 'cmy':
-    return {
-      labels: ['Cyan', 'Magenta', 'Yellow'],
-      range: [CMY_MAXES, CMY_MAXES, CMY_MAXES],
-    };
-  case 'cmyk':
-    return {
-      labels: ['Cyan', 'Magenta', 'Yellow', 'Black'],
-      range: [CMYK_MAXES, CMYK_MAXES, CMYK_MAXES, CMYK_MAXES],
-    };
-  case 'xyz':
-    return {
-      labels: ['X', 'Y', 'Z'],
-      range: [XYZ_MAXES, XYZ_MAXES, XYZ_MAXES],
-    };
-  case 'lab':
-    return {
-      labels: ['L', 'a', 'b'],
-      range: JSON.parse(JSON.stringify(LAB_MAXES)),
-    };
-  default: // "rgb" and "name"
-    return {
-      labels: ['Red', 'Green', 'Blue'],
-      range: [RGB_MAXES, RGB_MAXES, RGB_MAXES],
-    };
-  }
-};
-export const getSpaceTrans = (space: ColorSpacesType): ColorSpaceTrans => {
-  switch (space) {
-  case 'hsl':
-    return {
       converter: rgb2hsl,
       inverter: hsl2rgb,
     };
   case 'hsb': // hsb = hsv
     return {
+      labels: ['Hue', 'Saturation', 'Brightness'],
+      range: [...HSB_MAXES],
       converter: rgb2hsb,
       inverter: hsb2rgb,
     };
   case 'cmy':
     return {
+      labels: ['Cyan', 'Magenta', 'Yellow'],
+      range: [CMY_MAXES, CMY_MAXES, CMY_MAXES],
       converter: rgb2cmy,
       inverter: cmy2rgb,
     };
   case 'cmyk':
     return {
+      labels: ['Cyan', 'Magenta', 'Yellow', 'Black'],
+      range: [CMYK_MAXES, CMYK_MAXES, CMYK_MAXES, CMYK_MAXES],
       converter: rgb2cmyk,
       inverter: cmyk2rgb,
     };
   case 'xyz':
     return {
+      labels: ['X', 'Y', 'Z'],
+      range: [XYZ_MAXES, XYZ_MAXES, XYZ_MAXES],
       converter: rgb2xyz,
       inverter: xyz2rgb,
     };
   case 'lab':
     return {
+      labels: ['L', 'a', 'b'],
+      range: JSON.parse(JSON.stringify(LAB_MAXES)),
       converter: rgb2lab,
       inverter: lab2rgb,
     };
   default: // "rgb" and "name"
     return {
+      labels: ['Red', 'Green', 'Blue'],
+      range: [RGB_MAXES, RGB_MAXES, RGB_MAXES],
       converter: identity,
       inverter: identity,
     };
@@ -496,7 +469,7 @@ export const randRgbGen = (): number[] => {
 export const gradientGen = (
   colors: number[], axis: number, space: ColorSpacesType,
 ) => {
-  const { inverter } = getSpaceTrans(space);
+  const { inverter } = getSpaceInfos(space);
   const { range } = getSpaceInfos(space);
   const gradLength = Math.ceil(
     (

@@ -1,5 +1,5 @@
 <template>
-  <div :class="$style.main">
+  <main id="main">
     <TheCard
       v-for="(card, i) in pltState.cards"
       :key="`card${i}`"
@@ -31,12 +31,12 @@
         </div>
       </div>
     </div>
-  </div>
+  </main>
 </template>
 
 <script lang="ts" setup>
 import {
-  ref, watchEffect, inject, computed, useCssModule, reactive, watch,
+  ref, watchEffect, computed, useCssModule, reactive, watch,
 } from 'vue';
 import TheIcon from '../TheIcon.vue';
 import TheCard from './TheCard.vue';
@@ -47,9 +47,9 @@ import { blenders } from '@/utils/blend';
 // Stores / Contexts
 import usePltStore from '@/features/stores/usePltStore';
 import useSettingStore from '@/features/stores/useSettingStore';
+import media from '@/features/useMedia';
 // Types
 import type { CSSProperties } from 'vue';
-import type { MediaContextType } from '@/features/types/mediaType';
 
 type cardInstance = InstanceType<typeof TheCard>;
 
@@ -71,7 +71,6 @@ const cardRefs = ref<cardInstance[]>([]);
 
 const pltState = usePltStore();
 const settingsState = useSettingStore();
-const media = inject('media') as MediaContextType;
 
 const styleInSettings = computed<CSSProperties>(() => ({
   borderWidth: `${settingsState.border.width / 2}px`,
@@ -143,9 +142,6 @@ function setIsInTrans(idx: number, newVal: boolean) {
   newState[idx] = newVal;
   isInTrans.arr = newState;
 }
-// After transition end, some side effect will happen. This state is present
-// for checking the entire event and side effect is complete.
-const isEventEnd = ref(true);
 
 /**
  * Infomation that be used in some events like mouseup(dragging end), add a
@@ -196,7 +192,6 @@ const handleAddCard = (idx: number) => {
   // Trigger side effect when !isInTrans.some()
   Object.assign(isInTrans, { arr: Array.from({ length: pltState.numOfCards }, () => true) });
   pltState.setIsPending(true);
-  isEventEnd.value = false;
 };
 
 // Handle delete card.
@@ -208,10 +203,7 @@ const handleRemoveCard = (idx: number) => {
   if (!settingsState.transition.pos) { // no transition.
     pltState.delCard(idx);
     removeTransition();
-    setTimeout(() => (
-      resetTransition(pltState.numOfCards - 1),
-      50
-    ));
+    setTimeout(() => resetTransition(pltState.numOfCards - 1), 50);
     return;
   }
   const newSize = equallyLength(pltState.numOfCards - 1);
@@ -224,7 +216,6 @@ const handleRemoveCard = (idx: number) => {
   eventInfo.value = { event: 'remove', idx };
   Object.assign(isInTrans, { arr: Array.from({ length: pltState.numOfCards }, () => true) });
   pltState.setIsPending(true);
-  isEventEnd.value = false;
 };
 
 // Drag events start
@@ -256,7 +247,6 @@ const draggingCardEvent = computed(() => {
         setIsInTrans(cardIdx, true);
       }
       pltState.setIsPending(true);
-      isEventEnd.value = false;
       dragIdx.value = {
         draggingIdx: cardIdx,
         finalIdx: cardIdx,
@@ -316,17 +306,16 @@ const draggingCardEvent = computed(() => {
       if (idx === null) return;
       // Remove class.
       card_.$el.classList.remove($style.dragging);
+      eventInfo.value = { event: 'mouseup' };
       if (!settingsState.transition.pos) {
         removeTransition();
         pltState.resetOrder();
         resetPosition();
-        isEventEnd.value = true; // Trigger `resetTransition`;
         return;
       }
       // Dragging card move to target position.
       card_.setPos(cardAttrs.positions[finalOrder]);
       card_.setTransProperty('reset');
-      eventInfo.value = { event: 'mouseup' };
     },
   };
 });
@@ -370,13 +359,13 @@ watch(() => isInTrans.arr.some((val) => val),
     case 'mouseup':
       pltState.resetOrder();
       resetPosition();
+      break;
     }
     eventInfo.value = null;
-    isEventEnd.value = true;
   },
 );
-watch(() => isEventEnd.value, (newVal) => {
-  if (newVal) {
+watch(() => eventInfo.value, (newVal) => {
+  if (!newVal) {
     setTimeout(() => {
       resetTransition();
       pltState.setIsPending(false);
@@ -395,12 +384,12 @@ const insertStyle = computed(() => (
 </script>
 
 <style lang="scss" module>
-.main {
+:global(#main) {
   display: inline-block;
   position: relative;
   top: var(--header-height);
-  height: calc(100vh - var(--header-height));
-  width: 100vw;
+  height: calc(var(--app-height) - var(--header-height));
+  width: 100%;
 }
 
 .insertWrapper {

@@ -1,10 +1,7 @@
 import { defineStore } from 'pinia';
 // Utils
 import {
-  rgb2gray, rgb2hex, randRgbGen, hex2rgb, getSpaceTrans,
-  gammaCorrection,
-  scaling,
-  getSpaceInfos,
+  rgb2gray, rgb2hex, randRgbGen, hex2rgb, getSpaceInfos, gammaCorrection, scaling,
 } from '@/utils/colors.ts';
 import { shuffle } from '@/utils/helpers.ts';
 import {
@@ -24,7 +21,7 @@ import type { ColorSpaceInfos, ColorSpaceTrans } from '@/types/utilTypes.ts';
 export const newCard = (
   order: number, colorSpace: ColorSpacesType, rgb?: number[],
 ): CardType => {
-  const infos = getSpaceTrans(colorSpace);
+  const infos = getSpaceInfos(colorSpace);
   if (!rgb) rgb = randRgbGen();
   const color = infos.converter(rgb);
   const hex = rgb2hex(rgb);
@@ -91,7 +88,6 @@ const usePltStore = defineStore('plt', {
     },
     spaceInfos(): ColorSpaceTrans & ColorSpaceInfos {
       return {
-        ...getSpaceTrans(this.colorSpace),
         ...getSpaceInfos(this.colorSpace),
       };
     }

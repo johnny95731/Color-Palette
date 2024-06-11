@@ -19,18 +19,23 @@ const initialState: MediaContextType = {
   bound: [0, 1],
 };
 
-const mediaContent = reactive<MediaContextType>(initialState);
+const media = reactive<MediaContextType>(initialState);
 
 const body = document.body;
 const handleWindowResize = () => {
-  const windowSize: [number, number] = [body.clientHeight, body.clientWidth];
+  const windowSize: [number, number] = [body.offsetHeight, body.clientWidth];
   const isSmall = windowSize[1] <= maxSmallSize;
-  const headerHeight = Number( // Get var(--headerHeight) in css.
+  const headerHeight = Number( // Get var(--header-height) in css.
     getComputedStyle(document.documentElement)
-      .getPropertyValue('--headerHeight')
+      .getPropertyValue('--header-height')
       .slice(0, -2),
   );
-  Object.assign(mediaContent, {
+  // Mobile browser 100vh including toolbar.
+  // window.innerHeight did not include toolbar.
+  document.documentElement.style
+    .setProperty('--app-height', `${window.innerHeight}px`);
+  // update
+  Object.assign(media, {
     windowSize,
     headerHeight,
     isSmall,
@@ -41,4 +46,4 @@ const handleWindowResize = () => {
 };
 window.addEventListener('resize', handleWindowResize);
 handleWindowResize();
-export default mediaContent;
+export default media;
