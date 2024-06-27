@@ -28,7 +28,14 @@
       :current-val="pltState.sortBy"
       :hotkeys="SORTING_ACTIONS.map((str) => str[0])"
       @click-item="pltState.sortCards($event as SortActionType)"
-    />
+    >
+      <template
+        v-for="val in SORTING_ACTIONS"
+        #[`item.${val}`]
+      >
+        {{ val + ` (${val[0]})` }}
+      </template>
+    </DropdownMenu>
   </li>
   <li>
     <DropdownMenu

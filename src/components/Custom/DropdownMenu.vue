@@ -40,14 +40,19 @@
       <menu
         :class="styles.menuContent"
       >
-        <slot name="items">
+        <slot
+          name="items"
+          items="menuItems"
+        >
           <li
             v-for="(item) in menuItems"
             :key="item.val"
             :style="item.style"
             @click="$emit('click-item', item.val)"
           >
-            {{ item.name }}
+            <slot :name="`item.${item.val}`">
+              {{ item.name }}
+            </slot>
           </li>
         </slot>
       </menu>

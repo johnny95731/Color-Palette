@@ -318,7 +318,7 @@ const cmy2rgb = (cmy: number[]): number[] => {
  */
 const cmyk2rgb = (cmyk: number[]): number[] => {
   const cmy = Array.from(
-    { length: 3 }, (_, i) => cmyk[i] + cmyk[3],
+    { length: 3 }, (_, i) => clip(cmyk[i] + cmyk[3], 0, CMY_MAXES),
   );
   return cmy2rgb(cmy);
 };
