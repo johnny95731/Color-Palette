@@ -1,33 +1,55 @@
 <template>
-  <div :class="$style.sliderWrapper">
+  <div
+    class="slider-wrapper"
+  >
+    <label
+      v-if="labelState && 'aria-label' in labelState"
+      :for="idForInput"
+    >{{ labelState['aria-label'] }}</label>
+    <input
+      v-bind="labelState"
+      :id="idForInput"
+      type="range"
+      :min="min"
+      :max="max"
+      :step="step"
+      :value="currentVal"
+      tabindex="-1"
+      @focusin="trackerRef?.focus()"
+    >
     <div
-      :class="$style.tracker"
+      v-bind="labelState"
       ref="trackerRef"
-      tabindex="0"
+      class="slider-tracker"
       :style="{
         background: trackerBackground,
       }"
+      tabindex="0"
+      role="slider"
+      :aria-valuemin="min"
+      :aria-valuemax="max"
+      :aria-valuenow="currentVal"
       @mousedown="handleDrag"
       @touchstart="handleDrag"
       @keydown="handleKeyDown"
     >
       <template v-if="showRange">
-        <span :class="$style.limit">{{ min }}</span>
-        <span :class="$style.limit">{{ max }}</span>
+        <span class="slider-limit-label">{{ min }}</span>
+        <span class="slider-limit-label">{{ max }}</span>
       </template>
       <div
-        :class="$style.point"
+        class="slider-thumb"
         :style="{
-          left: `${pos}px`,
-          background: pointBackground,
+          left: `${pos}%`,
+          background: thumbBackground,
         }"
       >
         <div
           v-if="showVal"
-          :class="$style.tooltip"
+          class="slider-tooltip"
           ref="tooltipRef"
           :style="{
-            display: isDragging ? 'block' : '',
+            display: isDragging ? 'block' : undefined,
           }"
         >
           {{
@@ -40,65 +62,113 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, watchEffect, ref, useCssModule } from 'vue';
-import { clip, round, rangeMapping } from '@/utils/helpers';
+import { onMounted, watch, ref, computed, onUnmounted, watchEffect } from 'vue';
+import { clip, round, rangeMapping, componentUniqueId, removeComponentId } from '@/utils/helpers';
 
 type Props = {
-  min: number;
-  max: number;
-  defaultValue?: number;
-  value?: number;
-  digit?: number;
+  inputId?: string,
+  label?: string,
+  // input attrs
+  min?: number;
+  max?: number;
   step?: number;
+
+  digit?: number;
   showRange?: boolean;
   showVal?: boolean;
   trackerBackground?: string;
-  pointBackground?: string;
-  onChange?: (val: number) => void;
+  thumbBackground?: string;
 }
 const props = withDefaults(defineProps<Props>(), {
   min: 0,
   max: 100,
-  defaultValue: undefined,
   digit: 3,
   showRange: true,
   showVal: true,
 });
-const $style = useCssModule();
 
-const emit = defineEmits(['change']);
-
-const pointRadius = Number($style['point-size'].slice(0, -2)) / 2;
+const emit = defineEmits<{
+  'change': [newVal: number]
+}>();
 
 const trackerRef = ref<HTMLDivElement>();
 const tooltipRef = ref<HTMLDivElement>();
 const isDragging = ref<boolean>(false);
 
+// Handle form element
+/**
+ * Create Id for input
+ */
+const idForInput = computed<string>(() =>
+  props.inputId ?? componentUniqueId('slider')
+);
+onUnmounted(
+  () => removeComponentId(idForInput.value, 'slider')
+);
+/**
+ * Aria label for <input /> and role="slider" tag.
+ */
+const labelState = computed(() => {
+  if (!props.label) return;
+  return props.label?.startsWith('#') ? {
+    'aria-labelledby': props.label.slice(1)
+  } : {
+    'aria-label': props.label
+  };
+});
+onMounted(() => {
+  if (!props.label?.startsWith('#')) return;
+  const element = document.getElementById(props.label.slice(1)) as HTMLLabelElement | null;
+  if (element) element.htmlFor = idForInput.value;
+});
+// Update label HTMLFor if it is an ID.
+watch(() => [props.label, idForInput.value], (newVal, oldVal) => {
+  const isLabelSame = newVal[0] === oldVal[0];
+  const isIdSame = newVal[1] === oldVal[1];
+  if (!isLabelSame) {
+    [oldVal[0], newVal[0]].forEach((label, i) => {
+      if (label && label.startsWith('#')) {
+        // Old props.label refer to an element. Remove HTMLFor attribute.
+        // New props.label refer to an element. Add HTMLFor attribute.
+        const element = document.getElementById(label.slice(1)) as HTMLLabelElement | null;
+        if (element) {
+          i === 0 ? element.removeAttribute('for') : element.htmlFor = newVal[1] as string;
+        }
+      }
+    });
+  }
+  if (!isIdSame && newVal[0] && newVal[0].startsWith('#')) {
+    // Update HTMLFor for label if props.label refer to an element and input ID changed
+    const element = document.getElementById(newVal[0].slice(1)) as HTMLLabelElement | null;
+    if (element) element.htmlFor = newVal[1] as string;
+  }
+});
+
+
+// Handle values
+const model = defineModel<number>();
+
 const currentVal = ref<number>((() => {
-  const val = props.defaultValue !== undefined ?
-    props.defaultValue :
-    (props.value !== undefined ?
-      props.value :
-      (props.max + props.min) / 2
-    );
+  const val = (
+    model.value ??
+        (props.max + props.min) / 2
+  );
   return clip(val, props.min, props.max);
 })());
-const pos = ref<number>(pointRadius);
+const pos = ref<number>(0); // thumb position
 
+const unitValue = computed(() => props.step ?? 10**(-props.digit));
 function updateValue(newVal: number, newPos?: number) {
-  if (currentVal.value !== newVal) {
-    try {
-      emit('change', newVal);
-    // eslint-disable-next-line
-    } catch {}
-  }
-  if (newPos === undefined) {
-    const rect = trackerRef.value?.getBoundingClientRect() as DOMRect;
+  if (newPos === undefined) { // Evaluate thumb pos
+    const rect = trackerRef.value?.getBoundingClientRect();
     if (!rect) return;
     newPos = round(rangeMapping(
       newVal, props.min, props.max,
-      pointRadius, rect.width - pointRadius,
-    ));
+      0, 100,
+    ), 2);
+  }
+  if (currentVal.value !== newVal) {
+    emit('change', newVal);
   }
   pos.value = newPos as number;
   currentVal.value = newVal;
@@ -108,25 +178,25 @@ onMounted(() => {
   updateValue(currentVal.value);
 });
 
-// Handle prop `value`, `min`, and `max` changed.
-watchEffect(() => {
-  const newVal = round(
-    clip(
-      props.value !== undefined ? props.value : currentVal.value,
-      props.min,
-      props.max,
-    ),
-    props.digit,
-  );
-  if (newVal === currentVal.value) return;
-  updateValue(newVal);
-});
+// Handle model, `props.min`, and `props.max` changed.
+watch(
+  () => [model.value, props.min, props.max],
+  () => {
+    const newVal = round(
+      clip(
+        model.value ?? currentVal.value,
+        props.min,
+        props.max,
+      ),
+      props.digit,
+    );
+    if (newVal !== currentVal.value) updateValue(newVal);
+  });
 
 // Step increment function. If num < 0, then becomes decrement.
 const increment = (num: number = 1) => {
-  const unitVal = props.step ? props.step : 10**(-props.digit);
   const newVal = round(
-    clip(currentVal.value + num * unitVal, props.min, props.max),
+    clip(currentVal.value + num * unitValue.value, props.min, props.max),
     props.digit,
   );
   updateValue(newVal);
@@ -149,11 +219,13 @@ const handleDrag = (
     (e as MouseEvent).clientX || (e as TouchEvent).touches[0].clientX
   );
   // Evaluate value.
-  const pointPos = clip(
-    clientX - rect.left, pointRadius, rect.width - pointRadius,
+  const thumbPos = rangeMapping(
+    clip(clientX - rect.left, 0, rect.width),
+    0, rect.width,
+    0, 100,
   );
   const valBias = rangeMapping(
-    pointPos, pointRadius, rect.width - pointRadius,
+    thumbPos, 0, 100,
     0, props.max - props.min,
   );
   let val: number;
@@ -163,23 +235,23 @@ const handleDrag = (
       props.digit,
     );
   } else val = round(props.min + valBias, props.digit);
-  updateValue(val, pointPos);
+  updateValue(val, thumbPos);
 };
 
 // -Mouse up / Touch end.
 const handleDragEnd = () => isDragging.value = false;
 
-onMounted(() => {
+watchEffect((clearup) => {
   window.addEventListener('mousemove', handleDrag);
   window.addEventListener('touchmove', handleDrag);
   window.addEventListener('mouseup', handleDragEnd);
   window.addEventListener('touchend', handleDragEnd);
-  return () => {
+  clearup(() => {
     window.removeEventListener('mousemove', handleDrag);
     window.removeEventListener('touchmove', handleDrag);
     window.removeEventListener('mouseup', handleDragEnd);
     window.removeEventListener('touchend', handleDragEnd);
-  };
+  });
 });
 // -Key down
 const handleKeyDown = (e: KeyboardEvent) => {
@@ -187,93 +259,10 @@ const handleKeyDown = (e: KeyboardEvent) => {
   else if (e.key === 'ArrowLeft') increment(-1);
 };
 // end: onChange event
+
+defineExpose({
+  inputId: idForInput
+});
 </script>
 
-<style lang="scss" scoped module>
-$point-size: 14px;
-:export {
-  point-size: $point-size;
-}
-.sliderWrapper {
-  position: relative;
-  height: 22px;
-  width: 100%;
-  font-size: var(--font-sm);
-  background-color: transparent;
-}
-
-.tracker {
-  // position
-  position: relative;
-  top: 50%;
-  transform: translateY(-50%);
-  // shape
-  height: 6px;
-  width: 100%;
-  border-radius: $radius-lg;
-
-  background-color: $color5;
-  cursor: pointer;
-  user-select: none;
-  &:hover .tooltip {
-    display: block;
-  }
-}
-
-.point {
-  @extend %center;
-  height: $point-size;
-  aspect-ratio: 1 / 1;
-  border-radius: 100%;
-  border: solid 3px white;
-  outline: solid 1px $color5;
-  box-sizing: border-box;
-  background-color: $color5;
-}
-
-.limit {
-  display: inline-block;
-  position: absolute;
-  bottom: 100%;
-  font-size: var(--font-sm);
-  &:first-of-type{
-    left: 0;
-  }
-  &:last-of-type {
-    left: auto;
-    right: 0;
-  }
-}
-
-.tooltip { // Tooltip
-  display: none;
-  // position
-  position: absolute;
-  left: 50%;
-  bottom: 100%;
-  transform: translate(-50%, -9px);
-  // shape
-  min-width: 10px;
-  padding: 3px 8px;
-  border-radius: $radius-md;
-
-  font-size: var(--font-sm);
-  text-align: center;
-  color: $color1;
-  background-color: $color5;
-  cursor: default;
-  user-select: all;
-  &::after {
-    content: "";
-    position: absolute;
-    top: 100%;
-    left: 50%;
-    transform: translate(-50%);
-    width: 0;
-    height: 0;
-    border-width: 5px 6px;
-    border-style: solid;
-    border-color: $color5 transparent transparent transparent;
-  }
-}
-</style>
+<style src="./TheSlider.scss" />

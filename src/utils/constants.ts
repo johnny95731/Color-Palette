@@ -4,7 +4,7 @@ import type { CSSProperties } from 'vue';
  * font-weight that be used in selected option.
  */
 export const CURRENT_OPTION_WEIGHT: CSSProperties = {
-  fontWeight: 700,
+  fontWeight: 800,
 };
 
 // Palette consts.

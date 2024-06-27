@@ -1,4 +1,4 @@
-@import './commons.scss';
+@use './commons.module.scss' as *;
 
 html, body {
   margin: 0;
@@ -15,19 +15,41 @@ html, body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-* {
-  &:focus {
-    outline: none;
-  }
+body.preload * {
+  animation-duration: 0s !important;
+  transition: all 0s !important;
+}
+
+*:focus, *:focus-within {
+  outline: none;
 }
 
 button {
   border: none;
   padding: 0;
+  font-weight: $normal-weight;
   background-color: transparent;
+}
+
+input{
+  padding: 0;
+  padding-block: 0px;
+  padding-inline: 0px;
+  border: none;
 }
 
 #root {
   height: 100%;
   width: 100%;
+}
+
+#overlay-container {
+  display: contents;
+  contain: layout;
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  pointer-events: none;
 }

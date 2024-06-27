@@ -18,27 +18,29 @@ export const hexTextEdited = (
   text = text.replace(/[^A-F0-9]/ig, '');
   textInput.value = `#${text.toUpperCase()}`;
 };
+
+const clipboard = navigator.clipboard;
 /**
- * Copy Hex text to clipboard (excludes "#").
- * @param e Triggered mouse event.
+ * Copy text to clipboard.
  */
-export const copyHex = (
+export const copyText = (text: string): void => {
+  try {
+    clipboard.writeText(text);
+  } catch (err) {
+    console.error('Failed to copy:', err);
+  }
+};
+
+/**
+ * Copy Hex innerText to clipboard (excludes "#").
+ */
+export const copyInnerHex = (
   e: MouseEvent,
 ): void => {
   const target = e.currentTarget as HTMLElement;
   if (!target) return;
-  const text = target.innerText;
-  const brIdx = text.indexOf('\n'); // index of break.
+  const text = target.innerText.replace('#', '');
   const start = text.startsWith('#') ? 1 : 0;
-  let hex: string;
-  if (brIdx > -1) {
-    hex = text.slice(start, brIdx);
-  } else {
-    hex = text.slice(start);
-  }
-  try {
-    navigator.clipboard.writeText(hex);
-  } catch (err) {
-    console.error('copy hex:', err);
-  }
+  const hex = text.slice(start).trim();
+  copyText(hex);
 };

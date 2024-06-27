@@ -34,3 +34,5 @@ export type ColorSpaceTrans = {
    */
   inverter: (x: number[]) => number[];
 };
+
+export type VueClass = string | Record<string, boolean> | (string | Record<string, boolean>)[];

@@ -1,0 +1,73 @@
+@use "@/assets/commons.module.scss" as *;
+
+$transDuration: 120ms;
+.btn {
+  // layout
+  position: relative;
+  display: grid;
+  align-items: center;
+  justify-content: center;
+  grid-template-areas: "prepend content append";
+  grid-template-columns: max-content minmax(0, 1fr) max-content;
+  text-align: start;
+  vertical-align: middle;
+  // shape;
+  height: 31px;
+  width: 100%;
+  border: none;
+  border-radius: $radius-lg;
+  padding: 4px 8px;
+  overflow: hidden;
+  box-sizing: border-box;
+  // style
+  background-color: inherit;
+  color: inherit;
+  font-size: var(--font-body);
+  font-weight: 600;
+
+  user-select: none;
+  cursor: pointer;
+
+  &:hover,
+  &:focus-visible {
+    >.btn__overlay {
+      opacity: 0.14;
+    }
+  }
+  @supports not selector(:focus-visible) {
+    &:focus > .btn__overlay {
+      opacity: 0.14;
+    }
+  }
+}
+
+.btn__overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+
+  background-color: currentColor;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.btn__content,
+.btn__prepend,
+.btn__append {
+  display: flex;
+  align-items: center;
+}
+
+.btn__prepend {
+  grid-area: prepend;
+}
+
+.btn__content {
+  grid-area: content;
+}
+
+.btn__append {
+  grid-area: append;
+}

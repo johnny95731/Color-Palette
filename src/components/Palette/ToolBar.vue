@@ -1,33 +1,46 @@
 <template>
   <div
-    className="toolContainer"
+    :class="styles.toolContainer"
     :style="showToolbar"
+    tabindex="0"
+    role="toolbar"
+    :aria-label="`卡片${cardIdx}工具列`"
   >
-    <TheIcon
-      type="close"
+    <TheBtn
+      v-once
+      icon="close"
       :style="closeIconStyle"
+      aria-label="移除"
       @click="$emit('remove')"
     />
-    <TheIcon
-      :type="isLockIcon"
+    <TheBtn
+      v-memo="[card.isLock]"
+      :icon="isLock.icon"
+      :style="closeIconStyle"
+      :aria-label="isLock.label"
       @click="pltState.setIsLock(cardIdx)"
     />
-    <TheIcon
-      :type="isFavIcon"
+    <TheBtn
+      :icon="isFavIcon.icon"
+      :aria-label="isFavIcon.label"
       @click="favState.favColorsChanged(card.hex);"
     />
-    <TheIcon
-      type="move"
+    <TheBtn
+      icon="draggable"
       style="cursor: grab;"
+      aria-label="拖動"
       @mousedown="$emit('dragging', $event)"
       @touchstart="$emit('dragging', $event)"
     />
-    <TheIcon
-      type="refresh"
+    <TheBtn
+      icon="refresh"
+      aria-label="刷新"
       @click="pltState.refreshCard(cardIdx)"
     />
-    <TheIcon
-      type="edit"
+    <TheBtn
+      icon="edit"
+      aria-label="調整"
+      aria-haspopup="dialog"
       @click="pltState.setEditingIdx(cardIdx)"
     />
   </div>
@@ -35,14 +48,14 @@
 
 <script lang="ts" setup>
 import { computed } from 'vue';
-import TheIcon from '../TheIcon.vue';
+import styles from './TheCard.module.scss';
 // Stores
 import usePltStore from '@/features/stores/usePltStore.ts';
 import useFavStore from '@/features/stores/useFavStore.ts';
-import media from '@/features/useMedia';
 // Types
 import type { CSSProperties } from 'vue';
 import type { CardType } from '@/features/types/pltType.ts';
+import TheBtn from '../Custom/TheBtn.vue';
 
 type Props = {
   cardIdx: number
@@ -63,8 +76,7 @@ const isFav = computed(() => {
 const showToolbar = computed(() => {
   return {
     ...props.fgFilter,
-    display: pltState.isPending ? 'none' : undefined,
-    opacity: (pltState.editingIdx === props.cardIdx && !media.isSmall) ? '0' : ''
+    opacity: pltState.isPending ? '0' : undefined
   };
 });
 
@@ -75,8 +87,14 @@ const closeIconStyle = computed<CSSProperties | undefined>(() => {
       cursor: 'default',
     } : undefined;
 });
-const isLockIcon = computed(() => props.card.isLock ? 'lock' : 'unlock');
-const isFavIcon = computed(() => isFav.value ? 'fav' : 'unfav');
+const isLock = computed(() => (
+  props.card.isLock ?
+    { icon: 'lock', label: '解鎖刷新' } as const :
+    { icon: 'unlock', label: '鎖定刷新' } as const
+));
+const isFavIcon = computed(() => (
+  isFav.value ?
+    { icon: 'fav', label: '移出書籤' } as const :
+    { icon: 'unfav', label: '加入書籤' } as const
+));
 </script>
-
-<style lang="scss" src="./TheCard.scss"></style>

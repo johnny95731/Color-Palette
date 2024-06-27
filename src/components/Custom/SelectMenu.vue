@@ -1,28 +1,30 @@
 <template>
   <div
     ref="containerRef"
-    :class="styles.selectMenu"
+    :class="[
+      styles.selectMenu,
+      isOpened && styles.active
+    ]"
     tabIndex="-1"
     @click="handleBtnClick"
-    @blur="handleBtnClick($event, false)"
+    @focusout="handleBtnClick($event, false)"
   >
-    <button
+    <TheBtn
       :class="[
         styles.menuTitle, titleClass
       ]"
       type="button"
       aria-haspopup="menu"
       :aria-expanded="isOpened || undefined"
+      :label="showValue ? (modelValue ?? currentVal) : (title ?? 'menu')"
     >
-      <div>
-        {{ showValue ? (modelValue ?? currentVal) : (title ?? 'menu') }}
-      </div>
-      <img
-        :src="TriangleUrl"
-        alt="clickable"
-        :class="styles.triangle"
-      >
-    </button>
+      <template #append>
+        <TheIcon
+          type="caretDown"
+          :class="styles.triangle"
+        />
+      </template>
+    </TheBtn>
     <div
       ref="contentRef"
       :class="[
@@ -54,8 +56,9 @@
 </template>
 
 <script setup lang="ts">
-import { useCssModule, watch, ref, getCurrentInstance } from 'vue';
-import TriangleUrl from '@/assets/icons/triangle-down.svg';
+import { useCssModule, watch, ref } from 'vue';
+import TheBtn from './TheBtn.vue';
+import TheIcon from '../TheIcon.vue';
 import { CURRENT_OPTION_WEIGHT } from '@/utils/constants';
 
 const styles = useCssModule();
@@ -66,10 +69,15 @@ type Props = {
   showValue?: boolean,
   titleClass?: string,
   contentClass?: string,
+  /**
+   * Letter case for menu items (display name). Default to be title case.
+   */
+  letterCase?: 'origin' | 'title' | 'all-caps';
 }
 
-const props = defineProps<Props>();
-const thisInstance = getCurrentInstance();
+const props = withDefaults(defineProps<Props>(), {
+  showValue: true,
+});
 const containerRef = ref<HTMLDivElement>();
 const contentRef = ref<HTMLDivElement>();
 
@@ -77,27 +85,23 @@ const contentRef = ref<HTMLDivElement>();
 const isOpened = ref(false);
 const handleBtnClick = (e: MouseEvent | FocusEvent, newVal?: boolean) => {
   if ( // Avoid closing menu when click child.
-    e?.type === 'blur' &&
+    e.type === 'focusout' &&
     // `e.relatedTarget !== null` can not deal the case that click another
     // foucusable element.
     (e.currentTarget as HTMLElement).contains(e.relatedTarget as Element | null)
   ) return;
   const container = containerRef.value as HTMLDivElement;
   const content = contentRef.value as HTMLElement;
-  if (e?.type === 'click' && !content.contains(e.target as Node)) {
+  if (e.type === 'click' && !content.contains(e.target as Node)) {
     e.stopPropagation();
   }
   newVal = newVal ?? !isOpened.value;
   const rect = container.getBoundingClientRect();
   content.style.maxHeight = (
     newVal ?
-      `${document.body.clientHeight - rect.bottom}px` :
-      '' // open => close
+      `${document.body.clientHeight - rect.bottom}px` : // open
+      '' // close
   );
-  if (!newVal) {
-    container.blur();
-    (container.firstChild as HTMLElement).blur();
-  }
   isOpened.value = newVal;
 };
 
@@ -138,7 +142,7 @@ const handleSelect = (idx: number) => {
   currentIdx.value = idx;
   model.value = newVal;
   emit('update:model-value', newVal);
-  if (thisInstance?.vnode?.props?.select) emit('select', idx);
+  emit('select', idx);
 };
 
 const liStyle = (idx: number) =>

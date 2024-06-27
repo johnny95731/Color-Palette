@@ -1,13 +1,23 @@
 <template>
   <!-- Float left -->
   <li>
-    <button
+    <TheBtn
       :class="$style.btn"
-      type="button"
+      prepend-icon="refresh"
+      aria-label="刷新調色盤"
+      label="Refresh"
       @click="pltState.refreshCard(-1)"
-    >
-      <TheIcon type="refresh" />All
-    </button>
+    />
+  </li>
+  <li>
+    <TheBtn
+      v-memo="[isRunning]"
+      :class="$style.btn"
+      :prepend-icon="isRunning ? 'pause' : 'play'"
+      :aria-label="isRunning ? '暫停' : '自動刷新'"
+      label="Slides"
+      @click="haldleClickSlides"
+    />
   </li>
   <li>
     <DropdownMenu
@@ -41,42 +51,35 @@
       @click-item="pltState.setColorSpace($event as ColorSpacesType)"
     />
   </li>
-  <li>
-    <button
-      :class="$style.btn"
-      type="button"
-      @click="haldleClickSlides"
-    >
-      <TheIcon :type="isRunning ? 'pause' : 'play'" />Slides
-    </button>
-  </li>
 
   <div class="spacer" />
   <!-- Float right -->
   <li>
-    <button
+    <TheBtn
       :class="$style.btn"
-      type="button"
+      prepend-icon="bookmarks"
+      label="Bookmarks"
+      aria-label="書籤"
+      aria-haspopup="dialog"
       @click="$emit('show-fav')"
-    >
-      <TheIcon type="bookmark" />Bookmarks
-    </button>
+    />
   </li>
   <li>
-    <button
+    <TheBtn
       :class="$style.btn"
-      type="button"
+      prepend-icon="setting"
+      label="Settings"
+      aria-label="設定"
+      aria-haspopup="dialog"
       @click="$emit('show-settings')"
-    >
-      <TheIcon type="setting" />Settings
-    </button>
+    />
   </li>
 </template>
 
 <script setup lang='ts'>
 import { ref, watch, computed, useCssModule } from 'vue';
-import TheIcon from '../TheIcon.vue';
-import DropdownMenu from '../Custom/DropdownMenu.vue';
+import DropdownMenu from '@/components/Custom/DropdownMenu.vue';
+import TheBtn from '@/components/Custom/TheBtn.vue';
 // Stores / Contexts
 import usePltStore from 'stores/usePltStore.ts';
 import useSettingStore from 'stores/useSettingStore.ts';
@@ -126,4 +129,4 @@ watch(
   },
 );
 </script>
-<style lang="scss" src="./header.module.scss" module />
+<style lang="scss" src="./Header.module.scss" module />

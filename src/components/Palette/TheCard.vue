@@ -1,9 +1,10 @@
 <template>
   <div
+    ref="container"
     :class="[
-      'cardContainer',
-      cardIdx === 0 ? 'first' : '',
-      cardIdx === pltState.numOfCards-1 ? 'last' : '',
+      styles.cardContainer,
+      cardIdx === 0 ? 'first' : undefined,
+      cardIdx === pltState.numOfCards-1 ? 'last' : undefined,
     ]"
     :style="style"
     @transitionend="$emit('transitionend')"
@@ -15,53 +16,55 @@
       @remove="$emit('remove')"
       @dragging="$emit('dragging', $event)"
     />
-    <div class="textDisplay">
+    <div :class="styles.textDisplay">
       <div
-        class="hexText"
+        :class="styles.hexText"
         :style="fgFilter"
-        @click="copyHex"
+        @click="copyInnerHex"
       >
-        <TheIcon type="copy" />
-        {{ card.hex }}
+        <TheIcon type="copy" />{{ card.hex }}
       </div>
       <div
-        class="detailText"
+        :class="styles.detailText"
         :style="fgFilter"
-        @click="copyHex"
+        @click="copyInnerHex"
       >
-        <TheIcon type="copy" />
-        {{
+        <TheIcon type="copy" />{{
           detail
         }}
       </div>
     </div>
     <EditingDialog
-      v-if="pltState.editingIdx === cardIdx"
       :cardIdx="cardIdx"
       :card="card"
       :detail="detail"
       :colorSpace="pltState.colorSpace"
       :roundedColor="roundedColor"
+      :pos="editingDialogPos"
+      v-model:show="showEditor"
     />
   </div>
 </template>
 
 <script lang="ts" setup>
-import { computed, ref, watch } from 'vue';
+import { computed, reactive, ref, watch } from 'vue';
+import styles from './TheCard.module.scss';
 // Components
 import TheIcon from '../TheIcon.vue';
 import ToolBar from './ToolBar.vue';
 import EditingDialog from './EditingDialog.vue';
 // Utils
+import { round } from '@/utils/helpers';
 import { rgb2gray, namedColors } from '@/utils/colors';
-import { equallyLength, evalPosition } from '@/utils/helpers';
-import { copyHex } from '@/utils/eventHandler';
+import { copyInnerHex } from '@/utils/eventHandler';
 // Stores
 import usePltStore from '@/features/stores/usePltStore';
 import media from '@/features/useMedia';
 // Types
 import type { CSSProperties } from 'vue';
 import type { CardType } from '@/features/types/pltType';
+
+const container = ref<HTMLElement>();
 
 type Props = {
   cardIdx: number;
@@ -91,8 +94,17 @@ const roundedColor = computed(() => {
 });
 const fgFilter = computed<CSSProperties>(() => {
   return {
-    filter: isLight.value ? '' : 'invert(1)',
+    filter: isLight.value ? undefined : 'invert(1)',
   };
+});
+
+const showEditor = computed({
+  get() {
+    return pltState.editingIdx === props.cardIdx;
+  },
+  set() {
+    pltState.setEditingIdx(props.cardIdx);
+  }
 });
 
 const detail = computed(() => {
@@ -102,13 +114,13 @@ const detail = computed(() => {
 });
 
 // states for dealing transition.
-const size = ref<string>(equallyLength(pltState.numOfCards));
-function setSize(newVal: string) { size.value = newVal; }
+const cardStyle = reactive<{
+  size: string,
+  position: string,
+}>({ ...props.cardDisplay });
+function setSize(newVal: string) { Object.assign(cardStyle, { size: newVal }); }
+function setPos(newVal: string) { Object.assign(cardStyle, { position: newVal }); }
 
-const pos = ref<string>(evalPosition(props.cardIdx, pltState.numOfCards));
-function setPos(newVal: string) {
-  pos.value = newVal;
-}
 const transProperty = ref<'none' | ''>('');
 function setTransProperty(newVal: 'none' | 'reset') {
   if (newVal === 'none') {
@@ -125,19 +137,30 @@ defineExpose({
 });
 
 watch(() => pltState.numOfCards, () => {
-  setPos(props.cardDisplay.position);
-  setSize(props.cardDisplay.size);
+  Object.assign(cardStyle, props.cardDisplay);
 });
 
 const style = computed<CSSProperties>(function() {
   return {
     ...props.styleInSettings,
     backgroundColor: props.card.hex,
-    [media.isSmall ? 'height' : 'width']: size.value,
-    [media.pos]: pos.value,
+    [media.isSmall ? 'height' : 'width']: cardStyle.size,
+    [media.pos]: cardStyle.position,
     transitionProperty: transProperty.value,
   };
 });
-</script>
 
-<style lang="scss" src="./TheCard.scss" />
+const editingDialogPos = ref<InstanceType<typeof EditingDialog>['pos']>(
+  { [media.pos]: '50%' } as InstanceType<typeof EditingDialog>['pos']
+);
+
+watch(showEditor, () => {
+  const rect = container.value?.getBoundingClientRect();
+  if (!rect) return;
+  editingDialogPos.value = {
+    [media.pos]: `${
+      round(rect.left + rect.width / 2, 0)
+    }px`
+  } as InstanceType<typeof EditingDialog>['pos'];
+});
+</script>

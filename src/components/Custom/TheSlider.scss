@@ -1,0 +1,104 @@
+@use "sass:math";
+@use "@/assets/commons.module.scss" as *;
+
+$thumb-size: 14px;
+$thumb-radius: math.div($thumb-size, 2);
+.slider-wrapper {
+  position: relative;
+  margin: #{$thumb-radius + 4px} 0px #{$thumb-radius + 8px};
+  height: 5px;
+  width: 100%;
+  padding: 0px $thumb-radius;
+  box-sizing: border-box;
+  font-size: var(--font-sm);
+  background-color: transparent;
+  >input,
+  >label {
+    display: block;
+    opacity: 0;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+  }
+}
+
+.slider-tracker {
+  position: relative;
+  // shape
+  height: 100%;
+  width: 100%;
+  
+  border-radius: $radius-lg;
+  box-sizing: border-box;
+
+  background-color: $color5;
+  cursor: pointer;
+  user-select: none;
+  &:focus-within {
+    .slider-thumb {
+      outline-width: 2px;
+    }
+  }
+  &:hover .slider-tooltip {
+    display: block;
+  }
+}
+
+.slider-thumb {
+  @extend %center;
+
+  height: $thumb-size;
+  aspect-ratio: 1 / 1;
+  border: solid 3px white;
+  outline: solid 1px $color5;
+  border-radius: 100%;
+  box-sizing: border-box;
+  background-color: $color5;
+  cursor: pointer;
+}
+
+.slider-limit-label {
+  display: inline-block;
+  position: absolute;
+  bottom: 100%;
+  font-size: var(--font-sm);
+  &:first-of-type{
+    left: 0;
+  }
+  &:last-of-type {
+    left: auto;
+    right: 0;
+  }
+}
+
+.slider-tooltip { // Tooltip
+  display: none;
+  // position
+  position: absolute;
+  left: 50%;
+  bottom: 100%;
+  transform: translate(-50%, -9px);
+  // shape
+  min-width: 10px;
+  padding: 3px 8px;
+  border-radius: $radius-md;
+
+  font-size: var(--font-sm);
+  text-align: center;
+  color: $color1;
+  background-color: $color5;
+  cursor: default;
+  user-select: all;
+  &::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translate(-50%);
+    width: 0;
+    height: 0;
+    border-width: 5px 6px;
+    border-style: solid;
+    border-color: $color5 transparent transparent transparent;
+  }
+}

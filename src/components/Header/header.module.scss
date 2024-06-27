@@ -1,3 +1,4 @@
+@use "@/assets/commons.module.scss" as *;
 
 .header {
   display: inline-flex;
@@ -46,7 +47,7 @@
   margin: 0;
   padding: 0;
   @include small {
-    :global(.icon) {
+    :global(.icon)::before {
       height: var(--header-height);
       padding: 4px;
       box-sizing: border-box;
@@ -87,7 +88,7 @@
   font-weight: var(--font-body);
   text-align: center;
   cursor: pointer;
-  :global(.icon) {
+  :global(.icon)::before {
     margin-left: 0;
     margin-right: 3px;
     height: 18px;
@@ -122,9 +123,6 @@
 .btnMenu {
   >button {
     @extend %btn;
-    >div {
-      padding: 5px 0 5px 8px;
-    }
   }
   >div {
     @include small {

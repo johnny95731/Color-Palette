@@ -1,71 +1,93 @@
 <template>
-  <div
-    ref="containerRef"
-    class="editor"
-    @keydown="stopPropagation($event)"
+  <OverlayContainer
+    :transparent="true"
+    role="dialog"
+    :aria-modal="true"
+    v-model="modelShow"
   >
-    <div :style="{backgroundColor: props.card.hex}" />
-    <input
-      type="text"
-      maxlength="7"
-      class="hexInput"
-      :value="card.hex"
-      :id="`card${props.cardIdx}-hex`"
-      @change="hexTextEdited($event)"
-      @blur="handleHexEditingFinished($event)"
-      @keydown="handleHexEditingFinished($event)"
+    <div
+      ref="containerRef"
+      :class="styles.editor"
+      :style="{
+        ...(media.isSmall ? {} :pos)
+      }"
+      @keydown="stopPropagation($event)"
     >
-    <SelectMenu
-      v-if="colorSpace === 'name'"
-      ref="selectRef"
-      :options="namedColors.fullNames"
-      titleClass="nameSelectTitle"
-      contentClass="nameSelectContent"
-      :model-value="detail"
-    >
-      <template #items>
-        <li
-          v-once
-          v-for="(name, i) in namedColors.fullNames"
-          :key="`Option${name}`"
-          @click="selectName(i);"
-        >
-          <button>
-            <span
-              :style="{
-                backgroundColor: name.replace(/\s/g, '')
-              }"
-            />{{ name }}
-          </button>
-        </li>
-      </template>
-    </SelectMenu>
-    <div class="sliders">
-      <template
-        v-for="(val, i) in props.roundedColor"
-        :key="`card${props.cardId}-label${i}`"
+      <label
+        :for="`card${cardIdx}-hex`"
+        :style="{backgroundColor: card.hex}"
       >
-        <label v-text="`${space.labels[i]}: ${val}`" />
-        <TheSlider
-          :showRange="false"
-          :showVal="false"
-          :trackerBackground="gradientGen(props.roundedColor, i, colorSpace)"
-          :pointBackground="card.hex"
-          :min="space.range[i][0]"
-          :max="space.range[i][1]"
-          :step="1"
-          :value="val"
-          @change="(newVal: number) => handleSliderChange(newVal, i)"
-        />
-      </template>
+        {{ card.hex }}
+      </label>
+      <input
+        :id="`card${cardIdx}-hex`"
+        :class="styles.hexInput"
+        type="text"
+        maxlength="7"
+        :value="card.hex"
+        @change="hexTextEdited($event)"
+        @blur="handleHexEditingFinished($event)"
+        @keydown="handleHexEditingFinished($event)"
+      >
+      <SelectMenu
+        v-if="colorSpace === 'name'"
+        ref="selectRef"
+        :class="styles.nameSelect"
+        aria-label="CSS named-color選單"
+        :options="namedColors.fullNames"
+        :contentClass="styles.nameSelectContent"
+        :model-value="detail"
+      >
+        <template #items>
+          <li
+            v-once
+            v-for="(name, i) in namedColors.fullNames"
+            :key="`Option${name}`"
+            @click="selectName(i);"
+          >
+            <TheBtn :label="name">
+              <template #prepend>
+                <span
+                  :style="{
+                    backgroundColor: name.replace(/\s/g, '')
+                  }"
+                />
+              </template>
+            </TheBtn>
+          </li>
+        </template>
+      </SelectMenu>
+      <div :class="styles.sliders">
+        <template
+          v-for="(val, i) in roundedColor"
+          :key="`card${cardIdx}-label${i}`"
+        >
+          <div>
+            {{ `${space.labels[i]}: ${val}` }}
+          </div>
+          <TheSlider
+            :label="space.labels[i]"
+            :showRange="false"
+            :showVal="false"
+            :trackerBackground="gradientGen(roundedColor, i, colorSpace)"
+            :thumbBackground="card.hex"
+            :min="space.range[i][0]"
+            :max="space.range[i][1]"
+            :step="1"
+            :model-value="val"
+            @change="handleSliderChange($event, i)"
+          />
+        </template>
+      </div>
     </div>
-  </div>
+  </OverlayContainer>
 </template>
 
 <script setup lang='ts'>
-import { computed, watchEffect, ref, watch } from 'vue';
-import TheSlider from '../Custom/TheSlider.vue';
-import SelectMenu from '../Custom/SelectMenu.vue';
+import { computed, ref, watch } from 'vue';
+import styles from './TheCard.module.scss';
+import TheSlider from '@/components/Custom/TheSlider.vue';
+import SelectMenu from '@/components/Custom/SelectMenu.vue';
 // Utils
 import { hexTextEdited, stopPropagation } from '@/utils/eventHandler';
 import {
@@ -76,6 +98,8 @@ import usePltStore from '@/features/stores/usePltStore';
 import media from '@/features/useMedia';
 // Types
 import type { CardType, ColorSpacesType } from '@/features/types/pltType';
+import OverlayContainer from '../Custom/OverlayContainer.vue';
+import TheBtn from '../Custom/TheBtn.vue';
 
 type Props = {
   cardIdx: number;
@@ -83,10 +107,13 @@ type Props = {
   detail: string;
   colorSpace: ColorSpacesType
   roundedColor: number[];
+  pos: {'left': string} | {'top': string}
 }
 
 const props = defineProps<Props>();
 const containerRef = ref<HTMLDivElement>();
+
+const modelShow = defineModel<boolean>('show', { required: true });
 
 const pltState = usePltStore();
 const space = computed(() => {
@@ -183,25 +210,8 @@ watch(
   });
 // Check container is out of window or not.
 
-// Change slider value when color space changed.
-watchEffect(() => {
-  if (pltState.editingIdx === props.cardIdx) {
-    let slider;
-    for (let i = 0; i < 4; i++) {
-      slider = (
-        document.getElementById(`card${props.cardIdx}-slider${i}`)
-      );
-      if (slider) {
-        (slider as HTMLInputElement).value = String(props.roundedColor[i]);
-      }
-    }
-  }
-});
-
 const selectRef = ref<InstanceType<typeof SelectMenu>>();
 const selectName = (idx: number) => {
   pltState.editCard({ idx: props.cardIdx, color: namedColors.getRgb(idx) });
 };
 </script>
-
-<style lang="scss" src="./TheCard.scss" />

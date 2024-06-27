@@ -1,0 +1,25 @@
+.slide-x-enter-active, .slide-x-leave-active {
+  transition: transform 200ms;
+}
+
+.slide-x-enter-from, .slide-x-leave-to {
+  transform: translateX(100%);
+}
+
+
+@keyframes scroll-y-dialog {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, calc(-50% - 50px));
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+}
+.scroll-y-dialog-enter-active {
+  animation: scroll-y-dialog 0.2s;
+}
+.scroll-y-dialog-leave-active {
+  animation: scroll-y-dialog 0.2s reverse;
+}

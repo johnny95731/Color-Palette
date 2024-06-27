@@ -1,35 +1,43 @@
 <template>
   <li
-    class="colorBlock"
+    v-memo="[hex]"
+    :class="styles.colorBlock"
     :style="{
       backgroundColor: props.hex,
-      color: isLight ? '#000' : '#fff',
     }"
   >
-    <div @click="copyHex">
-      <TheIcon
-        type="copy"
-        :style="iconFilterStyle"
-      />{{
-        props.hex
-      }}
-    </div>
-    <span class="delWrapper">
-      <TheIcon
-        type="del"
-        @click="delFavColor"
-      />
+    <TheBtn
+      :style="iconFilterStyle"
+      prepend-icon="copy"
+      :label="props.hex"
+      :aria-label="`複製HEX碼${props.hex}`"
+      @click="copyText(props.hex)"
+    />
+    <span
+      :class="styles.delWrapper"
+    >
+      <button
+        type="button"
+        aria-label="刪除書籤"
+      >
+        <TheIcon
+          type="del"
+          @click="delFavColor"
+        />
+      </button>
     </span>
   </li>
 </template>
 
 <script lang="ts" setup>
 import { computed } from 'vue';
+import styles from './FavOffcanvas.module.scss';
 import TheIcon from '../TheIcon.vue';
 import { hex2rgb, rgb2gray } from '@/utils/colors';
-import { copyHex } from '@/utils/eventHandler';
+import { copyText } from '@/utils/eventHandler';
 import useFavStore from '@/features/stores/useFavStore';
 import type { CSSProperties } from 'vue';
+import TheBtn from '../Custom/TheBtn.vue';
 
 type Props = {
   hex: string;
@@ -48,5 +56,3 @@ function delFavColor() {
   favState.favColorsChanged(props.hex);
 }
 </script>
-
-<style lang="scss" src="./FavOffcanvas.scss"></style>

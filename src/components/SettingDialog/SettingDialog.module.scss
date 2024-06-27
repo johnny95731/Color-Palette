@@ -1,0 +1,168 @@
+@use "@/assets/commons.module.scss" as *;
+
+.settingDialog {
+  // position
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+  // shape
+  height: 400px;
+  width: 320px;
+  border-radius: $radius-lg;
+  overflow: hidden;
+}
+
+$header-height: 34px;
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: $header-height;
+  width: 100%;
+  background-color: $color5;
+  >h2 {
+    // shape
+    padding: 0px 10px 0px;
+    margin: 0;
+    // color and text
+    color: $color2;
+    text-align: center;
+    font-size: var(--font-subheading);
+    font-weight: $bold-weight;
+
+    user-select: none;
+  }
+  >:global(.icon)::before {
+    margin: 6px;
+    // shape
+    height: 13px;
+    padding: 4px;
+    border-radius: $radius-lg;
+
+    filter: invert(1);
+    &:hover {
+      filter: none;
+      background-color: $color3;
+    }
+  }
+}
+
+.menubar {
+  display: inline-flex;
+  flex: 1 1 auto;
+  height: 25px;
+  width: 100%;
+  
+  background-color: $color5;
+  user-select: none;
+}
+
+.tab {
+  border-radius: $radius-sm $radius-sm 0 0;
+  padding: 5px 10px;
+  margin: 0;
+
+  color: white;
+  background-color: $color4;
+  font-size: var(--font-sm);
+  cursor: pointer;
+}
+
+%optionLayout {
+  display: grid;
+  grid-template-rows: repeat(auto-fill, minmax(25px, 1fr));
+  grid-template-columns: 85px 1fr;
+  row-gap: 10px;
+  column-gap: 5px;
+  justify-items: flex-start;
+  align-items: center;
+}
+
+.content {
+  width: 100%;
+  height: 100%;
+  background-color: $color1;
+}
+
+.region {
+  // layout
+  @extend %optionLayout;
+  // position
+  grid-row-start: 2;
+  grid-row-end: 4;
+  grid-column-start: 1;
+  grid-column-end: 4;
+  // shape
+  width: 100%;
+  padding: 3px 20px 10px;
+  box-sizing: border-box;
+  >label, >div, >input {
+    max-height: min-content;
+    font-size: var(--font-body);
+  }
+  >h3 {
+    grid-column-start: 1;
+    grid-column-end: 3;
+    margin: 0;
+    font-size: var(--font-subheading);
+  }
+  >label {
+    grid-column-start: 1;
+    grid-column-end: 2;
+  }
+  >div { // custom <Select>
+    grid-column-start: 2;
+    grid-column-end: 3;
+  }
+  >input {
+    grid-column-start: 2;
+    grid-column-end: 3;
+    border-radius: $radius-sm;
+    box-sizing: border-box;
+    width: 100%;
+  }
+}
+
+.optionLabel, .suboptionLabel {
+  grid-column-start: 1;
+  grid-column-end: 2;
+}
+
+.suboptionLabel {
+  // shape
+  width: 100%;
+
+  font-size: var(--font-sm);
+}
+
+.buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 4px;
+  // shape
+  height: 100%;
+  width: 100%;
+  >button {
+    // shape
+    width: auto;
+    padding: 3px 12px;
+    border-radius: $radius-md;
+    box-sizing: border-box;
+
+    font-weight: $normal-weight;
+    cursor: pointer;
+    user-select: none;
+  }
+}
+
+.applyBtn {
+  color: $color1;
+  background-color: $color5;
+}
+
+.resetBtn {
+  color: $color5;
+  background-color: $color2;
+}

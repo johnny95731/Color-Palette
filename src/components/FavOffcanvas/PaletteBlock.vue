@@ -1,30 +1,45 @@
 <template>
-  <li class="paletteBlock">
+  <li :class="styles.paletteBlock">
     <div :style="{background: bgGrad}">
-      <div class="caretWrapper">
-        <TheIcon
-          type="caret"
-          @click="handleSetPlt()"
-        />
+      <div :class="styles.caretWrapper">
+        <button
+          type="button"
+          aria-label="開啟書籤"
+          @click="handleSetPlt"
+        >
+          <TheIcon
+            type="caretLeft"
+          />
+        </button>
       </div>
-      <span class="delWrapper">
-        <TheIcon
-          type="del"
-          @click="removeFavPlt()"
-        />
+      <span :class="styles.delWrapper">
+        <button
+          type="button"
+          aria-label="刪除書籤"
+          @click="removeFavPlt"
+        >
+          <TheIcon
+            type="del"
+          />
+        </button>
       </span>
     </div>
-    <div @click="copyHex">
+    <button
+      type="button"
+      aria-label="複製調色盤HEX碼"
+      @click="copyInnerHex"
+    >
       {{ plt }}
-    </div>
+    </button>
   </li>
 </template>
 
 <script lang="ts" setup>
 import { computed } from 'vue';
+import styles from './FavOffcanvas.module.scss';
 import TheIcon from '../TheIcon.vue';
 import { isValidHex } from '@/utils/colors';
-import { copyHex } from '@/utils/eventHandler';
+import { copyInnerHex } from '@/utils/eventHandler';
 import useFavStore from '@/features/stores/useFavStore';
 import usePltStore from '@/features/stores/usePltStore';
 
@@ -60,5 +75,3 @@ function removeFavPlt() {
   favState.favPltsChanged(props.plt);
 }
 </script>
-
-<style lang="scss" src="./FavOffcanvas.scss"></style>

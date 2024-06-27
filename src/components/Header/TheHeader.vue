@@ -69,4 +69,4 @@ watchEffect((cleanup) => {
   }
 });
 </script>
-<style lang="scss" src="./header.module.scss" module />
+<style lang="scss" src="./Header.module.scss" module />

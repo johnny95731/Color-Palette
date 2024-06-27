@@ -1,3 +1,4 @@
+@use "@/assets/commons.module.scss" as *;
 
 .cardContainer {
   position: absolute;
@@ -9,7 +10,7 @@
   transition-property: left, width, background-color;
   transition-duration: 0s;
   &:hover .toolContainer {
-    display: block;
+    transform: translate(-50%) scaleX(1);
   }
   &.first {
     border-left: none !important;
@@ -22,6 +23,9 @@
     align-items: center;
     border-style: solid none;
     transition-property: top, height, background-color;
+    &:hover .toolContainer {
+      transform: none;
+    }
     &.first {
       border-top: none !important;
     }
@@ -33,46 +37,61 @@
 
 .toolContainer {
   @extend %horizontalCenter;
-  display: none;
+  width: max-content;
+  overflow: hidden;
   bottom: 37%;
   user-select: none;
-  .icon {
-    display: block;
-    margin: 27px auto;
-    height: 27px;
+  transform: translate(-50%) scaleX(0);
+  box-sizing: border-box;
+  
+  >:global(.btn) {
+    margin: 12px auto;
+    padding: 0;
+    height: auto;
+    width: auto;
+    border-radius: 50%;
+    >:global(.btn__content) {
+      height: 27px;
+      padding: 8px;
+    }
+    &:last-of-type {
+      margin-bottom: 24px;
+    }
   }
   @include desktop {
     bottom: 38%;
-    .icon {
-      margin: 48px auto;
-      height: 40px;
-    }
   }
   @include laptop {
-    margin-bottom: 25px;
-    .icon {
-      margin: 20px auto 0;
-      height: 20px;
+    >:global(.btn) {
+      margin: 8px auto 0;
     }
   }
   @include small {
     flex: 1 0 240px; // Total icon width + margin
     display: block;
     position: static;
-    margin-bottom: 0;
-    margin-left: 20px;
+    padding-left: 20px;
+    padding-right: 20px;
     transform: none;
-    .icon {
-      display: inline;
-      height: 20px;
-      margin: 5px 10px;
+    >:global(.btn) {
+      display: inline-block;
+      margin: 0px 4px;
+      >:global(.btn__content) {
+        height: 20px;
+        padding: 8px;
+      }
+      &:last-of-type {
+        margin-bottom: 0;
+      }
     }
   }
   @include mobile {
-    flex: 0 0 111px;
-    .icon {
-      height: 17px;
+    flex: 0 0 50%;
+    >:global(.btn) {
       margin: 5px 10px;
+      >:global(.btn__content) {
+        height: 17px;
+      }
     }
   }
 }
@@ -83,11 +102,12 @@
   width: 50%;
   text-align: center;
   >div {
+    width: max-content;
     cursor: pointer;
-    .icon {
+    :global(.icon) {
       opacity: 0;
     }
-    &:hover .icon {
+    &:hover :global(.icon) {
       opacity: 1;
     }
   }
@@ -105,27 +125,28 @@
   position: relative;
   left: 50%;
   transform: translateX(-50%);
-  .icon {
+  :global(.icon)::before {
     position: absolute;
     top: 50%;
   }
 }
-@mixin textSize($iconHeight, $iconMargin, $fontSize) {
-  font-size: $fontSize;
-  .icon {
-    height: $iconHeight;
-    transform: translate(calc(-100% - #{$iconMargin}), -50%);
+@mixin textSize($icon-height, $icon-margin, $font-size) {
+  font-size: $font-size;
+  :global(.icon)::before {
+    transform: translate(calc(-100% - #{$icon-margin}), -50%);
+    height: $icon-height;
+    width: $icon-height;
   }
 }
 
 .hexText {
   @extend %textPosition;
-  @include textSize(var(--font-subheading) - 4px, 4px, var(--font-subheading));
+  @include textSize(calc(var(--font-subheading) - 6px), 4px, var(--font-subheading));
 }
 
 .detailText {
   @extend %textPosition;
-  @include textSize(calc(var(--font-sm) - 3px), 3px, var(--font-sm));
+  @include textSize(calc(var(--font-sm) - 4px), 3px, var(--font-sm));
   margin-top: 4px;
   text-wrap: nowrap;
 }
@@ -142,45 +163,57 @@
   box-sizing: border-box;
 
   background-color: $color1;
+  pointer-events: auto;
   >* {
     width: 100%;
   }
-  >div:first-of-type {
-    height: 10px;
+  >label:first-of-type {
+    display: block;
+    height: 0;
+    width: 100%;
     border-radius: $radius-lg;
     margin-bottom: 7px;
+    text-indent: -200vw; // hide text
   }
   @include small {
-    position: fixed;
     top: auto;
     bottom: 0;
+    height: auto;
     width: 100%;
     max-width: 500px;;
-    >div:first-of-type {
+    >label:first-of-type {
       height: 30px;
       margin-bottom: 10px;
     }
   }
 }
 
-.nameSelectTitle {
-  width: 100%;
+.nameSelect {
+  margin: 8px 0;
 }
 
 .nameSelectContent {
-  >menu {
-    padding: 8px 0;
-  }
-  button {
-    width: 100%;
+  padding: 0;
+  :global(.btn) {
+    height: 20px;
     text-align: start !important;
-    text-overflow: ellipsis;
-    >span {
+    span {
       display: inline-block;
       height: 12px;
       margin-right: 4px;
       aspect-ratio: 1 / 1;
       outline: 1px solid black;
+    }
+    &:hover,
+    &:focus-visible {
+      :global(.btn__overlay) {
+        opacity: 0;
+      }
+    }
+    @supports not selector(:focus-visible) {
+      &:focus :global(.btn__overlay) {
+        opacity: 0;
+      }
     }
   }
 }
@@ -190,11 +223,14 @@
   border-radius: $radius-md;
   border-width: 1px;
   padding: 0px 8px;
-  margin: 0 auto 10px;
+  margin: 0 auto 6px;
   box-sizing: border-box;
   font-size: var(--font-subheading);
   user-select: text;
   cursor: text;
+  &:focus-visible {
+    outline: 1px solid black;
+  }
 
   @include small {
     margin: 0 auto 7px;

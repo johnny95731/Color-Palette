@@ -3,36 +3,32 @@
     ref="containerRef"
     :class="[
       styles.dropdownMenu,
-      isOpened && 'active'
+      isOpened && styles.active
     ]"
     tabindex="-1"
     @click="handleBtnClick"
     @focusout="handleBtnClick($event, false)"
   >
-    <button
+    <TheBtn 
       :class="[
         styles.menuTitle, titleClass
       ]"
       type="button"
+      :prepend-icon="icon"
       aria-haspopup="menu"
       :aria-expanded="isOpened || undefined"
+      :label="title"
     >
-      <div>
-        <TheIcon
-          v-if="icon"
-          :type="icon" 
-        />
-        <slot name="title">
-          {{ title }}
-        </slot>
-      </div>
-      <img
+      <template 
         v-if="!hideTriangle"
-        :src="TriangleUrl"
-        alt="clickable"
-        :class="styles.triangle"
+        #append
       >
-    </button>
+        <TheIcon
+          type="caretDown"
+          :class="styles.triangle"
+        />
+      </template>
+    </TheBtn>
     <div
       ref="contentRef"
       :class="[
@@ -60,13 +56,13 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref, useCssModule, withDefaults } from 'vue';
-import TheIcon from '../TheIcon.vue';
+import { computed, ref, useCssModule } from 'vue';
+import TheBtn from './TheBtn.vue';
 import { capitalize } from '@/utils/helpers.ts';
-import TriangleUrl from '@/assets/icons/triangle-down.svg';
-// Types
-import type { IconType } from '../TheIcon.vue';
 import { CURRENT_OPTION_WEIGHT } from '@/utils/constants';
+// Types
+import type { IconType } from '@/utils/icons';
+import TheIcon from '../TheIcon.vue';
 
 const styles = useCssModule();
 type Props = {
@@ -115,9 +111,6 @@ const handleBtnClick = (e: MouseEvent | FocusEvent, newVal?: boolean) => {
   );
   content.style.maxHeight = height;
   (content.lastChild as HTMLElement).style.maxHeight = height;
-  if (!newVal) {
-    (container.firstChild as HTMLElement).blur();
-  }
   isOpened.value = newVal;
 };
 
@@ -137,8 +130,7 @@ const handleContentChanged = () => { // called after transition end.
   menu.style.maxHeight = height;
 };
 
-
-const menuItems = computed(() => {
+const letterConverter = computed(() => {
   /**
    * Convert letter case.
    */
@@ -146,12 +138,16 @@ const menuItems = computed(() => {
   if (props.letterCase === 'all-caps') {
     converter = (str: string) => str.toUpperCase();
   } else if (props.letterCase === 'title') converter = capitalize;
+  return converter;
+});
 
+
+const menuItems = computed(() => {
   return props.contents ? 
     typeof props.contents[0] === 'string' ?
       (props.contents as string[]).map((val) => ({
         val,
-        name: converter(val),
+        name: letterConverter.value(val),
         style: val === props.currentVal ? CURRENT_OPTION_WEIGHT : undefined,
       })) :
       (props.contents as {name: string; val: string;}[])

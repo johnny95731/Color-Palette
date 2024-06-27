@@ -1,3 +1,4 @@
+@use "@/assets/commons.module.scss" as *;
 $transDuration: 120ms;
 
 .dropdownMenu, .selectMenu {
@@ -13,10 +14,9 @@ $transDuration: 120ms;
   cursor: pointer;
 }
 
-.dropdownMenu {
-  .menuTitle {
-    justify-content: center;
-  }
+.dropdownMenu .menuTitle {
+  padding: 4px 8px;
+  column-gap: 4px;
 }
 
 .selectMenu {
@@ -27,17 +27,13 @@ $transDuration: 120ms;
     background-color: $color2;
   }
   .menuTitle {
-    >div {
-      flex: 1 1 0;
-      padding: 8px 0 8px 4px;
-      text-overflow: ellipsis;
+    padding: 8px 8px 8px 4px;
+    :global(.btn__content) {
+      display: block;
+      text-overflow: ellipsis; // `text-overflow` only works on block containers;
       overflow: hidden;
       white-space: nowrap;
     }
-  }
-  .triangle {
-    margin-right: 4px;
-    float: right;
   }
 }
 
@@ -55,9 +51,8 @@ $transDuration: 120ms;
   }
   >.menuTitle {
     border-radius: $radius-md $radius-md 0 0;
-    >.triangle {
+    .triangle::before {
       transform: rotate(180deg);
-      animation: rotation-in $transDuration 1 linear;
     }
   }
 }
@@ -65,39 +60,25 @@ $transDuration: 120ms;
 
 // dropdown menu title
 .menuTitle {
-  display: flex;
-  align-items: center;
-  // shape;
-  width: 100%;
-  border: none;
   border-radius: $radius-md;
-  padding: 0;
-  // style
-  background-color: inherit;
-  text-align: start;
-  font-size: var(--font-body);
-  font-weight: 600;
   transition: padding-bottom $transDuration ease-in-out;
-  .triangle {
-    animation: rotation-out $transDuration 1 linear;
-    flex: 0 0;
-  }
-}
 
-.triangle {
-  margin-left: 2px;
-  vertical-align: top;
+  .triangle::before {
+    vertical-align: baseline !important;
+    transition: transform $transDuration linear;
+    height: 10px !important;
+  }
 }
 
 %contentWrapper {
   // position
   position: absolute;
   top: 100%;
-  z-index: 1;
+  z-index: 999;
   // shape
   min-width: 100%;
   max-height: 0;
-  border-radius: $radius-md;
+  border-radius: 0 0 $radius-md $radius-md;
   overflow: hidden;
   
   background-color: $color1;
@@ -143,7 +124,7 @@ $transDuration: 120ms;
     &:hover {
       background-color: $color3;
     }
-    >:global(.icon) {
+    >:global(.icon)::before {
       position: absolute;
       transform: translateX(-100%);
       z-index: 10;

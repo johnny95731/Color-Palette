@@ -1,33 +1,19 @@
 <template>
   <TheHeader
-    @show-fav="showFavOffcanvas"
+    @show-fav="isFavShowing = true"
     @show-settings="showSettings"
   />
   <ThePalette />
-  <!-- Mask for  -->
-  <div
-    id="overlay"
-    :style="{
-      display: isShowOverlay ? undefined : 'none',
-      backgroundColor: pltState.isEditing ? 'transparent' : undefined,
-    }"
-    @click="$event.currentTarget === $event.target && handleOverlayChanged()"
-  >
-    <SettingDialog
-      v-if="isSettingsShowing"
-      @show-settings="showSettings"
-    />
-    <FavOffcanvas
-      :style="{
-        transform: isFavShowing ? 'translateX(-100%)' : '',
-      }"
-      @fav-showing="showFavOffcanvas"
-    />
-  </div>
+  <SettingDialog
+    v-model="isSettingsShowing"
+  />
+  <FavOffcanvas
+    v-model="isFavShowing"
+  />
 </template>
 
 <script setup lang='ts'>
-import { provide, ref, watchEffect, computed } from 'vue';
+import { provide, ref, onMounted, watch, computed } from 'vue';
 import TheHeader from './components/Header/TheHeader.vue';
 import ThePalette from './components/Palette/ThePalette.vue';
 import SettingDialog from './components/SettingDialog/SettingDialog.vue';
@@ -46,9 +32,10 @@ const isCardPending = computed(() => {
   return pltState.isEditing || pltState.isPending;
 });
 
-watchEffect(() => {
-  isShowOverlay.value = pltState.isEditing;
-});
+watch(
+  () => pltState.isEditing,
+  (newVal) => isShowOverlay.value = newVal
+);
 
 const handleOverlayChanged = () => {
   isShowOverlay.value = false;
@@ -60,23 +47,22 @@ const handleOverlayChanged = () => {
   isSettingsShowing.value = false;
   isFavShowing.value = false;
 };
+watch(isSettingsShowing, (newVal) => !newVal && pltState.setIsAdjustingPlt('cancel'));
 const showSettings = () => {
   const newVal = !isSettingsShowing.value;
   isSettingsShowing.value = newVal;
   isShowOverlay.value = newVal;
   pltState.setIsAdjustingPlt('cancel');
 };
-const showFavOffcanvas = () => {
-  const newVal = !isFavShowing.value;
-  isFavShowing.value = newVal;
-  isShowOverlay.value = newVal;
-};
 
 provide('media', media);
 
 // Connect hotkey.
-watchEffect((cleanup) => {
+onMounted(() => {
   const body = document.body;
+  // `preload` class for preventing annimation occurs on page load.
+  body.classList.remove('preload');
+
   const keyDownEvent = (e: KeyboardEvent) => {
     const key = e.key.toLowerCase();
     if (key === 'escape' && !isCardPending.value && isShowOverlay.value) {
@@ -100,18 +86,7 @@ watchEffect((cleanup) => {
     }
   };
   body.addEventListener('keydown', keyDownEvent);
-  cleanup(() => body.removeEventListener('keydown', keyDownEvent));
 });
 </script>
 
-<style lang='scss'>
-#overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  height: 100vh;
-  width: 100vw;
-  background-color: #0005;
-  z-index: 1;
-}
-</style>
+<style src="@/assets/transition.scss" />

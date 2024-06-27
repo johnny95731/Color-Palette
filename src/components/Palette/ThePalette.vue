@@ -22,7 +22,6 @@
       <div
         v-for="(val, i) in cardAttrs.positions"
         :key="`insert${i}`"
-        tabindex="-1"
         :class="$style.insertWrapper"
         :style="{[media.pos]: val}"
       >
@@ -383,72 +382,4 @@ const insertStyle = computed(() => (
 );
 </script>
 
-<style lang="scss" module>
-:global(#main) {
-  display: inline-block;
-  position: relative;
-  top: var(--header-height);
-  height: calc(var(--app-height) - var(--header-height));
-  width: 100%;
-}
-
-.insertWrapper {
-  position: absolute;
-  height: 100%;
-  width: 70px;
-  transform: translateX(-50%);
-  user-select: none;
-  >div {
-    @extend %center;
-    display: none;
-    // shape
-    height: 25px;
-    border-radius: $radius-lg;
-    padding: 10px;
-    background-color: #ffffffd0;
-    cursor: pointer;
-  }
-  .icon {
-    height: 100%;
-  }
-  &:hover >div {
-    display: block;
-  }
-
-  @include small {
-    height: 35px;
-    width: 100%;
-    transform: translateY(-50%);
-    >div {
-      display: block;
-      height: 13px;
-      padding: 7px;
-      border-radius: $radius-lg;
-      background-color: #fff;
-      opacity: 0.6;
-      .icon {
-        transform: rotate(90deg);
-      }
-    }
-    &:focus >div {
-      opacity: 1;
-    }
-  }
-  @include mobile {
-    height: 30px;
-    >div {
-      padding: 7px;
-      .icon {
-        transform: rotate(90deg);
-      }
-    }
-  }
-}
-
-.dragging {
-  box-shadow: 0px 0px 10px black;
-  pointer-events: none;
-  overscroll-behavior: none;
-  z-index: 1;
-}
-</style>
+<style src="./ThePalette.module.scss" module />

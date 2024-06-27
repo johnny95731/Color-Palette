@@ -190,12 +190,8 @@ const rgb2hsb = (rgb: number[]): number[] => {
  * @return CMYK color array.
  */
 const rgb2cmy = (rgb: number[]): number[] => {
-  const rgbMax = Math.max(...rgb);
-  // Tolerance = 0.5. <input(range)> have decimals.
-  if (rgbMax < 0.5) return [CMY_MAXES, CMY_MAXES, CMY_MAXES];
   const scalingCoeff = CMY_MAXES / RGB_MAXES;
-  const cmy = rgb.map((val) => (RGB_MAXES - val) * scalingCoeff);
-  return cmy;
+  return rgb.map((val) => (RGB_MAXES - val) * scalingCoeff);
 };
 
 /**
@@ -204,15 +200,11 @@ const rgb2cmy = (rgb: number[]): number[] => {
  * @return CMYK color array.
  */
 const rgb2cmyk = (rgb: number[]): number[] => {
-  const k = (RGB_MAXES - Math.max(...rgb)); // k in [0, RGB_MAXES].
-  // Tolerance = 0.5. <input(range)> have decimals.
-  if (CMYK_MAXES - CMYK_MAXES * k / RGB_MAXES < 0.5) {
-    return [0, 0, 0, CMYK_MAXES];
-  }
-  const kConst = CMYK_MAXES / (RGB_MAXES - k); // Scaling to [0, CMYK_MAXES].
-  const cmy = rgb.map((val) => (RGB_MAXES - val - k) * kConst);
-  cmy.push(k * (CMYK_MAXES / RGB_MAXES));
-  return cmy;
+  const cmy = rgb2cmy(rgb);
+  const k = Math.min(...cmy);
+  const cmyk = cmy.map(val => val - k);
+  cmyk.push(k);
+  return cmyk;
 };
 
 /**
@@ -325,14 +317,10 @@ const cmy2rgb = (cmy: number[]): number[] => {
  * @return RGB color array.
  */
 const cmyk2rgb = (cmyk: number[]): number[] => {
-  // K = 100%.
-  if (CMYK_MAXES - cmyk[3] < 0.5) return [0, 0, 0];
-  // Const relate to k.
-  const kConst = (RGB_MAXES / CMYK_MAXES) * (CMYK_MAXES - cmyk[3]);
-  const rgb = Array.from(
-    { length: 3 }, (_, i) => kConst * (1 - cmyk[i] / CMYK_MAXES),
+  const cmy = Array.from(
+    { length: 3 }, (_, i) => cmyk[i] + cmyk[3],
   );
-  return rgb;
+  return cmy2rgb(cmy);
 };
 
 const XYZ2RGB_COEFF = [
@@ -471,19 +459,21 @@ export const gradientGen = (
 ) => {
   const { inverter } = getSpaceInfos(space);
   const { range } = getSpaceInfos(space);
-  const gradLength = Math.ceil(
-    (
-      typeof range[axis] === 'number' ?
-        range[axis] :
-        range[axis][1] - range[axis][0]
-    ) / 8
+  const steps = 8;
+  const minmax = (
+    typeof range[axis] === 'number' ?
+      [0, range[axis]] :
+      [...range[axis]]
   );
+  const unitIncreament = (minmax[1] - minmax[0]) / steps;
   const grads: string[] = [];
   const arr = [...colors];
-  for (let j = 0; j < gradLength; j++) {
-    arr.splice(axis, 1, j * 8);
-    grads.push(`${rgb2hex(inverter(arr))} ${toPercent(j/gradLength)}%`);
+  for (let j = 0; j < steps; j++) {
+    arr.splice(axis, 1, minmax[0] + j * unitIncreament);
+    grads.push(`${rgb2hex(inverter(arr))} ${toPercent(j/steps)}%`);
   }
+  arr.splice(axis, 1, minmax[1]);
+  grads.push(`${rgb2hex(inverter(arr))} 100%`);
   return `linear-gradient(90deg, ${grads.join(', ')})`;
 };
 
