@@ -123,19 +123,17 @@
 
 %textPosition {
   position: relative;
-  left: 50%;
-  transform: translateX(-50%);
-  :global(.icon)::before {
-    position: absolute;
-    top: 50%;
-  }
+  margin-left: auto;
+  margin-right: auto;
+  text-wrap: nowrap;
 }
 @mixin textSize($icon-height, $icon-margin, $font-size) {
   font-size: $font-size;
   :global(.icon)::before {
+    position: absolute;
+    top: 50%;
     transform: translate(calc(-100% - #{$icon-margin}), -50%);
     height: $icon-height;
-    width: $icon-height;
   }
 }
 
@@ -148,7 +146,6 @@
   @extend %textPosition;
   @include textSize(calc(var(--font-sm) - 4px), 3px, var(--font-sm));
   margin-top: 4px;
-  text-wrap: nowrap;
 }
 
 .editor {
