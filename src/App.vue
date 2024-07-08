@@ -5,22 +5,29 @@
   />
   <ThePalette />
   <SettingDialog
+    v-if="isAppMounted"
     v-model="isSettingsShowing"
   />
   <FavOffcanvas
+    v-if="isAppMounted"
     v-model="isFavShowing"
   />
 </template>
 
 <script setup lang='ts'>
-import { provide, ref, onMounted, watch, computed } from 'vue';
+import { ref, onMounted, watch, computed, defineAsyncComponent } from 'vue';
 import TheHeader from './components/Header/TheHeader.vue';
 import ThePalette from './components/Palette/ThePalette.vue';
-import SettingDialog from './components/SettingDialog/SettingDialog.vue';
-import FavOffcanvas from './components/FavOffcanvas/FavOffcanvas.vue';
+const SettingDialog = defineAsyncComponent(
+  () => import('./components/SettingDialog/SettingDialog.vue')
+);
+// import SettingDialog from './components/SettingDialog/SettingDialog.vue';
+const FavOffcanvas = defineAsyncComponent(
+  () => import('./components/FavOffcanvas/FavOffcanvas.vue')
+);
+// import FavOffcanvas from './components/FavOffcanvas/FavOffcanvas.vue';
 // Store and Context
 import usePltStore from './features/stores/usePltStore';
-import media from './features/useMedia.ts';
 
 // Display / Hide fav-offcanvas
 const isSettingsShowing = ref(false);
@@ -55,10 +62,11 @@ const showSettings = () => {
   pltState.setIsAdjustingPlt('cancel');
 };
 
-provide('media', media);
+const isAppMounted = ref(false);
 
 // Connect hotkey.
 onMounted(() => {
+  isAppMounted.value = true;
   const body = document.body;
   // `preload` class for preventing annimation occurs on page load.
   body.classList.remove('preload');

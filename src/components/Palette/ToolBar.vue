@@ -29,8 +29,8 @@
       icon="draggable"
       style="cursor: grab;"
       aria-label="拖動"
-      @mousedown="$emit('dragging', $event)"
-      @touchstart="$emit('dragging', $event)"
+      @mousedown.passive="$emit('dragging', $event)"
+      @touchstart.passive="$emit('dragging', $event)"
     />
     <TheBtn
       icon="refresh"
@@ -49,13 +49,13 @@
 <script lang="ts" setup>
 import { computed } from 'vue';
 import styles from './TheCard.module.scss';
+import TheBtn from '../Custom/TheBtn.vue';
 // Stores
 import usePltStore from '@/features/stores/usePltStore.ts';
 import useFavStore from '@/features/stores/useFavStore.ts';
 // Types
 import type { CSSProperties } from 'vue';
 import type { CardType } from '@/features/types/pltType.ts';
-import TheBtn from '../Custom/TheBtn.vue';
 
 type Props = {
   cardIdx: number
@@ -63,6 +63,7 @@ type Props = {
   fgFilter: CSSProperties;
 }
 const props = defineProps<Props>();
+
 defineEmits<{
   (e: 'remove'): void,
   (e: 'dragging', val: MouseEvent | TouchEvent): void
