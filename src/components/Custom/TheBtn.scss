@@ -29,10 +29,8 @@ $transDuration: 120ms;
   cursor: pointer;
 
   &:hover,
-  &:focus-visible {
-    >.btn__overlay {
+  &:focus-visible > .btn__overlay {
       opacity: 0.14;
-    }
   }
   @supports not selector(:focus-visible) {
     &:focus > .btn__overlay {

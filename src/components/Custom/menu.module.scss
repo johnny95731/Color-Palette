@@ -80,7 +80,7 @@ $transDuration: 120ms;
   max-height: 0;
   border-radius: 0 0 $radius-md $radius-md;
   overflow: hidden;
-  
+
   background-color: $color1;
   box-sizing: border-box;
   transition: max-height $transDuration ease-in-out;
@@ -122,8 +122,13 @@ $transDuration: 120ms;
     text-wrap: nowrap;
     box-sizing: border-box;
     &:hover,
-    &:focus {
+    &:focus-visible {
       background-color: $color3;
+    }
+    @supports not selector(:focus-visible) {
+      &:focus {
+        background-color: $color3;
+      }
     }
     >:global(.icon)::before {
       position: absolute;
