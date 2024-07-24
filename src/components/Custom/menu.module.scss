@@ -111,7 +111,7 @@ $transDuration: 120ms;
   margin-block-end: 0;
   padding-inline-start: 0;
   box-sizing: border-box;
-  >li {
+  >* {
     display: block;
     width: 100%;
     font-weight: 600;
@@ -121,7 +121,8 @@ $transDuration: 120ms;
     text-align: center;
     text-wrap: nowrap;
     box-sizing: border-box;
-    &:hover {
+    &:hover,
+    &:focus {
       background-color: $color3;
     }
     >:global(.icon)::before {

@@ -64,17 +64,18 @@
   margin-block-end: 0;
   padding-inline-start: 0;
   @include small {
-    >menu >li >* {
+    >div >li >* {
       width: 100%
     }
   }
   .empty {
     flex-grow: 1;
   }
-  >menu > li {
+  >div > li {
     padding: 0;
     padding-bottom: 4px;
-    >div, >button {
+    >div,
+    >button {
       height: 100%;
     }
   }
@@ -94,7 +95,8 @@
     height: 18px;
     vertical-align: bottom;
   }
-  &:hover, &:focus {
+  &:hover,
+  &:focus {
     background-color: $color1;
   }
   @include small {

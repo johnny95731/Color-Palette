@@ -18,6 +18,7 @@
       aria-haspopup="menu"
       :aria-expanded="isOpened || undefined"
       :label="title"
+      @keydown="handleKeyPress"
     >
       <template 
         v-if="!hideTriangle"
@@ -37,25 +38,29 @@
       ]"
       @transitionend="handleContentChanged"
     >
-      <menu
+      <div
         :class="styles.menuContent"
+        :tabindex="-1"
+        @keydown="handleMenuKeyPress"
       >
         <slot
           name="items"
           items="menuItems"
         >
-          <li
+          <button
             v-for="(item) in menuItems"
             :key="item.val"
             :style="item.style"
+            type="button"
+            :tabindex="isOpened ? 0 : -1"
             @click="$emit('click-item', item.val)"
           >
             <slot :name="`item.${item.val}`">
               {{ item.name }}
             </slot>
-          </li>
+          </button>
         </slot>
-      </menu>
+      </div>
     </div>
   </div>
 </template>
@@ -93,31 +98,24 @@ const props = withDefaults(defineProps<Props>(), {
 const containerRef = ref<HTMLDivElement>();
 const contentRef = ref<HTMLDivElement>();
 
+const menuItems = computed(() => {
+  return props.contents ? 
+    typeof props.contents[0] === 'string' ?
+      (props.contents as string[]).map((val) => ({
+        val,
+        name: letterConverter.value(val),
+        style: val === props.currentVal ? CURRENT_OPTION_WEIGHT : undefined,
+      })) :
+      (props.contents as {name: string; val: string;}[])
+        .map(({ name, val }) => ({
+          val,
+          name,
+          style: val === props.currentVal ? CURRENT_OPTION_WEIGHT : undefined,
+        })) :
+    [];
+});
 // Open/Closing events
 const isOpened = ref(false);
-const handleBtnClick = (e: MouseEvent | FocusEvent, newVal?: boolean) => {
-  if ( // Avoid closing menu when click child.
-    e.type === 'focusout' &&
-    // `e.relatedTarget !== null` can not deal the case that click another
-    // foucusable element.
-    (e.currentTarget as HTMLElement).contains(e.relatedTarget as Element | null)
-  ) return;
-  const container = containerRef.value as HTMLDivElement;
-  const content = contentRef.value as HTMLElement;
-  if (e.type === 'click' && !content.contains(e.target as Node)) {
-    e.stopPropagation();
-  }
-  newVal = newVal ?? !isOpened.value;
-  const rect = container.getBoundingClientRect();
-  const height = (
-    newVal ?
-      `${document.body.clientHeight - rect.bottom}px` : // open
-      '' // close
-  );
-  content.style.maxHeight = height;
-  (content.lastChild as HTMLElement).style.maxHeight = height;
-  isOpened.value = newVal;
-};
 
 defineEmits<{
   'click-item': [val: string]
@@ -146,23 +144,77 @@ const letterConverter = computed(() => {
   return converter;
 });
 
+const handleBtnClick = (e: MouseEvent | FocusEvent, newVal?: boolean) => {
+  console.log(e.type, e.relatedTarget);
+  if ( // Avoid closing menu when click child.
+    e.type === 'focusout' &&
+    // `e.relatedTarget !== null` can not deal the case that click another
+    // foucusable element.
+    (e.currentTarget as HTMLElement).contains(e.relatedTarget as Element | null)
+  ) return;
+  const container = containerRef.value as HTMLDivElement;
+  const content = contentRef.value as HTMLElement;
+  if (e.type === 'click' && !content.contains(e.target as Node)) {
+    e.stopPropagation();
+  }
+  newVal = newVal ?? !isOpened.value;
+  const rect = container.getBoundingClientRect();
+  const height = (
+    newVal ?
+      `${document.body.clientHeight - rect.bottom}px` : // open
+      '' // close
+  );
+  content.style.maxHeight = height;
+  (content.lastChild as HTMLElement).style.maxHeight = height;
+  isOpened.value = newVal;
+};
 
-const menuItems = computed(() => {
-  return props.contents ? 
-    typeof props.contents[0] === 'string' ?
-      (props.contents as string[]).map((val) => ({
-        val,
-        name: letterConverter.value(val),
-        style: val === props.currentVal ? CURRENT_OPTION_WEIGHT : undefined,
-      })) :
-      (props.contents as {name: string; val: string;}[])
-        .map(({ name, val }) => ({
-          val,
-          name,
-          style: val === props.currentVal ? CURRENT_OPTION_WEIGHT : undefined,
-        })) :
-    [];
-});
+const handleKeyPress = (e: KeyboardEvent) => {
+  const key = e.key;
+  const menu = contentRef.value?.firstElementChild as HTMLDivElement;
+  let target: HTMLButtonElement | null = null;
+  switch(key) {
+  case 'Tab':
+    if (!isOpened.value) return;
+    e.preventDefault();
+  // eslint-disable-next-line
+  case 'Home':
+  case 'ArrowRight':
+    target = menu.firstElementChild as HTMLButtonElement;
+    break;
+  case 'End':
+  case 'ArrowLeft':
+    target = menu.lastElementChild as HTMLButtonElement;
+    break;
+  }
+  target?.focus();
+  e.stopPropagation();
+};
+const handleMenuKeyPress = (e: KeyboardEvent) => {
+  const key = e.key;
+  const menu = contentRef.value?.firstElementChild as HTMLDivElement;
+  switch(key) {
+  case 'Home':
+    (menu.firstElementChild as HTMLButtonElement).focus();
+    break;
+  case 'End':
+    (menu.lastElementChild as HTMLButtonElement).focus();
+    break;
+  case 'ArrowRight':
+  case 'ArrowLeft':
+    {
+      const bias = key.endsWith('Left') ? menu.children.length - 1 : 1;
+      // @ts-expect-error
+      const nthChildFocused = [...menu.children].indexOf(document.activeElement) as number;
+      const sibIdx = (
+        (nthChildFocused === -1 ? 0 : nthChildFocused) + bias
+      ) % menu.children.length as number;
+      (menu.children[sibIdx] as HTMLButtonElement).focus();
+    }
+    break;
+  }
+  e.stopPropagation();
+};
 </script>
 
 <style src="./menu.module.scss" module />

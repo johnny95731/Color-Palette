@@ -17,6 +17,7 @@
       aria-haspopup="menu"
       :aria-expanded="isOpened || undefined"
       :label="showValue ? (modelValue ?? currentVal) : (title ?? 'menu')"
+      @keydown="handleKeyPress"
     >
       <template #append>
         <TheIcon
@@ -33,24 +34,30 @@
       ]"
       @transitionend="handleContentChanged"
     >
-      <menu :class="styles.menuContent">
+      <div
+        :class="styles.menuContent"
+        :tabindex="-1"
+        @keydown="handleMenuKeyPress"
+      >
         <slot
           name="items"
           :select="handleSelect"
           :liStyle="liStyle"
         >
-          <li
+          <button
             v-for="(val, i) in options"
             :key="`Option ${val}`"
             :style="liStyle(i)"
+            type="button"
+            :tabindex="isOpened ? 0 : -1"
             @click="handleSelect(i);"
           >
             {{
               val
             }}
-          </li>
+          </button>
         </slot>
-      </menu>
+      </div>
     </div>
   </div>
 </template>
@@ -147,6 +154,53 @@ const handleSelect = (idx: number) => {
 
 const liStyle = (idx: number) =>
   idx === currentIdx.value ? CURRENT_OPTION_WEIGHT : undefined;
+
+const handleKeyPress = (e: KeyboardEvent) => {
+  const key = e.key;
+  const menu = contentRef.value?.firstElementChild as HTMLDivElement;
+  let target: HTMLButtonElement | null = null;
+  switch(key) {
+  case 'Tab':
+    e.preventDefault();
+  // eslint-disable-next-line
+  case 'Home':
+  case 'ArrowRight':
+    target = menu.firstElementChild as HTMLButtonElement;
+    break;
+  case 'End':
+  case 'ArrowLeft':
+    target = menu.lastElementChild as HTMLButtonElement;
+    break;
+  }
+  target?.focus();
+  e.stopPropagation();
+};
+
+const handleMenuKeyPress = (e: KeyboardEvent) => {
+  const key = e.key;
+  const menu = contentRef.value?.firstElementChild as HTMLDivElement;
+  switch(key) {
+  case 'Home':
+    (menu.firstElementChild as HTMLButtonElement).focus();
+    break;
+  case 'End':
+    (menu.lastElementChild as HTMLButtonElement).focus();
+    break;
+  case 'ArrowRight':
+  case 'ArrowLeft':
+    {
+      const bias = key.endsWith('Left') ? menu.children.length - 1 : 1;
+      // @ts-expect-error
+      const nthChildFocused = [...menu.children].indexOf(document.activeElement) as number;
+      const sibIdx = (
+        (nthChildFocused === -1 ? 0 : nthChildFocused) + bias
+      ) % menu.children.length as number;
+      (menu.children[sibIdx] as HTMLButtonElement).focus();
+    }
+    break;
+  }
+  e.stopPropagation();
+};
 </script>
 
 <style src="./menu.module.scss" module />
