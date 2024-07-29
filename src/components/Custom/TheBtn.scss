@@ -9,11 +9,12 @@ $transDuration: 120ms;
   justify-content: center;
   grid-template-areas: "prepend content append";
   grid-template-columns: max-content minmax(0, 1fr) max-content;
+  column-gap: 4px;
   text-align: start;
   vertical-align: middle;
   // shape;
   height: 31px;
-  width: 100%;
+  width: auto;
   border: none;
   border-radius: $radius-lg;
   padding: 4px 8px;
@@ -29,8 +30,10 @@ $transDuration: 120ms;
   cursor: pointer;
 
   &:hover,
-  &:focus-visible > .btn__overlay {
+  &:focus-visible {
+    > .btn__overlay {
       opacity: 0.14;
+    }
   }
   @supports not selector(:focus-visible) {
     &:focus > .btn__overlay {

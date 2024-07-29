@@ -145,7 +145,7 @@
                 :class="$style.buttons"
               >
                 <TheBtn
-                  label="Reset" 
+                  label="Reset"
                   :class="$style.resetBtn"
                   @click="contrastBtnEvent('reset')"
                 />

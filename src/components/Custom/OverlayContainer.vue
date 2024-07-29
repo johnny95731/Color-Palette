@@ -1,6 +1,7 @@
 <template>
   <Teleport to="#overlay-container">
     <div
+      v-bind="useAttrs"
       v-if="eager || model"
       v-show="model"
       ref="containerRef"
@@ -23,7 +24,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, useAttrs } from 'vue';
 
 type Props = {
   /**

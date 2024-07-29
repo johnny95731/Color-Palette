@@ -1,80 +1,73 @@
 <template>
-  <div
-    ref="containerRef"
+  <TheBtn
+    ref="activatorRef"
     :class="[
-      styles.dropdownMenu,
-      isOpened && styles.active
+      'dropdown-menu',
+      isOpened && 'active',
+      titleClass
     ]"
-    tabindex="-1"
+    type="button"
+    :prepend-icon="icon"
+    aria-haspopup="menu"
+    :aria-expanded="isOpened || undefined"
+    :label="title"
     @click="handleBtnClick"
     @focusout="handleBtnClick($event, false)"
+    @keydown="handleKeyDown"
   >
-    <TheBtn 
-      :class="[
-        styles.menuTitle, titleClass
-      ]"
-      type="button"
-      :prepend-icon="icon"
-      aria-haspopup="menu"
-      :aria-expanded="isOpened || undefined"
-      :label="title"
-      @keydown="handleKeyPress"
+    <template
+      #append
     >
-      <template 
+      <TheIcon
         v-if="!hideTriangle"
-        #append
-      >
-        <TheIcon
-          type="caretDown"
-          :class="styles.triangle"
-        />
-      </template>
-    </TheBtn>
-    <div
-      ref="contentRef"
-      :class="[
-        isMobile ? styles.mobileContentWrapper : styles.contentWrapper,
-        contentClass
-      ]"
-      @transitionend="handleContentChanged"
-    >
-      <div
-        :class="styles.menuContent"
-        :tabindex="-1"
-        @keydown="handleMenuKeyPress"
-      >
-        <slot
-          name="items"
-          items="menuItems"
+        type="caretDown"
+        class="triangle"
+      />
+      <Teleport to="#overlay-container">
+        <div
+          ref="contentRef"
+          :class="[
+            isMobile ? 'mobile-menu-content-wrapper' : 'menu-content-wrapper',
+            isOpened && 'active',
+            contentClass
+          ]"
+          :tabindex="-1"
+          @click="handleBtnClick"
+          @focusout="handleBtnClick($event, false)"
+          @keydown="handleKeyDown"
         >
-          <button
-            v-for="(item) in menuItems"
-            :key="item.val"
-            :style="item.style"
-            type="button"
-            :tabindex="isOpened ? 0 : -1"
-            @click="$emit('click-item', item.val)"
+          <slot
+            name="items"
+            items="menuItems"
           >
-            <slot :name="`item.${item.val}`">
-              {{ item.name }}
-            </slot>
-          </button>
-        </slot>
-      </div>
-    </div>
-  </div>
+            <button
+              v-for="(item) in menuItems"
+              :key="item.val"
+              :style="item.style"
+              type="button"
+              :tabindex="isOpened ? 0 : -1"
+              @click="$emit('click-item', item.val)"
+            >
+              <slot :name="`item.${item.val}`">
+                {{ item.name }}
+              </slot>
+            </button>
+          </slot>
+        </div>
+      </Teleport>
+    </template>
+  </TheBtn>
 </template>
 
 <script lang="ts" setup>
-import { computed, ref, useCssModule } from 'vue';
+import { computed, ref, onMounted, watch } from 'vue';
 import TheBtn from './TheBtn.vue';
+import TheIcon from '../TheIcon.vue';
 import { capitalize } from '@/utils/helpers.ts';
 import { CURRENT_OPTION_WEIGHT } from '@/utils/constants';
 // Types
 import type { IconType } from '@/utils/icons';
-import TheIcon from '../TheIcon.vue';
 
-const styles = useCssModule();
 type Props = {
   isMobile?: boolean;
   title?: string,
@@ -95,11 +88,26 @@ type Props = {
 const props = withDefaults(defineProps<Props>(), {
   letterCase: 'title',
 });
-const containerRef = ref<HTMLDivElement>();
+const activatorRef = ref<InstanceType<typeof TheBtn>>();
 const contentRef = ref<HTMLDivElement>();
 
+defineEmits<{
+  'click-item': [val: string]
+}>();
+
+const letterConverter = computed(() => {
+  /**
+   * Convert letter case.
+   */
+  let converter = (x: string) => x; // origin
+  if (props.letterCase === 'all-caps') {
+    converter = (str: string) => str.toUpperCase();
+  } else if (props.letterCase === 'title') converter = capitalize;
+  return converter;
+});
+
 const menuItems = computed(() => {
-  return props.contents ? 
+  return props.contents ?
     typeof props.contents[0] === 'string' ?
       (props.contents as string[]).map((val) => ({
         val,
@@ -114,101 +122,75 @@ const menuItems = computed(() => {
         })) :
     [];
 });
+
 // Open/Closing events
 const isOpened = ref(false);
 
-defineEmits<{
-  'click-item': [val: string]
-}>();
+onMounted(() => {
+  const activator = activatorRef.value as NonNullable<typeof activatorRef.value>;
+  const menu = contentRef.value as NonNullable<typeof contentRef.value>;
+  menu.style.minWidth = window.getComputedStyle(activator.$el).width;
+});
 
-const handleContentChanged = () => { // called after transition end.
-  if (props.isMobile) return;
-  const content = contentRef.value as HTMLDivElement;
-  if (!content) return;
-  const menu = content.lastElementChild as HTMLMenuElement;
-  const rect = content.getBoundingClientRect();
-  const height = isOpened.value ? `${rect.height}px` : '';
-  content.style.maxHeight = height;
-  menu.style.height = height;
-  menu.style.maxHeight = height;
-};
-
-const letterConverter = computed(() => {
-  /**
-   * Convert letter case.
-   */
-  let converter = (x: string) => x; // origin
-  if (props.letterCase === 'all-caps') {
-    converter = (str: string) => str.toUpperCase();
-  } else if (props.letterCase === 'title') converter = capitalize;
-  return converter;
+watch(isOpened, (newVal) => {
+  if (!newVal) return;
+  const activator = activatorRef.value as NonNullable<typeof activatorRef.value>;
+  const menu = contentRef.value as NonNullable<typeof contentRef.value>;
+  const rect = activator.$el.getBoundingClientRect();
+  menu.style.top = `${rect.bottom}px`;
+  menu.style.left = `${rect.left}px`;
 });
 
 const handleBtnClick = (e: MouseEvent | FocusEvent, newVal?: boolean) => {
-  console.log(e.type, e.relatedTarget);
-  if ( // Avoid closing menu when click child.
+  const activator = activatorRef.value as NonNullable<typeof activatorRef.value>;
+  const menu = contentRef.value as NonNullable<typeof contentRef.value>;
+  if (// Avoid changing `isOpened` twice
     e.type === 'focusout' &&
-    // `e.relatedTarget !== null` can not deal the case that click another
-    // foucusable element.
-    (e.currentTarget as HTMLElement).contains(e.relatedTarget as Element | null)
+    ( // Focusout activator when click menu content
+      menu.contains(e.relatedTarget as Element | null) ||
+      // Foucusout menu content when click activator.
+      e.relatedTarget === activator.$el
+    )
   ) return;
-  const container = containerRef.value as HTMLDivElement;
-  const content = contentRef.value as HTMLElement;
-  if (e.type === 'click' && !content.contains(e.target as Node)) {
-    e.stopPropagation();
-  }
-  newVal = newVal ?? !isOpened.value;
-  const rect = container.getBoundingClientRect();
-  const height = (
-    newVal ?
-      `${document.body.clientHeight - rect.bottom}px` : // open
-      '' // close
-  );
-  content.style.maxHeight = height;
-  (content.lastChild as HTMLElement).style.maxHeight = height;
-  isOpened.value = newVal;
+  isOpened.value = newVal ?? !isOpened.value;
 };
 
-const handleKeyPress = (e: KeyboardEvent) => {
+const handleKeyDown = (e: KeyboardEvent) => {
   const key = e.key;
-  const menu = contentRef.value?.firstElementChild as HTMLDivElement;
-  let target: HTMLButtonElement | null = null;
+  const activator = activatorRef.value as NonNullable<typeof activatorRef.value>;
+  const menu = contentRef.value as HTMLDivElement;
+  // @ts-expect-error
+  const nthChildFocused = [...menu.children].indexOf(document.activeElement) as number;
+  console.log(nthChildFocused);
   switch(key) {
   case 'Tab':
-    if (!isOpened.value) return;
-    e.preventDefault();
-  // eslint-disable-next-line
-  case 'Home':
-  case 'ArrowRight':
-    target = menu.firstElementChild as HTMLButtonElement;
+    if (nthChildFocused === menu.children.length - 1) {
+      activator.$el.focus();
+      isOpened.value = false;
+    } else if (nthChildFocused === 0 && e.shiftKey) {
+      activator.$el.focus();
+      isOpened.value = false;
+      e.preventDefault();
+    } else if (nthChildFocused === -1 && isOpened.value && !e.shiftKey) {
+      // focusing activator && openning menu && not shift+tab
+      menu.focus(); // with default tab event => focus first menu option.
+    }
     break;
-  case 'End':
-  case 'ArrowLeft':
-    target = menu.lastElementChild as HTMLButtonElement;
-    break;
-  }
-  target?.focus();
-  e.stopPropagation();
-};
-const handleMenuKeyPress = (e: KeyboardEvent) => {
-  const key = e.key;
-  const menu = contentRef.value?.firstElementChild as HTMLDivElement;
-  switch(key) {
   case 'Home':
-    (menu.firstElementChild as HTMLButtonElement).focus();
+    (menu.children[0] as HTMLButtonElement).focus();
     break;
   case 'End':
     (menu.lastElementChild as HTMLButtonElement).focus();
     break;
   case 'ArrowRight':
   case 'ArrowLeft':
-    {
+    if (nthChildFocused === -1) { // focusing activator
+      key.endsWith('Left') ?
+        (menu.lastElementChild as HTMLButtonElement).focus() :
+        (menu.children[0] as HTMLButtonElement).focus();
+    } else {
       const bias = key.endsWith('Left') ? menu.children.length - 1 : 1;
-      // @ts-expect-error
-      const nthChildFocused = [...menu.children].indexOf(document.activeElement) as number;
-      const sibIdx = (
-        (nthChildFocused === -1 ? 0 : nthChildFocused) + bias
-      ) % menu.children.length as number;
+      const sibIdx = (nthChildFocused + bias) % menu.children.length as number;
       (menu.children[sibIdx] as HTMLButtonElement).focus();
     }
     break;
@@ -217,4 +199,4 @@ const handleMenuKeyPress = (e: KeyboardEvent) => {
 };
 </script>
 
-<style src="./menu.module.scss" module />
+<style src="./Menus.scss" />

@@ -10,23 +10,21 @@
       v-if="!isSmall"
       :class="$style.menuWrapper"
     >
-      <menu
+      <div
         :class="$style.menubar"
       >
         <HeaderBtns
           @show-fav="$emit('show-fav')"
           @show-settings="$emit('show-settings')"
         />
-      </menu>
+      </div>
     </div>
     <DropdownMenu
       v-else-if="isSmall"
-      :className="$style.menuWrapper"
       :titleClass="$style.menubarTitle"
       :contentClass="$style.menubar"
-      iconType="list"
-      :isMobile="true"
       icon="list"
+      :isMobile="true"
       hideTriangle
     >
       <template #items>

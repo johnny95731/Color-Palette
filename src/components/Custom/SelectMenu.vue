@@ -1,77 +1,79 @@
 <template>
-  <div
-    ref="containerRef"
+  <!-- <div> -->
+  <TheBtn
+    ref="activatorRef"
     :class="[
-      styles.selectMenu,
-      isOpened && styles.active
+      'select-menu',
+      isOpened && 'active',
+      titleClass
     ]"
-    tabIndex="-1"
+    type="button"
+    aria-haspopup="menu"
+    :aria-expanded="isOpened || undefined"
+    :label="showValue ? (modelValue ?? currentVal) : (title ?? 'menu')"
     @click="handleBtnClick"
     @focusout="handleBtnClick($event, false)"
+    @keydown="handleKeyDown"
   >
-    <TheBtn
-      :class="[
-        styles.menuTitle, titleClass
-      ]"
-      type="button"
-      aria-haspopup="menu"
-      :aria-expanded="isOpened || undefined"
-      :label="showValue ? (modelValue ?? currentVal) : (title ?? 'menu')"
-      @keydown="handleKeyPress"
-    >
-      <template #append>
-        <TheIcon
-          type="caretDown"
-          :class="styles.triangle"
-        />
-      </template>
-    </TheBtn>
-    <div
-      ref="contentRef"
-      :class="[
-        props.isMobile ? styles.mobileContentWrapper : styles.contentWrapper,
-        contentClass
-      ]"
-      @transitionend="handleContentChanged"
-    >
-      <div
-        :class="styles.menuContent"
-        :tabindex="-1"
-        @keydown="handleMenuKeyPress"
-      >
-        <slot
-          name="items"
-          :select="handleSelect"
-          :liStyle="liStyle"
+    <template #append>
+      <TheIcon
+        type="caretDown"
+        class="triangle"
+      />
+      <Teleport to="#overlay-container">
+        <div
+          ref="contentRef"
+          :class="[
+            isMobile ? 'mobile-menu-content-wrapper' : 'menu-content-wrapper',
+            isOpened && 'active',
+            contentClass
+          ]"
+          :tabindex="-1"
+          @click="handleBtnClick"
+          @focusout="handleBtnClick($event, false)"
+          @keydown="handleKeyDown"
         >
-          <button
-            v-for="(val, i) in options"
-            :key="`Option ${val}`"
-            :style="liStyle(i)"
-            type="button"
-            :tabindex="isOpened ? 0 : -1"
-            @click="handleSelect(i);"
+          <slot
+            name="items"
+            :select="handleSelect"
+            :liStyle="liStyle"
           >
-            {{
-              val
-            }}
-          </button>
-        </slot>
-      </div>
-    </div>
-  </div>
+            <button
+              v-for="(val, i) in options"
+              :key="`Option ${val}`"
+              :style="liStyle(i)"
+              type="button"
+              :tabindex="isOpened ? 0 : -1"
+              @click="handleSelect(i);"
+            >
+              {{
+                val
+              }}
+            </button>
+          </slot>
+        </div>
+      </Teleport>
+    </template>
+  </TheBtn>
+  <!-- <div class="field">
+      <input
+        type="text"
+        inputmode="none"
+      >
+    </div> -->
+  <!-- </div> -->
 </template>
 
 <script setup lang="ts">
-import { useCssModule, watch, ref } from 'vue';
+import { watch, ref, onMounted } from 'vue';
 import TheBtn from './TheBtn.vue';
 import TheIcon from '../TheIcon.vue';
 import { CURRENT_OPTION_WEIGHT } from '@/utils/constants';
 
-const styles = useCssModule();
 type Props = {
   isMobile?: boolean,
   options: readonly string[],
+  label?: string,
   title?: string,
   showValue?: boolean,
   titleClass?: string,
@@ -85,41 +87,8 @@ type Props = {
 const props = withDefaults(defineProps<Props>(), {
   showValue: true,
 });
-const containerRef = ref<HTMLDivElement>();
+const activatorRef = ref<InstanceType<typeof TheBtn>>();
 const contentRef = ref<HTMLDivElement>();
-
-// Open/Closing events
-const isOpened = ref(false);
-const handleBtnClick = (e: MouseEvent | FocusEvent, newVal?: boolean) => {
-  if ( // Avoid closing menu when click child.
-    e.type === 'focusout' &&
-    // `e.relatedTarget !== null` can not deal the case that click another
-    // foucusable element.
-    (e.currentTarget as HTMLElement).contains(e.relatedTarget as Element | null)
-  ) return;
-  const container = containerRef.value as HTMLDivElement;
-  const content = contentRef.value as HTMLElement;
-  if (e.type === 'click' && !content.contains(e.target as Node)) {
-    e.stopPropagation();
-  }
-  newVal = newVal ?? !isOpened.value;
-  const rect = container.getBoundingClientRect();
-  content.style.maxHeight = (
-    newVal ?
-      `${document.body.clientHeight - rect.bottom}px` : // open
-      '' // close
-  );
-  isOpened.value = newVal;
-};
-
-const handleContentChanged = () => { // called after transition end.
-  const content = contentRef.value as HTMLDivElement;
-  if (!content) return;
-  const rect = content.getBoundingClientRect();
-  const height = isOpened.value ? `${rect.height}px` : '';
-  content.style.maxHeight = height;
-  content.style.height = height;
-};
 
 // Values events
 const model = defineModel<string>();
@@ -155,46 +124,75 @@ const handleSelect = (idx: number) => {
 const liStyle = (idx: number) =>
   idx === currentIdx.value ? CURRENT_OPTION_WEIGHT : undefined;
 
-const handleKeyPress = (e: KeyboardEvent) => {
-  const key = e.key;
-  const menu = contentRef.value?.firstElementChild as HTMLDivElement;
-  let target: HTMLButtonElement | null = null;
-  switch(key) {
-  case 'Tab':
-    e.preventDefault();
-  // eslint-disable-next-line
-  case 'Home':
-  case 'ArrowRight':
-    target = menu.firstElementChild as HTMLButtonElement;
-    break;
-  case 'End':
-  case 'ArrowLeft':
-    target = menu.lastElementChild as HTMLButtonElement;
-    break;
-  }
-  target?.focus();
-  e.stopPropagation();
+// Open/Closing events
+const isOpened = ref(false);
+
+onMounted(() => {
+  const activator = activatorRef.value as NonNullable<typeof activatorRef.value>;
+  const menu = contentRef.value as NonNullable<typeof contentRef.value>;
+  menu.style.minWidth = window.getComputedStyle(activator.$el).width;
+});
+
+watch(isOpened, (newVal) => {
+  if (!newVal) return;
+  const activator = activatorRef.value as NonNullable<typeof activatorRef.value>;
+  const menu = contentRef.value as NonNullable<typeof contentRef.value>;
+  const rect = activator.$el.getBoundingClientRect();
+  menu.style.top = `${rect.bottom}px`;
+  menu.style.left = `${rect.left}px`;
+  menu.style.maxHeight = '160px';
+  // menu.style.height = `${100}px`;
+});
+
+const handleBtnClick = (e: MouseEvent | FocusEvent, newVal?: boolean) => {
+  const activator = activatorRef.value as NonNullable<typeof activatorRef.value>;
+  const menu = contentRef.value as NonNullable<typeof contentRef.value>;
+  if (// Avoid changing `isOpened` twice
+    e.type === 'focusout' &&
+    ( // Focusout activator when click menu content
+      menu.contains(e.relatedTarget as Element | null) ||
+      // Foucusout menu content when click activator.
+      e.relatedTarget === activator.$el
+    )
+  ) return;
+  isOpened.value = newVal ?? !isOpened.value;
 };
 
-const handleMenuKeyPress = (e: KeyboardEvent) => {
+const handleKeyDown = (e: KeyboardEvent) => {
   const key = e.key;
-  const menu = contentRef.value?.firstElementChild as HTMLDivElement;
+  const activator = activatorRef.value as NonNullable<typeof activatorRef.value>;
+  const menu = contentRef.value as NonNullable<typeof contentRef.value>;
+  // @ts-expect-error
+  const nthChildFocused = [...menu.children].indexOf(document.activeElement) as number;
   switch(key) {
+  case 'Tab':
+    if (nthChildFocused > 0) {
+      activator.$el.focus();
+      isOpened.value = false;
+    } else if (nthChildFocused === 0 && e.shiftKey) {
+      activator.$el.focus();
+      isOpened.value = false;
+      e.preventDefault();
+    } else if (nthChildFocused === -1 && isOpened.value && !e.shiftKey) {
+      // focusing activator && openning menu && not shift+tab
+      menu.focus(); // with default tab event => focus first menu option.
+    }
+    break;
   case 'Home':
-    (menu.firstElementChild as HTMLButtonElement).focus();
+    (menu.children[0] as HTMLButtonElement).focus();
     break;
   case 'End':
     (menu.lastElementChild as HTMLButtonElement).focus();
     break;
   case 'ArrowRight':
   case 'ArrowLeft':
-    {
+    if (nthChildFocused === -1) { // focusing activator
+      key.endsWith('Left') ?
+        (menu.lastElementChild as HTMLButtonElement).focus() :
+        (menu.children[0] as HTMLButtonElement).focus();
+    } else {
       const bias = key.endsWith('Left') ? menu.children.length - 1 : 1;
-      // @ts-expect-error
-      const nthChildFocused = [...menu.children].indexOf(document.activeElement) as number;
-      const sibIdx = (
-        (nthChildFocused === -1 ? 0 : nthChildFocused) + bias
-      ) % menu.children.length as number;
+      const sibIdx = (nthChildFocused + bias) % menu.children.length as number;
       (menu.children[sibIdx] as HTMLButtonElement).focus();
     }
     break;
@@ -203,4 +201,4 @@ const handleMenuKeyPress = (e: KeyboardEvent) => {
 };
 </script>
 
-<style src="./menu.module.scss" module />
+<style src="./Menus.scss" />
