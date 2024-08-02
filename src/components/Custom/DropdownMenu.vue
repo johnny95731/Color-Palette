@@ -9,8 +9,9 @@
     type="button"
     :prepend-icon="icon"
     aria-haspopup="menu"
+    :aria-controls="idForMenu"
     :aria-expanded="isOpened || undefined"
-    :label="title"
+    :text="title"
     @click="handleBtnClick"
     @focusout="handleBtnClick($event, false)"
     @keydown="handleKeyDown"
@@ -26,11 +27,15 @@
       <Teleport to="#overlay-container">
         <div
           ref="contentRef"
+          :id="idForMenu"
           :class="[
             isMobile ? 'mobile-menu-content-wrapper' : 'menu-content-wrapper',
             isOpened && 'active',
             contentClass
           ]"
+          role="menu"
+          :aria-expanded="isOpened"
+          aria-live="polite"
           :tabindex="-1"
           @click="handleBtnClick"
           @focusout="handleBtnClick($event, false)"
@@ -45,6 +50,7 @@
               :key="item.val"
               :style="item.style"
               type="button"
+              role="menuitem"
               :tabindex="isOpened ? 0 : -1"
               @click="$emit('click-item', item.val)"
             >
@@ -60,10 +66,10 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref, onMounted, watch } from 'vue';
+import { computed, ref, onMounted, watch, onUnmounted } from 'vue';
 import TheBtn from './TheBtn.vue';
 import TheIcon from '../TheIcon.vue';
-import { capitalize } from '@/utils/helpers.ts';
+import { capitalize, componentUniqueId, removeComponentId } from '@/utils/helpers.ts';
 import { CURRENT_OPTION_WEIGHT } from '@/utils/constants';
 // Types
 import type { IconType } from '@/utils/icons';
@@ -76,6 +82,7 @@ type Props = {
     name: string,
     val: string,
   }[];
+  menuId?:string,
   titleClass?: string;
   contentClass?: string;
   currentVal?: string;
@@ -90,6 +97,17 @@ const props = withDefaults(defineProps<Props>(), {
 });
 const activatorRef = ref<InstanceType<typeof TheBtn>>();
 const contentRef = ref<HTMLDivElement>();
+
+/**
+ * Create Id for menu content
+ */
+const idForMenu = computed<string>(() =>
+  props.menuId ?? componentUniqueId('menu')
+);
+onUnmounted(() => {
+  removeComponentId(idForMenu.value, 'menu');
+});
+
 
 defineEmits<{
   'click-item': [val: string]

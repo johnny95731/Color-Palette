@@ -34,17 +34,21 @@ $header-height: 34px;
 
     user-select: none;
   }
-  >:global(.icon)::before {
-    margin: 6px;
+  :global(.btn) {
     // shape
-    height: 13px;
+    height: 100%;
+    aspect-ratio: 1/1;
     padding: 4px;
-    border-radius: $radius-lg;
+    color: white;
 
-    filter: invert(1);
-    &:hover {
-      filter: none;
-      background-color: $color3;
+    :global(.icon)::before {
+      // shape
+      height: 13px;
+      filter: invert(1);
+
+      &:hover {
+        filter: none;
+      }
     }
   }
 }
@@ -54,7 +58,7 @@ $header-height: 34px;
   flex: 1 1 auto;
   height: 25px;
   width: 100%;
-  
+
   background-color: $color5;
   user-select: none;
 }
@@ -98,9 +102,9 @@ $header-height: 34px;
   width: 100%;
   padding: 3px 20px 10px;
   box-sizing: border-box;
-  >label, >div, >input {
+  font-size: var(--font-body);
+  >label, >div, >input, >span {
     max-height: min-content;
-    font-size: var(--font-body);
   }
   >h3 {
     grid-column-start: 1;
@@ -123,18 +127,6 @@ $header-height: 34px;
     box-sizing: border-box;
     width: 100%;
   }
-}
-
-.optionLabel, .suboptionLabel {
-  grid-column-start: 1;
-  grid-column-end: 2;
-}
-
-.suboptionLabel {
-  // shape
-  width: 100%;
-
-  font-size: var(--font-sm);
 }
 
 .buttons {

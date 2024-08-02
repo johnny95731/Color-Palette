@@ -4,7 +4,7 @@
     :class="$style.btn"
     prepend-icon="refresh"
     aria-label="刷新調色盤"
-    label="Refresh"
+    text="Refresh"
     @click="pltState.refreshCard(-1)"
   />
   <TheBtn
@@ -12,7 +12,7 @@
     :class="$style.btn"
     :prepend-icon="isRunning ? 'pause' : 'play'"
     :aria-label="isRunning ? '暫停' : '自動刷新'"
-    label="Slides"
+    text="Slides"
     @click="haldleClickSlides"
   />
   <DropdownMenu
@@ -53,7 +53,7 @@
   <TheBtn
     :class="$style.btn"
     prepend-icon="bookmarks"
-    label="Bookmarks"
+    text="Bookmarks"
     aria-label="書籤"
     aria-haspopup="dialog"
     @click="$emit('show-fav')"
@@ -61,7 +61,7 @@
   <TheBtn
     :class="$style.btn"
     prepend-icon="setting"
-    label="Settings"
+    text="Settings"
     aria-label="設定"
     aria-haspopup="dialog"
     @click="$emit('show-settings')"

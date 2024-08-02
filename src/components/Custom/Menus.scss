@@ -1,7 +1,7 @@
 @use "@/assets/commons.module.scss" as *;
 $transDuration: 120ms;
 
-.dropdown-menu, .select-menu {
+.dropdown-menu {
   height: auto;
   border-radius: $radius-md;
   transition: padding-bottom $transDuration ease-in-out;
@@ -15,17 +15,25 @@ $transDuration: 120ms;
 
 .select-menu {
   width: 100%;
-  color: $color5;
-  background-color: $color1;
-  padding: 8px 8px 8px 4px;
-  .btn__content {
-    display: block;
-    text-overflow: ellipsis; // `text-overflow` only works on block containers;
-    overflow: hidden;
-    white-space: nowrap;
-  }
-  &:hover {
-    background-color: $color2;
+  button {
+    height: auto;
+    width: 100%;
+    padding: 8px 8px 8px 4px;
+    transition: padding-bottom $transDuration ease-in-out;
+    color: $color5;
+    background-color: $color1;
+    .btn__content {
+      display: block;
+      text-overflow: ellipsis; // `text-overflow` only works on block containers;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+
+    .triangle::before {
+      vertical-align: baseline !important;
+      transition: transform $transDuration linear;
+      height: 10px !important;
+    }
   }
 }
 

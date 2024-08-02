@@ -2,7 +2,7 @@
   <button
     type="button"
     class="btn"
-    :aria-label="label"
+    :aria-label="text"
   >
     <div class="btn__overlay" />
     <div
@@ -12,7 +12,7 @@
       <slot name="prepend">
         <TheIcon
           v-if="prependIcon"
-          :type="prependIcon" 
+          :type="prependIcon"
         />
       </slot>
     </div>
@@ -20,8 +20,8 @@
       <slot>
         <TheIcon
           v-if="icon"
-          :type="icon" 
-        />{{ label }}
+          :type="icon"
+        />{{ text }}
       </slot>
     </div>
     <div
@@ -31,7 +31,7 @@
       <slot name="append">
         <TheIcon
           v-if="appendIcon"
-          :type="appendIcon" 
+          :type="appendIcon"
         />
       </slot>
     </div>
@@ -44,7 +44,7 @@ import TheIcon from '@/components/TheIcon.vue';
 import type { IconType } from '@/utils/icons';
 
 type Props = {
-  label?: string,
+  text?: string,
   icon?: IconType,
   prependIcon?: IconType,
   appendIcon?: IconType,

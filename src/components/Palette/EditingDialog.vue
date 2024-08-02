@@ -45,7 +45,7 @@
             :key="`Option${name}`"
             @click="selectName(i);"
           >
-            <TheBtn :label="name">
+            <TheBtn :text="name">
               <template #prepend>
                 <span
                   :style="{

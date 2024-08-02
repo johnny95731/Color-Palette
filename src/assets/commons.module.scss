@@ -82,6 +82,14 @@ $radius-sm: 5px;
   flex: 1;
 }
 
+:global(.field) {
+  position: absolute;
+  display: block;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
 // Color scheme
 $color1: #FAFAFA;
 $color2: #EAEAEA;

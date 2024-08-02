@@ -1,79 +1,106 @@
 <template>
-  <!-- <div> -->
-  <TheBtn
-    ref="activatorRef"
+  <div
+    v-bind="labelState"
     :class="[
       'select-menu',
-      isOpened && 'active',
-      titleClass
+      isOpened && 'active'
     ]"
-    type="button"
-    aria-haspopup="menu"
-    :aria-expanded="isOpened || undefined"
-    :label="showValue ? (modelValue ?? currentVal) : (title ?? 'menu')"
-    @click="handleBtnClick"
-    @focusout="handleBtnClick($event, false)"
-    @keydown="handleKeyDown"
+    role="combobox"
+    aria-haspopup="listbox"
+    :aria-controls="idForMenu"
+    :aria-expanded="isOpened"
   >
-    <template #append>
-      <TheIcon
-        type="caretDown"
-        class="triangle"
-      />
-      <Teleport to="#overlay-container">
-        <div
-          ref="contentRef"
-          :class="[
-            isMobile ? 'mobile-menu-content-wrapper' : 'menu-content-wrapper',
-            isOpened && 'active',
-            contentClass
-          ]"
-          :tabindex="-1"
-          @click="handleBtnClick"
-          @focusout="handleBtnClick($event, false)"
-          @keydown="handleKeyDown"
-        >
-          <slot
-            name="items"
-            :select="handleSelect"
-            :liStyle="liStyle"
-          >
-            <button
-              v-for="(val, i) in options"
-              :key="`Option ${val}`"
-              :style="liStyle(i)"
-              type="button"
-              :tabindex="isOpened ? 0 : -1"
-              @click="handleSelect(i);"
-            >
-              {{
-                val
-              }}
-            </button>
-          </slot>
-        </div>
-      </Teleport>
-    </template>
-  </TheBtn>
-  <!-- <div class="field">
+    <TheBtn
+      ref="activatorRef"
+      :class="[
+        titleClass
+      ]"
+      type="button"
+      :text="showValue ? (modelValue ?? currentVal) : (title ?? 'menu')"
+      @click="handleBtnClick"
+      @focusout="handleBtnClick($event, false)"
+      @keydown="handleKeyDown"
+    >
+      <template #append>
+        <TheIcon
+          type="caretDown"
+          class="triangle"
+        />
+      </template>
+    </TheBtn>
+    <div class="field">
+      <label
+        v-if="labelState['aria-label']"
+        :for="idForInput"
+      >{{ labelState['aria-label'] }}</label>
       <input
+        v-bind="labelState"
+        :id="idForInput"
         type="text"
         inputmode="none"
+        tabindex="-1"
+        :value="currentVal"
+        @focus="activatorRef?.$el.focus();"
       >
-    </div> -->
-  <!-- </div> -->
+    </div>
+    <Teleport to="#overlay-container">
+      <div
+        v-if="eager || isOpened"
+        v-bind="listboxLabelState"
+        ref="contentRef"
+        :id="idForMenu"
+        :class="[
+          isMobile ? 'mobile-menu-content-wrapper' : 'menu-content-wrapper',
+          isOpened && 'active',
+          contentClass
+        ]"
+        role="listbox"
+        :aria-expanded="isOpened"
+        aria-live="polite"
+        :tabindex="-1"
+        @click="handleBtnClick"
+        @focusout="handleBtnClick($event, false)"
+        @keydown="handleKeyDown"
+      >
+        <slot
+          name="items"
+          :select="handleSelect"
+          :liStyle="liStyle"
+        >
+          <button
+            v-for="(val, i) in options"
+            :key="`Option ${val}`"
+            :style="liStyle(i)"
+            type="button"
+            role="option"
+            :tabindex="isOpened ? 0 : -1"
+            @click="handleSelect(i);"
+          >
+            {{
+              val
+            }}
+          </button>
+        </slot>
+      </div>
+    </Teleport>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { watch, ref, onMounted } from 'vue';
+import { watch, ref, onMounted, onUnmounted, computed } from 'vue';
 import TheBtn from './TheBtn.vue';
 import TheIcon from '../TheIcon.vue';
 import { CURRENT_OPTION_WEIGHT } from '@/utils/constants';
+import { componentUniqueId, removeComponentId } from '@/utils/helpers';
 
 type Props = {
   isMobile?: boolean,
+  eager?: boolean
   options: readonly string[],
+  inputId?: string,
+  listboxId?:string,
   label?: string,
+  listboxLabel?: string,
   title?: string,
   showValue?: boolean,
   titleClass?: string,
@@ -86,9 +113,74 @@ type Props = {
 
 const props = withDefaults(defineProps<Props>(), {
   showValue: true,
+  eager: true
 });
+
 const activatorRef = ref<InstanceType<typeof TheBtn>>();
 const contentRef = ref<HTMLDivElement>();
+
+// Handle form element
+/**
+ * Create Id for input
+ */
+const idForInput = computed<string>(() =>
+  props.inputId ?? componentUniqueId('select')
+);
+const idForMenu = computed<string>(() =>
+  props.listboxId ?? componentUniqueId('menu')
+);
+onUnmounted(() => {
+  removeComponentId(idForInput.value, 'select');
+  removeComponentId(idForMenu.value, 'menu');
+});
+/**
+ * Aria label for <input> tag and role="combobox".
+ */
+const labelState = computed(() => {
+  if (!props.label) return {};
+  return props.label?.startsWith('#') ? {
+    'aria-labelledby': props.label.slice(1)
+  } : {
+    'aria-label': props.label
+  };
+});
+/**
+ * Aria label for role="listbox" tag.
+ */
+const listboxLabelState = computed(() => {
+  return props.listboxLabel ?
+    props.listboxLabel?.startsWith('#') ?
+      { 'aria-labelledby': props.listboxLabel.slice(1) } :
+      { 'aria-label': props.listboxLabel } :
+    labelState.value;
+});
+onMounted(() => {
+  if (!props.label?.startsWith('#')) return;
+  const element = document.getElementById(props.label.slice(1)) as HTMLLabelElement | null;
+  if (element) element.htmlFor = idForInput.value;
+});
+// Update label HTMLFor if it is an ID.
+watch(() => [props.label, idForInput.value], (newVal, oldVal) => {
+  const isLabelSame = newVal[0] === oldVal[0];
+  const isIdSame = newVal[1] === oldVal[1];
+  if (!isLabelSame) {
+    [oldVal[0], newVal[0]].forEach((label, i) => {
+      if (label && label.startsWith('#')) {
+        // Old props.label refer to an element. Remove HTMLFor attribute.
+        // New props.label refer to an element. Add HTMLFor attribute.
+        const element = document.getElementById(label.slice(1)) as HTMLLabelElement | null;
+        if (element) {
+          i === 0 ? element.removeAttribute('for') : element.htmlFor = newVal[1] as string;
+        }
+      }
+    });
+  }
+  if (!isIdSame && newVal[0] && newVal[0].startsWith('#')) {
+    // Update HTMLFor for label if props.label refer to an element and input ID changed
+    const element = document.getElementById(newVal[0].slice(1)) as HTMLLabelElement | null;
+    if (element) element.htmlFor = newVal[1] as string;
+  }
+});
 
 // Values events
 const model = defineModel<string>();

@@ -9,7 +9,7 @@
     <TheBtn
       :style="iconFilterStyle"
       prepend-icon="copy"
-      :label="props.hex"
+      :text="props.hex"
       :aria-label="`複製HEX碼${props.hex}`"
       @click="copyText(props.hex)"
     />

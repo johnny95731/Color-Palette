@@ -8,7 +8,7 @@ $transDuration: 120ms;
   align-items: center;
   justify-content: center;
   grid-template-areas: "prepend content append";
-  grid-template-columns: max-content minmax(0, 1fr) max-content;
+  grid-template-columns: max-content minmax(min-content, 1fr) max-content;
   column-gap: 4px;
   text-align: start;
   vertical-align: middle;

@@ -16,8 +16,9 @@
           :class="$style.header"
         >
           <h2>Settings</h2>
-          <TheIcon
-            type="close"
+          <TheBtn
+            icon="close"
+            aria-label="close"
             @click="isActive = false"
           />
         </header>
@@ -25,12 +26,23 @@
           :class="$style.menubar"
           role="tablist"
         >
-          <button
+          <TheBtn
             v-for="(opt, i) in tabTitles"
             :key="`setting-${opt}`"
             :class="$style.tab"
             role="tab"
-            :tabindex="tabIdx === i ? 0 : -1"
+            :style="tabStyleState[i]"
+            :text="opt"
+            @click="handleTabStyle($event, i)"
+            @mouseover="handleTabStyle($event, i)"
+            @mouseleave="handleTabStyle($event, i)"
+          />
+          <!-- <button
+            v-for="(opt, i) in tabTitles"
+            :key="`setting-${opt}`"
+            :class="$style.tab"
+            type="button"
+            role="tab"
             :style="tabStyleState[i]"
             @click="handleTabStyle($event, i)"
             @mouseover="handleTabStyle($event, i)"
@@ -39,7 +51,7 @@
             {{
               opt
             }}
-          </button>
+          </button> -->
         </div>
         <div :class="$style.content">
           <!-- Page 0: Card -->
@@ -51,9 +63,7 @@
               <h3 id="title-Border">
                 Border
               </h3>
-              <label
-                :class="$style.suboptionLabel"
-              >Show</label>
+              <span>Show</span>
               <TheSwitch
                 label="show border"
                 hide-label
@@ -63,7 +73,6 @@
               <template v-if="showBorder">
                 <label
                   id="border-width"
-                  :class="$style.suboptionLabel"
                 >Width(px)</label>
                 <TheSlider
                   label="#border-width"
@@ -74,9 +83,13 @@
                   :value="currentWidth"
                   @change="handleWidth($event)"
                 />
-                <span :class="$style.subOption">Color</span>
+                <label
+                  id="border-color"
+                  :class="$style.subOption"
+                >Color</label>
                 <SelectMenu
                   :class="$style.subOption"
+                  label="#border-color"
                   :options="BORDER_COLOR"
                   :model-value="settingsState.border.color"
                   @update:model-value="handleSelectColor($event)"
@@ -114,10 +127,10 @@
           <!-- Page 1: Contrast -->
           <template v-else-if="tabIdx === 1">
             <div :class="$style.region">
-              <span
+              <label
                 v-once
                 id="contrast-method"
-              >Method</span>
+              >Method</label>
               <SelectMenu
                 label="#contrast-method"
                 :options="CONTRAST_METHODS"
@@ -145,12 +158,12 @@
                 :class="$style.buttons"
               >
                 <TheBtn
-                  label="Reset"
+                  text="Reset"
                   :class="$style.resetBtn"
                   @click="contrastBtnEvent('reset')"
                 />
                 <TheBtn
-                  label="Apply"
+                  text="Apply"
                   :class="$style.applyBtn"
                   @click="contrastBtnEvent('start')"
                 />
@@ -167,7 +180,6 @@
 import { computed, useCssModule, ref, reactive } from 'vue';
 import OverlayContainer from '@/components/Custom/OverlayContainer.vue';
 import TheBtn from './../Custom/TheBtn.vue';
-import TheIcon from '../TheIcon.vue';
 import SelectMenu from '../Custom/SelectMenu.vue';
 import TheSwitch from '../Custom/TheSwitch.vue';
 import TheSlider from '../Custom/TheSlider.vue';
