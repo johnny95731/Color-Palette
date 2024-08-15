@@ -39,22 +39,23 @@
         :model-value="detail"
       >
         <template #items>
-          <li
+          <TheBtn
             v-once
             v-for="(name, i) in namedColors.fullNames"
             :key="`Option${name}`"
+            :text="name"
+            :title="name"
             @click="selectName(i);"
           >
-            <TheBtn :text="name">
-              <template #prepend>
-                <span
-                  :style="{
-                    backgroundColor: name.replace(/\s/g, '')
-                  }"
-                />
-              </template>
-            </TheBtn>
-          </li>
+            <template #prepend>
+              <span
+                :style="{
+                  backgroundColor: name.replace(/\s/g, ''),
+                  zIndex: 1,
+                }"
+              />
+            </template>
+          </TheBtn>
         </template>
       </SelectMenu>
       <div :class="styles.sliders">

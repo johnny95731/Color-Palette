@@ -8,16 +8,13 @@
     </h1>
     <div
       v-if="!isSmall"
-      :class="$style.menuWrapper"
+      :class="$style.menubar"
     >
-      <div
-        :class="$style.menubar"
-      >
-        <HeaderBtns
-          @show-fav="$emit('show-fav')"
-          @show-settings="$emit('show-settings')"
-        />
-      </div>
+      <HeaderBtns
+        :isSmall="isSmall"
+        @show-fav="$emit('show-fav')"
+        @show-settings="$emit('show-settings')"
+      />
     </div>
     <DropdownMenu
       v-else-if="isSmall"
@@ -29,6 +26,7 @@
     >
       <template #items>
         <HeaderBtns
+          :isSmall="isSmall"
           @show-fav="$emit('show-fav')"
           @show-settings="$emit('show-settings')"
         />

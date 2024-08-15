@@ -1,36 +1,34 @@
 <template>
-  <main id="main">
-    <TheCard
-      v-for="(card, i) in pltState.cards"
-      :key="`card${i}`"
-      :ref="(el) => cardRefs[i] = (el as cardInstance)"
-      :cardIdx="i"
-      :card="card"
-      :cardDisplay="{
-        size: cardAttrs.size.percent,
-        position: cardAttrs.positions[i]
-      }"
-      :styleInSettings="styleInSettings"
-      @transitionend="setIsInTrans(i, false)"
-      @remove="handleRemoveCard(i)"
-      @dragging="draggingCardEvent.start($event, i)"
-    />
-    <!-- Insert Region -->
+  <TheCard
+    v-for="(card, i) in pltState.cards"
+    :key="`card${i}`"
+    :ref="(el) => cardRefs[i] = (el as cardInstance)"
+    :cardIdx="i"
+    :card="card"
+    :cardDisplay="{
+      size: cardAttrs.size.percent,
+      position: cardAttrs.positions[i]
+    }"
+    :styleInSettings="styleInSettings"
+    @transitionend="setIsInTrans(i, false)"
+    @remove="handleRemoveCard(i)"
+    @dragging="draggingCardEvent.start($event, i)"
+  />
+  <!-- Insert Region -->
+  <div
+    :style="insertStyle"
+  >
     <div
-      :style="insertStyle"
+      v-for="(val, i) in cardAttrs.positions"
+      :key="`insert${i}`"
+      :class="$style.insertWrapper"
+      :style="{[media.pos]: val}"
     >
-      <div
-        v-for="(val, i) in cardAttrs.positions"
-        :key="`insert${i}`"
-        :class="$style.insertWrapper"
-        :style="{[media.pos]: val}"
-      >
-        <div @click="handleAddCard(i)">
-          <TheIcon type="insert" />
-        </div>
+      <div @click="handleAddCard(i)">
+        <TheIcon type="insert" />
       </div>
     </div>
-  </main>
+  </div>
 </template>
 
 <script lang="ts" setup>

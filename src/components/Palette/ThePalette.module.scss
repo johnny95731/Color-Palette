@@ -1,13 +1,5 @@
 @use "@/assets/commons.module.scss" as *;
 
-:global(#main) {
-  display: inline-block;
-  position: relative;
-  top: var(--header-height);
-  height: calc(var(--app-height) - var(--header-height));
-  width: 100%;
-}
-
 .insertWrapper {
   position: absolute;
   height: 100%;
@@ -30,7 +22,7 @@
   &:hover >div {
     display: block;
   }
-  
+
   @include small {
     height: 35px;
     width: 100%;

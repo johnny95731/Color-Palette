@@ -57,6 +57,7 @@
 }
 
 .menubar {
+  flex: 1 0 auto;
   display: flex;
   gap: 4px;
   >:global(.icon)::before {
@@ -64,9 +65,7 @@
     height: 18px;
   }
   @include small {
-    >div >li >* {
-      width: 100%
-    }
+    flex-direction: column;
   }
 }
 
@@ -76,15 +75,7 @@
     height: 18px;
   }
   @include small {
-    position: relative;
-    margin: 0;
-    // shape
-    min-height: 30px;
-    width: 100%;
-    padding: 7px 0;
-    &:hover, &:focus {
-      background-color: $color3;
-    }
+    grid-template-columns: max-content min-content max-content;
   }
 }
 .listIcon {
@@ -99,9 +90,4 @@
 
 .btnMenu {
   @extend %btn;
-  >div {
-    @include small {
-      position: relative;
-    }
-  }
 }

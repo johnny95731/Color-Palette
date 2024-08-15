@@ -9,7 +9,8 @@
   box-sizing: border-box;
   transition-property: left, width, background-color;
   transition-duration: 0s;
-  &:hover .toolContainer {
+  &:hover .toolContainer,
+  &:focus-within .toolContainer {
     transform: translate(-50%) scaleX(1);
   }
   &.first {
@@ -200,17 +201,6 @@
       margin-right: 4px;
       aspect-ratio: 1 / 1;
       outline: 1px solid black;
-    }
-    &:hover,
-    &:focus-visible {
-      :global(.btn__overlay) {
-        opacity: 0;
-      }
-    }
-    @supports not selector(:focus-visible) {
-      &:focus :global(.btn__overlay) {
-        opacity: 0;
-      }
     }
   }
 }

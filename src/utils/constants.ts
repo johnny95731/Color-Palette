@@ -73,3 +73,9 @@ export const BORDER_COLOR = ['white', 'gray', 'black'] as const;
 
 export const TRANSITION_MAX_POS = 1000;
 export const TRANSITION_MAX_COLOR = 3000;
+
+
+// Symbols: for inject and provide in custom components
+export const MenuSymbol = Symbol('menu');
+
+export const OverlayDiv = document.getElementById('overlay-container') as HTMLDivElement;

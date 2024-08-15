@@ -44,6 +44,14 @@ input{
   width: 100%;
 }
 
+#main {
+  display: inline-block;
+  position: relative;
+  top: var(--header-height);
+  height: calc(var(--app-height) - var(--header-height));
+  width: 100%;
+}
+
 #overlay-container {
   display: contents;
   contain: layout;

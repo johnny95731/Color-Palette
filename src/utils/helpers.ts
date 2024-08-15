@@ -188,13 +188,13 @@ export const elementwiseMean = (arr1: number[], arr2: number[]): number[] => {
 const componentsIds: Record<string, AscendingArray<number>> = {};
 
 /**
- * 
+ *
  * @param prefix Named of component
  */
 export const componentUniqueId = (
   prefix: string = 'component', countStart?: number
 ): string => {
-  if (!Object.hasOwn(componentsIds, prefix)) 
+  if (!Object.hasOwn(componentsIds, prefix))
     componentsIds[prefix] = new AscendingArray<number>([]);
   const idArr = componentsIds[prefix];
   let count: number = countStart ?? idArr.length + 1; // minimum is 1.
@@ -235,4 +235,22 @@ export function isComponentId (id: string, prefix: string): boolean {
   );
 }
 
+export const sleep = (ms: number)  => new Promise(resolve => setTimeout(resolve, ms));
 
+// Keyboard Event Helpers
+export function noModifierKey(e: KeyboardEvent): boolean {
+  return !e.shiftKey && !e.altKey && !e.ctrlKey && !e.metaKey;
+}
+
+export function shiftOnly(e: KeyboardEvent): boolean {
+  return e.shiftKey && !e.altKey && !e.ctrlKey && !e.metaKey;
+}
+
+
+export function isMenuContainer(target?: EventTarget | Element | null) {
+  return (target as Element | null)?.classList.contains('menu-container');
+}
+
+export function hasPopup(target?: EventTarget | HTMLElement | null) {
+  return !!(target && (target as HTMLElement).dataset.haspopup === 'true');
+}

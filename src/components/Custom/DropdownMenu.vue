@@ -1,92 +1,108 @@
 <template>
   <TheBtn
     ref="activatorRef"
+    type="button"
     :class="[
-      'dropdown-menu',
+      'dropdown-menu activator',
       isOpened && 'active',
       titleClass
     ]"
-    type="button"
     :prepend-icon="icon"
-    aria-haspopup="menu"
     :aria-controls="idForMenu"
-    :aria-expanded="isOpened || undefined"
+    :data-haspopup="true"
+    v-bind="$attrs"
     :text="title"
-    @click="handleBtnClick"
-    @focusout="handleBtnClick($event, false)"
+    @click="handleClickBtn"
     @keydown="handleKeyDown"
   >
     <template
+      v-if="!hideTriangle"
       #append
     >
       <TheIcon
-        v-if="!hideTriangle"
         type="caretDown"
         class="triangle"
       />
-      <Teleport to="#overlay-container">
-        <div
-          ref="contentRef"
-          :id="idForMenu"
-          :class="[
-            isMobile ? 'mobile-menu-content-wrapper' : 'menu-content-wrapper',
-            isOpened && 'active',
-            contentClass
-          ]"
-          role="menu"
-          :aria-expanded="isOpened"
-          aria-live="polite"
-          :tabindex="-1"
-          @click="handleBtnClick"
-          @focusout="handleBtnClick($event, false)"
-          @keydown="handleKeyDown"
-        >
-          <slot
-            name="items"
-            items="menuItems"
-          >
-            <button
-              v-for="(item) in menuItems"
-              :key="item.val"
-              :style="item.style"
-              type="button"
-              role="menuitem"
-              :tabindex="isOpened ? 0 : -1"
-              @click="$emit('click-item', item.val)"
-            >
-              <slot :name="`item.${item.val}`">
-                {{ item.name }}
-              </slot>
-            </button>
-          </slot>
-        </div>
-      </Teleport>
     </template>
   </TheBtn>
+  <OverlayContainer
+    :id="idForMenu"
+    hideScrim
+    :eager="eager"
+    aria-live="polite"
+    v-model="isOpened"
+  >
+    <div
+      ref="containerRef"
+      :class="[
+        'dropdown-menu menu-container',
+        isMobile && 'is-mobile',
+        isOpened && 'active',
+        contentClass
+      ]"
+      :tabindex="-1"
+      :style="menuStyle"
+      @keydown="handleKeyDown"
+    >
+      <slot
+        name="items"
+        items="menuItems"
+      >
+        <button
+          v-for="item in menuItems"
+          :key="item.val"
+          :style="item.val === props.currentVal ? currentStyle : undefined"
+          type="button"
+          role="menuitem"
+          @click="$emit('click-item', item.val)"
+        >
+          <slot
+            :name="`item.${item.val}`"
+            :label="item.name"
+          >
+            {{ item.name }}
+          </slot>
+        </button>
+      </slot>
+    </div>
+  </OverlayContainer>
 </template>
 
 <script lang="ts" setup>
-import { computed, ref, onMounted, watch, onUnmounted } from 'vue';
+import { computed, ref, onMounted, watch, onUnmounted, CSSProperties, provide, inject, nextTick } from 'vue';
+import OverlayContainer from './OverlayContainer.vue';
 import TheBtn from './TheBtn.vue';
 import TheIcon from '../TheIcon.vue';
-import { capitalize, componentUniqueId, removeComponentId } from '@/utils/helpers.ts';
-import { CURRENT_OPTION_WEIGHT } from '@/utils/constants';
+import {
+  capitalize, componentUniqueId, noModifierKey, removeComponentId, shiftOnly,
+  sleep, hasPopup, mod
+} from '@/utils/helpers.ts';
+import { CURRENT_OPTION_WEIGHT, MenuSymbol } from '@/utils/constants';
 // Types
 import type { IconType } from '@/utils/icons';
 
 type Props = {
-  isMobile?: boolean;
+  isMobile?: boolean,
+  eager?: boolean,
   title?: string,
+  /**
+   * prepend icon
+   */
   icon?: IconType;
-  contents?: readonly string[] | {
+  contents?: readonly (string | {
     name: string,
     val: string,
-  }[];
+  })[];
+  activatorId?:string,
   menuId?:string,
-  titleClass?: string;
-  contentClass?: string;
-  currentVal?: string;
-  hideTriangle?: boolean;
+  titleClass?: string,
+  contentClass?: string,
+  currentVal?: string,
+  /**
+   *
+   */
+  currentStyle?: CSSProperties,
+  hideTriangle?: boolean,
   /**
    * Letter case for menu items (display name). Default to be title case.
    */
@@ -94,12 +110,30 @@ type Props = {
 }
 const props = withDefaults(defineProps<Props>(), {
   letterCase: 'title',
+  // @ts-expect-error
+  currentStyle: CURRENT_OPTION_WEIGHT,
 });
 const activatorRef = ref<InstanceType<typeof TheBtn>>();
-const contentRef = ref<HTMLDivElement>();
+const containerRef = ref<HTMLDivElement>();
+
+const isContaining = (target?: Element | EventTarget | null): boolean => {
+  return activatorRef.value && activatorRef.value.$el.contains(target) ||
+    containerRef.value?.contains(target as Node | null);
+};
+
+const getDirectChildren = (target?: Element | EventTarget | null) => {
+  if (
+    !containerRef.value ||
+    !containerRef.value.contains(target as Element)
+  ) return null;
+  let children = target as Element;
+  while (children.parentElement !== containerRef.value) // Get direct children
+    children = children.parentElement as HTMLElement;
+  return children;
+};
 
 /**
- * Create Id for menu content
+ * Create Id for menu container
  */
 const idForMenu = computed<string>(() =>
   props.menuId ?? componentUniqueId('menu')
@@ -107,7 +141,6 @@ const idForMenu = computed<string>(() =>
 onUnmounted(() => {
   removeComponentId(idForMenu.value, 'menu');
 });
-
 
 defineEmits<{
   'click-item': [val: string]
@@ -125,95 +158,223 @@ const letterConverter = computed(() => {
 });
 
 const menuItems = computed(() => {
-  return props.contents ?
-    typeof props.contents[0] === 'string' ?
-      (props.contents as string[]).map((val) => ({
-        val,
-        name: letterConverter.value(val),
-        style: val === props.currentVal ? CURRENT_OPTION_WEIGHT : undefined,
-      })) :
-      (props.contents as {name: string; val: string;}[])
-        .map(({ name, val }) => ({
-          val,
-          name,
-          style: val === props.currentVal ? CURRENT_OPTION_WEIGHT : undefined,
-        })) :
-    [];
+  return props.contents?.map((item) => {
+    // @ts-expect-error
+    const { val, name } = typeof item === 'object' ? item : { val: item };
+    return {
+      val,
+      name: letterConverter.value(name ?? val),
+    };
+  }) ?? [];
 });
 
 // Open/Closing events
 const isOpened = ref(false);
+const openedChild = ref(0);
 
-onMounted(() => {
+type MenuProvided = {
+  /**
+   * The most top activator that is not the last element of a menu.
+   */
+  topActivator: () => HTMLElement,
+  /**
+   * The most top activator that is not the last element of a menu.
+   */
+  topNonLastActivator: () => HTMLElement,
+  /**
+   * Check target is the last option of menu.
+   */
+  isLast: (target: Element) => boolean | undefined,
+  /**
+   * A submenu is opened.
+   */
+  register: () => void,
+  /**
+   * A submenu is closed.
+   */
+  unregister: () => void,
+  nestedClosing: (target?: Element | EventTarget | null) => void,
+}
+const parent = inject<MenuProvided | null>(MenuSymbol, null);
+provide<MenuProvided>(MenuSymbol, {
+  topActivator() {
+    return parent?.topActivator() ?? activatorRef.value?.$el as HTMLElement;
+  },
+  topNonLastActivator,
+  isLast(target: Element | null) {
+    const menu = containerRef.value as NonNullable<typeof containerRef.value>;
+    return menu.children[menu.children.length-1] === target;
+  },
+  register() {
+    openedChild.value++;
+  },
+  unregister() {
+    openedChild.value--;
+  },
+  nestedClosing
+});
+
+/**
+ * The topmost layer activator that is not the last element of a menu.
+ */
+function topNonLastActivator() {
+  const activator = activatorRef.value?.$el as HTMLElement;
+  return !parent || !parent.isLast(activator) ?
+    activator :
+    parent.topNonLastActivator();
+}
+
+/**
+ * Closing nested menus until `target` in this menu.
+ */
+async function nestedClosing (target?: Element | EventTarget | null) {
+  // `handleClickOutside` may be trigger from multi-layers. Make sure that
+  // menu is closing from bottommost layer.
+  if (openedChild.value) return;
+  const menu = containerRef.value as NonNullable<typeof containerRef.value>;
+  if (
+    !target ||
+    !menu.contains(target as Element) //
+  ) {
+    isOpened.value = false;
+    await sleep(100);
+    await nextTick();
+    parent?.nestedClosing(target);
+  } else {
+    !hasPopup(getDirectChildren(target)) && nestedClosing();
+  }
+}
+
+const menuMinWidth = computed(() => {
   const activator = activatorRef.value as NonNullable<typeof activatorRef.value>;
-  const menu = contentRef.value as NonNullable<typeof contentRef.value>;
-  menu.style.minWidth = window.getComputedStyle(activator.$el).width;
+  return window.getComputedStyle(activator.$el).width;
+});
+
+const menuStyle = ref<CSSProperties>({});
+onMounted(() => {
+  const rect = (activatorRef.value?.$el as HTMLElement).getBoundingClientRect();
+  menuStyle.value = {
+    minWidth: menuMinWidth.value,
+    top: props.isMobile ? 'var(--header-height)' : `${rect.bottom}px`,
+    ...(props.isMobile ? {} : { left:`${rect.left}px` }),
+  };
 });
 
 watch(isOpened, (newVal) => {
-  if (!newVal) return;
-  const activator = activatorRef.value as NonNullable<typeof activatorRef.value>;
-  const menu = contentRef.value as NonNullable<typeof contentRef.value>;
-  const rect = activator.$el.getBoundingClientRect();
-  menu.style.top = `${rect.bottom}px`;
-  menu.style.left = `${rect.left}px`;
+  if (!newVal) {
+    parent?.unregister();
+    document.removeEventListener('click', handleClick);
+  } else {
+    parent?.register();
+    document.addEventListener('click', handleClick);
+    const rect = (activatorRef.value?.$el as HTMLElement).getBoundingClientRect();
+    menuStyle.value = {
+      minWidth: menuMinWidth.value,
+      ...(
+        props.isMobile ?
+          { top: 'var(--header-height)' } :
+          { top: `${rect.bottom}px`, left:`${rect.left}px` }
+      ),
+    };
+  }
 });
 
-const handleBtnClick = (e: MouseEvent | FocusEvent, newVal?: boolean) => {
-  const activator = activatorRef.value as NonNullable<typeof activatorRef.value>;
-  const menu = contentRef.value as NonNullable<typeof contentRef.value>;
-  if (// Avoid changing `isOpened` twice
-    e.type === 'focusout' &&
-    ( // Focusout activator when click menu content
-      menu.contains(e.relatedTarget as Element | null) ||
-      // Foucusout menu content when click activator.
-      e.relatedTarget === activator.$el
-    )
-  ) return;
-  isOpened.value = newVal ?? !isOpened.value;
+const handleClick = (e: MouseEvent) => {
+  // Click outside
+  if (!isContaining(e.target)) nestedClosing(e.target);
+  // Click submenu activator
+  else if (
+    // @ts-expect-error
+    containerRef.value?.contains(e.target) && !hasPopup(getDirectChildren(e.target))
+  ) handleClickBtn();
 };
 
-const handleKeyDown = (e: KeyboardEvent) => {
+const handleClickBtn = () =>
+  // when submenu is openned, the event will handle by `handleClick`
+  !openedChild.value && (isOpened.value = !isOpened.value);
+
+const handleKeyDown = async (e: KeyboardEvent) => {
+  // Ignore supermenu keydown event when submenu is opening.
+  if (openedChild.value) return;
   const key = e.key;
-  const activator = activatorRef.value as NonNullable<typeof activatorRef.value>;
-  const menu = contentRef.value as HTMLDivElement;
+  if (['Enter', ' '].includes(key)) {
+    e.stopPropagation();
+    e.preventDefault();
+    handleClickBtn();
+    await nextTick();
+    // Cant get ref before updated (`menu` is undefined).
+    (containerRef.value?.children[0] as HTMLButtonElement).focus();
+    return;
+  }
+  if (!isOpened.value) {
+    // Only some keys works when menu is not openned.
+    if (key.startsWith('Arrow')) {
+      isOpened.value = true;
+      await nextTick();
+    } else return;
+  }
+
+  const activator = activatorRef.value?.$el as HTMLButtonElement;
+  const menu = containerRef.value as typeof containerRef.value;
   // @ts-expect-error
-  const nthChildFocused = [...menu.children].indexOf(document.activeElement) as number;
-  console.log(nthChildFocused);
+  const nthChildFocused = [...menu.children].indexOf(document.activeElement);
+  const noModifiers = noModifierKey(e);
+  const shiftOnly_ = shiftOnly(e);
+
+  let target: HTMLElement | null = null;
   switch(key) {
   case 'Tab':
-    if (nthChildFocused === menu.children.length - 1) {
-      activator.$el.focus();
-      isOpened.value = false;
-    } else if (nthChildFocused === 0 && e.shiftKey) {
-      activator.$el.focus();
-      isOpened.value = false;
+    if (
+      !menu  || nthChildFocused === -1 // Focusing activator
+    ) {
+      if (noModifiers) { // Tab
+        // @ts-expect-error
+        target = menu.children[0];
+        e.preventDefault();
+      } else if (shiftOnly_) // Shift + Tab
+        isOpened.value = false;
+    } else if (nthChildFocused === menu.children.length - 1 && noModifiers) {
+      // Focusing last menu option and Tab => close menu and focus next
+      // focusable element of activator.
+      target = topNonLastActivator() ?? activator;
+      nestedClosing(target);
+    } else if (nthChildFocused === 0 && shiftOnly_) {
+      // Focusing first menu option and Shift + Tab => close menu and focus
+      // activator.
+      handleClickBtn();
+      target = activator;
       e.preventDefault();
-    } else if (nthChildFocused === -1 && isOpened.value && !e.shiftKey) {
-      // focusing activator && openning menu && not shift+tab
-      menu.focus(); // with default tab event => focus first menu option.
     }
     break;
   case 'Home':
-    (menu.children[0] as HTMLButtonElement).focus();
+    // @ts-expect-error
+    target = menu.children[0];
     break;
   case 'End':
-    (menu.lastElementChild as HTMLButtonElement).focus();
+    // @ts-expect-error
+    target = menu.lastElementChild;
     break;
-  case 'ArrowRight':
   case 'ArrowLeft':
+  case 'ArrowUp':
+  case 'ArrowRight':
+  case 'ArrowDown':
+    e.preventDefault();
     if (nthChildFocused === -1) { // focusing activator
-      key.endsWith('Left') ?
-        (menu.lastElementChild as HTMLButtonElement).focus() :
-        (menu.children[0] as HTMLButtonElement).focus();
-    } else {
-      const bias = key.endsWith('Left') ? menu.children.length - 1 : 1;
-      const sibIdx = (nthChildFocused + bias) % menu.children.length as number;
-      (menu.children[sibIdx] as HTMLButtonElement).focus();
+      // @ts-expect-error
+      target = ['U', 'L'].includes(key[5]) ? menu.lastElementChild : menu.children[0];
+    }
+    else {
+      const bias = ['U', 'L'].includes(key[5]) ? -1 : 1;
+      // @ts-expect-error
+      target = menu.children[mod(nthChildFocused + bias, menu.children.length)];
     }
     break;
+  case 'Escape':
+    isOpened.value = false;
+    target = activator;
+    break;
   }
-  e.stopPropagation();
+  target?.focus();
 };
 </script>
 

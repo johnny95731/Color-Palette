@@ -1,5 +1,5 @@
 <template>
-  <!-- Float left -->
+  <!-- Align left -->
   <TheBtn
     :class="$style.btn"
     prepend-icon="refresh"
@@ -19,18 +19,10 @@
     title="Sort"
     icon="sort"
     :class="$style.btnMenu"
-    :contents="SORTING_ACTIONS"
+    :contents="sortingMenuItems"
     :current-val="pltState.sortBy"
-    :hotkeys="SORTING_ACTIONS.map((str) => str[0])"
     @click-item="pltState.sortCards($event as SortActionType)"
-  >
-    <template
-      v-for="val in SORTING_ACTIONS"
-      #[`item.${val}`]
-    >
-      {{ val + ` (${val[0]})` }}
-    </template>
-  </DropdownMenu>
+  />
   <DropdownMenu
     title="Blend"
     icon="blend"
@@ -48,8 +40,11 @@
     :current-val="pltState.colorSpace"
     @click-item="pltState.setColorSpace($event as ColorSpacesType)"
   />
-  <div class="spacer" />
-  <!-- Float right -->
+  <div
+    v-if="!isSmall"
+    class="spacer"
+  />
+  <!-- Align right -->
   <TheBtn
     :class="$style.btn"
     prepend-icon="bookmarks"
@@ -66,6 +61,61 @@
     aria-haspopup="dialog"
     @click="$emit('show-settings')"
   />
+  <!-- Test -->
+  <!-- <DropdownMenu
+    title="layer1"
+    :contents="SORTING_ACTIONS"
+  >
+    <template #items>
+      <button
+        v-for="val in SORTING_ACTIONS"
+        :key="val"
+        type="button"
+      >
+        {{ val }}
+      </button>
+      <DropdownMenu
+        title="layer2"
+        :contents="SORTING_ACTIONS"
+      >
+        <template #items>
+          <button
+            v-for="val in SORTING_ACTIONS"
+            :key="val"
+            type="button"
+          >
+            {{ val }}
+          </button>
+          <DropdownMenu
+            title="layer3"
+            :contents="SORTING_ACTIONS"
+          >
+            <template #items>
+              <button
+                v-for="val in SORTING_ACTIONS"
+                :key="val"
+                type="button"
+              >
+                {{ val }}
+              </button>
+              <DropdownMenu
+                title="layer4"
+                :contents="SORTING_ACTIONS"
+              />
+              <button
+                v-for="val in SORTING_ACTIONS"
+                :key="val"
+                type="button"
+              >
+                {{ val }}
+              </button>
+            </template>
+          </DropdownMenu>
+        </template>
+      </DropdownMenu>
+    </template>
+  </DropdownMenu> -->
+  <!-- Test -->
 </template>
 
 <script setup lang='ts'>
@@ -83,6 +133,11 @@ import type { SortActionType } from 'types/pltType.ts';
 import type { BlendingType, ColorSpacesType } from 'types/pltType.ts';
 
 const $style = useCssModule();
+
+type Props = {
+  isSmall: boolean,
+}
+defineProps<Props>();
 
 defineEmits<{
   (e: 'show-fav'): void,
@@ -120,5 +175,10 @@ watch(
     intervalPlay();
   },
 );
+
+const sortingMenuItems = SORTING_ACTIONS.map((val) => ({
+  val,
+  name: `${val} (${val[0]})`
+}));
 </script>
 <style lang="scss" src="./TheHeader.module.scss" module />

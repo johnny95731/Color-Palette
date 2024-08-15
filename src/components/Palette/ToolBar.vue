@@ -2,7 +2,6 @@
   <div
     :class="styles.toolContainer"
     :style="showToolbar"
-    tabindex="0"
     role="toolbar"
     :aria-label="`卡片${cardIdx}工具列`"
   >

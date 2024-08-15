@@ -34,24 +34,7 @@
             :style="tabStyleState[i]"
             :text="opt"
             @click="handleTabStyle($event, i)"
-            @mouseover="handleTabStyle($event, i)"
-            @mouseleave="handleTabStyle($event, i)"
           />
-          <!-- <button
-            v-for="(opt, i) in tabTitles"
-            :key="`setting-${opt}`"
-            :class="$style.tab"
-            type="button"
-            role="tab"
-            :style="tabStyleState[i]"
-            @click="handleTabStyle($event, i)"
-            @mouseover="handleTabStyle($event, i)"
-            @mouseleave="handleTabStyle($event, i)"
-          >
-            {{
-              opt
-            }}
-          </button> -->
         </div>
         <div :class="$style.content">
           <!-- Page 0: Card -->
@@ -80,7 +63,7 @@
                   :max="BORDER_MAX_WIDTH"
                   :step="1"
                   :digit="0"
-                  :value="currentWidth"
+                  :model-value="currentWidth"
                   @change="handleWidth($event)"
                 />
                 <label
@@ -107,7 +90,7 @@
                 :max="TRANSITION_MAX_POS"
                 :digit="0"
                 :step="50"
-                :value="posTime"
+                :model-value="posTime"
                 @change="handleTransitionChanged($event, 'pos')"
               />
               <label
@@ -119,7 +102,7 @@
                 :max="TRANSITION_MAX_COLOR"
                 :digit="0"
                 :step="50"
-                :value="colorTime"
+                :model-value="colorTime"
                 @change="handleTransitionChanged($event, 'color')"
               />
             </div>
@@ -148,7 +131,7 @@
                 label="#contrast-coeff-name"
                 :min="0"
                 :max="contrastCoeffMax"
-                :value="contrastArgs.coeff"
+                :model-value="contrastArgs.coeff"
                 @change="contrastChanged({
                   coeff: $event
                 })"
@@ -215,59 +198,31 @@ const $style = useCssModule();
 const tabTitles = ['Card', 'Contrast'] as const;
 const tabIdx = ref(0);
 
-const tabStyle = {
-  /**
-   * When tab be selected
-   */
-  selected: {
-    ...CURRENT_OPTION_WEIGHT,
-    color: $style.color5,
-    backgroundColor: $style.color1,
-  } as CSSProperties,
-  /**
-   * When hover a unselected tab.
-   */
-  hover: {
-    color: 'white',
-    backgroundColor: $style.color2,
-    opacity: '0.8'
-  } as CSSProperties,
-  empty: undefined
-} as const;
+/**
+ * When tab be selected
+ */
+const tabSelectedStyle = {
+  ...CURRENT_OPTION_WEIGHT,
+  color: $style.color5,
+  backgroundColor: $style.color1,
+  '--overlay-hover-opacity': 0,
+} as CSSProperties;
 const tabStyleState: (CSSProperties | undefined)[] = reactive(
   tabTitles.map((_, i) => (
-    tabStyle[i === tabIdx.value ? 'selected' : 'empty']
+    i === tabIdx.value ? tabSelectedStyle : undefined
   ))
 );
+
 const handleTabStyle = (e: MouseEvent, idx: number) => {
-  if (e.type === 'click') {
-    // Remove style from previous tab and update current tab style.
-    tabStyleState[tabIdx.value] = tabStyle.empty;
-    tabStyleState[idx] = tabStyle.selected;
-    if (idx === 1) {
-      pltState.setIsAdjustingPlt('start');
-      contrastChanged(contrastArgs);
-    } else if (tabIdx.value === 1) pltState.setIsAdjustingPlt('cancel');
-    tabIdx.value = idx;
-    return;
-  } else if (tabIdx.value === idx) return;
-  const isHovering = e.type === 'mouseover';
-  tabStyleState[idx] = isHovering ? tabStyle.hover : {};
+  // Remove style from previous tab and update current tab style.
+  tabStyleState[tabIdx.value] = undefined;
+  tabStyleState[idx] = tabSelectedStyle;
+  if (idx === 1) { //
+    pltState.setIsAdjustingPlt('start');
+    contrastChanged(contrastArgs);
+  } else if (tabIdx.value === 1) pltState.setIsAdjustingPlt('cancel');
+  tabIdx.value = idx;
 };
-
-
-type ContrastArgsType = {
-  method: ContrastMethods;
-  coeff: number;
-}
-const contrastArgs = reactive<ContrastArgsType>({
-  method: CONTRAST_METHODS[0],
-  coeff: 1,
-});
-function contrastChanged(newObj: Partial<ContrastArgsType>) {
-  Object.assign(contrastArgs, newObj);
-  pltState.adjustContrast(contrastArgs.method, contrastArgs.coeff);
-}
 
 
 // page 0: Card
@@ -297,6 +252,19 @@ const handleTransitionChanged = (
   settingsState.setTransition(attr, val);
 };
 // page 1: Contrast
+type ContrastArgsType = {
+  method: ContrastMethods;
+  coeff: number;
+}
+const contrastArgs = reactive<ContrastArgsType>({
+  method: CONTRAST_METHODS[0],
+  coeff: 1,
+});
+function contrastChanged(newObj: Partial<ContrastArgsType>) {
+  Object.assign(contrastArgs, newObj);
+  pltState.adjustContrast(contrastArgs.method, contrastArgs.coeff);
+}
+
 const contrastBtnEvent = (ev: 'start' | 'reset') => {
   pltState.setIsAdjustingPlt(ev);
   contrastChanged({ coeff: 1 });

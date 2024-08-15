@@ -7,6 +7,7 @@
       cardIdx === pltState.numOfCards-1 ? 'last' : undefined,
     ]"
     :style="style"
+    tabindex="-1"
     @transitionend="$emit('transitionend')"
   >
     <ToolBar

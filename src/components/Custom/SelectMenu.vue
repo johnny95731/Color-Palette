@@ -2,11 +2,10 @@
   <div
     v-bind="labelState"
     :class="[
-      'select-menu',
+      'select-menu activator',
       isOpened && 'active'
     ]"
-    role="combobox"
-    aria-haspopup="listbox"
+    data-haspopup="true"
     :aria-controls="idForMenu"
     :aria-expanded="isOpened"
   >
@@ -16,9 +15,9 @@
         titleClass
       ]"
       type="button"
-      :text="showValue ? (modelValue ?? currentVal) : (title ?? 'menu')"
-      @click="handleBtnClick"
-      @focusout="handleBtnClick($event, false)"
+      :text="valueLabel"
+      @click="handleClickBtn"
+      @focusout="handleClickBtn($event, false)"
       @keydown="handleKeyDown"
     >
       <template #append>
@@ -39,27 +38,30 @@
         type="text"
         inputmode="none"
         tabindex="-1"
-        :value="currentVal"
+        :value="current.val"
         @focus="activatorRef?.$el.focus();"
       >
     </div>
-    <Teleport to="#overlay-container">
+    <OverlayContainer
+      :id="idForMenu"
+      hideScrim
+      :eager="eager"
+      aria-live="polite"
+      v-model="isOpened"
+    >
       <div
-        v-if="eager || isOpened"
-        v-bind="listboxLabelState"
-        ref="contentRef"
-        :id="idForMenu"
+        ref="containerRef"
         :class="[
-          isMobile ? 'mobile-menu-content-wrapper' : 'menu-content-wrapper',
+          'select-menu menu-container',
+          isMobile && 'is-mobile',
           isOpened && 'active',
           contentClass
         ]"
-        role="listbox"
-        :aria-expanded="isOpened"
+        :style="menuStyle"
         aria-live="polite"
         :tabindex="-1"
-        @click="handleBtnClick"
-        @focusout="handleBtnClick($event, false)"
+        @click="handleClickBtn"
+        @focusout="handleClickBtn($event, false)"
         @keydown="handleKeyDown"
       >
         <slot
@@ -72,8 +74,6 @@
             :key="`Option ${val}`"
             :style="liStyle(i)"
             type="button"
-            role="option"
-            :tabindex="isOpened ? 0 : -1"
             @click="handleSelect(i);"
           >
             {{
@@ -82,16 +82,19 @@
           </button>
         </slot>
       </div>
-    </Teleport>
+      <OverlayContainer />
+    </overlaycontainer>
   </div>
 </template>
 
 <script setup lang="ts">
-import { watch, ref, onMounted, onUnmounted, computed } from 'vue';
+import { watch, ref, onMounted, onUnmounted, computed, nextTick, shallowRef, shallowReactive } from 'vue';
+import OverlayContainer from './OverlayContainer.vue';
 import TheBtn from './TheBtn.vue';
 import TheIcon from '../TheIcon.vue';
 import { CURRENT_OPTION_WEIGHT } from '@/utils/constants';
-import { componentUniqueId, removeComponentId } from '@/utils/helpers';
+import { componentUniqueId, mod, noModifierKey, removeComponentId, shiftOnly } from '@/utils/helpers';
+import type { CSSProperties } from 'vue';
 
 type Props = {
   isMobile?: boolean,
@@ -117,7 +120,7 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const activatorRef = ref<InstanceType<typeof TheBtn>>();
-const contentRef = ref<HTMLDivElement>();
+const containerRef = ref<HTMLDivElement>();
 
 // Handle form element
 /**
@@ -143,16 +146,6 @@ const labelState = computed(() => {
   } : {
     'aria-label': props.label
   };
-});
-/**
- * Aria label for role="listbox" tag.
- */
-const listboxLabelState = computed(() => {
-  return props.listboxLabel ?
-    props.listboxLabel?.startsWith('#') ?
-      { 'aria-labelledby': props.listboxLabel.slice(1) } :
-      { 'aria-label': props.listboxLabel } :
-    labelState.value;
 });
 onMounted(() => {
   if (!props.label?.startsWith('#')) return;
@@ -189,56 +182,76 @@ const emit = defineEmits<{
   'update:model-value': [val: string]
 }>();
 
-const currentVal = ref(
-  model.value ?? props.options[0],
+const current = shallowReactive<{
+  val: string,
+  idx: number,
+}>((() => {
+  const val = model.value ?? props.options[0];
+  return {
+    val: val,
+    idx: props.options.indexOf(val)
+  };
+})());
+const valueLabel = computed(() =>
+  props.showValue ? current.val : (props.title ?? 'menu')
 );
-const currentIdx = ref<number>(props.options.indexOf(currentVal.value));
 // Handle prop `value` changed.
 watch(
   () => model.value,
   () => {
-    if (model.value && model.value !== currentVal.value) {
-      currentVal.value = model.value;
-      currentIdx.value = props.options.indexOf(model.value);
+    if (model.value && model.value !== current.val) {
+      Object.assign(current, {
+        val: model.value,
+        idx: props.options.indexOf(model.value),
+      });
     }
   }
 );
 
 const handleSelect = (idx: number) => {
   const newVal = props.options[idx];
-  currentVal.value = newVal;
-  currentIdx.value = idx;
+  Object.assign(current, {
+    val: newVal,
+    idx: idx,
+  });
   model.value = newVal;
   emit('update:model-value', newVal);
   emit('select', idx);
 };
 
 const liStyle = (idx: number) =>
-  idx === currentIdx.value ? CURRENT_OPTION_WEIGHT : undefined;
+  idx === current.idx ? CURRENT_OPTION_WEIGHT : undefined;
 
 // Open/Closing events
 const isOpened = ref(false);
 
+const menuStyle = shallowRef<CSSProperties>({});
+const updateMenuStyle = () => {
+  const rect = (activatorRef.value?.$el as HTMLElement).getBoundingClientRect();
+  menuStyle.value = {
+    width: `${rect.width}px`,
+    maxHeight: `${
+      Math.min(
+        document.documentElement.clientHeight - rect.bottom,
+        120
+      )
+    }px`,
+    top: props.isMobile ? 'var(--header-height)' : `${rect.bottom}px`,
+    ...(props.isMobile ? {} : { left:`${rect.left}px` }),
+  };
+};
 onMounted(() => {
-  const activator = activatorRef.value as NonNullable<typeof activatorRef.value>;
-  const menu = contentRef.value as NonNullable<typeof contentRef.value>;
-  menu.style.minWidth = window.getComputedStyle(activator.$el).width;
+  updateMenuStyle();
 });
 
 watch(isOpened, (newVal) => {
   if (!newVal) return;
-  const activator = activatorRef.value as NonNullable<typeof activatorRef.value>;
-  const menu = contentRef.value as NonNullable<typeof contentRef.value>;
-  const rect = activator.$el.getBoundingClientRect();
-  menu.style.top = `${rect.bottom}px`;
-  menu.style.left = `${rect.left}px`;
-  menu.style.maxHeight = '160px';
-  // menu.style.height = `${100}px`;
+  updateMenuStyle();
 });
 
-const handleBtnClick = (e: MouseEvent | FocusEvent, newVal?: boolean) => {
+const handleClickBtn = (e: MouseEvent | FocusEvent, newVal?: boolean) => {
   const activator = activatorRef.value as NonNullable<typeof activatorRef.value>;
-  const menu = contentRef.value as NonNullable<typeof contentRef.value>;
+  const menu = containerRef.value as NonNullable<typeof containerRef.value>;
   if (// Avoid changing `isOpened` twice
     e.type === 'focusout' &&
     ( // Focusout activator when click menu content
@@ -250,46 +263,85 @@ const handleBtnClick = (e: MouseEvent | FocusEvent, newVal?: boolean) => {
   isOpened.value = newVal ?? !isOpened.value;
 };
 
-const handleKeyDown = (e: KeyboardEvent) => {
+const handleKeyDown = async (e: KeyboardEvent) => {
   const key = e.key;
-  const activator = activatorRef.value as NonNullable<typeof activatorRef.value>;
-  const menu = contentRef.value as NonNullable<typeof contentRef.value>;
+  if (['Enter', ' '].includes(key)) {
+    e.stopPropagation();
+    e.preventDefault();
+    isOpened.value = !isOpened.value;
+    await nextTick();
+    // Cant get ref before updated (`menu` is undefined).
+    (containerRef.value?.children[0] as HTMLButtonElement).focus();
+    return;
+  }
+  if (!isOpened.value) {
+    // Only some keys works when menu is not openned.
+    if (key.startsWith('Arrow')) {
+      isOpened.value = true;
+      await nextTick();
+    } else return;
+  }
+
+  const activator = activatorRef.value?.$el as HTMLButtonElement;
+  const menu = containerRef.value as typeof containerRef.value;
   // @ts-expect-error
-  const nthChildFocused = [...menu.children].indexOf(document.activeElement) as number;
+  const nthChildFocused = menu && [...menu.children].indexOf(document.activeElement);
+  const noModifiers = noModifierKey(e);
+  const shiftOnly_ = shiftOnly(e);
+
+  let target: HTMLElement | null = null;
   switch(key) {
   case 'Tab':
-    if (nthChildFocused > 0) {
-      activator.$el.focus();
-      isOpened.value = false;
-    } else if (nthChildFocused === 0 && e.shiftKey) {
-      activator.$el.focus();
-      isOpened.value = false;
+    if (
+      !menu  || nthChildFocused === -1 // Focusing activator
+    ) {
+      if (noModifiers) { // Tab
+        // @ts-expect-error
+        target = menu.children[0];
+        e.preventDefault();
+      } else if (shiftOnly_) // Shift + Tab
+        isOpened.value = false;
+    } else if (nthChildFocused === menu.children.length - 1 && noModifiers) {
+      // Focusing last menu option and Tab => close menu and focus next
+      // focusable element of activator.
+      target = activator;
+    } else if (nthChildFocused === 0 && shiftOnly_) {
+      // Focusing first menu option and Shift + Tab => close menu and focus
+      // activator.
+      isOpened.value = !isOpened.value;
+      target = activator;
       e.preventDefault();
-    } else if (nthChildFocused === -1 && isOpened.value && !e.shiftKey) {
-      // focusing activator && openning menu && not shift+tab
-      menu.focus(); // with default tab event => focus first menu option.
     }
     break;
   case 'Home':
-    (menu.children[0] as HTMLButtonElement).focus();
+    // @ts-expect-error
+    target = menu.children[0];
     break;
   case 'End':
-    (menu.lastElementChild as HTMLButtonElement).focus();
+    // @ts-expect-error
+    target = menu.lastElementChild;
     break;
-  case 'ArrowRight':
   case 'ArrowLeft':
+  case 'ArrowUp':
+  case 'ArrowRight':
+  case 'ArrowDown':
+    e.preventDefault();
     if (nthChildFocused === -1) { // focusing activator
-      key.endsWith('Left') ?
-        (menu.lastElementChild as HTMLButtonElement).focus() :
-        (menu.children[0] as HTMLButtonElement).focus();
-    } else {
-      const bias = key.endsWith('Left') ? menu.children.length - 1 : 1;
-      const sibIdx = (nthChildFocused + bias) % menu.children.length as number;
-      (menu.children[sibIdx] as HTMLButtonElement).focus();
+      // @ts-expect-error
+      target = ['U', 'L'].includes(key[5]) ? menu.lastElementChild : menu.children[0];
+    }
+    else {
+      const bias = ['U', 'L'].includes(key[5]) ? -1 : 1;
+      // @ts-expect-error
+      target = menu.children[mod(nthChildFocused + bias, menu.children.length)];
     }
     break;
+  case 'Escape':
+    isOpened.value = false;
+    target = activator;
+    break;
   }
-  e.stopPropagation();
+  target?.focus();
 };
 </script>
 

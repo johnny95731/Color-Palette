@@ -3,7 +3,9 @@
     @show-fav="isFavShowing = true"
     @show-settings="showSettings"
   />
-  <ThePalette />
+  <main id="main">
+    <ThePalette />
+  </main>
   <SettingDialog
     v-if="isAppMounted"
     v-model="isSettingsShowing"
@@ -26,6 +28,8 @@ const FavOffcanvas = defineAsyncComponent(
   () => import('./components/FavOffcanvas/FavOffcanvas.vue')
 );
 // import FavOffcanvas from './components/FavOffcanvas/FavOffcanvas.vue';
+import { isMenuContainer } from '@/utils/helpers';
+import { OverlayDiv } from '@/utils/constants';
 // Store and Context
 import usePltStore from './features/stores/usePltStore';
 
@@ -76,8 +80,12 @@ onMounted(() => {
     if (key === 'escape' && !isCardPending.value && isShowOverlay.value) {
       handleOverlayChanged();
     }
-    // Prevent trigger hotkey when editing or add/remove/move (transition) card.
-    if (isCardPending.value || isShowOverlay.value) return;
+    if (
+      // Prevent trigger hotkey when editing or add/remove/move (transition) card.
+      isCardPending.value || isShowOverlay.value ||
+      // Opening some popup element or focusing their activator.
+      OverlayDiv.contains(document.activeElement) || isMenuContainer(document.activeElement)
+    ) return;
     switch (key) {
     case ' ':
       pltState.refreshCard(-1);
