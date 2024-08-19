@@ -17,7 +17,7 @@
 }
 
 // Side
-$menubarHeight: 45px; 
+$menubarHeight: 45px;
 $appendPltHeight: 30px;
 .menuBar {
   position: relative;
@@ -48,7 +48,7 @@ $appendPltHeight: 30px;
   .selected {
     background-color: $color1;
     outline: solid 1px black;
-  }  
+  }
 }
 // Main bookmarks content.
 .pageContent {
@@ -167,7 +167,7 @@ $appendPltHeight: 30px;
   cursor: pointer;
   :global(.icon) {
     margin-right: 3px;
-    height: calc(var(--font-body) + 3px);
+    height: calc($font-md + 3px);
     vertical-align: text-bottom;
   }
 }

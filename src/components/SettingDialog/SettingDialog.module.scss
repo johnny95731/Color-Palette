@@ -29,7 +29,7 @@ $header-height: 34px;
     // color and text
     color: $color2;
     text-align: center;
-    font-size: var(--font-subheading);
+    font-size: $font-lg;
     font-weight: $bold-weight;
 
     user-select: none;
@@ -68,7 +68,7 @@ $header-height: 34px;
 
   color: white;
   background-color: $color4;
-  font-size: var(--font-sm);
+  font-size: $font-sm;
 }
 
 %optionLayout {
@@ -99,7 +99,7 @@ $header-height: 34px;
   width: 100%;
   padding: 3px 20px 10px;
   box-sizing: border-box;
-  font-size: var(--font-body);
+  font-size: $font-md;
   >label, >div, >input, >span {
     max-height: min-content;
   }
@@ -107,7 +107,7 @@ $header-height: 34px;
     grid-column-start: 1;
     grid-column-end: 3;
     margin: 0;
-    font-size: var(--font-subheading);
+    font-size: $font-lg;
   }
   >label {
     grid-column-start: 1;

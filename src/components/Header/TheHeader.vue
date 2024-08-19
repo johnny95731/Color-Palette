@@ -17,7 +17,7 @@
       />
     </div>
     <DropdownMenu
-      v-else-if="isSmall"
+      v-else
       :titleClass="$style.menubarTitle"
       :contentClass="$style.menubar"
       icon="list"
@@ -36,15 +36,13 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, watchEffect, computed, useCssModule } from 'vue';
+import { ref, watchEffect, computed } from 'vue';
+import $style from './TheHeader.module.scss';
 import DropdownMenu from '../Custom/DropdownMenu.vue';
+import HeaderBtns from './HeaderBtns.vue';
 import { preventDefault } from '@/utils/eventHandler.ts';
 // Stores / Contexts
 import media from '@/features/useMedia';
-// Types
-import HeaderBtns from './HeaderBtns.vue';
-
-const $style = useCssModule();
 
 defineEmits<{
   (e: 'show-fav'): void,
@@ -65,4 +63,3 @@ watchEffect((cleanup) => {
   }
 });
 </script>
-<style lang="scss" src="./TheHeader.module.scss" module />

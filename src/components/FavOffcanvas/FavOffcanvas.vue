@@ -7,12 +7,12 @@
     <Transition name="slide-x">
       <div
         v-show="model"
-        :class="styles.favOffcanvas"
+        :class="$style.favOffcanvas"
         @transitionstart="isTransition = true"
         @transitionend="isTransition = false"
       >
         <div
-          :class="styles.menuBar"
+          :class="$style.menuBar"
           role="tablist"
         >
           <button
@@ -20,7 +20,7 @@
             :key="`page ${label}`"
             type="button"
             role="tab"
-            :class="i === page ? styles.selected : undefined"
+            :class="i === page ? $style.selected : undefined"
             @click="setPage(i)"
           >
             {{
@@ -41,7 +41,7 @@
         <!-- Page content -->
         <ul
           v-show="page === 0"
-          :class="styles.pageContent"
+          :class="$style.pageContent"
         >
           <ColorBlock
             v-for="(hex) in favState.colors"
@@ -51,7 +51,7 @@
         </ul>
         <ul
           v-show="page === 1"
-          :class="styles.pageContent"
+          :class="$style.pageContent"
         >
           <PaletteBlock
             v-for="(plt) in favState.plts"
@@ -60,7 +60,7 @@
           />
         </ul>
         <div
-          :class="styles.appendPlt"
+          :class="$style.appendPlt"
           @click="favPltChanged"
         >
           <TheIcon :type="state.icon" />{{ state.text }}
@@ -72,13 +72,14 @@
 
 <script lang="ts" setup>
 import { ref, computed } from 'vue';
-import styles from './FavOffcanvas.module.scss';
+import $style from './FavOffcanvas.module.scss';
 import TheIcon from '../TheIcon.vue';
 import OverlayContainer from '@/components/Custom/OverlayContainer.vue';
 import ColorBlock from './ColorBlock.vue';
 import PaletteBlock from './PaletteBlock.vue';
 import usePltStore from '@/features/stores/usePltStore';
 import useFavStore from '@/features/stores/useFavStore';
+import { IconType } from '@/utils/icons';
 
 const model = defineModel<boolean>();
 const isTransition = ref(false);
@@ -104,16 +105,19 @@ const favState = useFavStore();
 const pltStrings = computed(() => (
   pltState.cards.map((state) => state.hex.slice(1)).join('-')
 ));
-const state = computed(() => {
+const state = computed<{
+  icon: IconType,
+  text: string,
+}>(() => {
   const isFavPlt = favState.plts.includes(pltStrings.value);
   if (isFavPlt) {
     return {
-      icon: 'unfavorPallete',
+      icon: 'unfavPallete',
       text: 'Remove Pallete',
     } as const;
   } else {
     return {
-      icon: 'favorPallete',
+      icon: 'favPallete',
       text: 'Append Pallete',
     } as const;
   }

@@ -1,7 +1,7 @@
 <template>
-  <li :class="styles.paletteBlock">
+  <li :class="$style.paletteBlock">
     <div :style="{background: bgGrad}">
-      <div :class="styles.caretWrapper">
+      <div :class="$style.caretWrapper">
         <button
           type="button"
           aria-label="開啟書籤"
@@ -12,14 +12,14 @@
           />
         </button>
       </div>
-      <span :class="styles.delWrapper">
+      <span :class="$style.delWrapper">
         <button
           type="button"
           aria-label="刪除書籤"
           @click="removeFavPlt"
         >
           <TheIcon
-            type="del"
+            type="delete"
           />
         </button>
       </span>
@@ -36,7 +36,7 @@
 
 <script lang="ts" setup>
 import { computed } from 'vue';
-import styles from './FavOffcanvas.module.scss';
+import $style from './FavOffcanvas.module.scss';
 import TheIcon from '../TheIcon.vue';
 import { isValidHex } from '@/utils/colors';
 import { copyInnerHex } from '@/utils/eventHandler';

@@ -1,10 +1,15 @@
 <template>
   <button
     type="button"
-    class="btn"
+    :class="[
+      'btn', icon && 'icon'
+    ]"
     :aria-label="text"
   >
-    <div class="btn__overlay" />
+    <div
+      v-if="variant !== 'flat'"
+      class="btn__overlay"
+    />
     <div
       v-if="$slots.prepend || prependIcon"
       class="btn__prepend"
@@ -21,7 +26,10 @@
         <TheIcon
           v-if="icon"
           :type="icon"
-        />{{ text }}
+        />
+        <template v-else>
+          {{ text }}
+        </template>
       </slot>
     </div>
     <div
@@ -45,6 +53,7 @@ import type { IconType } from '@/utils/icons';
 
 type Props = {
   text?: string,
+  variant?: 'std' | 'flat',
   icon?: IconType,
   prependIcon?: IconType,
   appendIcon?: IconType,
@@ -53,7 +62,9 @@ type Props = {
     val: string,
   }[];
 }
-defineProps<Props>();
+withDefaults(defineProps<Props>(), {
+  variant: 'std',
+});
 </script>
 
 <style src="./TheBtn.scss" />

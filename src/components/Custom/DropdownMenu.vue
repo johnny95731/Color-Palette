@@ -1,17 +1,17 @@
 <template>
   <TheBtn
     ref="activatorRef"
-    type="button"
     :class="[
       'dropdown-menu activator',
       isOpened && 'active',
       titleClass
     ]"
-    :prepend-icon="icon"
+    :prepend-icon="icon ? undefined : prependIcon"
+    :icon="icon"
     :aria-controls="idForMenu"
     :data-haspopup="true"
     v-bind="$attrs"
-    :text="title"
+    :text="text"
     @click="handleClickBtn"
     @keydown="handleKeyDown"
   >
@@ -22,6 +22,7 @@
       <TheIcon
         type="caretDown"
         class="triangle"
+        aria-hidden="true"
       />
     </template>
   </TheBtn>
@@ -74,9 +75,9 @@ import OverlayContainer from './OverlayContainer.vue';
 import TheBtn from './TheBtn.vue';
 import TheIcon from '../TheIcon.vue';
 import {
-  capitalize, componentUniqueId, noModifierKey, removeComponentId, shiftOnly,
-  sleep, hasPopup, mod
+  capitalize, componentUniqueId, removeComponentId, sleep, mod
 } from '@/utils/helpers.ts';
+import { noModifierKey, shiftOnly, hasPopup } from '@/utils/eventHandler.ts';
 import { CURRENT_OPTION_WEIGHT, MenuSymbol } from '@/utils/constants';
 // Types
 import type { IconType } from '@/utils/icons';
@@ -84,9 +85,13 @@ import type { IconType } from '@/utils/icons';
 type Props = {
   isMobile?: boolean,
   eager?: boolean,
-  title?: string,
+  text?: string,
   /**
    * prepend icon
+   */
+  prependIcon?: IconType;
+  /**
+   * Icon only activator
    */
   icon?: IconType;
   contents?: readonly (string | {
@@ -116,6 +121,9 @@ const props = withDefaults(defineProps<Props>(), {
 const activatorRef = ref<InstanceType<typeof TheBtn>>();
 const containerRef = ref<HTMLDivElement>();
 
+/**
+ * Target is containing in this instance.
+ */
 const isContaining = (target?: Element | EventTarget | null): boolean => {
   return activatorRef.value && activatorRef.value.$el.contains(target) ||
     containerRef.value?.contains(target as Node | null);
@@ -127,7 +135,7 @@ const getDirectChildren = (target?: Element | EventTarget | null) => {
     !containerRef.value.contains(target as Element)
   ) return null;
   let children = target as Element;
-  while (children.parentElement !== containerRef.value) // Get direct children
+  while (children.parentElement !== containerRef.value)
     children = children.parentElement as HTMLElement;
   return children;
 };

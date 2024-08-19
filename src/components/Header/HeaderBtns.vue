@@ -16,25 +16,25 @@
     @click="haldleClickSlides"
   />
   <DropdownMenu
-    title="Sort"
-    icon="sort"
-    :class="$style.btnMenu"
+    text="Sort"
+    prepend-icon="sort"
+    :class="$style.btn"
     :contents="sortingMenuItems"
     :current-val="pltState.sortBy"
     @click-item="pltState.sortCards($event as SortActionType)"
   />
   <DropdownMenu
-    title="Blend"
-    icon="blend"
-    :class="$style.btnMenu"
+    text="Blend"
+    prepend-icon="blend"
+    :class="$style.btn"
     :contents="BLEND_MODES"
     :current-val="pltState.blendMode"
     @click-item="pltState.setBlendMode($event as BlendingType)"
   />
   <DropdownMenu
-    title="Space"
-    icon="edit"
-    :class="$style.btnMenu"
+    text="Space"
+    prepend-icon="edit"
+    :class="$style.btn"
     letterCase="all-caps"
     :contents="COLOR_SPACES"
     :current-val="pltState.colorSpace"
@@ -61,6 +61,13 @@
     aria-haspopup="dialog"
     @click="$emit('show-settings')"
   />
+  <!-- <TheBtn
+    :class="$style.btn"
+    prepend-icon="info"
+    text="Settings"
+    aria-label="額外資訊"
+    aria-haspopup="dialog"
+  /> -->
   <!-- Test -->
   <!-- <DropdownMenu
     title="layer1"
@@ -119,7 +126,8 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, watch, computed, useCssModule } from 'vue';
+import { ref, watch, computed } from 'vue';
+import $style from './TheHeader.module.scss';
 import DropdownMenu from '@/components/Custom/DropdownMenu.vue';
 import TheBtn from '@/components/Custom/TheBtn.vue';
 // Stores / Contexts
@@ -131,8 +139,6 @@ import {
 // Types
 import type { SortActionType } from 'types/pltType.ts';
 import type { BlendingType, ColorSpacesType } from 'types/pltType.ts';
-
-const $style = useCssModule();
 
 type Props = {
   isSmall: boolean,
@@ -181,4 +187,3 @@ const sortingMenuItems = SORTING_ACTIONS.map((val) => ({
   name: `${val} (${val[0]})`
 }));
 </script>
-<style lang="scss" src="./TheHeader.module.scss" module />

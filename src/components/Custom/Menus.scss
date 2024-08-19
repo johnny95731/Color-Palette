@@ -3,45 +3,39 @@ $transDuration: 120ms;
 
 .dropdown-menu {
   &.activator {
-    height: auto;
     border-radius: $radius-md;
-    transition: padding-bottom $transDuration ease-in-out;
-
-    .triangle::before {
-      vertical-align: baseline !important;
-      transition: transform $transDuration linear;
-      height: 10px !important;
-    }
   }
 }
 
 .select-menu.activator {
   width: 100%;
-  button {
-    height: auto;
+  > button {
+    text-align: start;
+    grid-template-columns: max-content 1fr max-content;
     width: 100%;
     padding: 8px 8px 8px 4px;
-    transition: padding-bottom $transDuration ease-in-out;
     color: $color5;
     background-color: $color1;
     .btn__content {
-      display: block;
-      text-overflow: ellipsis; // `text-overflow` only works on block containers;
+      display: block; // `text-overflow` only works on block containers;
+      text-overflow: ellipsis;
       overflow: hidden;
       white-space: nowrap;
     }
+  }
+}
 
-    .triangle::before {
-      vertical-align: baseline !important;
-      transition: transform $transDuration linear;
-      height: 10px !important;
-    }
+.select-menu,
+.dropdown-menu {
+  &.activator .triangle {
+    transition: transform $transDuration linear;
+    font-size: 0.6rem;
   }
 }
 
 .active {
   &.dropdown-menu, &.select-menu {
-    .triangle::before {
+    .triangle {
       transform: rotate(180deg);
     }
   }
@@ -103,7 +97,7 @@ $transDuration: 120ms;
         background-color: $color3;
       }
     }
-    >.icon::before {
+    >.bi::before {
       position: absolute;
       transform: translateX(-100%);
       z-index: 10;

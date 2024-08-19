@@ -15,8 +15,10 @@
     @dragging="draggingCardEvent.start($event, i)"
   />
   <!-- Insert Region -->
-  <div
-    :style="insertStyle"
+  <OverlayContainer
+    :class="$style.insertOverlay"
+    hide-scrim
+    :model-value="isShowInsert"
   >
     <div
       v-for="(val, i) in cardAttrs.positions"
@@ -24,18 +26,20 @@
       :class="$style.insertWrapper"
       :style="{[media.pos]: val}"
     >
-      <div @click="handleAddCard(i)">
-        <TheIcon type="insert" />
-      </div>
+      <TheBtn
+        variant="flat"
+        icon="insert"
+        @click="handleAddCard(i)"
+        :aria-label="`新增於位置${i}`"
+      />
     </div>
-  </div>
+  </OverlayContainer>
 </template>
 
 <script lang="ts" setup>
-import {
-  ref, computed, useCssModule, reactive, watch,
-} from 'vue';
-import TheIcon from '../TheIcon.vue';
+import { ref, computed, reactive, watch } from 'vue';
+import $style from './ThePalette.module.scss';
+import TheBtn from '../Custom/TheBtn.vue';
 import TheCard from './TheCard.vue';
 import { INIT_NUM_OF_CARDS, MAX_NUM_OF_CARDS } from '@/utils/constants';
 import { equallyLength, evalPosition, round } from '@/utils/helpers';
@@ -47,10 +51,9 @@ import useSettingStore from '@/features/stores/useSettingStore';
 import media from '@/features/useMedia';
 // Types
 import type { CSSProperties } from 'vue';
+import OverlayContainer from '../Custom/OverlayContainer.vue';
 
 type cardInstance = InstanceType<typeof TheCard>;
-
-const $style = useCssModule();
 
 const dragIdx = ref<{
       /**
@@ -373,11 +376,6 @@ watch(() => eventInfo.value, (newVal) => {
 /**
  * Style of insertion region.
  */
-const insertStyle = computed(() => (
-  pltState.numOfCards === MAX_NUM_OF_CARDS || pltState.isPending) ?
-  { display: 'none' } :
-  undefined,
-);
+const isShowInsert = computed(() =>
+  !(pltState.numOfCards === MAX_NUM_OF_CARDS || pltState.isPending));
 </script>
-
-<style src="./ThePalette.module.scss" module />

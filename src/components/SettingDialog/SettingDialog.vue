@@ -160,7 +160,8 @@
 </template>
 
 <script setup lang="ts" scoped>
-import { computed, useCssModule, ref, reactive } from 'vue';
+import { computed, ref, reactive } from 'vue';
+import $style from './SettingDialog.module.scss';
 import OverlayContainer from '@/components/Custom/OverlayContainer.vue';
 import TheBtn from './../Custom/TheBtn.vue';
 import SelectMenu from '../Custom/SelectMenu.vue';
@@ -193,7 +194,6 @@ const isActive = computed({
 
 const pltState = usePltStore();
 const settingsState = useSettingStore();
-const $style = useCssModule();
 
 const tabTitles = ['Card', 'Contrast'] as const;
 const tabIdx = ref(0);
@@ -275,5 +275,3 @@ const contrastCoeffMax = (
     MULTIPLICATION_MAX
 );
 </script>
-
-<style src="./SettingDialog.module.scss" module />

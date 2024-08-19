@@ -2,9 +2,9 @@
   <div
     ref="container"
     :class="[
-      styles.cardContainer,
-      cardIdx === 0 ? 'first' : undefined,
-      cardIdx === pltState.numOfCards-1 ? 'last' : undefined,
+      $style.cardContainer,
+      cardIdx === 0 && $style.first,
+      cardIdx === pltState.numOfCards-1 && $style.last,
     ]"
     :style="style"
     tabindex="-1"
@@ -14,26 +14,32 @@
       :cardIdx="cardIdx"
       :card="card"
       :fgFilter="fgFilter"
+      :isSmall="media.isSmall"
       @remove="$emit('remove')"
       @dragging="$emit('dragging', $event)"
     />
-    <div :class="styles.textDisplay">
-      <div
-        :class="styles.hexText"
+    <div :class="$style.textDisplay">
+      <button
+        ref="hexTextRef"
+        type="button"
+        :class="$style.hexText"
         :style="fgFilter"
         @click="copyInnerHex"
       >
+        <div class="btn__overlay" />
         <TheIcon type="copy" />{{ card.hex }}
-      </div>
-      <div
-        :class="styles.detailText"
+      </button>
+      <button
+        type="button"
+        :class="$style.detailText"
         :style="fgFilter"
         @click="copyInnerHex"
       >
+        <div class="btn__overlay" />
         <TheIcon type="copy" />{{
           detail
         }}
-      </div>
+      </button>
     </div>
     <EditingDialog
       :cardIdx="cardIdx"
@@ -43,13 +49,14 @@
       :roundedColor="roundedColor"
       :pos="editingDialogPos"
       v-model:show="showEditor"
+      @tabOffDialog="hexTextRef?.focus()"
     />
   </div>
 </template>
 
 <script lang="ts" setup>
 import { computed, reactive, ref, watch } from 'vue';
-import styles from './TheCard.module.scss';
+import $style from './TheCard.module.scss';
 // Components
 import TheIcon from '../TheIcon.vue';
 import ToolBar from './ToolBar.vue';
@@ -66,6 +73,7 @@ import type { CSSProperties } from 'vue';
 import type { CardType } from '@/features/types/pltType';
 
 const container = ref<HTMLElement>();
+const hexTextRef = ref<HTMLButtonElement>();
 
 type Props = {
   cardIdx: number;
@@ -77,6 +85,7 @@ type Props = {
   styleInSettings: CSSProperties
 };
 const props = defineProps<Props>();
+
 defineEmits<{
   (e: 'transitionend'): void,
   (e: 'remove'): void,

@@ -44,3 +44,22 @@ export const copyInnerHex = (
   const hex = text.slice(start).trim();
   copyText(hex);
 };
+
+
+// Keyboard Event Helpers
+export function noModifierKey(e: KeyboardEvent): boolean {
+  return !e.shiftKey && !e.altKey && !e.ctrlKey && !e.metaKey;
+}
+
+export function shiftOnly(e: KeyboardEvent): boolean {
+  return e.shiftKey && !e.altKey && !e.ctrlKey && !e.metaKey;
+}
+
+
+export function isMenuContainer(target?: EventTarget | Element | null) {
+  return (target as Element | null)?.classList.contains('menu-container');
+}
+
+export function hasPopup(target?: EventTarget | HTMLElement | null) {
+  return !!(target && (target as HTMLElement).dataset.haspopup === 'true');
+}

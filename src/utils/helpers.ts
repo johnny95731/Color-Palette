@@ -120,9 +120,13 @@ export const capitalize = (text: string) => {
   return words.join(' ');
 };
 
-export function identity<T>(x: T[]): T[] {
-  return Array.from(x);
-}
+// export const kebabize = (text: string) =>
+//   text.replace(/[A-Z]+(?![a-z])|[A-Z]/g, ($, ofs) => (ofs ? '-' : '') + $.toLowerCase());
+
+/**
+ * Array identity map.
+ */
+export const identity = <T>(x: T[]): T[] => Array.from(x);
 
 // Sorting
 /**
@@ -173,7 +177,7 @@ export function quicksort<T>(
  * @returns The mean value of color1 and color2.
  */
 export const elementwiseMean = (arr1: number[], arr2: number[]): number[] => {
-  const newColor = new Array(arr1.length);
+  const newColor = [];
   for (let i = 0; i < arr1.length; i++) {
     newColor[i] = 0.5 * (arr1[i] + arr2[i]);
   }
@@ -236,21 +240,3 @@ export function isComponentId (id: string, prefix: string): boolean {
 }
 
 export const sleep = (ms: number)  => new Promise(resolve => setTimeout(resolve, ms));
-
-// Keyboard Event Helpers
-export function noModifierKey(e: KeyboardEvent): boolean {
-  return !e.shiftKey && !e.altKey && !e.ctrlKey && !e.metaKey;
-}
-
-export function shiftOnly(e: KeyboardEvent): boolean {
-  return e.shiftKey && !e.altKey && !e.ctrlKey && !e.metaKey;
-}
-
-
-export function isMenuContainer(target?: EventTarget | Element | null) {
-  return (target as Element | null)?.classList.contains('menu-container');
-}
-
-export function hasPopup(target?: EventTarget | HTMLElement | null) {
-  return !!(target && (target as HTMLElement).dataset.haspopup === 'true');
-}

@@ -1,17 +1,17 @@
 <template>
   <TheHeader
-    @show-fav="isFavShowing = true"
-    @show-settings="showSettings"
+    @show-fav="handleShowFav"
+    @show-settings="handleShowSettings"
   />
   <main id="main">
     <ThePalette />
   </main>
   <SettingDialog
-    v-if="isAppMounted"
+    v-if="isFirstTimeSettings"
     v-model="isSettingsShowing"
   />
   <FavOffcanvas
-    v-if="isAppMounted"
+    v-if="isFirstTimeFav"
     v-model="isFavShowing"
   />
 </template>
@@ -20,22 +20,33 @@
 import { ref, onMounted, watch, computed, defineAsyncComponent } from 'vue';
 import TheHeader from './components/Header/TheHeader.vue';
 import ThePalette from './components/Palette/ThePalette.vue';
-const SettingDialog = defineAsyncComponent(
-  () => import('./components/SettingDialog/SettingDialog.vue')
-);
+// import FavOffcanvas from './components/FavOffcanvas/FavOffcanvas.vue';
 // import SettingDialog from './components/SettingDialog/SettingDialog.vue';
 const FavOffcanvas = defineAsyncComponent(
   () => import('./components/FavOffcanvas/FavOffcanvas.vue')
+    .then(component => {
+      setTimeout(() => handleShowFav(), 50);
+      return component;
+    })
 );
-// import FavOffcanvas from './components/FavOffcanvas/FavOffcanvas.vue';
-import { isMenuContainer } from '@/utils/helpers';
+const SettingDialog = defineAsyncComponent(
+  () => import('./components/SettingDialog/SettingDialog.vue')
+    .then(component => {
+      setTimeout(() => handleShowSettings(), 50);
+      return component;
+    })
+);
+import { isMenuContainer } from '@/utils/eventHandler.ts';
 import { OverlayDiv } from '@/utils/constants';
 // Store and Context
 import usePltStore from './features/stores/usePltStore';
 
 // Display / Hide fav-offcanvas
-const isSettingsShowing = ref(false);
+const isFirstTimeFav = ref(false);
 const isFavShowing = ref(false);
+
+const isFirstTimeSettings = ref(false); // start load resource
+const isSettingsShowing = ref(false); // open / close
 const isShowOverlay = ref(false);
 
 const pltState = usePltStore();
@@ -43,8 +54,7 @@ const isCardPending = computed(() => {
   return pltState.isEditing || pltState.isPending;
 });
 
-watch(
-  () => pltState.isEditing,
+watch(() => pltState.isEditing,
   (newVal) => isShowOverlay.value = newVal
 );
 
@@ -58,19 +68,28 @@ const handleOverlayChanged = () => {
   isSettingsShowing.value = false;
   isFavShowing.value = false;
 };
-watch(isSettingsShowing, (newVal) => !newVal && pltState.setIsAdjustingPlt('cancel'));
-const showSettings = () => {
+
+const handleShowFav = async () => {
+  if (!isFirstTimeFav.value) {
+    isFirstTimeFav.value = true;
+    return;
+  }
+  isFavShowing.value = true;
+};
+
+const handleShowSettings = async () => {
+  if (!isFirstTimeSettings.value) {
+    isFirstTimeSettings.value = true;
+    return;
+  }
   const newVal = !isSettingsShowing.value;
   isSettingsShowing.value = newVal;
   isShowOverlay.value = newVal;
   pltState.setIsAdjustingPlt('cancel');
 };
 
-const isAppMounted = ref(false);
-
 // Connect hotkey.
 onMounted(() => {
-  isAppMounted.value = true;
   const body = document.body;
   // `preload` class for preventing annimation occurs on page load.
   body.classList.remove('preload');
@@ -104,5 +123,3 @@ onMounted(() => {
   body.addEventListener('keydown', keyDownEvent);
 });
 </script>
-
-<style src="@/assets/transition.scss" />

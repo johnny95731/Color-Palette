@@ -8,13 +8,10 @@ $transDuration: 120ms;
   align-items: center;
   justify-content: center;
   grid-template-areas: "prepend content append";
-  grid-template-columns: max-content minmax(min-content, 1fr) max-content;
+  grid-template-columns: max-content auto max-content;
   column-gap: 4px;
-  text-align: start;
-  vertical-align: middle;
+  text-align: center;
   // shape;
-  height: 31px;
-  width: auto;
   border: none;
   border-radius: $radius-lg;
   padding: 4px 8px;
@@ -23,7 +20,7 @@ $transDuration: 120ms;
   // style
   background-color: inherit;
   color: inherit;
-  font-size: var(--font-body);
+  font-size: $font-md;
   font-weight: 600;
 
   user-select: none;
@@ -46,6 +43,10 @@ $transDuration: 120ms;
       }
     }
   }
+}
+
+.btn.icon {
+  aspect-ratio: 1 / 1;
 }
 
 .btn__overlay {

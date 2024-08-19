@@ -1,54 +1,67 @@
 <template>
   <div
-    :class="styles.toolContainer"
+    :class="$style.toolContainer"
     :style="showToolbar"
     role="toolbar"
     :aria-label="`卡片${cardIdx}工具列`"
+    @keydown="stopPropagation"
   >
-    <TheBtn
-      v-once
-      icon="close"
-      :style="closeIconStyle"
-      aria-label="移除"
-      @click="$emit('remove')"
-    />
-    <TheBtn
-      v-memo="[card.isLock]"
-      :icon="isLock.icon"
-      :style="closeIconStyle"
-      :aria-label="isLock.label"
-      @click="pltState.setIsLock(cardIdx)"
-    />
-    <TheBtn
-      :icon="isFavIcon.icon"
-      :aria-label="isFavIcon.label"
-      @click="favState.favColorsChanged(card.hex);"
-    />
-    <TheBtn
-      icon="draggable"
-      style="cursor: grab;"
-      aria-label="拖動"
-      @mousedown.passive="$emit('dragging', $event)"
-      @touchstart.passive="$emit('dragging', $event)"
-    />
-    <TheBtn
-      icon="refresh"
-      aria-label="刷新"
-      @click="pltState.refreshCard(cardIdx)"
-    />
-    <TheBtn
-      icon="edit"
-      aria-label="調整"
-      aria-haspopup="dialog"
-      @click="pltState.setEditingIdx(cardIdx)"
-    />
+    <CondWrapper
+      tag="div"
+      :is-wrap="isSmall"
+    >
+      <TheBtn
+        v-once
+        icon="close"
+        :style="closeIconStyle"
+        aria-label="移除"
+        @click="$emit('remove')"
+      />
+      <TheBtn
+        v-memo="[card.isLock]"
+        :icon="isLock.icon"
+        :style="closeIconStyle"
+        :aria-label="isLock.label"
+        @click="pltState.setIsLock(cardIdx)"
+      />
+      <TheBtn
+        :icon="isFavIcon.icon"
+        :aria-label="isFavIcon.label"
+        @click="favState.favColorsChanged(card.hex);"
+      />
+    </CondWrapper>
+    <CondWrapper
+      tag="div"
+      :is-wrap="isSmall"
+    >
+      <TheBtn
+        icon="draggable"
+        style="cursor: grab;"
+        aria-label="拖動"
+        @mousedown.passive="$emit('dragging', $event)"
+        @touchstart.passive="$emit('dragging', $event)"
+      />
+      <TheBtn
+        icon="refresh"
+        aria-label="刷新"
+        @click="pltState.refreshCard(cardIdx)"
+      />
+      <TheBtn
+        icon="edit"
+        aria-label="調整"
+        aria-haspopup="dialog"
+        @click="pltState.setEditingIdx(cardIdx)"
+      />
+    </CondWrapper>
   </div>
 </template>
 
 <script lang="ts" setup>
 import { computed } from 'vue';
-import styles from './TheCard.module.scss';
+import $style from './TheCard.module.scss';
 import TheBtn from '../Custom/TheBtn.vue';
+import CondWrapper from '../Custom/CondWrapper.vue';
+import { stopPropagation } from '@/utils/eventHandler.ts';
 // Stores
 import usePltStore from '@/features/stores/usePltStore.ts';
 import useFavStore from '@/features/stores/useFavStore.ts';
@@ -60,6 +73,7 @@ type Props = {
   cardIdx: number
   card: CardType;
   fgFilter: CSSProperties;
+  isSmall: boolean;
 }
 const props = defineProps<Props>();
 

@@ -1,0 +1,36 @@
+
+#app {
+  height: 100%;
+  width: 100%;
+}
+
+#main {
+  display: inline-block;
+  position: relative;
+  top: var(--header-height);
+  height: calc(var(--app-height) - var(--header-height));
+  width: 100%;
+}
+
+#overlay-container {
+  display: contents;
+  contain: layout;
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  pointer-events: none;
+}
+
+.spacer {
+  flex: 1;
+}
+
+.field {
+  position: absolute;
+  display: block;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}

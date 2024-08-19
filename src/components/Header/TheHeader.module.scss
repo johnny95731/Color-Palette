@@ -18,42 +18,22 @@
   background-color: $color2;
   user-select: none;
   @include small {
-    padding: 0 0 0 15px;
+    padding: 0 8px 0 16px;
     justify-content: space-between;
   }
 }
 
 .title {
-  font-size: var(--font-heading);
+  font-size: $font-x-lg;
   font-weight: 900;
   color: $color5;
   margin: 0;
 }
 
-.menuWrapper {
-  flex: 1 0 auto;
-  color: $color5;
-  @include small {
-    position: relative;
-    flex: 0 0 auto;
-    height: 100%;
-    aspect-ratio: 1 / 1;
-    margin: 0;
-    background-color: $color1;
-  }
-}
-
-.menubarTitle {
+.menubarTitle:not(#id) {
   margin: 0;
-  padding: 0;
-  @include small {
-    :global(.icon)::before {
-      height: var(--header-height);
-      padding: 4px;
-      box-sizing: border-box;
-      float: left;
-    }
-  }
+  padding: 4px;
+  font-size: $font-x-lg;
 }
 
 .menubar {
@@ -69,25 +49,12 @@
   }
 }
 
-%btn {
-  :global(.icon)::before {
-    margin-left: 0;
-    height: 18px;
+.btn {
+  padding: 8px;
+  :global(.btn__prepend i::before)  {
+    font-size: $font-lg;
   }
   @include small {
     grid-template-columns: max-content min-content max-content;
   }
-}
-.listIcon {
-  display: block;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.btn {
-  @extend %btn;
-}
-
-.btnMenu {
-  @extend %btn;
 }

@@ -7,10 +7,11 @@
   >
     <div
       ref="containerRef"
-      :class="styles.editor"
+      :class="$style.editor"
       :style="{
         ...(media.isSmall ? {} :pos)
       }"
+      tabindex="-1"
       @keydown="stopPropagation($event)"
     >
       <label
@@ -21,7 +22,7 @@
       </label>
       <input
         :id="`card${cardIdx}-hex`"
-        :class="styles.hexInput"
+        :class="$style.hexInput"
         type="text"
         maxlength="7"
         :value="card.hex"
@@ -32,10 +33,10 @@
       <SelectMenu
         v-if="colorSpace === 'name'"
         ref="selectRef"
-        :class="styles.nameSelect"
+        :class="$style.nameSelect"
         aria-label="CSS named-color選單"
         :options="namedColors.fullNames"
-        :contentClass="styles.nameSelectContent"
+        :contentClass="$style.nameSelectContent"
         :model-value="detail"
       >
         <template #items>
@@ -58,7 +59,7 @@
           </TheBtn>
         </template>
       </SelectMenu>
-      <div :class="styles.sliders">
+      <div :class="$style.sliders">
         <template
           v-for="(val, i) in roundedColor"
           :key="`card${cardIdx}-label${i}`"
@@ -77,6 +78,7 @@
             :step="1"
             :model-value="val"
             @change="handleSliderChange($event, i)"
+            @keydown="onLeaveFocusing($event, i)"
           />
         </template>
       </div>
@@ -85,12 +87,12 @@
 </template>
 
 <script setup lang='ts'>
-import { computed, ref, watch } from 'vue';
-import styles from './TheCard.module.scss';
+import { computed, nextTick, ref, watch } from 'vue';
+import $style from './TheCard.module.scss';
 import TheSlider from '@/components/Custom/TheSlider.vue';
 import SelectMenu from '@/components/Custom/SelectMenu.vue';
 // Utils
-import { hexTextEdited, stopPropagation } from '@/utils/eventHandler';
+import { hexTextEdited, noModifierKey, stopPropagation } from '@/utils/eventHandler';
 import {
   hex2rgb, rgb2hex, isValidHex, gradientGen, namedColors,
 } from '@/utils/colors';
@@ -116,6 +118,10 @@ const containerRef = ref<HTMLDivElement>();
 
 const modelShow = defineModel<boolean>('show', { required: true });
 
+const emits = defineEmits<{
+  'tabOffDialog': []
+}>();
+
 const pltState = usePltStore();
 const space = computed(() => {
   const infos = pltState.spaceInfos;
@@ -128,6 +134,20 @@ const space = computed(() => {
     )
   };
 });
+
+watch(modelShow, async (newVal) => { // focus dialog when open it.
+  if (newVal) {
+    await nextTick();
+    containerRef.value?.focus();
+  }
+});
+
+const onLeaveFocusing = (e: KeyboardEvent, idx: number) => {
+  if (idx !== props.roundedColor.length - 1 || e.key !== 'Tab' || !noModifierKey(e)) return;
+  modelShow.value = false;
+  emits('tabOffDialog');
+  e.preventDefault();
+};
 
 /**
  * Finish Hex editing when input is blurred or press 'Enter'

@@ -1,7 +1,7 @@
 <template>
   <li
     v-memo="[hex]"
-    :class="styles.colorBlock"
+    :class="$style.colorBlock"
     :style="{
       backgroundColor: props.hex,
     }"
@@ -14,14 +14,14 @@
       @click="copyText(props.hex)"
     />
     <span
-      :class="styles.delWrapper"
+      :class="$style.delWrapper"
     >
       <button
         type="button"
         aria-label="刪除書籤"
       >
         <TheIcon
-          type="del"
+          type="delete"
           @click="delFavColor"
         />
       </button>
@@ -31,7 +31,7 @@
 
 <script lang="ts" setup>
 import { computed } from 'vue';
-import styles from './FavOffcanvas.module.scss';
+import $style from './FavOffcanvas.module.scss';
 import TheIcon from '../TheIcon.vue';
 import { hex2rgb, rgb2gray } from '@/utils/colors';
 import { copyText } from '@/utils/eventHandler';

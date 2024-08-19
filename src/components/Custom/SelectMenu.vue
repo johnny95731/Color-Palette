@@ -14,7 +14,7 @@
       :class="[
         titleClass
       ]"
-      type="button"
+      variant="button"
       :text="valueLabel"
       @click="handleClickBtn"
       @focusout="handleClickBtn($event, false)"
@@ -24,6 +24,7 @@
         <TheIcon
           type="caretDown"
           class="triangle"
+          aria-hidden="true"
         />
       </template>
     </TheBtn>
@@ -93,7 +94,8 @@ import OverlayContainer from './OverlayContainer.vue';
 import TheBtn from './TheBtn.vue';
 import TheIcon from '../TheIcon.vue';
 import { CURRENT_OPTION_WEIGHT } from '@/utils/constants';
-import { componentUniqueId, mod, noModifierKey, removeComponentId, shiftOnly } from '@/utils/helpers';
+import { componentUniqueId, mod, removeComponentId } from '@/utils/helpers';
+import { noModifierKey, shiftOnly } from '@/utils/eventHandler.ts';
 import type { CSSProperties } from 'vue';
 
 type Props = {
