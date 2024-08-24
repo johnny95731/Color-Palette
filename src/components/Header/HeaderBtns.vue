@@ -1,5 +1,5 @@
 <template>
-  <!-- Align left -->
+  <!-- Left side -->
   <TheBtn
     :class="$style.btn"
     prepend-icon="refresh"
@@ -44,8 +44,9 @@
     v-if="!isSmall"
     class="spacer"
   />
-  <!-- Align right -->
+  <!-- Right side -->
   <TheBtn
+    ref="bookmarksRef"
     :class="$style.btn"
     prepend-icon="bookmarks"
     text="Bookmarks"
@@ -54,6 +55,7 @@
     @click="$emit('show-fav')"
   />
   <TheBtn
+    ref="settingsRef"
     :class="$style.btn"
     prepend-icon="setting"
     text="Settings"
@@ -139,6 +141,18 @@ import {
 // Types
 import type { SortActionType } from 'types/pltType.ts';
 import type { BlendingType, ColorSpacesType } from 'types/pltType.ts';
+import { HOT_KEYS } from '@/utils/hotkeys';
+
+const bookmarksRef = ref<InstanceType<typeof TheBtn>>();
+const settingsRef = ref<InstanceType<typeof TheBtn>>();
+defineExpose({
+  focusBookmarks() {
+    bookmarksRef.value?.$el.focus();
+  },
+  focusSettings() {
+    settingsRef.value?.$el.focus();
+  }
+});
 
 type Props = {
   isSmall: boolean,
@@ -157,17 +171,17 @@ const isRunning = ref<boolean>(false);
 const intervalId = ref<number | null>(null);
 
 const delay = computed(() => Math.max(settingState.transition.color, 1000));
-function intervalPlay() {
-  intervalId.value = window.setInterval(() => {
-    isRunning.value && pltState.refreshCard(-1);
-  }, delay.value);
+function slidePlay() {
+  intervalId.value = window.setInterval(
+    () => isRunning.value && pltState.refreshCard(-1),
+    delay.value);
 }
 function haldleClickSlides() {
-  if (isRunning.value) {
-    if (intervalId.value !== null) window.clearInterval(intervalId.value);
+  if (isRunning.value) { // play -> pause
+    window.clearInterval(intervalId.value as number | undefined);
     intervalId.value = null;
-  } else {
-    intervalPlay();
+  } else { // pause -> play
+    slidePlay();
     pltState.refreshCard(-1);
   }
   isRunning.value = !isRunning.value;
@@ -176,14 +190,16 @@ function haldleClickSlides() {
 watch(
   () => settingState.transition.color,
   () => {
-    if (!isRunning.value) return;
-    if (intervalId.value !== null) window.clearInterval(intervalId.value);
-    intervalPlay();
+    if (isRunning.value) {
+      window.clearInterval(intervalId.value as number | undefined);
+      slidePlay();
+    }
   },
 );
 
-const sortingMenuItems = SORTING_ACTIONS.map((val) => ({
+const sortingMenuItems = SORTING_ACTIONS.map(val => ({
   val,
-  name: `${val} (${val[0]})`
+  name: val,
+  hotkey: HOT_KEYS.sortingKeys[val],
 }));
 </script>

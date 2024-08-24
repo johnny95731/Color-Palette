@@ -26,6 +26,7 @@
     </div>
     <button
       type="button"
+      class="ripple"
       aria-label="複製調色盤HEX碼"
       @click="copyInnerHex"
     >

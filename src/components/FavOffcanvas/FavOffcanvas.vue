@@ -2,102 +2,105 @@
   <OverlayContainer
     role="dialog"
     :eager="true"
-    v-model="isActive"
+    transition="slide-x"
+    v-model="model"
   >
-    <Transition name="slide-x">
-      <div
-        v-show="model"
-        :class="$style.favOffcanvas"
-        @transitionstart="isTransition = true"
-        @transitionend="isTransition = false"
+    <div
+      :class="$style.favOffcanvas"
+    >
+      <header
+        :class="$style.header"
       >
-        <div
-          :class="$style.menuBar"
-          role="tablist"
-        >
-          <button
-            v-for="(label, i) in pageLabels"
-            :key="`page ${label}`"
-            type="button"
-            role="tab"
-            :class="i === page ? $style.selected : undefined"
-            @click="setPage(i)"
-          >
-            {{
-              label
-            }}
-          </button>
-          <div class="spacer" />
-          <button
-            type="button"
-            aria-label="關閉"
-            @click="isActive = false"
-          >
-            <TheIcon
-              type="close"
-            />
-          </button>
-        </div>
-        <!-- Page content -->
-        <ul
-          v-show="page === 0"
-          :class="$style.pageContent"
+        <h2>Bookmarks</h2>
+        <TheBtn
+          icon="close"
+          aria-label="關閉"
+          @click="model = false"
+        />
+      </header>
+      <div
+        :class="$style.menuBar"
+      >
+        <TheBtn
+          v-for="(label, i) in TabLabels"
+          :key="`page ${label}`"
+          :ref="(el) => tabRefs[i] = el as InstanceType<typeof TheBtn>"
+          :text="label"
+          :class="i === tabIdx ? $style.selected : undefined"
+          @click="tabIdx = i"
+        />
+      </div>
+      <!-- Page content -->
+      <ul
+        :class="$style.pageContent"
+      >
+        <template
+          v-if="tabIdx === 0"
         >
           <ColorBlock
             v-for="(hex) in favState.colors"
             :key="`favColor ${hex}`"
             :hex="hex"
           />
-        </ul>
-        <ul
-          v-show="page === 1"
-          :class="$style.pageContent"
-        >
+        </template>
+        <template v-else-if="tabIdx === 1">
           <PaletteBlock
             v-for="(plt) in favState.plts"
             :key="`favPlt ${plt}`"
             :plt="plt"
           />
-        </ul>
-        <div
-          :class="$style.appendPlt"
-          @click="favPltChanged"
-        >
-          <TheIcon :type="state.icon" />{{ state.text }}
-        </div>
-      </div>
-    </Transition>
+        </template>
+      </ul>
+      <TheBtn
+        :prepend-icon="state.icon"
+        :class="$style.appendPlt"
+        @keydown="handleFocusoutDialog"
+        @click="favPltChanged"
+      >
+        {{ state.text }}
+      </TheBtn>
+    </div>
   </OverlayContainer>
 </template>
 
 <script lang="ts" setup>
-import { ref, computed } from 'vue';
+import { ref, computed, watch, nextTick } from 'vue';
 import $style from './FavOffcanvas.module.scss';
-import TheIcon from '../TheIcon.vue';
+import TheBtn from '../Custom/TheBtn.vue';
 import OverlayContainer from '@/components/Custom/OverlayContainer.vue';
 import ColorBlock from './ColorBlock.vue';
 import PaletteBlock from './PaletteBlock.vue';
 import usePltStore from '@/features/stores/usePltStore';
 import useFavStore from '@/features/stores/useFavStore';
 import { IconType } from '@/utils/icons';
+import { noModifierKey } from '@/utils/eventHandler';
+
+
+const emit = defineEmits<{
+  (e: 'focusoutDialog'): void
+}>();
 
 const model = defineModel<boolean>();
-const isTransition = ref(false);
-const isActive = computed({
-  get() {
-    return model.value || isTransition.value;
-  },
-  set(newVal) {
-    isTransition.value = !newVal;
-    model.value = newVal;
-    if (!model.value && isTransition.value) isTransition.value = false;
-  }
+
+const TabLabels: string[] = ['Colors', 'Palettes'];
+const tabIdx = ref<number>(0);
+
+const tabRefs = ref<InstanceType<typeof TheBtn>[]>([]);
+watch(model, async (newVal) => { // focus dialog when open it.
+  await nextTick();
+  newVal && tabRefs.value[tabIdx.value]?.$el.focus();
 });
 
-const pageLabels: string[] = ['Colors', 'Palettes'];
-const page = ref<number>(0);
-function setPage(i: number) {
-  page.value = i;
+function handleFocusoutDialog(e: KeyboardEvent) {
+  if (e.key === 'Tab' && noModifierKey(e)) {
+    e.preventDefault();
+    if (tabIdx.value !== TabLabels.length - 1)  // switch to next tab page.
+      tabRefs.value[++tabIdx.value]?.$el.focus();
+    else {
+      model.value = false;
+      emit('focusoutDialog');
+    }
+  }
 }
 
 const pltState = usePltStore();
@@ -125,6 +128,6 @@ const state = computed<{
 
 function favPltChanged() {
   favState.favPltsChanged(pltStrings.value);
-  setPage(1);
+  tabIdx.value = 1;
 }
 </script>

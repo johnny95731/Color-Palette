@@ -15,7 +15,4 @@ type Prop = {
 }
 
 defineProps<Prop>();
-defineEmits<{
-  (e: 'click', val?: MouseEvent): void
-}>();
 </script>

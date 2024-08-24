@@ -7,10 +7,12 @@
     }"
   >
     <TheBtn
+      class="ripple"
       :style="iconFilterStyle"
       prepend-icon="copy"
       :text="props.hex"
       :aria-label="`複製HEX碼${props.hex}`"
+      variant="flat"
       @click="copyText(props.hex)"
     />
     <span
@@ -48,7 +50,7 @@ const isLight = computed(() => {
   return rgb2gray(hex2rgb(props.hex) as number[]) > 127.5;
 });
 const iconFilterStyle = computed<CSSProperties>(() => (
-  { filter: isLight.value ? '' : 'invert(1)' }
+  { filter: isLight.value ? 'invert(1)' :  undefined }
 ));
 
 const favState = useFavStore();

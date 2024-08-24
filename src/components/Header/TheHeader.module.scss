@@ -40,10 +40,6 @@
   flex: 1 0 auto;
   display: flex;
   gap: 4px;
-  >:global(.icon)::before {
-    margin-left: 0;
-    height: 18px;
-  }
   @include small {
     flex-direction: column;
   }

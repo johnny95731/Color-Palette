@@ -1,3 +1,5 @@
+@use './commons.module.scss' as *;
+@use './transition.scss' as *;
 
 #app {
   height: 100%;
@@ -15,12 +17,7 @@
 #overlay-container {
   display: contents;
   contain: layout;
-  position: fixed;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  pointer-events: none;
+  @include overlay(fixed);
 }
 
 .spacer {
@@ -33,4 +30,45 @@
   width: 0;
   height: 0;
   overflow: hidden;
+}
+
+[class~="ripple"], [class*="ripple-"] {
+  position: relative;
+  overflow: hidden;
+  &:before {
+    content: '';
+    @include overlay;
+  }
+}
+
+.ripple {
+  &:before {
+    visibility: hidden;
+  }
+  &:not(:active):before {
+    animation: ripple 1s ease-in-out;
+    transition: visibility 1s step-end; // prevent triggering animation when page onload
+  }
+  &:active:before {
+    visibility: visible;
+  }
+}
+
+.ripple-focus {
+  &:before {
+    visibility: hidden;
+  }
+  &:not(:focus):before {
+    animation: ripple 1s ease-in-out;
+    transition: visibility 1s step-end; // prevent triggering animation when page onload
+  }
+  &:focus:before {
+    visibility: visible;
+  }
+}
+
+.ripple-hover {
+  &:hover:before {
+    animation: ripple 1s 1;
+  }
 }

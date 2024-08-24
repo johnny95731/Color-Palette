@@ -11,7 +11,6 @@
       :style="{
         ...(media.isSmall ? {} :pos)
       }"
-      tabindex="-1"
       @keydown="stopPropagation($event)"
     >
       <label
@@ -21,6 +20,7 @@
         {{ card.hex }}
       </label>
       <input
+        ref="hexInputRef"
         :id="`card${cardIdx}-hex`"
         :class="$style.hexInput"
         type="text"
@@ -115,6 +115,7 @@ type Props = {
 
 const props = defineProps<Props>();
 const containerRef = ref<HTMLDivElement>();
+const hexInputRef = ref<HTMLDivElement>();
 
 const modelShow = defineModel<boolean>('show', { required: true });
 
@@ -138,7 +139,7 @@ const space = computed(() => {
 watch(modelShow, async (newVal) => { // focus dialog when open it.
   if (newVal) {
     await nextTick();
-    containerRef.value?.focus();
+    hexInputRef.value?.focus();
   }
 });
 

@@ -1,6 +1,6 @@
 @use './commons.module.scss' as *;
 
-html, body {
+body {
   margin: 0;
   padding: 0;
   height: 100vh;
@@ -13,6 +13,7 @@ html, body {
     'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-size-adjust: 100%;
 }
 
 :root{

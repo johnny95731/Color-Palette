@@ -3,12 +3,14 @@
 // Containers
 .favOffcanvas {
   position: fixed;
-  display: inline;
+  display: flex;
+  flex-direction: column;
   top: 0;
   right: 0;
   height: 100vh;
   width: 300px;
-  background-color: $color2;
+  color: #fff;
+  background-color: $color5;
   z-index: 1;
   pointer-events: all;
   @include mobile {
@@ -16,48 +18,57 @@
   }
 }
 
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 34px;
+  width: 100%;
+  > h2 {
+    margin: 0;
+    // shape
+    padding: 0px 10px 0px;
+    // color and text
+    color: $color2;
+    text-align: center;
+    font-size: $font-lg;
+    font-weight: $bold-weight;
+    user-select: none;
+  }
+  :global(.btn) {
+    padding: 4px;
+    color: #fff;
+  }
+}
+
 // Side
-$menubarHeight: 45px;
+$menubarHeight: 30px;
 $appendPltHeight: 30px;
 .menuBar {
   position: relative;
   display: flex;
   height: $menubarHeight;
-  padding: 0 5px;
-  border-bottom: 1px solid black;
-  box-sizing: border-box;
   user-select: none;
-  >button:not(:last-of-type) {
-    border-radius: 7px;
-    &:hover, &:focus {
-      background-color: $color1;
-    }
-  }
-  >button {
-    width: min-content;
-    margin: auto 3px auto 0;
-    padding: 3px 7px;
-    cursor: pointer;
-  }
-  >button:last-of-type {
-    :global(.icon) {
-      height: 17px;
-    }
+  > button {
+    border-radius: $radius-sm $radius-sm 0 0;
+    color: #fff;
+    background-color: $color4;
   }
   // Menubar button that be clicked/focused.
   .selected {
-    background-color: $color1;
-    outline: solid 1px black;
+    color: #000  !important;
+    background-color: $color1 !important;
   }
 }
 // Main bookmarks content.
 .pageContent {
-  height: calc(100% - #{$menubarHeight + $appendPltHeight});
+  flex: 1;
   overflow-y: auto;
   list-style-type: none;
   margin-block-start: 0;
   margin-block-end: 0;
   padding-inline-start: 0;
+  background-color: $color1;
 }
 
 .delWrapper { // Remove favorite button
@@ -69,11 +80,14 @@ $appendPltHeight: 30px;
   right: 0;
   opacity: 0;
   background-color: #0007;
-  user-select: none;
   button {
-    @extend %center;
-    height: 13px;
-    filter: invert(1);
+    position: absolute;
+    @include position(center);
+    color: #fff;
+    font-size: $font-md;
+  }
+  &:focus-within {
+    opacity: 1;
   }
 }
 
@@ -83,8 +97,10 @@ $appendPltHeight: 30px;
   margin: 5px;
   list-style-type: none;
 
-  &:hover .delWrapper {
-    opacity: 1;
+  &:hover {
+    .delWrapper {
+      opacity: 1;
+    }
   }
 }
 
@@ -96,20 +112,25 @@ $appendPltHeight: 30px;
     @extend %verticalCenter;
     left: 8px;
     width: auto;
-    font-size: 15px;
+    font-size: $font-md;
     font-weight: 500;
     background-color: transparent;
-    :global(.icon) {
-      height: 13px;
+    :global(.bi) {
+      font-size: $font-x-sm;
       opacity: 0;
-      margin-right: 2px;
     }
-    :global(.icon)::before {
-      height: 12px;
+    &:hover, &:focus-visible {
+      :global(.bi) {
+        opacity: 1;
+      }
     }
-  }
-  &:hover >button :global(.icon) {
-    opacity: 1;
+    @supports not selector(:focus-visible) {
+      &:focus {
+        :global(.bi) {
+          opacity: 1;
+        }
+      }
+    }
   }
 }
 
@@ -123,13 +144,15 @@ $appendPltHeight: 30px;
     width: 100%;
   }
   >button {
+    display: block;
     text-overflow: ellipsis;
     overflow: hidden;
     white-space: nowrap;
-    cursor: pointer;
   }
-  &:hover .caretWrapper {
-    opacity: 1;
+  &:hover {
+    .caretWrapper {
+      opacity: 1;
+    }
   }
 }
 
@@ -137,18 +160,16 @@ $appendPltHeight: 30px;
   position: absolute;
   display: table-cell;
   height: 100%;
-  width: fit-content;
   background-color: #0007;
   opacity: 0;
-  :global(.icon) {
-    height: 20px;
-    filter: invert(1);
-  }
   button {
     position: relative;
-    top: 50%;
-    left: 50%;
-    transform: translate( -50%, -50%)
+    @include position(center);
+    color: #fff;
+    font-size: $font-md;
+  }
+  &:focus-within {
+    opacity: 1;
   }
 }
 
@@ -161,13 +182,12 @@ $appendPltHeight: 30px;
   width: 100%;
 
   border-top: 1px solid black;
+  border-radius: 0;
+  color: #000;
   background-color: $color2;
-  box-sizing: border-box;
   user-select: none;
-  cursor: pointer;
-  :global(.icon) {
+  :global(.bi) {
     margin-right: 3px;
-    height: calc($font-md + 3px);
-    vertical-align: text-bottom;
+    font-size: $font-md;
   }
 }

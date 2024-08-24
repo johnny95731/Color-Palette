@@ -97,40 +97,10 @@
 }
 
 .textDisplay {
-  > button {
-    display: block;
-    width: max-content;
-    padding: 2px 4px;
-    :global(.bi) {
-      opacity: 0;
-    }
-    &:hover,
-    &:focus-visible {
-      :global(.bi) {
-        opacity: 1;
-      }
-    }
-    // ripple
-    :global(.btn__overlay) {
-      background: transparent radial-gradient(circle, #fff 1%, transparent 1%) center/15000%;
-      opacity: 0;
-      transition: all .8s;
-    }
-    &:active :global(.btn__overlay) {
-      opacity: 0.5;
-      background-color: transparent;
-      background-size: 100%;
-      transition: 0s
-    }
-    @supports not selector(:focus-visible) {
-      &:focus {
-        :global(.bi) {
-          opacity: 1;
-        }
-      }
-    }
-  }
-
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
   @include small {
     flex: 1 1 auto;
     position: relative;
@@ -142,9 +112,26 @@
 
 %textPosition {
   position: relative;
-  margin-left: auto;
-  margin-right: auto;
-  text-wrap: nowrap;
+  button {
+    padding: 0;
+    text-wrap: nowrap;
+  }
+  &:hover,
+  &:focus-visible {
+    :global(.bi)::before {
+      opacity: 1;
+    }
+  }
+  @supports not selector(:focus-visible) {
+    &:focus {
+      button {
+        outline: none;
+      }
+      :global(.bi) {
+        opacity: 1;
+      }
+    }
+  }
 }
 @mixin textSize($font-size, $icon-size, $icon-margin) {
   font-size: $font-size;
@@ -153,17 +140,19 @@
     top: 50%;
     transform: translate(calc(-100% - #{$icon-margin}), -50%);
     font-size: $icon-size;
+    opacity: 0;
+    cursor: pointer;
   }
 }
 
 .hexText {
   @extend %textPosition;
-  @include textSize($font-x-lg, $font-sm, 4px);
+  @include textSize($font-x-lg, $font-sm, 5px);
 }
 
 .detailText {
   @extend %textPosition;
-  @include textSize($font-md, $font-x-sm, 3px);
+  @include textSize($font-sm, $font-x-sm, 4px);
 }
 @include small {
   .hexText {

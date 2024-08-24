@@ -6,7 +6,7 @@
       isOpened && 'active'
     ]"
     data-haspopup="true"
-    :aria-controls="idForMenu"
+    :aria-controls="eager || isOpened ? idForMenu : undefined"
     :aria-expanded="isOpened"
   >
     <TheBtn
@@ -14,7 +14,6 @@
       :class="[
         titleClass
       ]"
-      variant="button"
       :text="valueLabel"
       @click="handleClickBtn"
       @focusout="handleClickBtn($event, false)"
@@ -179,33 +178,69 @@ watch(() => [props.label, idForInput.value], (newVal, oldVal) => {
 
 // Values events
 const model = defineModel<string>();
+const modelIndex = defineModel<number>('index');
 const emit = defineEmits<{
-  'select': [idx: number],
-  'update:model-value': [val: string]
+  'update:modelValue': [val: string]
+  'update:index': [idx: number],
 }>();
+
+/**
+ * Index not exceed range of options.
+ */
+const idxInRange = (idx: number): boolean => idx >= 0 && idx < props.options.length;
 
 const current = shallowReactive<{
   val: string,
   idx: number,
 }>((() => {
-  const val = model.value ?? props.options[0];
-  return {
-    val: val,
-    idx: props.options.indexOf(val)
-  };
+  // @ts-expect-error
+  const idxOfModel = props.options.indexOf(model.value);
+  const modelIndexInRange = modelIndex.value && idxInRange(modelIndex.value);
+  if (idxOfModel !== -1) { // model is given
+    emit('update:index', idxOfModel);
+    return {
+      val: model.value as string,
+      idx: idxOfModel,
+    };
+  }
+  else if (modelIndexInRange) { // modelIndex is given and in range
+    emit('update:modelValue', props.options[modelIndex.value as number]);
+    return {
+      val: props.options[modelIndex.value as number],
+      idx: modelIndex.value as number,
+    };
+  } else {
+    emit('update:modelValue', props.options[0]);
+    emit('update:index', 0);
+    return {
+      val: props.options[0],
+      idx: 0,
+    };
+  }
 })());
 const valueLabel = computed(() =>
   props.showValue ? current.val : (props.title ?? 'menu')
 );
 // Handle prop `value` changed.
 watch(
-  () => model.value,
+  () => [model.value, modelIndex.value],
   () => {
     if (model.value && model.value !== current.val) {
+      const idxOfModel = props.options.indexOf(model.value);
       Object.assign(current, {
         val: model.value,
-        idx: props.options.indexOf(model.value),
+        idx: idxOfModel,
       });
+      emit('update:index', idxOfModel);
+    } else if (
+      modelIndex.value && modelIndex.value !== current.idx &&
+      idxInRange(modelIndex.value)
+    ) {
+      Object.assign(current, {
+        val: props.options[modelIndex.value],
+        idx: modelIndex.value,
+      });
+      emit('update:modelValue', props.options[modelIndex.value]);
     }
   }
 );
@@ -217,8 +252,8 @@ const handleSelect = (idx: number) => {
     idx: idx,
   });
   model.value = newVal;
-  emit('update:model-value', newVal);
-  emit('select', idx);
+  emit('update:modelValue', newVal);
+  emit('update:index', idx);
 };
 
 const liStyle = (idx: number) =>

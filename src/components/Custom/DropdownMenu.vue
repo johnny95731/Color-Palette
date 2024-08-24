@@ -8,7 +8,7 @@
     ]"
     :prepend-icon="icon ? undefined : prependIcon"
     :icon="icon"
-    :aria-controls="idForMenu"
+    :aria-controls="eager || isOpened ? idForMenu : undefined"
     :data-haspopup="true"
     v-bind="$attrs"
     :text="text"
@@ -75,12 +75,18 @@ import OverlayContainer from './OverlayContainer.vue';
 import TheBtn from './TheBtn.vue';
 import TheIcon from '../TheIcon.vue';
 import {
-  capitalize, componentUniqueId, removeComponentId, sleep, mod
+  toTitleCase, componentUniqueId, removeComponentId, sleep, mod
 } from '@/utils/helpers.ts';
 import { noModifierKey, shiftOnly, hasPopup } from '@/utils/eventHandler.ts';
 import { CURRENT_OPTION_WEIGHT, MenuSymbol } from '@/utils/constants';
 // Types
 import type { IconType } from '@/utils/icons';
+
+type Item = {
+    val: string,
+    name?: string,
+    hotkey?: string
+  }
 
 type Props = {
   isMobile?: boolean,
@@ -97,6 +103,7 @@ type Props = {
   contents?: readonly (string | {
     name: string,
     val: string,
+    hotkey?: string
   })[];
   activatorId?:string,
   menuId?:string,
@@ -104,7 +111,7 @@ type Props = {
   contentClass?: string,
   currentVal?: string,
   /**
-   *
+   * Style of currently selected element.
    */
   currentStyle?: CSSProperties,
   hideTriangle?: boolean,
@@ -124,15 +131,19 @@ const containerRef = ref<HTMLDivElement>();
 /**
  * Target is containing in this instance.
  */
-const isContaining = (target?: Element | EventTarget | null): boolean => {
-  return activatorRef.value && activatorRef.value.$el.contains(target) ||
+const isContaining = (target?: Element | EventTarget | null): boolean =>
+  activatorRef.value && activatorRef.value.$el.contains(target) ||
     containerRef.value?.contains(target as Node | null);
-};
 
+/**
+ * Return menu content's direct children element that contains target.
+ * If target is not in menu
+ */
 const getDirectChildren = (target?: Element | EventTarget | null) => {
   if (
     !containerRef.value ||
-    !containerRef.value.contains(target as Element)
+    !containerRef.value.contains(target as Element) ||
+    containerRef.value === target
   ) return null;
   let children = target as Element;
   while (children.parentElement !== containerRef.value)
@@ -161,20 +172,19 @@ const letterConverter = computed(() => {
   let converter = (x: string) => x; // origin
   if (props.letterCase === 'all-caps') {
     converter = (str: string) => str.toUpperCase();
-  } else if (props.letterCase === 'title') converter = capitalize;
+  } else if (props.letterCase === 'title') converter = toTitleCase;
   return converter;
 });
 
-const menuItems = computed(() => {
-  return props.contents?.map((item) => {
-    // @ts-expect-error
-    const { val, name } = typeof item === 'object' ? item : { val: item };
+const menuItems = computed(() =>
+  props.contents.map((item) => {
+    const { val, name, hotkey }: Item = typeof item === 'object' ? item : { val: item };
     return {
       val,
-      name: letterConverter.value(name ?? val),
+      name: letterConverter.value(name ?? val) + (hotkey ? ` (${hotkey})` : ''),
     };
-  }) ?? [];
-});
+  })
+);
 
 // Open/Closing events
 const isOpened = ref(false);

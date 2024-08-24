@@ -32,12 +32,8 @@ $transDuration: 120ms;
       opacity: var(--overlay-hover-opacity);
     }
   }
-  &:focus-visible {
-    outline: 1px dashed currentColor;
-  }
   @supports not selector(:focus-visible) {
     &:focus {
-      outline: 1px dashed currentColor;
       & > .btn__overlay{
         opacity: var(--overlay-hover-opacity);
       }
@@ -50,15 +46,9 @@ $transDuration: 120ms;
 }
 
 .btn__overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 100%;
-  width: 100%;
-
+  @include overlay;
   background-color: currentColor;
   opacity: 0;
-  pointer-events: none;
 }
 
 .btn__content,

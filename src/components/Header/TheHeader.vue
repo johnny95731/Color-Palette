@@ -11,6 +11,7 @@
       :class="$style.menubar"
     >
       <HeaderBtns
+        ref="btnsRef"
         :isSmall="isSmall"
         @show-fav="$emit('show-fav')"
         @show-settings="$emit('show-settings')"
@@ -26,6 +27,7 @@
     >
       <template #items>
         <HeaderBtns
+          ref="btnsRef"
           :isSmall="isSmall"
           @show-fav="$emit('show-fav')"
           @show-settings="$emit('show-settings')"
@@ -36,30 +38,27 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, watchEffect, computed } from 'vue';
+import { ref, computed } from 'vue';
 import $style from './TheHeader.module.scss';
 import DropdownMenu from '../Custom/DropdownMenu.vue';
 import HeaderBtns from './HeaderBtns.vue';
-import { preventDefault } from '@/utils/eventHandler.ts';
 // Stores / Contexts
 import media from '@/features/useMedia';
+
+const btnsRef = ref<InstanceType<typeof HeaderBtns>>();
+defineExpose({
+  focusBookmarks() {
+    btnsRef.value?.focusBookmarks();
+  },
+  focusSettings() {
+    btnsRef.value?.focusSettings();
+  }
+});
 
 defineEmits<{
   (e: 'show-fav'): void,
   (e: 'show-settings'): void
 }>();
 
-const headerRef = ref<HTMLElement>();
 const isSmall = computed(() => media.isSmall);
-
-// -Create Events
-watchEffect((cleanup) => {
-  const menu = headerRef.value;
-  if (menu) {
-    menu.addEventListener('contextmenu', preventDefault);
-    cleanup(() => {
-      menu.removeEventListener('contextmenu', preventDefault);
-    });
-  }
-});
 </script>

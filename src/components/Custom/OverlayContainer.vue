@@ -1,32 +1,43 @@
 <template>
   <Teleport to="#overlay-container">
-    <Transition name="transition">
-      <div
-        v-if="eager || model"
-        v-show="model"
-        ref="containerRef"
-        class="overlay"
-        v-bind="$attrs"
-        :role="role"
-        :aria-modal="ariaModal || undefined"
+    <div
+      v-if="eager || isActive"
+      v-show="isActive"
+      ref="containerRef"
+      class="overlay"
+      v-bind="$attrs"
+      :role="role"
+      :aria-modal="ariaModal || undefined"
+      @keydown="handleKeydown"
+    >
+      <Transition
+        name="fade-out"
       >
         <div
-          v-if="!hideScrim"
+          v-if="!hideScrim && model"
           ref="scrimRef"
           class="overlay-scrim"
           :style="{
-            backgroundColor: transparent ? 'transparent' : undefined
+            backgroundColor: transparent ? 'transparent' : undefined,
           }"
-          @click="$emit('click', $event);$emit('update:model-value', !model)"
+          @click="model=false;$emit('click', $event);$emit('update:model-value', false)"
         />
-        <slot />
-      </div>
-    </Transition>
+      </Transition>
+      <Transition
+        v-if="transition"
+        :name="transition"
+        @after-enter="$emit('transitionEnd')"
+        @after-leave="isActive=false;isClosing = true;$emit('transitionEnd')"
+      >
+        <slot v-if="model" />
+      </Transition>
+      <slot v-if="!transition || isClosing" />
+    </div>
   </Teleport>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 
 type Props = {
   /**
@@ -46,17 +57,38 @@ type Props = {
 const props = withDefaults(defineProps<Props>(), {
   eager: false,
   ariaModal: false,
+  duration: 200,
 });
 
 const containerRef = ref();
 const scrimRef = ref();
 
-const model = defineModel<boolean>();
+const isActive = ref(false); // Dialog state
+const model = defineModel<boolean>(); // Control `isActive` and trigger transition;
+const isClosing = ref(true); // For rendering content when eager
 
-defineEmits<{
+watch(model, (newVal) => {
+  if (newVal) { // Open dialog when model is true
+    isActive.value = true;
+    isClosing.value = false;
+  } else if (!props.transition) {
+    isActive.value = false;
+    isClosing.value = true;
+  }
+});
+
+const emit = defineEmits<{
   click: [ev: MouseEvent]
   'update:model-value': [newVal: boolean]
+  'transitionEnd': []
 }>();
+
+const handleKeydown = (e: KeyboardEvent) => {
+  if (e.key === 'Escape') {
+    emit('update:model-value', false);
+    model.value = false;
+  }
+};
 
 defineExpose({
   container: containerRef,

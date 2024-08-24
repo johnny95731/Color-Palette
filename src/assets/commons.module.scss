@@ -18,6 +18,25 @@ $view-sm: 900px;
   transform: translate(-50%, -50%);
 }
 
+@mixin position ($align: expand) {
+  @if ($align == expand) {
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+  } @else if ($align == center) {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+}
+
+@mixin overlay($position: absolute, $align: expand, $pointer: none) {
+  position: $position;
+  @include position($align);
+  pointer-events: $pointer;
+}
+
 // media
 @mixin desktop {
   @media only screen and (min-width: 1960px) {

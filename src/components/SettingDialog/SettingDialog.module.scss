@@ -11,17 +11,16 @@
   height: 400px;
   width: 320px;
   border-radius: $radius-lg;
+  background-color: $color5;
   overflow: hidden;
 }
 
-$header-height: 34px;
 .header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: $header-height;
+  height: 34px;
   width: 100%;
-  background-color: $color5;
   >h2 {
     // shape
     padding: 0px 10px 0px;
@@ -31,25 +30,11 @@ $header-height: 34px;
     text-align: center;
     font-size: $font-lg;
     font-weight: $bold-weight;
-
     user-select: none;
   }
   :global(.btn) {
-    // shape
-    height: 100%;
-    aspect-ratio: 1/1;
     padding: 4px;
-    color: white;
-
-    :global(.icon)::before {
-      // shape
-      height: 13px;
-      filter: invert(1);
-
-      &:hover {
-        filter: none;
-      }
-    }
+    color: #fff;
   }
 }
 
@@ -57,9 +42,6 @@ $header-height: 34px;
   display: inline-flex;
   flex: 1 1 auto;
   width: 100%;
-
-  background-color: $color5;
-  user-select: none;
 }
 
 .tab {
@@ -137,11 +119,8 @@ $header-height: 34px;
     // shape
     padding: 3px 12px;
     border-radius: $radius-md;
-    box-sizing: border-box;
 
     font-weight: $normal-weight;
-    cursor: pointer;
-    user-select: none;
   }
 }
 

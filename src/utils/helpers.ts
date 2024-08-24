@@ -112,13 +112,20 @@ export const evalPosition = (idx: number, num: number): string => {
 /**
  * Capitalize a text.
  */
-export const capitalize = (text: string) => {
-  const words = text.split(' ');
-  words.forEach((str, i, arr) => {
-    arr[i] = `${str[0].toUpperCase()}${str.slice(1)}`;
-  });
-  return words.join(' ');
-};
+export const toTitleCase = (str: string) =>
+  str.replace(
+    /\w\S*/g,
+    text => text[0].toUpperCase() + text.substring(1).toLowerCase()
+  );
+
+// About twice faster, but this function will not be called frequently.
+// export const capitalize = (text: string) => {
+//   const words = text.split(' ');
+//   words.forEach((str, i, arr) => {
+//     arr[i] = `${str[0].toUpperCase()}${str.slice(1)}`;
+//   });
+//   return words.join(' ');
+// };
 
 // export const kebabize = (text: string) =>
 //   text.replace(/[A-Z]+(?![a-z])|[A-Z]/g, ($, ofs) => (ofs ? '-' : '') + $.toLowerCase());

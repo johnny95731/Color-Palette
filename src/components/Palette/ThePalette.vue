@@ -15,10 +15,9 @@
     @dragging="draggingCardEvent.start($event, i)"
   />
   <!-- Insert Region -->
-  <OverlayContainer
+  <div
+    v-show="isShowInsert"
     :class="$style.insertOverlay"
-    hide-scrim
-    :model-value="isShowInsert"
   >
     <div
       v-for="(val, i) in cardAttrs.positions"
@@ -33,7 +32,7 @@
         :aria-label="`新增於位置${i}`"
       />
     </div>
-  </OverlayContainer>
+  </div>
 </template>
 
 <script lang="ts" setup>
@@ -51,7 +50,6 @@ import useSettingStore from '@/features/stores/useSettingStore';
 import media from '@/features/useMedia';
 // Types
 import type { CSSProperties } from 'vue';
-import OverlayContainer from '../Custom/OverlayContainer.vue';
 
 type cardInstance = InstanceType<typeof TheCard>;
 

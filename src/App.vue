@@ -1,23 +1,28 @@
 <template>
   <TheHeader
+    ref="headerRef"
     @show-fav="handleShowFav"
     @show-settings="handleShowSettings"
   />
   <main id="main">
     <ThePalette />
   </main>
-  <SettingDialog
-    v-if="isFirstTimeSettings"
-    v-model="isSettingsShowing"
-  />
   <FavOffcanvas
     v-if="isFirstTimeFav"
     v-model="isFavShowing"
+    @click="handleOverlayChanged"
+    @focusout-dialog="headerRef?.focusBookmarks()"
+  />
+  <SettingDialog
+    v-if="isFirstTimeSettings"
+    v-model="isSettingsShowing"
+    @click="handleOverlayChanged"
+    @focusout-dialog="headerRef?.focusSettings()"
   />
 </template>
 
 <script setup lang='ts'>
-import { ref, onMounted, watch, computed, defineAsyncComponent } from 'vue';
+import { ref, onMounted, computed, defineAsyncComponent } from 'vue';
 import TheHeader from './components/Header/TheHeader.vue';
 import ThePalette from './components/Palette/ThePalette.vue';
 // import FavOffcanvas from './components/FavOffcanvas/FavOffcanvas.vue';
@@ -40,52 +45,42 @@ import { isMenuContainer } from '@/utils/eventHandler.ts';
 import { OverlayDiv } from '@/utils/constants';
 // Store and Context
 import usePltStore from './features/stores/usePltStore';
+import { HOT_KEYS } from './utils/hotkeys';
 
-// Display / Hide fav-offcanvas
+// Show/Hide dialogs
+// -start load resource
 const isFirstTimeFav = ref(false);
+const isFirstTimeSettings = ref(false);
+// -open/close state
 const isFavShowing = ref(false);
+const isSettingsShowing = ref(false);
+const isShowOverlay = computed(() =>
+  pltState.isEditing || isFavShowing.value || isSettingsShowing.value
+);
 
-const isFirstTimeSettings = ref(false); // start load resource
-const isSettingsShowing = ref(false); // open / close
-const isShowOverlay = ref(false);
+const headerRef = ref<InstanceType<typeof TheHeader>>();
 
 const pltState = usePltStore();
-const isCardPending = computed(() => {
-  return pltState.isEditing || pltState.isPending;
-});
-
-watch(() => pltState.isEditing,
-  (newVal) => isShowOverlay.value = newVal
+const isCardPending = computed(() =>
+  pltState.isEditing || pltState.isPending
 );
 
 const handleOverlayChanged = () => {
-  isShowOverlay.value = false;
   if (pltState.isEditing) {
     pltState.setEditingIdx();
     return;
   }
   pltState.setIsAdjustingPlt('cancel');
-  isSettingsShowing.value = false;
-  isFavShowing.value = false;
 };
 
 const handleShowFav = async () => {
-  if (!isFirstTimeFav.value) {
-    isFirstTimeFav.value = true;
-    return;
-  }
-  isFavShowing.value = true;
+  isFirstTimeFav.value && (isFavShowing.value = true);
+  isFirstTimeFav.value = true;
 };
 
 const handleShowSettings = async () => {
-  if (!isFirstTimeSettings.value) {
-    isFirstTimeSettings.value = true;
-    return;
-  }
-  const newVal = !isSettingsShowing.value;
-  isSettingsShowing.value = newVal;
-  isShowOverlay.value = newVal;
-  pltState.setIsAdjustingPlt('cancel');
+  isFirstTimeSettings.value && (isSettingsShowing.value = true);
+  isFirstTimeSettings.value = true;
 };
 
 // Connect hotkey.
@@ -94,6 +89,7 @@ onMounted(() => {
   // `preload` class for preventing annimation occurs on page load.
   body.classList.remove('preload');
 
+  const { sortingKeys, refreshKey } = HOT_KEYS;
   const keyDownEvent = (e: KeyboardEvent) => {
     const key = e.key.toLowerCase();
     if (key === 'escape' && !isCardPending.value && isShowOverlay.value) {
@@ -106,16 +102,16 @@ onMounted(() => {
       OverlayDiv.contains(document.activeElement) || isMenuContainer(document.activeElement)
     ) return;
     switch (key) {
-    case ' ':
+    case refreshKey:
       pltState.refreshCard(-1);
       break;
-    case 'g':
+    case sortingKeys.gray:
       pltState.sortCards('gray');
       break;
-    case 'r':
+    case sortingKeys.random:
       pltState.sortCards('random');
       break;
-    case 'i':
+    case sortingKeys.inversion:
       pltState.sortCards('inversion');
       break;
     }

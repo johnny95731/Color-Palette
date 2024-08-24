@@ -1,23 +1,14 @@
+@use '@/assets/commons.module.scss' as *;
 
 .overlay {
-  position: fixed;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  pointer-events: none;
+  @include overlay(fixed);
   z-index: 999;
-  >*:not(.overlay-scrim) {
+  > *:not(.overlay-scrim) {
     pointer-events: all;
   }
 }
 
 .overlay-scrim {
-  pointer-events: auto;
-  position: fixed;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background-color: #0005;
+  @include overlay(fixed, $pointer: auto);
+  background-color: #0008;
 }

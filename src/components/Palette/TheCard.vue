@@ -7,7 +7,6 @@
       cardIdx === pltState.numOfCards-1 && $style.last,
     ]"
     :style="style"
-    tabindex="-1"
     @transitionend="$emit('transitionend')"
   >
     <ToolBar
@@ -18,28 +17,36 @@
       @remove="$emit('remove')"
       @dragging="$emit('dragging', $event)"
     />
-    <div :class="$style.textDisplay">
-      <button
-        ref="hexTextRef"
-        type="button"
+    <div
+      :class="$style.textDisplay"
+      :style="fgFilter"
+    >
+      <div
         :class="$style.hexText"
-        :style="fgFilter"
-        @click="copyInnerHex"
+        @click="copyText(card.hex.slice(1))"
       >
-        <div class="btn__overlay" />
-        <TheIcon type="copy" />{{ card.hex }}
-      </button>
-      <button
-        type="button"
+        <TheIcon
+          type="copy"
+        />
+        <TheBtn
+          ref="hexTextRef"
+          class="ripple ripple-focus"
+          :text="card.hex"
+        />
+      </div>
+      <div
         :class="$style.detailText"
-        :style="fgFilter"
-        @click="copyInnerHex"
+
+        @click="copyText(detail)"
       >
-        <div class="btn__overlay" />
-        <TheIcon type="copy" />{{
-          detail
-        }}
-      </button>
+        <TheIcon
+          type="copy"
+        />
+        <TheBtn
+          class="ripple ripple-focus"
+          :text="detail"
+        />
+      </div>
     </div>
     <EditingDialog
       :cardIdx="cardIdx"
@@ -58,13 +65,14 @@
 import { computed, reactive, ref, watch } from 'vue';
 import $style from './TheCard.module.scss';
 // Components
+import TheBtn from '@/components/Custom/TheBtn.vue';
 import TheIcon from '../TheIcon.vue';
 import ToolBar from './ToolBar.vue';
 import EditingDialog from './EditingDialog.vue';
 // Utils
 import { round } from '@/utils/helpers';
 import { rgb2gray, namedColors } from '@/utils/colors';
-import { copyInnerHex } from '@/utils/eventHandler';
+import { copyText } from '@/utils/eventHandler';
 // Stores
 import usePltStore from '@/features/stores/usePltStore';
 import media from '@/features/useMedia';
