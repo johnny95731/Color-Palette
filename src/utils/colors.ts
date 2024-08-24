@@ -6,44 +6,44 @@ import NAMED_COLORS from './named-color.json';
 import type { ColorSpaceInfos, ColorSpaceTrans } from 'types/utilTypes.ts';
 import type { ColorSpacesType } from 'types/pltType.ts';
 
-export const namedColors = {
-  /**
-   * All names of CSS <named-color> (removed synonym name) with sapce between words.
-   */
-  fullNames: NAMED_COLORS.map(
-    ({ name }) => name.replace(/([A-Z])/g, ' $1').trim()
-  ),
-  /**
-   * Find the closet named-color's index.
-   */
-  getClosestIdx(rgb: number[]): number {
-    let minDist = Infinity;
-    let dist: number;
-    // `minDist` is init to be `Infinity`. Thus `name` will be assigned value.
-    let closestIdx: number = 0;
-    for (let i = 0; i < NAMED_COLORS.length; i++) {
-      const { value } = NAMED_COLORS[i];
-      // No need to take square root since we do not need the actual distance.
-      dist = 0;
-      for (let i = 0; i < 3; i++) {
-        dist += (rgb[i] - value[i])**2;
-      }
+/**
+ * All names of CSS <named-color> (removed synonym name) with sapce between words.
+ */
+export const fullNames = NAMED_COLORS.map(
+  ({ name }) => name.replace(/([A-Z])/g, ' $1').trim()
+);
 
-      // Min dist between two named-color is about 4.24.
-      if (dist < 8.98) return i; // about (4.24**2) / 2 = 8.9888
-      if (dist < minDist) {
-        closestIdx = i;
-        minDist = dist;
-      }
+/**
+ * Find the closet named-color.
+ */
+export const getClosestNamed = (rgb: number[]): string => {
+  let minDist = Infinity;
+  let dist: number;
+  // `minDist` is init to be `Infinity`. Thus `name` will be assigned value.
+  let closestIdx: number = 0;
+  for (let i = 0; i < NAMED_COLORS.length; i++) {
+    const { value } = NAMED_COLORS[i];
+    // No need to take square root since we do not need the actual distance.
+    dist = 0;
+    for (let i = 0; i < 3; i++) {
+      dist += (rgb[i] - value[i])**2;
     }
-    return closestIdx;
-  },
-  /**
-   * Get rgb values of CSS <named-color> by index of .json file
-   */
-  getRgb(idx: number) {
-    return NAMED_COLORS[idx].value;
+
+    // Min dist between two named-color is about 4.24.
+    if (dist < 17.9) return fullNames[i]; // about 4.24**2 = 17.9776
+    if (dist < minDist) {
+      closestIdx = i;
+      minDist = dist;
+    }
   }
+  return fullNames[closestIdx];
+};
+
+/**
+ * Get rgb values of CSS <named-color> by index of .json file
+ */
+export const getNamedColorRgb = (idx: number) => {
+  return NAMED_COLORS[idx].value;
 };
 
 
@@ -215,7 +215,7 @@ const RGB2XYZ_COEFF = [
   [0.2126729, 0.7151522, 0.0721750],
   [0.0193339, 0.1191920, 0.9503041],
 ] as const;
-// 
+//
 /**
  * For normalize XYZ to same maximum.
  * Sum of each row may not be 1.

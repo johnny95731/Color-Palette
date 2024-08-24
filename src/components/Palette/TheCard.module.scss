@@ -116,6 +116,12 @@
     padding: 0;
     text-wrap: nowrap;
   }
+  :global(.bi)::before {
+    position: absolute;
+    top: 50%;
+    opacity: 0;
+    cursor: pointer;
+  }
   &:hover,
   &:focus-visible {
     :global(.bi)::before {
@@ -124,9 +130,6 @@
   }
   @supports not selector(:focus-visible) {
     &:focus {
-      button {
-        outline: none;
-      }
       :global(.bi) {
         opacity: 1;
       }
@@ -136,12 +139,8 @@
 @mixin textSize($font-size, $icon-size, $icon-margin) {
   font-size: $font-size;
   :global(.bi)::before {
-    position: absolute;
-    top: 50%;
     transform: translate(calc(-100% - #{$icon-margin}), -50%);
     font-size: $icon-size;
-    opacity: 0;
-    cursor: pointer;
   }
 }
 

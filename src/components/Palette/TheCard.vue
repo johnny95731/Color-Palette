@@ -71,7 +71,7 @@ import ToolBar from './ToolBar.vue';
 import EditingDialog from './EditingDialog.vue';
 // Utils
 import { round } from '@/utils/helpers';
-import { rgb2gray, namedColors } from '@/utils/colors';
+import { rgb2gray, getClosestNamed } from '@/utils/colors';
 import { copyText } from '@/utils/eventHandler';
 // Stores
 import usePltStore from '@/features/stores/usePltStore';
@@ -127,7 +127,7 @@ const showEditor = computed({
 
 const detail = computed(() => {
   return pltState.colorSpace === 'name' ?
-    namedColors.fullNames[namedColors.getClosestIdx(props.card.color)] :
+    getClosestNamed(props.card.color) :
     `${pltState.colorSpace}(${roundedColor.value.toString()})`;
 });
 

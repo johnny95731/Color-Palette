@@ -18,10 +18,8 @@ export const mod = (n: number, m: number): number => {
  * @param digits Digit of output number.
  * @return Percentage number.
  */
-export const round = (num: number, digits: number = 0): number => {
-  if (!digits) return Math.round(num);
-  return Math.round(10**(digits) * num) / 10**(digits);
-};
+export const round = (num: number, digits: number = 0): number =>
+  digits ? Math.round(10**(digits) * num) / 10**(digits) : Math.round(num);
 
 /**
  * Convert a number `val` to percentage form, that is, `val*100%`.
@@ -42,8 +40,8 @@ export const toPercent = (num: number, digits: number = 0): number => {
  */
 export const clip = (num: number, min?: number, max?: number): number => {
   if (max !== undefined && num > max) return max;
-  else if (min !== undefined && num < min) return min;
-  else return num;
+  if (min !== undefined && num < min) return min;
+  return num;
 };
 
 /**
@@ -66,9 +64,7 @@ export const rangeMapping = (
  * Dot product of two arrays.
  */
 export const dot = (a: readonly number[], b: readonly number[]): number => {
-  let s = 0;
-  for (let i = 0; i < a.length; i++) s += a[i] * b[i];
-  return s;
+  return a.reduce((prev, val, i) => prev + val + b[i], 0);
 };
 
 /**
@@ -79,9 +75,8 @@ export const hasSameKeys = (obj1: object, obj2: object): boolean => {
   const keys2 = Object.keys(obj2);
   const allKeys = new Set([...keys1, ...keys2]);
   if (!allKeys.size) return true;
-  if (!(allKeys.size === keys1.length && allKeys.size === keys2.length)) {
+  if (!(allKeys.size === keys1.length && allKeys.size === keys2.length))
     return false;
-  }
   // Deep check
   for (const key of allKeys) {
     // @ts-expect-error Already deal `undefined` case.
@@ -115,7 +110,7 @@ export const evalPosition = (idx: number, num: number): string => {
 export const toTitleCase = (str: string) =>
   str.replace(
     /\w\S*/g,
-    text => text[0].toUpperCase() + text.substring(1).toLowerCase()
+    text => text[0].toUpperCase() + text.slice(1).toLowerCase()
   );
 
 // About twice faster, but this function will not be called frequently.
@@ -158,16 +153,16 @@ export function quicksort<T>(
   copy: boolean = true,
 ): T[] {
   if (copy) arr = [...arr];
+  if (!arr.length) return arr;
   left ??= 0;
-  right ??= arr.length && arr.length - 1; // 0 if length is 0, length - 1 elsewise.
-  if (left === right) return arr;
+  right ??= arr.length - 1;
   const pivotValue = arr[right];
   let storeIndex = left;
-  right -= 1;
+  right--;
   for (let i = left; i < right; i++) {
     if (arr[i] < pivotValue) {
       [arr[storeIndex], arr[i]] = [arr[i], arr[storeIndex]];
-      storeIndex ++;
+      storeIndex++;
     }
   }
   [arr[storeIndex], arr[right]] = [arr[right], arr[storeIndex]];

@@ -35,14 +35,14 @@
         ref="selectRef"
         :class="$style.nameSelect"
         aria-label="CSS named-color選單"
-        :options="namedColors.fullNames"
+        :options="fullNames"
         :contentClass="$style.nameSelectContent"
         :model-value="detail"
       >
         <template #items>
           <TheBtn
             v-once
-            v-for="(name, i) in namedColors.fullNames"
+            v-for="(name, i) in fullNames"
             :key="`Option${name}`"
             :text="name"
             :title="name"
@@ -94,7 +94,7 @@ import SelectMenu from '@/components/Custom/SelectMenu.vue';
 // Utils
 import { hexTextEdited, noModifierKey, stopPropagation } from '@/utils/eventHandler';
 import {
-  hex2rgb, rgb2hex, isValidHex, gradientGen, namedColors,
+  hex2rgb, rgb2hex, isValidHex, gradientGen, fullNames, getNamedColorRgb,
 } from '@/utils/colors';
 // Stores
 import usePltStore from '@/features/stores/usePltStore';
@@ -234,6 +234,6 @@ watch(
 
 const selectRef = ref<InstanceType<typeof SelectMenu>>();
 const selectName = (idx: number) => {
-  pltState.editCard({ idx: props.cardIdx, color: namedColors.getRgb(idx) });
+  pltState.editCard({ idx: props.cardIdx, color: getNamedColorRgb(idx) });
 };
 </script>

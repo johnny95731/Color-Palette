@@ -98,7 +98,7 @@ const usePltStore = defineStore('plt', {
       const cards = this.cards;
       const cardState = newCard(idx, this.colorSpace, rgb);
       cards.forEach((card) => {
-        if (card.order >= idx) card.order += 1;
+        if (card.order >= idx) card.order++;
       });
       cards.splice(idx, 0, cardState);
     },
@@ -107,7 +107,7 @@ const usePltStore = defineStore('plt', {
       const cards = this.cards;
       const removedOrder = cards.splice(idx, 1)[0].order;
       cards.forEach((card) => {
-        if (card.order > removedOrder) card.order -= 1;
+        if (card.order > removedOrder) card.order--;
       });
     },
     refreshCard(idx: number) {
@@ -166,11 +166,13 @@ const usePltStore = defineStore('plt', {
       const initOrder = this.cards[cardIdx].order;
       if (initOrder <= to) {
         this.cards.forEach((card) => {
-          if (card.order > initOrder && card.order <= to) card.order -= 1;
+          card.order > initOrder && card.order <= to && // if (cond)
+            card.order--;
         });
       } else {
         this.cards.forEach((card) => {
-          if (card.order >= to && card.order < initOrder) card.order += 1;
+          card.order >= to && card.order < initOrder && // if (cond)
+            card.order++;
         });
       }
       this.cards[cardIdx].order = to;

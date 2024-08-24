@@ -246,13 +246,13 @@ function topNonLastActivator() {
  * Closing nested menus until `target` in this menu.
  */
 async function nestedClosing (target?: Element | EventTarget | null) {
-  // `handleClickOutside` may be trigger from multi-layers. Make sure that
+  // `handleClick` may be trigger from multi-layers. Make sure that
   // menu is closing from bottommost layer.
   if (openedChild.value) return;
-  const menu = containerRef.value as NonNullable<typeof containerRef.value>;
   if (
     !target ||
-    !menu.contains(target as Element) //
+    // @ts-expect-error Function only be called when menu is openned.
+    !containerRef.value.contains(target as Element) //
   ) {
     isOpened.value = false;
     await sleep(100);

@@ -38,28 +38,27 @@ export const copyInnerHex = (
   e: MouseEvent,
 ): void => {
   const target = e.currentTarget as HTMLElement;
-  if (!target) return;
-  const text = target.innerText.replace('#', '');
-  const start = text.startsWith('#') ? 1 : 0;
-  const hex = text.slice(start).trim();
-  copyText(hex);
+  if (target) {
+    const text = target.innerText.replace('#', '');
+    copyText(text.trim());
+  }
 };
 
 
 // Keyboard Event Helpers
-export function noModifierKey(e: KeyboardEvent): boolean {
+export const noModifierKey = (e: KeyboardEvent): boolean => {
   return !e.shiftKey && !e.altKey && !e.ctrlKey && !e.metaKey;
-}
+};
 
-export function shiftOnly(e: KeyboardEvent): boolean {
+export const shiftOnly = (e: KeyboardEvent): boolean => {
   return e.shiftKey && !e.altKey && !e.ctrlKey && !e.metaKey;
-}
+};
 
 
-export function isMenuContainer(target?: EventTarget | Element | null) {
+export const isMenuContainer = (target?: EventTarget | Element | null) => {
   return (target as Element | null)?.classList.contains('menu-container');
-}
+};
 
-export function hasPopup(target?: EventTarget | HTMLElement | null) {
+export const hasPopup = (target?: EventTarget | HTMLElement | null) => {
   return !!(target && (target as HTMLElement).dataset.haspopup === 'true');
-}
+};

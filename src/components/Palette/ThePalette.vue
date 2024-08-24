@@ -111,24 +111,33 @@ watch(() => pltState.numOfCards, () => {
  * @param end The final index that be set position.
  * @param total Total number of cards.
  */
-function resetPosition() {
-  for (let i = 0; i < pltState.numOfCards; i++) {
-    if (i === dragIdx.value.draggingIdx) continue;
-    cardRefs.value[i].setPos(evalPosition(i, pltState.numOfCards));
-  }
-}
-function removeTransition() {
-  for (let i = 0; i < pltState.numOfCards; i++) {
-    cardRefs.value[i].setTransProperty('none');
-  }
-}
-function resetTransition(end?: number) {
-  if (end === undefined) end = pltState.numOfCards;
-  for (let i = 0; i < end; i++) {
-    if (i === dragIdx.value.draggingIdx) continue;
-    cardRefs.value[i].setTransProperty('reset');
-  }
-}
+const resetPosition = () => {
+  cardRefs.value.forEach((el, i) =>
+    i !== dragIdx.value.draggingIdx && // if (cond) continue
+      el.setPos(evalPosition(i, pltState.numOfCards))
+  );
+  // for (let i = 0; i < pltState.numOfCards; i++) {
+  //   if (i === dragIdx.value.draggingIdx) continue;
+  //   cardRefs.value[i].setPos(evalPosition(i, pltState.numOfCards));
+  // }
+};
+const removeTransition = () => {
+  cardRefs.value.forEach((el) => el.setTransProperty('none'));
+  // for (let i = 0; i < pltState.numOfCards; i++) {
+  //   cardRefs.value[i].setTransProperty('none');
+  // }
+};
+const resetTransition = (end?: number) => {
+  end ??= pltState.numOfCards;
+  // for (let i = 0; i < end; i++) {
+  //   if (i === dragIdx.value.draggingIdx) continue;
+  //   cardRefs.value[i].setTransProperty('reset');
+  // }
+  cardRefs.value.forEach((el, i) =>
+    i !== dragIdx.value.draggingIdx && // if (cond) continue
+      el.setTransProperty('reset')
+  );
+};
 
 // Add card, remove card, and drag card have transition event.
 // The state is for checking the transition is end.
@@ -255,8 +264,8 @@ const draggingCardEvent = computed(() => {
     card.$el.classList.add($style.dragging);
     window.addEventListener('mousemove', move);
     window.addEventListener('touchmove', move, { passive: true });
-    window.addEventListener('mouseup', end);
-    window.addEventListener('touchend', end);
+    window.addEventListener('mouseup', end, { once: true });
+    window.addEventListener('touchend', end, { once: true });
   }
   /**
    * The event is triggered when the `<->` icon on a card is dragging and
@@ -321,8 +330,6 @@ const draggingCardEvent = computed(() => {
 
     window.removeEventListener('mousemove', move);
     window.removeEventListener('touchmove', move);
-    window.removeEventListener('mouseup', end);
-    window.removeEventListener('touchend', end);
   }
   return {
     start,

@@ -72,7 +72,5 @@ const handleSetPlt = () => {
   pltState.setPlt(pltColors);
 };
 
-function removeFavPlt() {
-  favState.favPltsChanged(props.plt);
-}
+const removeFavPlt = () => favState.favPltsChanged(props.plt);
 </script>

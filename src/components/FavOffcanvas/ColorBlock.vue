@@ -54,7 +54,7 @@ const iconFilterStyle = computed<CSSProperties>(() => (
 ));
 
 const favState = useFavStore();
-function delFavColor() {
+const delFavColor = () => {
   favState.favColorsChanged(props.hex);
-}
+};
 </script>
