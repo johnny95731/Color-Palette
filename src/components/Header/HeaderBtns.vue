@@ -141,7 +141,7 @@ import {
 // Types
 import type { SortActionType } from 'types/pltType.ts';
 import type { BlendingType, ColorSpacesType } from 'types/pltType.ts';
-import { HOT_KEYS } from '@/utils/hotkeys';
+import { HOT_KEYS, sortingKey } from '@/utils/hotkeys';
 
 const bookmarksRef = ref<InstanceType<typeof TheBtn>>();
 const settingsRef = ref<InstanceType<typeof TheBtn>>();
@@ -200,6 +200,6 @@ watch(
 const sortingMenuItems = SORTING_ACTIONS.map(val => ({
   val,
   name: val,
-  hotkey: HOT_KEYS.sortingKeys[val],
+  hotkey: HOT_KEYS[sortingKey][val],
 }));
 </script>

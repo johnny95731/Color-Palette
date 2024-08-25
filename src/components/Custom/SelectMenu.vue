@@ -88,12 +88,12 @@
 </template>
 
 <script setup lang="ts">
-import { watch, ref, onMounted, onUnmounted, computed, nextTick, shallowRef, shallowReactive } from 'vue';
+import { watch, ref, onMounted, computed, nextTick, shallowRef, shallowReactive } from 'vue';
 import OverlayContainer from './OverlayContainer.vue';
 import TheBtn from './TheBtn.vue';
 import TheIcon from '../TheIcon.vue';
 import { CURRENT_OPTION_WEIGHT } from '@/utils/constants';
-import { componentUniqueId, mod, removeComponentId } from '@/utils/helpers';
+import { componentId, mod } from '@/utils/helpers';
 import { noModifierKey, shiftOnly } from '@/utils/eventHandler.ts';
 import type { CSSProperties } from 'vue';
 
@@ -128,15 +128,11 @@ const containerRef = ref<HTMLDivElement>();
  * Create Id for input
  */
 const idForInput = computed<string>(() =>
-  props.inputId ?? componentUniqueId('select')
+  props.inputId ?? componentId('select')
 );
 const idForMenu = computed<string>(() =>
-  props.listboxId ?? componentUniqueId('menu')
+  props.listboxId ?? componentId('menu')
 );
-onUnmounted(() => {
-  removeComponentId(idForInput.value, 'select');
-  removeComponentId(idForMenu.value, 'menu');
-});
 /**
  * Aria label for <input> tag and role="combobox".
  */

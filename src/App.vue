@@ -22,7 +22,7 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, onMounted, computed, defineAsyncComponent } from 'vue';
+import { ref, onMounted, computed, defineAsyncComponent, onUnmounted } from 'vue';
 import TheHeader from './components/Header/TheHeader.vue';
 import ThePalette from './components/Palette/ThePalette.vue';
 // import FavOffcanvas from './components/FavOffcanvas/FavOffcanvas.vue';
@@ -43,9 +43,9 @@ const SettingDialog = defineAsyncComponent(
 );
 import { isMenuContainer } from '@/utils/eventHandler.ts';
 import { OverlayDiv } from '@/utils/constants';
+import { HOT_KEYS, refreshKey, sortingKey } from './utils/hotkeys';
 // Store and Context
 import usePltStore from './features/stores/usePltStore';
-import { HOT_KEYS } from './utils/hotkeys';
 
 // Show/Hide dialogs
 // -start load resource
@@ -66,11 +66,13 @@ const isCardPending = computed(() =>
 );
 
 const handleOverlayChanged = () => {
-  if (pltState.isEditing) {
-    pltState.setEditingIdx();
-    return;
-  }
-  pltState.setIsAdjustingPlt('cancel');
+  // if (pltState.isEditing) {
+  //   pltState.setEditingIdx();
+  //   return;
+  // }
+  pltState.isEditing ?
+    pltState.setEditingIdx() :
+    pltState.setIsAdjustingPlt('cancel');
 };
 
 const handleShowFav = async () => {
@@ -81,15 +83,13 @@ const handleShowFav = async () => {
 const handleShowSettings = async () => {
   isFirstTimeSettings.value && (isSettingsShowing.value = true);
   isFirstTimeSettings.value = true;
+  // shorter
+  // isFirstTimeSettings.value = !isFirstTimeSettings.value || (isSettingsShowing.value = true);
 };
 
 // Connect hotkey.
-onMounted(() => {
-  const body = document.body;
-  // `preload` class for preventing annimation occurs on page load.
-  body.classList.remove('preload');
-
-  const { sortingKeys, refreshKey } = HOT_KEYS;
+(() => {
+  const { [sortingKey]: sortingHotkey, [refreshKey]: refreshHotkey } = HOT_KEYS;
   const keyDownEvent = (e: KeyboardEvent) => {
     const key = e.key.toLowerCase();
     if (key === 'escape' && !isCardPending.value && isShowOverlay.value) {
@@ -102,20 +102,27 @@ onMounted(() => {
       OverlayDiv.contains(document.activeElement) || isMenuContainer(document.activeElement)
     ) return;
     switch (key) {
-    case refreshKey:
+    case refreshHotkey:
       pltState.refreshCard(-1);
       break;
-    case sortingKeys.gray:
+    case sortingHotkey.gray:
       pltState.sortCards('gray');
       break;
-    case sortingKeys.random:
+    case sortingHotkey.random:
       pltState.sortCards('random');
       break;
-    case sortingKeys.inversion:
+    case sortingHotkey.inversion:
       pltState.sortCards('inversion');
       break;
     }
   };
-  body.addEventListener('keydown', keyDownEvent);
-});
+
+  const body = document.body;
+  onMounted(() => {
+    // `preload` class for preventing annimation occurs on page load.
+    body.classList.remove('preload');
+    body.addEventListener('keydown', keyDownEvent);
+  });
+  onUnmounted(() => body.removeEventListener('keydown', keyDownEvent));
+})();
 </script>

@@ -70,12 +70,12 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref, onMounted, watch, onUnmounted, CSSProperties, provide, inject, nextTick } from 'vue';
+import { computed, ref, onMounted, watch, CSSProperties, provide, inject, nextTick } from 'vue';
 import OverlayContainer from './OverlayContainer.vue';
 import TheBtn from './TheBtn.vue';
 import TheIcon from '../TheIcon.vue';
 import {
-  toTitleCase, componentUniqueId, removeComponentId, sleep, mod
+  toTitleCase, componentId, sleep, mod
 } from '@/utils/helpers.ts';
 import { noModifierKey, shiftOnly, hasPopup } from '@/utils/eventHandler.ts';
 import { CURRENT_OPTION_WEIGHT, MenuSymbol } from '@/utils/constants';
@@ -155,11 +155,8 @@ const getDirectChildren = (target?: Element | EventTarget | null) => {
  * Create Id for menu container
  */
 const idForMenu = computed<string>(() =>
-  props.menuId ?? componentUniqueId('menu')
+  props.menuId ?? componentId('menu')
 );
-onUnmounted(() => {
-  removeComponentId(idForMenu.value, 'menu');
-});
 
 defineEmits<{
   'click-item': [val: string]

@@ -1,4 +1,4 @@
-import {createStore} from 'idb-keyval';
+import { createStore } from 'idb-keyval';
 
 
 // Favorite

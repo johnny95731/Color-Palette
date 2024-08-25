@@ -11,7 +11,12 @@ export default defineConfig({
     outDir: 'dist',
     assetsDir: '',
     sourcemap: false,
-    minify: true,
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        booleans_as_integers: true,
+      },
+    }
   },
   plugins: [
     vue({

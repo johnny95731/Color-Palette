@@ -14,6 +14,10 @@ export const CURRENT_OPTION_WEIGHT: CSSProperties = {
 export const COLOR_SPACES = [
   'rgb', 'name', 'hsl', 'hsb', 'cmy', 'cmyk', 'xyz', 'lab',
 ] as const;
+// const RGB = 0;
+// const NAME = 1;
+// const HSL = 2;
+// const HSB = 3;
 
 /**
  * Support blend modes.
@@ -26,6 +30,7 @@ export const BLEND_MODES = [
  * Actions for sorting palette colors.
  */
 export const SORTING_ACTIONS = ['gray', 'random', 'inversion'] as const;
+
 
 /**
  * Methods of adjusting contrast.

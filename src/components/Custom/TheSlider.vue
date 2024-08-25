@@ -62,8 +62,8 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, watch, ref, computed, onUnmounted, watchEffect } from 'vue';
-import { clip, round, rangeMapping, componentUniqueId, removeComponentId } from '@/utils/helpers';
+import { onMounted, watch, ref, computed, watchEffect } from 'vue';
+import { clip, round, rangeMapping, componentId } from '@/utils/helpers';
 
 type Props = {
   inputId?: string,
@@ -100,10 +100,7 @@ const isDragging = ref<boolean>(false);
  * Create Id for input
  */
 const idForInput = computed<string>(() =>
-  props.inputId ?? componentUniqueId('slider')
-);
-onUnmounted(
-  () => removeComponentId(idForInput.value, 'slider')
+  props.inputId ?? componentId('slider')
 );
 /**
  * Aria label for <input /> and role="slider" tag.

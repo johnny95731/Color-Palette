@@ -23,10 +23,12 @@
     transform: scaleX(1);
   }
   &.first {
+    border-top: none !important;
     border-left: none !important;
   }
   &.last {
     border-right: none !important;
+    border-bottom: none !important;
   }
   @include small {
     flex-direction: row;
@@ -36,12 +38,6 @@
     transition-property: top, height, background-color;
     &:hover .toolContainer {
       transform: none;
-    }
-    &.first {
-      border-top: none !important;
-    }
-    &.last {
-      border-bottom: none !important;
     }
   }
 }

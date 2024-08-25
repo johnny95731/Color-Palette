@@ -38,7 +38,7 @@ for (const key of Object.keys(initialState)) {
     const storageObj = JSON.parse(storageItem);
     // Save previous value to current state for common attributes.
     for (const itemKey of Object.keys(storageObj)) {
-      if (Object.hasOwn(initItem, itemKey)) {
+      if (Object.prototype.hasOwnProperty.call(initItem, itemKey)) {
         type attrKey = keyof typeof initItem;
         initItem[itemKey as attrKey] = storageObj[itemKey];
       }
