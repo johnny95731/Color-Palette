@@ -11,7 +11,6 @@
       :style="{
         ...(media.isSmall ? {} :pos)
       }"
-      @keydown="stopPropagation($event)"
     >
       <label
         :for="`card${cardIdx}-hex`"
@@ -92,7 +91,7 @@ import $style from './TheCard.module.scss';
 import TheSlider from '@/components/Custom/TheSlider.vue';
 import SelectMenu from '@/components/Custom/SelectMenu.vue';
 // Utils
-import { hexTextEdited, noModifierKey, stopPropagation } from '@/utils/eventHandler';
+import { hexTextEdited, noModifierKey } from '@/utils/eventHandler';
 import {
   hex2rgb, rgb2hex, isValidHex, gradientGen, fullNames, getNamedColorRgb,
 } from '@/utils/colors';
@@ -144,10 +143,11 @@ watch(modelShow, async (newVal) => { // focus dialog when open it.
 });
 
 const onLeaveFocusing = (e: KeyboardEvent, idx: number) => {
-  if (idx !== props.roundedColor.length - 1 || e.key !== 'Tab' || !noModifierKey(e)) return;
-  modelShow.value = false;
-  emits('tabOffDialog');
-  e.preventDefault();
+  if (idx === props.roundedColor.length - 1 && e.key === 'Tab' && noModifierKey(e)) {
+    modelShow.value = false;
+    emits('tabOffDialog');
+    e.preventDefault();
+  }
 };
 
 /**

@@ -20,7 +20,7 @@
           :style="{
             backgroundColor: transparent ? 'transparent' : undefined,
           }"
-          @click="model=false;$emit('click', $event);$emit('update:model-value', false)"
+          @click="handleClickScrim"
         />
       </Transition>
       <Transition
@@ -79,15 +79,19 @@ watch(model, (newVal) => {
 
 const emit = defineEmits<{
   click: [ev: MouseEvent]
-  'update:model-value': [newVal: boolean]
+  'update:modelValue': [newVal: boolean]
   'transitionEnd': []
 }>();
 
 const handleKeydown = (e: KeyboardEvent) => {
   if (e.key === 'Escape') {
-    emit('update:model-value', false);
     model.value = false;
   }
+};
+
+const handleClickScrim = (e: MouseEvent) => {
+  emit('click', e);
+  model.value = false;
 };
 
 defineExpose({

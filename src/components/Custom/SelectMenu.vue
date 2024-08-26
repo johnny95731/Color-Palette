@@ -173,9 +173,10 @@ watch(() => [props.label, idForInput.value], (newVal, oldVal) => {
 });
 
 // Values events
-const model = defineModel<string>();
+const model = defineModel<string>(); // Higher priority than modelIndex.
 const modelIndex = defineModel<number>('index');
-const emit = defineEmits<{
+
+defineEmits<{
   'update:modelValue': [val: string]
   'update:index': [idx: number],
 }>();
@@ -192,27 +193,23 @@ const current = shallowReactive<{
   // @ts-expect-error
   const idxOfModel = props.options.indexOf(model.value);
   const modelIndexInRange = modelIndex.value && idxInRange(modelIndex.value);
-  if (idxOfModel !== -1) { // model is given
-    emit('update:index', idxOfModel);
-    return {
+  const output =
+    idxOfModel !== -1 ? { // model.value is a option value
       val: model.value as string,
       idx: idxOfModel,
-    };
-  }
-  else if (modelIndexInRange) { // modelIndex is given and in range
-    emit('update:modelValue', props.options[modelIndex.value as number]);
-    return {
-      val: props.options[modelIndex.value as number],
-      idx: modelIndex.value as number,
-    };
-  } else {
-    emit('update:modelValue', props.options[0]);
-    emit('update:index', 0);
-    return {
-      val: props.options[0],
-      idx: 0,
-    };
-  }
+    } :
+      modelIndexInRange ?
+        {
+          val: props.options[modelIndex.value as number],
+          idx: modelIndex.value as number,
+        } :
+        { // default
+          val: props.options[0],
+          idx: 0,
+        };
+  model.value = output.val;
+  modelIndex.value = output.idx;
+  return output;
 })());
 const valueLabel = computed(() =>
   props.showValue ? current.val : (props.title ?? 'menu')
@@ -220,15 +217,16 @@ const valueLabel = computed(() =>
 // Handle prop `value` changed.
 watch(
   () => [model.value, modelIndex.value],
-  () => {
-    if (model.value && model.value !== current.val) {
+  (newVal, oldVal) => {
+    if (newVal.every((val, i) => val === oldVal[i])) return;
+    if (model.value && model.value !== current.val) { // model changed
       const idxOfModel = props.options.indexOf(model.value);
       Object.assign(current, {
         val: model.value,
         idx: idxOfModel,
       });
-      emit('update:index', idxOfModel);
-    } else if (
+      modelIndex.value = idxOfModel;
+    } else if ( // modelIndex changed
       modelIndex.value && modelIndex.value !== current.idx &&
       idxInRange(modelIndex.value)
     ) {
@@ -236,7 +234,7 @@ watch(
         val: props.options[modelIndex.value],
         idx: modelIndex.value,
       });
-      emit('update:modelValue', props.options[modelIndex.value]);
+      model.value = props.options[modelIndex.value];
     }
   }
 );
@@ -248,8 +246,7 @@ const handleSelect = (idx: number) => {
     idx: idx,
   });
   model.value = newVal;
-  emit('update:modelValue', newVal);
-  emit('update:index', idx);
+  modelIndex.value = idx;
 };
 
 const liStyle = (idx: number) =>
