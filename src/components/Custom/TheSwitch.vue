@@ -38,7 +38,7 @@
 import {
   computed, onMounted, ref, watch,
 } from 'vue';
-import { componentId } from '@/utils/helpers';
+import { getComponentId } from '@/utils/helpers';
 
 type Props = {
   inputId?: string,
@@ -60,7 +60,7 @@ const switchRef = ref<HTMLDivElement>();
  * Create Id for input
  */
 const idForInput = computed<string>(() =>
-  props.inputId ?? componentId('slider')
+  props.inputId ?? getComponentId('slider')
 );
 /**
  * Aria label for <input /> and role="slider" tag.

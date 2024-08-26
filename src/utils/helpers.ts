@@ -1,75 +1,10 @@
 import { getCurrentInstance } from 'vue';
+import { toPercent } from './numeric';
+
 
 const randomCharacter = (noDigit: boolean = false) =>
   `ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz${noDigit ? '' : '0123456789'}`
     .charAt(Math.floor(Math.random() * (noDigit ? 52 : 62)));
-
-/**
- * The modulo function. Equivalent to
- *   `let a = n % m;
- *    if (a < 0) a += m;`
- * @param {Number} n Dividend.
- * @param {Number} m Divisor.
- * @return {Number} Signed remainder.
- */
-export const mod = (n: number, m: number): number => {
-  return ((n % m) + m) % m;
-};
-
-/**
- * Convert a number `val` to percentage form, that is, `val*100%`.
- * @param num A number.
- * @param digits Digit of output number.
- * @return Percentage number.
- */
-export const round = (num: number, digits: number = 0): number =>
-  digits ? Math.round(10**(digits) * num) / 10**(digits) : Math.round(num);
-
-/**
- * Convert a number `val` to percentage form, that is, `val*100%`.
- * @param num A number.
- * @param digits Digit of output number.
- * @return Percentage number.
- */
-export const toPercent = (num: number, digits: number = 0): number => {
-  return round(100 * num, digits);
-};
-
-/**
- * Clip the number in the range `[min, max]`.
- * @param num A number to clip.
- * @param min Minimum value.
- * @param max maximum value.
- * @returns Clipped number.
- */
-export const clip = (num: number, min?: number, max?: number): number => {
-  if (max !== undefined && num > max) return max;
-  if (min !== undefined && num < min) return min;
-  return num;
-};
-
-/**
- * Linear mapping a number from a range to another range.
- * @param val The value that be transform.
- * @param min Minimum of original range.
- * @param max Maximum of original range.
- * @param newMin Minimum of new range.
- * @param newMax Maximum of new range.
- */
-export const rangeMapping = (
-  val: number, min: number, max: number,
-  newMin: number, newMax: number,
-) => {
-  const ratio = clip((val - min) / (max - min), 0, 1);
-  return newMin + ratio * (newMax - newMin);
-};
-
-/**
- * Dot product of two arrays.
- */
-export const dot = (a: readonly number[], b: readonly number[]): number => {
-  return a.reduce((prev, val, i) => prev + val + b[i], 0);
-};
 
 /**
  * Check whether two object has same keys.
@@ -150,30 +85,29 @@ export function shuffle <T>(arr: Array<T>): void {
 /**
  * Quick sort an array in ascending order.
  */
-export function quicksort<T>(
-  arr: T[],
-  left?: number,
-  right?: number,
-  copy: boolean = true,
-): T[] {
-  if (copy) arr = [...arr];
-  if (!arr.length) return arr;
-  left ??= 0;
-  right ??= arr.length - 1;
-  const pivotValue = arr[right];
-  let storeIndex = left;
-  right--;
-  for (let i = left; i < right; i++) {
-    if (arr[i] < pivotValue) {
-      [arr[storeIndex], arr[i]] = [arr[i], arr[storeIndex]];
-      storeIndex++;
-    }
-  }
-  [arr[storeIndex], arr[right]] = [arr[right], arr[storeIndex]];
-  quicksort(arr, storeIndex + 1, right, false); // 排序右方
-  quicksort(arr, left, storeIndex - 1, false); // 排序左方
-  return arr;
-}
+// export function quicksort<T>(
+//   arr: T[],
+//   left?: number,
+//   right?: number,
+//   copy: boolean = true,
+// ): T[] {
+//   if (copy) arr = [...arr];
+//   left ??= 0;
+//   right ??= arr.length && arr.length - 1; // 0 if lenth = 0, length - 1 elsewise.
+//   if (left === right) return arr;
+//   const pivotValue = arr[right];
+//   let storeIndex = left;
+//   for (let i = left; i < right; i++) {
+//     if (arr[i] < pivotValue) {
+//       [arr[storeIndex], arr[i]] = [arr[i], arr[storeIndex]];
+//       storeIndex++;
+//     }
+//   }
+//   [arr[storeIndex], arr[right]] = [arr[right], arr[storeIndex]];
+//   quicksort(arr, storeIndex + 1, right, false); // 排序右方
+//   quicksort(arr, left, storeIndex - 1, false); // 排序左方
+//   return arr;
+// }
 
 // Averages
 /**
@@ -191,16 +125,16 @@ export const elementwiseMean = (arr1: number[], arr2: number[]): number[] => {
 };
 
 // Id generater
-const randomId = (prev?: string) => {
+const getRandomId = (prev?: string) => {
   let id = (prev ?? '') + randomCharacter(true);
   while (document.getElementById(id))
     id += randomCharacter();
   return id;
 };
 
-export const componentId = (prefix: string = 'component') => {
+export const getComponentId = (prefix: string = 'component') => {
   const thisInstance = getCurrentInstance();
-  return thisInstance ? `${prefix}-${thisInstance.uid}` : randomId(prefix+'-');
+  return thisInstance ? `${prefix}-${thisInstance.uid}` : getRandomId(prefix+'-');
 };
 
 export const sleep = (ms: number)  => new Promise(resolve => setTimeout(resolve, ms));

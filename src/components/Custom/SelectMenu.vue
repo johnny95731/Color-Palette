@@ -92,9 +92,12 @@ import { watch, ref, onMounted, computed, nextTick, shallowRef, shallowReactive 
 import OverlayContainer from './OverlayContainer.vue';
 import TheBtn from './TheBtn.vue';
 import TheIcon from '../TheIcon.vue';
+// utils
 import { CURRENT_OPTION_WEIGHT } from '@/utils/constants';
-import { componentId, mod } from '@/utils/helpers';
+import { getComponentId } from '@/utils/helpers';
+import { mod } from '@/utils/numeric';
 import { noModifierKey, shiftOnly } from '@/utils/eventHandler.ts';
+// types
 import type { CSSProperties } from 'vue';
 
 type Props = {
@@ -128,10 +131,10 @@ const containerRef = ref<HTMLDivElement>();
  * Create Id for input
  */
 const idForInput = computed<string>(() =>
-  props.inputId ?? componentId('select')
+  props.inputId ?? getComponentId('select')
 );
 const idForMenu = computed<string>(() =>
-  props.listboxId ?? componentId('menu')
+  props.listboxId ?? getComponentId('menu')
 );
 /**
  * Aria label for <input> tag and role="combobox".

@@ -74,9 +74,9 @@ import { computed, ref, onMounted, watch, CSSProperties, provide, inject, nextTi
 import OverlayContainer from './OverlayContainer.vue';
 import TheBtn from './TheBtn.vue';
 import TheIcon from '../TheIcon.vue';
-import {
-  toTitleCase, componentId, sleep, mod
-} from '@/utils/helpers.ts';
+// utils
+import { toTitleCase, getComponentId, sleep } from '@/utils/helpers.ts';
+import { mod } from '@/utils/numeric';
 import { noModifierKey, shiftOnly, hasPopup } from '@/utils/eventHandler.ts';
 import { CURRENT_OPTION_WEIGHT, MenuSymbol } from '@/utils/constants';
 // Types
@@ -155,7 +155,7 @@ const getDirectChildren = (target?: Element | EventTarget | null) => {
  * Create Id for menu container
  */
 const idForMenu = computed<string>(() =>
-  props.menuId ?? componentId('menu')
+  props.menuId ?? getComponentId('menu')
 );
 
 defineEmits<{

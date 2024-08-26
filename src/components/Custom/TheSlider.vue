@@ -62,8 +62,9 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, watch, ref, computed, watchEffect } from 'vue';
-import { clip, round, rangeMapping, componentId } from '@/utils/helpers';
+import { onMounted, watch, ref, computed } from 'vue';
+import { getComponentId } from '@/utils/helpers';
+import { clip, round, rangeMapping } from '@/utils/numeric';
 
 type Props = {
   inputId?: string,
@@ -100,7 +101,7 @@ const isDragging = ref<boolean>(false);
  * Create Id for input
  */
 const idForInput = computed<string>(() =>
-  props.inputId ?? componentId('slider')
+  props.inputId ?? getComponentId('slider')
 );
 /**
  * Aria label for <input /> and role="slider" tag.
@@ -205,7 +206,8 @@ const increment = (num: number = 1) => {
 const handleDrag = (
   e: MouseEvent | TouchEvent,
 ) => {
-  if (!e.type.endsWith('move')) { // touch start / mouse down
+  const isStartingDragging = !e.type.endsWith('move');
+  if (isStartingDragging) { // touch start / mouse down
     (e.currentTarget as HTMLDivElement).focus();
     if (tooltipRef.value === e.target) return; // Prevent dragging tooltip.
     isDragging.value = true;
@@ -233,23 +235,21 @@ const handleDrag = (
     );
   } else val = round(props.min + valBias, props.digit);
   updateValue(val, thumbPos);
+  if (isStartingDragging) {
+    window.addEventListener('mousemove', handleDrag);
+    window.addEventListener('touchmove', handleDrag);
+    window.addEventListener('mouseup', handleDragEnd, { once: true });
+    window.addEventListener('touchend', handleDragEnd, { once: true });
+  }
 };
 
 // -Mouse up / Touch end.
-const handleDragEnd = () => isDragging.value = false;
+const handleDragEnd = () => {
+  isDragging.value = false;
+  window.removeEventListener('mousemove', handleDrag);
+  window.removeEventListener('touchmove', handleDrag);
+};
 
-watchEffect((clearup) => {
-  window.addEventListener('mousemove', handleDrag);
-  window.addEventListener('touchmove', handleDrag);
-  window.addEventListener('mouseup', handleDragEnd);
-  window.addEventListener('touchend', handleDragEnd);
-  clearup(() => {
-    window.removeEventListener('mousemove', handleDrag);
-    window.removeEventListener('touchmove', handleDrag);
-    window.removeEventListener('mouseup', handleDragEnd);
-    window.removeEventListener('touchend', handleDragEnd);
-  });
-});
 // -Key down
 const handleKeyDown = (e: KeyboardEvent) => {
   if (e.key == 'ArrowRight') increment();

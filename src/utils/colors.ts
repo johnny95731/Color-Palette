@@ -1,4 +1,5 @@
-import { clip, dot, identity, mod, round, toPercent } from './helpers.ts';
+import { identity } from './helpers';
+import { clip, dot, mod, round, toPercent } from './numeric';
 import {
   RGB_MAXES, HSL_MAXES, HSB_MAXES, CMY_MAXES, CMYK_MAXES, XYZ_MAXES, LAB_MAXES,
 } from './constants.ts';

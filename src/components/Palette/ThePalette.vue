@@ -41,7 +41,8 @@ import $style from './ThePalette.module.scss';
 import TheBtn from '../Custom/TheBtn.vue';
 import TheCard from './TheCard.vue';
 import { INIT_NUM_OF_CARDS, MAX_NUM_OF_CARDS } from '@/utils/constants';
-import { equallyLength, evalPosition, round } from '@/utils/helpers';
+import { equallyLength, evalPosition } from '@/utils/helpers';
+import { round } from '@/utils/numeric';
 import { randRgbGen, rgb2hex } from '@/utils/colors';
 import { blenders } from '@/utils/blend';
 // Stores / Contexts
@@ -112,31 +113,22 @@ watch(() => pltState.numOfCards, () => {
  * @param total Total number of cards.
  */
 const resetPosition = () => {
-  cardRefs.value.forEach((el, i) =>
-    i !== dragIdx.value.draggingIdx && // if (cond) continue
-      el.setPos(evalPosition(i, pltState.numOfCards))
-  );
-  // for (let i = 0; i < pltState.numOfCards; i++) {
-  //   if (i === dragIdx.value.draggingIdx) continue;
-  //   cardRefs.value[i].setPos(evalPosition(i, pltState.numOfCards));
-  // }
+  for (let i = 0; i < pltState.numOfCards; i++) {
+    (i !== dragIdx.value.draggingIdx) &&
+      cardRefs.value[i].setPos(evalPosition(i, pltState.numOfCards));
+  }
 };
 const removeTransition = () => {
-  cardRefs.value.forEach((el) => el.setTransProperty('none'));
-  // for (let i = 0; i < pltState.numOfCards; i++) {
-  //   cardRefs.value[i].setTransProperty('none');
-  // }
+  for (let i = 0; i < pltState.numOfCards; i++) {
+    cardRefs.value[i].setTransProperty('none');
+  }
 };
 const resetTransition = (end?: number) => {
   end ??= pltState.numOfCards;
-  // for (let i = 0; i < end; i++) {
-  //   if (i === dragIdx.value.draggingIdx) continue;
-  //   cardRefs.value[i].setTransProperty('reset');
-  // }
-  cardRefs.value.forEach((el, i) =>
-    i !== dragIdx.value.draggingIdx && // if (cond) continue
-      el.setTransProperty('reset')
-  );
+  for (let i = 0; i < end; i++) {
+    i !== dragIdx.value.draggingIdx &&
+      cardRefs.value[i].setTransProperty('reset');
+  }
 };
 
 // Add card, remove card, and drag card have transition event.

@@ -70,7 +70,7 @@ import TheIcon from '../TheIcon.vue';
 import ToolBar from './ToolBar.vue';
 import EditingDialog from './EditingDialog.vue';
 // Utils
-import { round } from '@/utils/helpers';
+import { round } from '@/utils/numeric';
 import { rgb2gray, getClosestNamed } from '@/utils/colors';
 import { copyText } from '@/utils/eventHandler';
 // Stores
