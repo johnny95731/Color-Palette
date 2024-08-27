@@ -56,7 +56,7 @@
       :roundedColor="roundedColor"
       :pos="editingDialogPos"
       v-model:show="showEditor"
-      @tabOffDialog="hexTextRef?.focus()"
+      @tabOffDialog="hexTextRef?.$el.focus();"
     />
   </div>
 </template>
@@ -81,7 +81,7 @@ import type { CSSProperties } from 'vue';
 import type { CardType } from '@/features/types/pltType';
 
 const container = ref<HTMLElement>();
-const hexTextRef = ref<HTMLButtonElement>();
+const hexTextRef = ref<InstanceType<typeof TheBtn>>();
 
 type Props = {
   cardIdx: number;

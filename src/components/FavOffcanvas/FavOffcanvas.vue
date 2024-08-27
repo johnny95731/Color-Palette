@@ -70,10 +70,10 @@ import TheBtn from '../Custom/TheBtn.vue';
 import OverlayContainer from '@/components/Custom/OverlayContainer.vue';
 import ColorBlock from './ColorBlock.vue';
 import PaletteBlock from './PaletteBlock.vue';
+import { isTabKey } from '@/utils/eventHandler';
 import usePltStore from '@/features/stores/usePltStore';
 import useFavStore from '@/features/stores/useFavStore';
-import { IconType } from '@/utils/icons';
-import { noModifierKey } from '@/utils/eventHandler';
+import type { IconType } from '@/utils/icons';
 
 
 const emit = defineEmits<{
@@ -92,7 +92,7 @@ watch(model, async (newVal) => { // focus dialog when open it.
 });
 
 function handleFocusoutDialog(e: KeyboardEvent) {
-  if (e.key === 'Tab' && noModifierKey(e)) {
+  if (isTabKey(e)) {
     e.preventDefault();
     if (tabIdx.value !== TabLabels.length - 1)  // switch to next tab page.
       tabRefs.value[++tabIdx.value]?.$el.focus();

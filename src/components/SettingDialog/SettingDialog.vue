@@ -163,6 +163,7 @@ import {
   CURRENT_OPTION_WEIGHT, BORDER_MAX_WIDTH, CONTRAST_METHODS, GAMMA_MAX,
   MULTIPLICATION_MAX, TRANSITION_MAX_COLOR, TRANSITION_MAX_POS, BORDER_COLOR,
 } from '@/utils/constants';
+import { isTabKey } from '@/utils/eventHandler';
 // Stores / Contexts
 import usePltStore from 'stores/usePltStore';
 import useSettingStore from 'stores/useSettingStore';
@@ -170,7 +171,6 @@ import useSettingStore from 'stores/useSettingStore';
 import type { CSSProperties } from 'vue';
 import type { TransitionType } from 'types/settingType';
 import type { ContrastMethods } from 'types/pltType';
-import { noModifierKey } from '@/utils/eventHandler';
 
 const emit = defineEmits<{
   (e: 'focusoutDialog'): void
@@ -187,9 +187,9 @@ const tabIdx = ref(0);
 const tabRefs = ref<InstanceType<typeof TheBtn>[]>([]);
 
 function handleFocusoutDialog(e: KeyboardEvent) {
-  if (e.key === 'Tab' && noModifierKey(e)) {
+  if (isTabKey(e)) {
     e.preventDefault();
-    // isActive.value = false;
+    model.value = false;
     emit('focusoutDialog');
   }
 }

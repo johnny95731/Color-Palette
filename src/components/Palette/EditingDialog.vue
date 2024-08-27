@@ -77,7 +77,7 @@
             :step="1"
             :model-value="val"
             @change="handleSliderChange($event, i)"
-            @keydown="onLeaveFocusing($event, i)"
+            @keydown="i === props.roundedColor.length - 1 && onLeaveFocusing($event)"
           />
         </template>
       </div>
@@ -91,7 +91,7 @@ import $style from './TheCard.module.scss';
 import TheSlider from '@/components/Custom/TheSlider.vue';
 import SelectMenu from '@/components/Custom/SelectMenu.vue';
 // Utils
-import { hexTextEdited, noModifierKey } from '@/utils/eventHandler';
+import { hexTextEdited, isTabKey } from '@/utils/eventHandler';
 import {
   hex2rgb, rgb2hex, isValidHex, gradientGen, fullNames, getNamedColorRgb,
 } from '@/utils/colors';
@@ -142,11 +142,11 @@ watch(modelShow, async (newVal) => { // focus dialog when open it.
   }
 });
 
-const onLeaveFocusing = (e: KeyboardEvent, idx: number) => {
-  if (idx === props.roundedColor.length - 1 && e.key === 'Tab' && noModifierKey(e)) {
+const onLeaveFocusing = (e: KeyboardEvent) => {
+  if (isTabKey(e)) {
+    e.preventDefault();
     modelShow.value = false;
     emits('tabOffDialog');
-    e.preventDefault();
   }
 };
 
@@ -155,7 +155,7 @@ const onLeaveFocusing = (e: KeyboardEvent, idx: number) => {
  */
 const handleHexEditingFinished = function(e: FocusEvent | KeyboardEvent) {
   if (e.type === 'keydown' && (e as KeyboardEvent).key !== 'Enter') {
-    return false;
+    return;
   }
   const textInput = e.currentTarget as HTMLInputElement;
   const text = textInput.value;
@@ -172,7 +172,7 @@ const handleHexEditingFinished = function(e: FocusEvent | KeyboardEvent) {
       );
       if (slider) slider.value = String(newModeColor[i]);
     }
-    if (text.length === 4) {
+    if (text.length === 4) { // # and 3 hex character.
       const hex6 = `#${text[1]+text[1]}${text[2]+text[2]}${text[3]+text[3]}`;
       textInput.value = hex6;
     }

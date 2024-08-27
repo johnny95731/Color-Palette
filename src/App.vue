@@ -41,7 +41,6 @@ const SettingDialog = defineAsyncComponent(
       return component;
     })
 );
-import { isMenuContainer } from '@/utils/eventHandler.ts';
 import { OverlayDiv } from '@/utils/constants';
 import { HOT_KEYS, refreshKey, sortingKey } from './utils/hotkeys';
 // Store and Context
@@ -99,7 +98,7 @@ const handleShowSettings = async () => {
       // Prevent trigger hotkey when editing or add/remove/move (transition) card.
       isCardPending.value || isShowOverlay.value ||
       // Opening some popup element or focusing their activator.
-      OverlayDiv.contains(document.activeElement) || isMenuContainer(document.activeElement)
+      OverlayDiv.contains(document.activeElement)
     ) return;
     switch (key) {
     case refreshHotkey:

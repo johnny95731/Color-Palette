@@ -1,9 +1,4 @@
 // Events
-export const preventDefault = (e: MouseEvent) => {
-  e.preventDefault();
-  return false;
-};
-
 export const stopPropagation = (e: Event) => e.stopPropagation();
 
 /**
@@ -54,11 +49,11 @@ export const shiftOnly = (e: KeyboardEvent): boolean => {
   return e.shiftKey && !e.altKey && !e.ctrlKey && !e.metaKey;
 };
 
+export const isTabKey = (e: KeyboardEvent) =>
+  e.type==='Tab' && noModifierKey(e);
 
-export const isMenuContainer = (target?: EventTarget | Element | null) => {
-  return (target as Element | null)?.classList.contains('menu-container');
-};
 
+// Attribute checker
 export const hasPopup = (target?: EventTarget | HTMLElement | null) => {
   return !!(target && (target as HTMLElement).dataset.haspopup === 'true');
 };

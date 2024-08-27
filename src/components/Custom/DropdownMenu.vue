@@ -255,9 +255,9 @@ async function nestedClosing (target?: Element | EventTarget | null) {
     await sleep(100);
     await nextTick();
     parent?.nestedClosing(target);
-  } else {
+  } else
     !hasPopup(getDirectChildren(target)) && nestedClosing();
-  }
+
 }
 
 const menuMinWidth = computed(() => {
