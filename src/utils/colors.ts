@@ -445,11 +445,8 @@ export const getSpaceInfos = (space: ColorSpacesType): ColorSpaceInfos & ColorSp
  * @return [R, G, B]
  */
 export const randRgbGen = (): number[] => {
-  const rgb = new Array(3);
-  for (let i = 0; i < 3; i ++) {
-    rgb[i] = Math.floor(Math.random() * (RGB_MAXES + 1));
-  }
-  return rgb;
+  return Array.from({ length: 3 },
+    () => Math.floor(Math.random() * (RGB_MAXES + 1)));
 };
 
 /**

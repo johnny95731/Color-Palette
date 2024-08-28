@@ -15,7 +15,7 @@ if (process.env.NODE_ENV === 'development') {
   const allHotKeys = Object.values(HOT_KEYS).map(val =>
     typeof val === 'string' ? val : Object.values(val)
   ).flat();
-  console.log(
+  console.info(
     allHotKeys.length === new Set(allHotKeys).size ?
       'No duplicate hot keys.' : 'Has duplicate hot keys.'
   );

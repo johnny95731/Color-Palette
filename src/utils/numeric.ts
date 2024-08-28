@@ -31,15 +31,15 @@ export const toPercent = (num: number, digits: number = 0): number => {
 };
 
 /**
- * Clip the number in the range `[min, max]`.
+ * Clip the number in the range [`min`, `max`].
  * @param num A number to clip.
  * @param min Minimum value.
  * @param max maximum value.
  * @returns Clipped number.
  */
 export const clip = (num: number, min?: number, max?: number): number => {
-  if (max !== undefined && num > max) return max;
-  if (min !== undefined && num < min) return min;
+  if (max !== undefined && num > max) num = max;
+  if (min !== undefined && num < min) num = min; // max < min also return min
   return num;
 };
 

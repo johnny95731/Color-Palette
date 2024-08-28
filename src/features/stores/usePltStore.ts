@@ -87,9 +87,7 @@ const usePltStore = defineStore('plt', {
       return this.editingIdx !== -1;
     },
     spaceInfos(): ColorSpaceTrans & ColorSpaceInfos {
-      return {
-        ...getSpaceInfos(this.colorSpace),
-      };
+      return getSpaceInfos(this.colorSpace);
     }
   },
   actions: {
