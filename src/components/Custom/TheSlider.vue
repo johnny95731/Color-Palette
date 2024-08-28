@@ -153,12 +153,14 @@ const unitValue = computed(() => props.step ?? 10**(-props.digit));
 const updateThumbPos = (newPos?: number) => {
   const rect = trackerRef.value?.getBoundingClientRect();
   pos.value = newPos ??
-    rect ?
-    round(rangeMapping(
-      model.value, props.min, props.max,
-      0, 100,
-    ), 2) :
-    pos.value;
+    (
+      rect ?
+        round(rangeMapping(
+          model.value, props.min, props.max,
+          0, 100,
+        ), 2) :
+        pos.value
+    );
 };
 function updateValue(newVal: number, newPos?: number) {
   model.value = newVal;
@@ -231,8 +233,8 @@ const handleDrag = (
   if (isStartingDragging) {
     window.addEventListener('mousemove', handleDrag);
     window.addEventListener('touchmove', handleDrag);
-    window.addEventListener('mouseup', handleDragEnd, { once: true });
-    window.addEventListener('touchend', handleDragEnd, { once: true });
+    window.addEventListener('mouseup', handleDragEnd);
+    window.addEventListener('touchend', handleDragEnd);
   }
 };
 
@@ -241,6 +243,8 @@ const handleDragEnd = () => {
   isDragging.value = false;
   window.removeEventListener('mousemove', handleDrag);
   window.removeEventListener('touchmove', handleDrag);
+  window.removeEventListener('mouseup', handleDragEnd);
+  window.removeEventListener('touchend', handleDragEnd);
 };
 
 // -Key down

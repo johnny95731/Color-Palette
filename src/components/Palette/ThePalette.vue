@@ -256,8 +256,8 @@ const draggingCardEvent = computed(() => {
     card.$el.classList.add($style.dragging);
     window.addEventListener('mousemove', move);
     window.addEventListener('touchmove', move, { passive: true });
-    window.addEventListener('mouseup', end, { once: true });
-    window.addEventListener('touchend', end, { once: true });
+    window.addEventListener('mouseup', end);
+    window.addEventListener('touchend', end);
   }
   /**
    * The event is triggered when the `<->` icon on a card is dragging and
@@ -322,6 +322,8 @@ const draggingCardEvent = computed(() => {
 
     window.removeEventListener('mousemove', move);
     window.removeEventListener('touchmove', move);
+    window.removeEventListener('mouseup', end);
+    window.removeEventListener('touchend', end);
   }
   return {
     start,
