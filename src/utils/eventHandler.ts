@@ -50,7 +50,7 @@ export const shiftOnly = (e: KeyboardEvent): boolean => {
 };
 
 export const isTabKey = (e: KeyboardEvent) =>
-  e.type==='Tab' && noModifierKey(e);
+  e.key === 'Tab' && noModifierKey(e);
 
 
 // Attribute checker
