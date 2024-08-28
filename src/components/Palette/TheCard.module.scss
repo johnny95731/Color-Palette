@@ -18,6 +18,7 @@
   //
   transition-property: left, width, background-color;
   transition-duration: 0s;
+  overflow: hidden;
   &:hover .toolContainer,
   &:focus-within .toolContainer {
     transform: scaleX(1);
