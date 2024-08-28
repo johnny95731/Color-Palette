@@ -55,6 +55,7 @@
       :colorSpace="pltState.colorSpace"
       :roundedColor="roundedColor"
       :pos="editingDialogPos"
+      v-model="roundedColor"
       v-model:show="showEditor"
       @tabOffDialog="hexTextRef?.$el.focus();"
     />
@@ -71,7 +72,7 @@ import ToolBar from './ToolBar.vue';
 import EditingDialog from './EditingDialog.vue';
 // Utils
 import { round } from '@/utils/numeric';
-import { rgb2gray, getClosestNamed } from '@/utils/colors';
+import { rgb2gray, getClosestNamed, hex2rgb } from '@/utils/colors';
 import { copyText } from '@/utils/eventHandler';
 // Stores
 import usePltStore from '@/features/stores/usePltStore';
@@ -103,13 +104,18 @@ defineEmits<{
 const pltState = usePltStore();
 
 const isLight = computed(() => {
-  const { inverter } = pltState.spaceInfos;
-  const rgb = inverter(props.card.color);
-  return rgb2gray(rgb) > 127;
+  return rgb2gray(hex2rgb(props.card.hex)) > 127;
 });
-const roundedColor = computed(() => {
-  return props.card.color.map((val) => Math.round(val));
+
+const roundedColor = computed({
+  get() {
+    return props.card.color.map((val) => round(val));
+  },
+  set(newColorArr: number[]) {
+    pltState.editCard({ idx: props.cardIdx, color: newColorArr });
+  }
 });
+
 const fgFilter = computed<CSSProperties>(() => {
   return {
     filter: isLight.value ? undefined : 'invert(1)',

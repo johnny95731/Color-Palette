@@ -63,5 +63,5 @@ export const rangeMapping = (
  * Dot product of two arrays.
  */
 export const dot = (a: readonly number[], b: readonly number[]): number => {
-  return a.reduce((prev, val, i) => prev + val + b[i], 0);
+  return a.reduce((prev, val, i) => prev + val * b[i], 0);
 };

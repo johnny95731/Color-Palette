@@ -13,7 +13,7 @@
       :min="min"
       :max="max"
       :step="step"
-      :value="currentVal"
+      :value="model"
       tabindex="-1"
       @focusin="trackerRef?.focus()"
     >
@@ -28,7 +28,7 @@
       role="slider"
       :aria-valuemin="min"
       :aria-valuemax="max"
-      :aria-valuenow="currentVal"
+      :aria-valuenow="model"
       @mousedown="handleDrag"
       @touchstart="handleDrag"
       @keydown="handleKeyDown"
@@ -53,7 +53,7 @@
           }"
         >
           {{
-            currentVal
+            model
           }}
         </div>
       </div>
@@ -87,10 +87,6 @@ const props = withDefaults(defineProps<Props>(), {
   showRange: true,
   showVal: true,
 });
-
-const emit = defineEmits<{
-  'change': [newVal: number]
-}>();
 
 const trackerRef = ref<HTMLDivElement>();
 const tooltipRef = ref<HTMLDivElement>();
@@ -144,57 +140,54 @@ watch(() => [props.label, idForInput.value], (newVal, oldVal) => {
 
 
 // Handle values
-const model = defineModel<number>();
+const model = defineModel<number>({ required: true });
+model.value ??=  (props.max + props.min) / 2;
 
-const currentVal = ref<number>((() => {
-  const val = (
-    model.value ??
-        (props.max + props.min) / 2
-  );
-  return clip(val, props.min, props.max);
-})());
+defineEmits<{
+  'update:modelValue': [newVal: number]
+}>();
+
 const pos = ref<number>(0); // thumb position
 
 const unitValue = computed(() => props.step ?? 10**(-props.digit));
-function updateValue(newVal: number, newPos?: number) {
-  if (newPos === undefined) { // Evaluate thumb pos
-    const rect = trackerRef.value?.getBoundingClientRect();
-    if (!rect) return;
-    newPos = round(rangeMapping(
-      newVal, props.min, props.max,
+const updateThumbPos = (newPos?: number) => {
+  const rect = trackerRef.value?.getBoundingClientRect();
+  pos.value = newPos ??
+    rect ?
+    round(rangeMapping(
+      model.value, props.min, props.max,
       0, 100,
-    ), 2);
-  }
-  if (currentVal.value !== newVal) {
-    emit('change', newVal);
-  }
-  pos.value = newPos as number;
-  currentVal.value = newVal;
+    ), 2) :
+    pos.value;
+};
+function updateValue(newVal: number, newPos?: number) {
+  model.value = newVal;
+  updateThumbPos(newPos);
 }
 
 onMounted(() => {
-  updateValue(currentVal.value);
+  updateThumbPos();
 });
 
 // Handle model, `props.min`, and `props.max` changed.
 watch(
-  () => [model.value, props.min, props.max],
+  () => [props.min, props.max],
   () => {
     const newVal = round(
       clip(
-        model.value ?? currentVal.value,
+        model.value,
         props.min,
         props.max,
       ),
       props.digit,
     );
-    if (newVal !== currentVal.value) updateValue(newVal);
+    if (newVal !== model.value) updateValue(newVal);
   });
 
 // Step increment function. If num < 0, then becomes decrement.
 const increment = (num: number = 1) => {
   const newVal = round(
-    clip(currentVal.value + num * unitValue.value, props.min, props.max),
+    clip(model.value + num * unitValue.value, props.min, props.max),
     props.digit,
   );
   updateValue(newVal);

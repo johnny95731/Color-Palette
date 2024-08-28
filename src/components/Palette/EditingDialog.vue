@@ -60,24 +60,24 @@
       </SelectMenu>
       <div :class="$style.sliders">
         <template
-          v-for="(val, i) in roundedColor"
+          v-for="([min, max], i) in space.range"
           :key="`card${cardIdx}-label${i}`"
         >
           <div>
-            {{ `${space.labels[i]}: ${val}` }}
+            {{ `${space.labels[i]}: ${model[i]}` }}
           </div>
           <TheSlider
             :label="space.labels[i]"
             :showRange="false"
             :showVal="false"
-            :trackerBackground="gradientGen(roundedColor, i, colorSpace)"
+            :trackerBackground="gradientGen(model, i, colorSpace)"
             :thumbBackground="card.hex"
-            :min="space.range[i][0]"
-            :max="space.range[i][1]"
+            :min="min"
+            :max="max"
             :step="1"
-            :model-value="val"
-            @change="handleSliderChange($event, i)"
-            @keydown="i === props.roundedColor.length - 1 && onLeaveFocusing($event)"
+            :model-value="model[i]"
+            @update:model-value="handleSliderChange($event, i)"
+            @keydown="i === model.length - 1 && onLeaveFocusing($event)"
           />
         </template>
       </div>
@@ -108,7 +108,6 @@ type Props = {
   card: CardType;
   detail: string;
   colorSpace: ColorSpacesType
-  roundedColor: number[];
   pos: {'left': string} | {'top': string}
 }
 
@@ -117,6 +116,7 @@ const containerRef = ref<HTMLDivElement>();
 const hexInputRef = ref<HTMLDivElement>();
 
 const modelShow = defineModel<boolean>('show', { required: true });
+const model = defineModel<number[]>({ required: true });
 
 const emits = defineEmits<{
   'tabOffDialog': []
@@ -159,18 +159,18 @@ const handleHexEditingFinished = function(e: FocusEvent | KeyboardEvent) {
   }
   const textInput = e.currentTarget as HTMLInputElement;
   const text = textInput.value;
-  if (isValidHex(text)) {
+  if (text !== props.card.hex && isValidHex(text)) {
     const newRGB = hex2rgb(text);
     if (!newRGB) return;
-    const newModeColor = space.value.converter(newRGB);
-    pltState.editCard({ idx: props.cardIdx, color: newRGB });
+    const newColorArr = space.value.converter(newRGB);
+    model.value = newColorArr;
     let slider;
     for (let i = 0; i < 4; i++) {
       slider = (
         document.getElementById(`card${props.cardIdx}-slider${i}`) as
         HTMLInputElement
       );
-      if (slider) slider.value = String(newModeColor[i]);
+      if (slider) slider.value = String(newColorArr[i]);
     }
     if (text.length === 4) { // # and 3 hex character.
       const hex6 = `#${text[1]+text[1]}${text[2]+text[2]}${text[3]+text[3]}`;
@@ -185,7 +185,7 @@ const handleHexEditingFinished = function(e: FocusEvent | KeyboardEvent) {
 const handleSliderChange = function(newVal: number, idx: number) {
   const newColorArr = [...props.card.color];
   newColorArr[idx] = newVal;
-  pltState.editCard({ idx: props.cardIdx, color: newColorArr });
+  model.value = newColorArr;
   // Set hex to hex input.
   const textInput = (
     document.getElementById(`card${props.cardIdx}-hex`) as HTMLInputElement
