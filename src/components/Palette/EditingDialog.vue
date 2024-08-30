@@ -74,7 +74,6 @@
             :thumbBackground="card.hex"
             :min="min"
             :max="max"
-            :step="1"
             :model-value="model[i]"
             @update:model-value="handleSliderChange($event, i)"
             @keydown="i === model.length - 1 && onLeaveFocusing($event)"

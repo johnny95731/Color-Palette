@@ -1,6 +1,9 @@
 <template>
   <div
-    class="slider-wrapper"
+    class="slider-container"
+    :style="{
+      background: trackerBackground,
+    }"
   >
     <label
       v-if="labelState && 'aria-label' in labelState"
@@ -17,13 +20,14 @@
       tabindex="-1"
       @focusin="trackerRef?.focus()"
     >
+    <template v-if="showRange">
+      <span class="slider-limit-label">{{ min }}</span>
+      <span class="slider-limit-label">{{ max }}</span>
+    </template>
     <div
       v-bind="labelState"
       ref="trackerRef"
       class="slider-tracker"
-      :style="{
-        background: trackerBackground,
-      }"
       tabindex="0"
       role="slider"
       :aria-valuemin="min"
@@ -33,29 +37,25 @@
       @touchstart="handleDrag"
       @keydown="handleKeyDown"
     >
-      <template v-if="showRange">
-        <span class="slider-limit-label">{{ min }}</span>
-        <span class="slider-limit-label">{{ max }}</span>
-      </template>
       <div
         class="slider-thumb"
         :style="{
           left: `${pos}%`,
           background: thumbBackground,
         }"
+      />
+      <div
+        v-if="showVal"
+        class="slider-tooltip"
+        ref="tooltipRef"
+        :style="{
+          display: isDragging ? 'block' : undefined,
+          left: `${pos}%`,
+        }"
       >
-        <div
-          v-if="showVal"
-          class="slider-tooltip"
-          ref="tooltipRef"
-          :style="{
-            display: isDragging ? 'block' : undefined,
-          }"
-        >
-          {{
-            model
-          }}
-        </div>
+        {{
+          model
+        }}
       </div>
     </div>
   </div>
@@ -64,26 +64,29 @@
 <script setup lang="ts">
 import { onMounted, watch, ref, computed } from 'vue';
 import { getComponentId } from '@/utils/helpers';
-import { clip, round, rangeMapping } from '@/utils/numeric';
+import { clip, countDecimals, round, rangeMapping, isSameFloat } from '@/utils/numeric';
+import { useElementBounding } from '@vueuse/core';
 
 type Props = {
   inputId?: string,
   label?: string,
   // input attrs
-  min?: number;
-  max?: number;
-  step?: number;
-
-  digit?: number;
-  showRange?: boolean;
-  showVal?: boolean;
-  trackerBackground?: string;
-  thumbBackground?: string;
+  min?: number,
+  max?: number,
+  /**
+   * The value of slider will be restrict to min + n * step for some integer n.
+   * If step < 0, it will not apply.
+   */
+  step?: number | `${number}`,
+  showRange?: boolean,
+  showVal?: boolean,
+  trackerBackground?: string,
+  thumbBackground?: string,
 }
 const props = withDefaults(defineProps<Props>(), {
   min: 0,
   max: 100,
-  digit: 3,
+  step: 1,
   showRange: true,
   showVal: true,
 });
@@ -138,6 +141,10 @@ watch(() => [props.label, idForInput.value], (newVal, oldVal) => {
   }
 });
 
+/**
+ * Bounding rect of tracker.
+ */
+const { width: rectWidth, left: rectLeft } = useElementBounding(trackerRef);
 
 // Handle values
 const model = defineModel<number>({ required: true });
@@ -149,50 +156,68 @@ defineEmits<{
 
 const pos = ref<number>(0); // thumb position
 
-const unitValue = computed(() => props.step ?? 10**(-props.digit));
-const updateThumbPos = (newPos?: number) => {
-  const rect = trackerRef.value?.getBoundingClientRect();
-  pos.value = newPos ??
-    (
-      rect ?
-        round(rangeMapping(
-          model.value, props.min, props.max,
-          0, 100,
-        ), 2) :
-        pos.value
+/**
+ * Convert props.step to number.
+ */
+const numStep = computed<number>(() =>
+  +props.step
+);
+
+/**
+ * Decimals counts of display text.
+ */
+const decimals = computed<number>(() =>
+  numStep.value > 0 ? countDecimals(numStep.value) : 0
+);
+
+/**
+ * Update thumb position. If newPos is not given, it will be computed by model.
+ */
+const updateThumbPos = () => {
+  pos.value = round(
+    rangeMapping(model.value, props.min, props.max, 0, 100),
+    3
+  );
+};
+
+/**
+ * Rounding the value to satify step.
+ */
+const roundingValue = (newVal?: number) => {
+  newVal ??= model.value;
+  return numStep.value <= 0 ?
+    newVal :
+    round(
+      props.min + Math.floor((newVal - props.min) / numStep.value) * numStep.value,
+      decimals.value,
     );
 };
-function updateValue(newVal: number, newPos?: number) {
-  model.value = newVal;
-  updateThumbPos(newPos);
+
+/**
+ * Rounding the value to satify step and update model.
+ */
+function updateModel(newVal?: number) {
+  newVal = roundingValue(newVal);
+  isSameFloat(newVal, model.value) || (model.value = newVal);
 }
 
-onMounted(() => {
-  updateThumbPos();
-});
+watch(model, (newVal, oldVal) => {
+  if (oldVal == null || !isSameFloat(newVal, oldVal))
+    updateThumbPos();
+}, { immediate: true });
 
 // Handle model, `props.min`, and `props.max` changed.
 watch(
   () => [props.min, props.max],
   () => {
-    const newVal = round(
-      clip(
-        model.value,
-        props.min,
-        props.max,
-      ),
-      props.digit,
-    );
-    if (newVal !== model.value) updateValue(newVal);
-  });
+    updateModel(clip(model.value, props.min, props.max));
+  }, { immediate: true });
 
 // Step increment function. If num < 0, then becomes decrement.
 const increment = (num: number = 1) => {
-  const newVal = round(
-    clip(model.value + num * unitValue.value, props.min, props.max),
-    props.digit,
+  updateModel(
+    clip(model.value + num * numStep.value, props.min, props.max)
   );
-  updateValue(newVal);
 };
 
 // onChange event => Drag or key down.
@@ -207,29 +232,17 @@ const handleDrag = (
     if (tooltipRef.value === e.target) return; // Prevent dragging tooltip.
     isDragging.value = true;
   } else if (!isDragging.value) return;
-  const rect = trackerRef.value?.getBoundingClientRect() as DOMRect;
   // Get cursor position.
   const clientX = (
     (e as MouseEvent).clientX || (e as TouchEvent).touches[0].clientX
   );
   // Evaluate value.
-  const thumbPos = rangeMapping(
-    clip(clientX - rect.left, 0, rect.width),
-    0, rect.width,
-    0, 100,
+  const val = rangeMapping(
+    clip(clientX - rectLeft.value, 0, rectWidth.value),
+    0, rectWidth.value,
+    props.min, props.max,
   );
-  const valBias = rangeMapping(
-    thumbPos, 0, 100,
-    0, props.max - props.min,
-  );
-  let val: number;
-  if (props.step) {
-    val = round(
-      props.min + Math.floor(valBias / props.step) * props.step,
-      props.digit,
-    );
-  } else val = round(props.min + valBias, props.digit);
-  updateValue(val, thumbPos);
+  updateModel(val);
   if (isStartingDragging) {
     window.addEventListener('mousemove', handleDrag);
     window.addEventListener('touchmove', handleDrag);
@@ -249,10 +262,18 @@ const handleDragEnd = () => {
 
 // -Key down
 const handleKeyDown = (e: KeyboardEvent) => {
-  if (e.key == 'ArrowRight') increment();
-  else if (e.key === 'ArrowLeft') increment(-1);
+  const key = e.key;
+  if (key.startsWith('Arrow')) {
+    if (['U', 'R'].includes(key[5])) // ArrorUp, ArrorRight
+      increment();
+    else // ArrorDown, ArrorLeft
+      increment(-1);
+  }
+  else if (key === 'Home') updateModel(props.min);
+  else if (key === 'End') updateModel(props.max);
+  else if (key === 'PageUp') increment(10);
+  else if (key === 'PageDown') increment(-10);
 };
-// end: onChange event
 
 defineExpose({
   inputId: idForInput

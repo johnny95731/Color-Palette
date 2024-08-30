@@ -8,6 +8,7 @@
     data-haspopup="true"
     :aria-controls="eager || isOpened ? idForMenu : undefined"
     :aria-expanded="isOpened"
+    :title="valueLabel"
   >
     <TheBtn
       ref="activatorRef"

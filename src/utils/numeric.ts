@@ -12,16 +12,43 @@ export const mod = (n: number, m: number): number => {
 };
 
 /**
- * Convert a number `val` to percentage form, that is, `val*100%`.
+ * Check whether two floating number is the same.
+ */
+export const isSameFloat = (num1: number, num2: number): boolean =>
+  Math.abs(num1 - num2) < Number.EPSILON;
+
+
+/**
+ * Count the length of decimals.
+ */
+export const countDecimals = (num: number)  => { // Twice faster
+  if (Math.floor(num) === num) return 0;
+  let str = Math.abs(num).toString();
+  let counts = 0;
+  if (str.indexOf('-') !== -1) {
+    counts = +str.split('-')[1];
+    str = str.split('e')[0];
+  }
+  return counts + (str.split('.')[1]?.length || 0);
+};
+// export const countDecimals = (num: number)  => { // reduce about 8 character
+//   if (Math.floor(num) === num) return 0;
+//   const str = Math.abs(num).toExponential().split('e');
+//   const counts = (str[1].startsWith('-') ? 1 : -1) * +str[1].slice(1);
+//   return counts + (str[0].split('.')[1]?.length || 0);
+// };
+
+/**
+ * Rounding a number to specifit digit (after decimal point).
  * @param num A number.
- * @param digits Digit of output number.
+ * @param digits Digit after decimal point.
  * @return Percentage number.
  */
 export const round = (num: number, digits: number = 0): number =>
   digits ? Math.round(10**(digits) * num) / 10**(digits) : Math.round(num);
 
 /**
- * Convert a number `val` to percentage form, that is, `val*100%`.
+ * Convert a number `num` to percentage form, that is, `num * 100%`.
  * @param num A number.
  * @param digits Digit of output number.
  * @return Percentage number.

@@ -55,12 +55,9 @@
               >Width(px)</label>
               <TheSlider
                 label="#border-width"
-                :min="1"
                 :max="BORDER_MAX_WIDTH"
-                :step="1"
-                :digit="0"
                 :model-value="border.width"
-                @change="handleWidth($event)"
+                @update:model-value="handleWidth($event)"
               />
               <label
                 id="border-color"
@@ -82,24 +79,21 @@
             >Position1(ms)</label>
             <TheSlider
               label="#transition-position"
-              :min="0"
               :max="TRANSITION_MAX_POS"
-              :digit="0"
               :step="50"
               :model-value="transition.pos"
-              @change="handleTransitionChanged($event, 'pos')"
+              @update:model-value="handleTransitionChanged($event, 'pos')"
             />
             <label
               id="transition-color"
             >Color(ms)</label>
             <TheSlider
               label="#transition-color"
-              :min="0"
               :max="TRANSITION_MAX_COLOR"
               :digit="0"
               :step="50"
               :model-value="transition.color"
-              @change="handleTransitionChanged($event, 'color')"
+              @update:model-value="handleTransitionChanged($event, 'color')"
               @keydown="switchTab(1)"
             />
           </div>
@@ -123,10 +117,10 @@
             }}</label>
             <TheSlider
               label="#contrast-coeff-name"
-              :min="0"
               :max="contrastViewData.max"
+              :step="0.001"
               :model-value="contrastArgs[contrastArgs.method]"
-              @change="contrastChanged($event)"
+              @update:model-value="contrastChanged($event)"
             />
             <div
               v-once

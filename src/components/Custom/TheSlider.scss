@@ -3,15 +3,19 @@
 
 $thumb-size: 14px;
 $thumb-radius: math.div($thumb-size, 2);
-.slider-wrapper {
+.slider-container {
+  // Layout
   position: relative;
   margin: #{$thumb-radius + 4px} 0px #{$thumb-radius + 8px};
+  // Shape
   height: 5px;
   width: 100%;
   padding: 0px $thumb-radius;
+  border-radius: $radius-lg;
   box-sizing: border-box;
+
   font-size: $font-sm;
-  background-color: transparent;
+  background-color: $color5;
   >input,
   >label {
     display: block;
@@ -28,10 +32,6 @@ $thumb-radius: math.div($thumb-size, 2);
   height: 100%;
   width: 100%;
 
-  border-radius: $radius-lg;
-  box-sizing: border-box;
-
-  background-color: $color5;
   cursor: pointer;
   user-select: none;
   &:focus-visible .slider-thumb {
