@@ -42,7 +42,7 @@
         contentClass
       ]"
       :tabindex="-1"
-      :style="menuStyle"
+      :style="menuContainerStyle"
       @keydown="handleKeyDown"
     >
       <slot
@@ -70,7 +70,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref, onMounted, watch, CSSProperties, provide, inject, nextTick } from 'vue';
+import { computed, ref, watch, provide, inject, nextTick } from 'vue';
 import OverlayContainer from './OverlayContainer.vue';
 import TheBtn from './TheBtn.vue';
 import TheIcon from '../TheIcon.vue';
@@ -79,7 +79,9 @@ import { toTitleCase, getComponentId, sleep } from '@/utils/helpers.ts';
 import { mod } from '@/utils/numeric';
 import { noModifierKey, shiftOnly, hasPopup } from '@/utils/eventHandler.ts';
 import { CURRENT_OPTION_WEIGHT, MenuSymbol } from '@/utils/constants';
+import { useElementBounding } from '@/utils/composables/useElementBounding';
 // Types
+import type { CSSProperties } from 'vue';
 import type { IconType } from '@/utils/icons';
 
 type Item = {
@@ -128,12 +130,16 @@ const props = withDefaults(defineProps<Props>(), {
 const activatorRef = ref<InstanceType<typeof TheBtn>>();
 const containerRef = ref<HTMLDivElement>();
 
+const activator = computed<HTMLButtonElement>(() => activatorRef.value?.$el);
+
 /**
  * Target is containing in this instance.
  */
 const isContaining = (target?: Element | EventTarget | null): boolean =>
-  activatorRef.value && activatorRef.value.$el.contains(target) ||
-    containerRef.value?.contains(target as Node | null);
+  !!(
+    activator.value.contains(target as Node | null) ||
+    containerRef.value?.contains(target as Node | null)
+  );
 
 /**
  * Return menu content's direct children element that contains target.
@@ -213,7 +219,7 @@ type MenuProvided = {
 const parent = inject<MenuProvided | null>(MenuSymbol, null);
 provide<MenuProvided>(MenuSymbol, {
   topActivator() {
-    return parent?.topActivator() ?? activatorRef.value?.$el as HTMLElement;
+    return parent?.topActivator() ?? activator.value as HTMLButtonElement;
   },
   topNonLastActivator,
   isLast(target: Element | null) {
@@ -233,9 +239,8 @@ provide<MenuProvided>(MenuSymbol, {
  * The topmost layer activator that is not the last element of a menu.
  */
 function topNonLastActivator() {
-  const activator = activatorRef.value?.$el as HTMLElement;
-  return !parent || !parent.isLast(activator) ?
-    activator :
+  return !parent || !parent.isLast(activator.value) ?
+    activator.value :
     parent.topNonLastActivator();
 }
 
@@ -260,18 +265,15 @@ async function nestedClosing (target?: Element | EventTarget | null) {
 
 }
 
-const menuMinWidth = computed(() => {
-  const activator = activatorRef.value as NonNullable<typeof activatorRef.value>;
-  return window.getComputedStyle(activator.$el).width;
-});
-
-const menuStyle = ref<CSSProperties>({});
-onMounted(() => {
-  const rect = (activatorRef.value?.$el as HTMLElement).getBoundingClientRect();
-  menuStyle.value = {
-    minWidth: menuMinWidth.value,
-    top: props.isMobile ? 'var(--header-height)' : `${rect.bottom}px`,
-    ...(props.isMobile ? {} : { left:`${rect.left}px` }),
+const { rect: activatorRect } = useElementBounding(activator);
+const menuContainerStyle = computed<CSSProperties>(() => {
+  return {
+    minWidth: `${activatorRect.width}px`,
+    ...(
+      props.isMobile ?
+        { top: 'var(--header-height)' } :
+        { top: `${activatorRect.bottom}px`, left: `${activatorRect.left}px` }
+    ),
   };
 });
 
@@ -282,15 +284,6 @@ watch(isOpened, (newVal) => {
   } else {
     parent?.register();
     document.addEventListener('click', handleClick);
-    const rect = (activatorRef.value?.$el as HTMLElement).getBoundingClientRect();
-    menuStyle.value = {
-      minWidth: menuMinWidth.value,
-      ...(
-        props.isMobile ?
-          { top: 'var(--header-height)' } :
-          { top: `${rect.bottom}px`, left:`${rect.left}px` }
-      ),
-    };
   }
 });
 
@@ -329,7 +322,6 @@ const handleKeyDown = async (e: KeyboardEvent) => {
     } else return;
   }
 
-  const activator = activatorRef.value?.$el as HTMLButtonElement;
   const menu = containerRef.value as typeof containerRef.value;
   // @ts-expect-error
   const nthChildFocused = [...menu.children].indexOf(document.activeElement);
@@ -351,13 +343,13 @@ const handleKeyDown = async (e: KeyboardEvent) => {
     } else if (nthChildFocused === menu.children.length - 1 && noModifiers) {
       // Focusing last menu option and Tab => close menu and focus next
       // focusable element of activator.
-      target = topNonLastActivator() ?? activator;
+      target = topNonLastActivator() ?? activator.value;
       nestedClosing(target);
     } else if (nthChildFocused === 0 && shiftOnly_) {
       // Focusing first menu option and Shift + Tab => close menu and focus
       // activator.
       handleClickBtn();
-      target = activator;
+      target = activator.value;
       e.preventDefault();
     }
     break;
@@ -386,7 +378,7 @@ const handleKeyDown = async (e: KeyboardEvent) => {
     break;
   case 'Escape':
     isOpened.value = false;
-    target = activator;
+    target = activator.value;
     break;
   }
   target?.focus();

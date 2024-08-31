@@ -8,9 +8,7 @@
     <div
       ref="containerRef"
       :class="$style.editor"
-      :style="{
-        ...(media.isSmall ? {} :pos)
-      }"
+      :style="containerStyle"
     >
       <label
         :for="`card${cardIdx}-hex`"
@@ -25,9 +23,9 @@
         type="text"
         maxlength="7"
         :value="card.hex"
-        @change="hexTextEdited($event)"
+        @input="hexTextEdited($event)"
         @blur="handleHexEditingFinished($event)"
-        @keydown="handleHexEditingFinished($event)"
+        @keydown.enter="handleHexEditingFinished($event)"
       >
       <SelectMenu
         v-if="colorSpace === 'name'"
@@ -85,8 +83,10 @@
 </template>
 
 <script setup lang='ts'>
-import { computed, nextTick, ref, watch } from 'vue';
+import { computed, ref, shallowReactive, watch } from 'vue';
 import $style from './TheCard.module.scss';
+import OverlayContainer from '../Custom/OverlayContainer.vue';
+import TheBtn from '../Custom/TheBtn.vue';
 import TheSlider from '@/components/Custom/TheSlider.vue';
 import SelectMenu from '@/components/Custom/SelectMenu.vue';
 // Utils
@@ -94,20 +94,20 @@ import { hexTextEdited, isTabKey } from '@/utils/eventHandler';
 import {
   hex2rgb, rgb2hex, isValidHex, gradientGen, fullNames, getNamedColorRgb,
 } from '@/utils/colors';
+import { useElementBounding } from '@/utils/composables/useElementBounding';
 // Stores
 import usePltStore from '@/features/stores/usePltStore';
 import media from '@/features/useMedia';
 // Types
+import type { CSSProperties } from 'vue';
 import type { CardType, ColorSpacesType } from '@/features/types/pltType';
-import OverlayContainer from '../Custom/OverlayContainer.vue';
-import TheBtn from '../Custom/TheBtn.vue';
 
 type Props = {
   cardIdx: number;
   card: CardType;
   detail: string;
   colorSpace: ColorSpacesType
-  pos: {'left': string} | {'top': string}
+  pos: string
 }
 
 const props = defineProps<Props>();
@@ -134,12 +134,35 @@ const space = computed(() => {
   };
 });
 
-watch(modelShow, async (newVal) => { // focus dialog when open it.
-  if (newVal) {
-    await nextTick();
-    hexInputRef.value?.focus();
+const { rect } = useElementBounding(containerRef, { filter: ['width'] });
+const containerStyle = shallowReactive<
+  Pick<CSSProperties, 'left' | 'transform' | 'right'>
+>({});
+watch(() => [modelShow.value, props.pos], ([newVal], [oldVal]) => {
+  if (!newVal) return;
+  newVal !== oldVal && hexInputRef.value?.focus();
+
+  let style: typeof containerStyle = { ...containerStyle };
+  if (media.isSmall) {
+    style = {
+      transform: undefined,
+      left: '50%',
+      right: undefined
+    };
+  } else {
+    const center = +props.pos.replace('px', '');
+    const outOfWindow = {
+      l: center - rect.width / 2 < media.bound[0],
+      r: center + rect.width / 2 > media.bound[1],
+    };
+    style = {
+      transform: outOfWindow.l || outOfWindow.r ? 'none' : undefined,
+      left: outOfWindow.l ? '0' : outOfWindow.r ? 'auto' : props.pos,
+      right: outOfWindow.r ? '0' : undefined
+    };
   }
-});
+  Object.assign(containerStyle, style);
+}, { flush: 'post' });
 
 const onLeaveFocusing = (e: KeyboardEvent) => {
   if (isTabKey(e)) {
@@ -153,9 +176,6 @@ const onLeaveFocusing = (e: KeyboardEvent) => {
  * Finish Hex editing when input is blurred or press 'Enter'
  */
 const handleHexEditingFinished = function(e: FocusEvent | KeyboardEvent) {
-  if (e.type === 'keydown' && (e as KeyboardEvent).key !== 'Enter') {
-    return;
-  }
   const textInput = e.currentTarget as HTMLInputElement;
   const text = textInput.value;
   if (text !== props.card.hex && isValidHex(text)) {
@@ -163,14 +183,6 @@ const handleHexEditingFinished = function(e: FocusEvent | KeyboardEvent) {
     if (!newRGB) return;
     const newColorArr = space.value.converter(newRGB);
     model.value = newColorArr;
-    let slider;
-    for (let i = 0; i < 4; i++) {
-      slider = (
-        document.getElementById(`card${props.cardIdx}-slider${i}`) as
-        HTMLInputElement
-      );
-      if (slider) slider.value = String(newColorArr[i]);
-    }
     if (text.length === 4) { // # and 3 hex character.
       const hex6 = `#${text[1]+text[1]}${text[2]+text[2]}${text[3]+text[3]}`;
       textInput.value = hex6;
@@ -192,44 +204,6 @@ const handleSliderChange = function(newVal: number, idx: number) {
   const rgb = space.value.inverter(newColorArr);
   textInput.value = rgb2hex(rgb);
 };
-
-// Check container is out of window or not.
-watch(
-  () => media.windowSize,
-  () => {
-    const { endPos, resetPos } = (
-      media.isSmall ?
-        {
-          endPos: 'bottom',
-          resetPos: ['left', 'right'],
-        } as const:
-        {
-          endPos: 'right',
-          resetPos: ['top', 'bottom'],
-        } as const
-    );
-    const container = containerRef.value;
-    if (!container) return;
-    const rect = container.getBoundingClientRect();
-    // Reset style
-    container.style[resetPos[0]] = '';
-    container.style[resetPos[1]] = '';
-    if (media.isSmall) return;
-    // Adjust pos if container is out of window.
-    if (rect[media.pos] <= media.bound[0]) {
-      container.style.transform = 'none';
-      container.style[media.pos] = '0';
-    } else if ((rect[endPos]) >= media.bound[1]) {
-      container.style.transform = 'none';
-      container.style[media.pos] = 'auto';
-      container.style[endPos] = '0';
-    } else {
-      container.style.transform = '';
-      container.style[media.pos] = '';
-      container.style[endPos] = '';
-    }
-  });
-// Check container is out of window or not.
 
 const selectRef = ref<InstanceType<typeof SelectMenu>>();
 const selectName = (idx: number) => {

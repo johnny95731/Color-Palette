@@ -90,7 +90,6 @@
             <TheSlider
               label="#transition-color"
               :max="TRANSITION_MAX_COLOR"
-              :digit="0"
               :step="50"
               :model-value="transition.color"
               @update:model-value="handleTransitionChanged($event, 'color')"

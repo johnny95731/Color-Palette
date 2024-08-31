@@ -51,6 +51,7 @@ import useSettingStore from '@/features/stores/useSettingStore';
 import media from '@/features/useMedia';
 // Types
 import type { CSSProperties } from 'vue';
+import { useWindowEventRegister } from '@/utils/composables/useWindowEventRegister';
 
 type cardInstance = InstanceType<typeof TheCard>;
 
@@ -225,6 +226,7 @@ const draggingCardEvent = computed(() => {
   const cursorRationCoeff = 1 / cardAttrs.size.px;
   const cursorLimited = media.bound[1] - media.bound[0];
   let card: cardInstance | null;
+  let eventCleanups: Function[] = [];
 
   /**
    * The event is triggered when the `<->` icon on a card is dragging.
@@ -233,8 +235,6 @@ const draggingCardEvent = computed(() => {
   function start(
     e: MouseEvent | TouchEvent, cardIdx: number,
   ) {
-    // Prevent pointer-event.
-    if (!e.type.startsWith('touch')) e.preventDefault();
     // Disable pull-to-refresh on mobile.
     document.body.style.overscrollBehavior = 'none';
     // Cursor position when mouse down.
@@ -254,10 +254,16 @@ const draggingCardEvent = computed(() => {
     card.setPos(`${round(cursorPos - halfCardLength)}px`);
     card.setTransProperty('none');
     card.$el.classList.add($style.dragging);
-    window.addEventListener('mousemove', move);
-    window.addEventListener('touchmove', move, { passive: true });
-    window.addEventListener('mouseup', end);
-    window.addEventListener('touchend', end);
+    eventCleanups = [
+      useWindowEventRegister('mousemove', move),
+      useWindowEventRegister('touchmove', move, { passive: true }),
+      useWindowEventRegister('mouseup', end),
+      useWindowEventRegister('touchend', end),
+    ];
+    // window.addEventListener('mousemove', move);
+    // window.addEventListener('touchmove', move, { passive: true });
+    // window.addEventListener('mouseup', end);
+    // window.addEventListener('touchend', end);
   }
   /**
    * The event is triggered when the `<->` icon on a card is dragging and
@@ -319,11 +325,12 @@ const draggingCardEvent = computed(() => {
     // Dragging card move to target position.
     card_.setPos(cardAttrs.positions[finalOrder]);
     card_.setTransProperty('reset');
-
-    window.removeEventListener('mousemove', move);
-    window.removeEventListener('touchmove', move);
-    window.removeEventListener('mouseup', end);
-    window.removeEventListener('touchend', end);
+    eventCleanups.forEach(func => func());
+    eventCleanups.length = 0;
+    // window.removeEventListener('mousemove', move);
+    // window.removeEventListener('touchmove', move);
+    // window.removeEventListener('mouseup', end);
+    // window.removeEventListener('touchend', end);
   }
   return {
     start,

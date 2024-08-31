@@ -111,12 +111,9 @@ const lab2xyz = (lab: number[]): number[] => {
  * @return Hex color.
  */
 export const rgb2hex = (rgb: number[]): string => {
-  let hex6 = '#';
-  for (let i = 0; i < 3; i ++) {
-    const int = Math.floor(rgb[i]);
-    hex6 += int < 16 ? `0${int.toString(16)}` : int.toString(16);
-  }
-  return hex6.toUpperCase();
+  return rgb.reduce(
+    (prev, val) => prev + round(val).toString(16).padStart(2, '0'), '#'
+  ).toUpperCase();
 };
 
 const RGB_2_GRAY_COEFF = [0.299, 0.587, 0.114];
@@ -353,14 +350,12 @@ const lab2rgb = (lab: number[]): number[] => {
 
 /**
  * Convert Hex color to RGB color.
- * @param hex Hex color string.
+ * @param hex Hex color string. Note that this function will not hex hex is valid or not.
  * @return rgb
  */
 export const hex2rgb = (hex: string): number[] => {
-  hex = hex.replace(/[^0-9A-F]/ig, '');
-  if (hex.length === 3) {
+  if (hex.length === 3)
     hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
-  }
   const num = parseInt(hex, 16);
   return [num >> 16, (num >> 8) & 255, num & 255];
 };
@@ -372,12 +367,8 @@ export const hex2rgb = (hex: string): number[] => {
  * @return Validity of string.
  */
 export const isValidHex = (str: string): boolean => {
-  if (typeof str !== 'string') return false;
-  if (str.startsWith('#')) str = str.slice(1);
-  if (![3, 6].includes(str.length)) return false;
-  const nonHex = str.match(/[^0-9A-F]/i);
-  if (nonHex !== null) return false;
-  return true;
+  str = str.replace(/[^0-9A-F]/ig, '');
+  return [3, 6].includes(str.length);
 };
 
 /**

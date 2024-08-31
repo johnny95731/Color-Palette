@@ -1,8 +1,8 @@
-import {HSL_MAXES} from './constants.ts';
-import {getSpaceInfos} from './colors.ts';
-import {elementwiseMean} from './helpers.ts';
-import type {Blender} from 'types/utilTypes.ts';
-import type {ColorSpacesType} from 'types/pltType.ts';
+import { HSL_MAXES } from './constants.ts';
+import { getSpaceInfos } from './colors.ts';
+import { elementwiseMean } from './helpers.ts';
+import type { Blender } from 'types/utilTypes.ts';
+import type { ColorSpacesType } from 'types/pltType.ts';
 
 /**
  * Blending two colors by evaluate their average.
@@ -12,11 +12,11 @@ import type {ColorSpacesType} from 'types/pltType.ts';
  * @returns The mean value of color1 and color2.
  */
 const meanBlend = (
-    color1: number[], color2: number[], colorSpace: ColorSpacesType,
+  color1: number[], color2: number[], colorSpace: ColorSpacesType,
 ): number[] => {
-  const {converter, inverter} = getSpaceInfos(colorSpace);
+  const { converter, inverter } = getSpaceInfos(colorSpace);
   const newColor = elementwiseMean(
-      converter(color1), converter(color2),
+    converter(color1), converter(color2),
   );
   return inverter(newColor);
 };
@@ -46,15 +46,15 @@ const softLightBlend: Blender = (color1, color2) => {
  * @returns The blend color of color1 and color2.
  */
 const blendNGamma = (
-    color1: number[], color2: number[], gamma: number = 0.3,
+  color1: number[], color2: number[], gamma: number = 0.3,
 ) => {
   /**
    * Scaling coefficients of saturation and luminance.
    */
   const sacleCoeff = HSL_MAXES.slice(1).map(
-      (val) => Math.pow(val, (1 - gamma)));
+    (val) => Math.pow(val, (1 - gamma)));
   const mean = elementwiseMean(color1, color2);
-  const {converter, inverter} = getSpaceInfos('hsl');
+  const { converter, inverter } = getSpaceInfos('hsl');
   const [hue, sat, lum] = converter(mean);
   const newSat = Math.pow(sat, gamma) * sacleCoeff[0];
   const newLum = Math.pow(lum, gamma) * sacleCoeff[1];

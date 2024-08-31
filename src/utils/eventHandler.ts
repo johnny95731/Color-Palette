@@ -1,14 +1,13 @@
+import type { EventHandler } from '@/types/funcType';
+
 // Events
 export const stopPropagation = (e: Event) => e.stopPropagation();
 
 /**
  * Remove non-hex text and add "#" to first word.
- * @param e Triggered mouse event.
  */
-export const hexTextEdited = (
-  e: Event,
-): void => {
-  const textInput = e.currentTarget as HTMLInputElement;
+export const hexTextEdited: EventHandler = (e) => {
+  const textInput = e!.currentTarget as HTMLInputElement;
   let text = (textInput.value);
   text = text.replace(/[^A-F0-9]/ig, '');
   textInput.value = `#${text.toUpperCase()}`;
@@ -29,10 +28,8 @@ export const copyText = (text: string): void => {
 /**
  * Copy Hex innerText to clipboard (excludes "#").
  */
-export const copyInnerHex = (
-  e: MouseEvent,
-): void => {
-  const target = e.currentTarget as HTMLElement;
+export const copyInnerHex: EventHandler = (e) => {
+  const target = e!.currentTarget as HTMLElement;
   if (target) {
     const text = target.innerText.replace('#', '');
     copyText(text.trim());

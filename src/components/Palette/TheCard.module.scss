@@ -34,6 +34,7 @@
   @include small {
     flex-direction: row;
     align-items: center;
+    gap: 0;
     padding-bottom: 0;
     border-style: solid none; // vertical derrection
     transition-property: top, height, background-color;
@@ -67,13 +68,12 @@
   }
   @include small {
     // layout
-    flex: 1 0 45%;
+    flex: 1;
     flex-direction: row;
     gap: 0;
     flex-wrap: wrap;
     // position
     position: static;
-    padding-left: 20px;
     transform: none;
     margin: auto;
     >div {
@@ -87,6 +87,7 @@
     }
   }
   @include mobile {
+    flex: 1 0 20%;
     >div {
       flex: 1 1 100%;
     }
@@ -94,21 +95,19 @@
 }
 
 .textDisplay {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
   @include small {
-    flex: 1 1 auto;
+    flex: 0 0 30%;
     position: relative;
-    top: auto;
-    left: auto;
-    transform: none;
+  }
+  @include mobile {
+    flex: 0 0 40%;
   }
 }
 
 %textPosition {
   position: relative;
+  width: fit-content;
+  margin: auto;
   button {
     padding: 0;
     text-wrap: nowrap;
@@ -120,21 +119,16 @@
     cursor: pointer;
   }
   &:hover,
-  &:focus-visible {
+  &:focus-within {
     :global(.bi)::before {
       opacity: 1;
     }
   }
-  @supports not selector(:focus-visible) {
-    &:focus {
-      :global(.bi) {
-        opacity: 1;
-      }
-    }
-  }
 }
 @mixin textSize($font-size, $icon-size, $icon-margin) {
-  font-size: $font-size;
+  >button {
+    font-size: $font-size !important;
+  }
   :global(.bi)::before {
     transform: translate(calc(-100% - #{$icon-margin}), -50%);
     font-size: $icon-size;
@@ -144,6 +138,7 @@
 .hexText {
   @extend %textPosition;
   @include textSize($font-x-lg, $font-sm, 5px);
+  margin-bottom: 6px;
 }
 
 .detailText {
@@ -154,9 +149,17 @@
   .hexText {
     @include textSize($font-lg, $font-sm, 4px);
   }
-
   .detailText {
     @include textSize($font-sm, $font-x-sm, 3px);
+    margin-top: 4px;
+  }
+}
+@include mobile {
+  .hexText {
+    @include textSize($font-md, $font-sm, 4px);
+  }
+  .detailText {
+    @include textSize($font-x-sm, $font-x-sm, 3px);
     margin-top: 4px;
   }
 }
@@ -164,11 +167,10 @@
 .editor {
   // position
   @extend %horizontalCenter;
-  top: 63%;
-  z-index: 999;
+  bottom: 10px;
   // shape
   width: 150px;
-  padding: 5px 10px;
+  padding: 4px 12px;
   border-radius: $radius-lg;
   box-sizing: border-box;
 
@@ -186,11 +188,9 @@
     text-indent: -200vw; // hide text
   }
   @include small {
-    top: auto;
     bottom: 0;
-    height: auto;
     width: 100%;
-    max-width: 500px;;
+    max-width: 500px;
     >label:first-of-type {
       height: 30px;
       margin-bottom: 10px;

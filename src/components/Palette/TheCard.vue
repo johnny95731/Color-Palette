@@ -74,6 +74,7 @@ import EditingDialog from './EditingDialog.vue';
 import { round } from '@/utils/numeric';
 import { rgb2gray, getClosestNamed, hex2rgb } from '@/utils/colors';
 import { copyText } from '@/utils/eventHandler';
+import { useElementBounding } from '@/utils/composables/useElementBounding';
 // Stores
 import usePltStore from '@/features/stores/usePltStore';
 import media from '@/features/useMedia';
@@ -174,17 +175,8 @@ const style = computed<CSSProperties>(function() {
   };
 });
 
-const editingDialogPos = ref<InstanceType<typeof EditingDialog>['pos']>(
-  { [media.pos]: '50%' } as InstanceType<typeof EditingDialog>['pos']
+const { rect } = useElementBounding(container, { filter: ['left', 'width'] });
+const editingDialogPos = computed<InstanceType<typeof EditingDialog>['pos']>(
+  () => `${round(rect.left + rect.width / 2, 2)}px`
 );
-
-watch(showEditor, () => {
-  const rect = container.value?.getBoundingClientRect();
-  if (!rect) return;
-  editingDialogPos.value = {
-    [media.pos]: `${
-      round(rect.left + rect.width / 2, 0)
-    }px`
-  } as InstanceType<typeof EditingDialog>['pos'];
-});
 </script>

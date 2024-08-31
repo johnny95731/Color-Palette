@@ -65,7 +65,7 @@
 import { onMounted, watch, ref, computed } from 'vue';
 import { getComponentId } from '@/utils/helpers';
 import { clip, countDecimals, round, rangeMapping, isSameFloat } from '@/utils/numeric';
-import { useElementBounding } from '@vueuse/core';
+import { useElementBounding } from '@/utils/composables/useElementBounding';
 
 type Props = {
   inputId?: string,
@@ -144,7 +144,9 @@ watch(() => [props.label, idForInput.value], (newVal, oldVal) => {
 /**
  * Bounding rect of tracker.
  */
-const { width: rectWidth, left: rectLeft } = useElementBounding(trackerRef);
+const { rect: trackerRect } = useElementBounding(
+  trackerRef, { filter: ['width', 'left'] }
+);
 
 // Handle values
 const model = defineModel<number>({ required: true });
@@ -159,9 +161,7 @@ const pos = ref<number>(0); // thumb position
 /**
  * Convert props.step to number.
  */
-const numStep = computed<number>(() =>
-  +props.step
-);
+const numStep = computed<number>(() => +props.step);
 
 /**
  * Decimals counts of display text.
@@ -238,8 +238,8 @@ const handleDrag = (
   );
   // Evaluate value.
   const val = rangeMapping(
-    clip(clientX - rectLeft.value, 0, rectWidth.value),
-    0, rectWidth.value,
+    clip(clientX - trackerRect.left, 0, trackerRect.width),
+    0, trackerRect.width,
     props.min, props.max,
   );
   updateModel(val);

@@ -42,6 +42,7 @@ export const countDecimals = (num: number)  => { // Twice faster
  * Rounding a number to specifit digit (after decimal point).
  * @param num A number.
  * @param digits Digit after decimal point.
+ * @default 0
  * @return Percentage number.
  */
 export const round = (num: number, digits: number = 0): number =>
