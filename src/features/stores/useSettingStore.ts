@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { hasSameKeys } from '@/utils/helpers';
+import { hasSameKeys, isNullish } from '@/utils/helpers';
 import type { BorderStyleType, TransitionType } from 'types/settingType.ts';
 
 
@@ -34,14 +34,14 @@ for (const key of Object.keys(initialState)) {
   // First time loading the page
   if (!storageItem) localStorage.setItem(key, JSON.stringify(initItem));
   // Updating versions may cause different keys.
+  // Pick and assign the common part.
   else if (!hasSameKeys(initItem, JSON.parse(storageItem))) {
     const storageObj = JSON.parse(storageItem);
     // Save previous value to current state for common attributes.
     for (const itemKey of Object.keys(storageObj)) {
-      if (Object.prototype.hasOwnProperty.call(initItem, itemKey)) {
-        type attrKey = keyof typeof initItem;
+      type attrKey = keyof typeof initItem;
+      if (!isNullish(initItem[itemKey as attrKey]))
         initItem[itemKey as attrKey] = storageObj[itemKey];
-      }
     }
   } else Object.assign(initItem, JSON.parse(storageItem));
 }

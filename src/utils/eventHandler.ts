@@ -6,7 +6,7 @@ export const stopPropagation = (e: Event) => e.stopPropagation();
 /**
  * Remove non-hex text and add "#" to first word.
  */
-export const hexTextEdited: EventHandler = (e) => {
+export const hexTextEdited: EventHandler = (e: Event) => {
   const textInput = e!.currentTarget as HTMLInputElement;
   let text = (textInput.value);
   text = text.replace(/[^A-F0-9]/ig, '');
@@ -28,7 +28,7 @@ export const copyText = (text: string): void => {
 /**
  * Copy Hex innerText to clipboard (excludes "#").
  */
-export const copyInnerHex: EventHandler = (e) => {
+export const copyInnerHex: EventHandler = (e: Event) => {
   const target = e!.currentTarget as HTMLElement;
   if (target) {
     const text = target.innerText.replace('#', '');

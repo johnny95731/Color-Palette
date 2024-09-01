@@ -1,14 +1,12 @@
 import { shallowReactive, watch } from 'vue';
-
 import {
-  tryOnMounted,
-  unrefElement,
-  useMutationObserver,
-  useResizeObserver,
-  type MaybeComputedElementRef, type UseElementBoundingOptions
+  tryOnMounted, unrefElement, useMutationObserver, useResizeObserver,
 } from '@vueuse/core';
 import { useWindowEventRegister } from './useWindowEventRegister';
-import { inclusivePick, objAssign } from '../helpers';
+import { objPick } from '../helpers';
+import type {
+  MaybeComputedElementRef, UseElementBoundingOptions
+} from '@vueuse/core';
 
 type RectKeys = 'height' | 'width' | 'bottom' | 'left' | 'right' | 'top' | 'x' | 'y';
 
@@ -46,17 +44,17 @@ export function useElementBounding<K extends RectKeys>(
   } = options;
 
   const rectObj: Rect<K> =
-    shallowReactive<Rect>(inclusivePick(emptyRect, ...filter));
+    shallowReactive<Rect>(objPick(emptyRect, filter));
 
   function recalculate() {
     const el = unrefElement(target);
     if (!el) {
       if (reset)
-        objAssign(rectObj, inclusivePick(emptyRect, ...filter));
+        Object.assign(rectObj, objPick(emptyRect, filter));
       return;
     }
     const rect = el.getBoundingClientRect();
-    objAssign(rectObj, inclusivePick(rect, ...filter));
+    Object.assign(rectObj, objPick(rect, filter));
   }
 
   function update() {

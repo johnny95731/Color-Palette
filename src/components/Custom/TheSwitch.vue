@@ -8,8 +8,8 @@
       :id="idForInput"
       type="checkbox"
       :value="value"
-      :checked="isOn"
-      v-model="isOn"
+      :checked="model"
+      v-model="model"
       @focus="switchRef?.focus();"
     >
     <div
@@ -18,7 +18,7 @@
       class="switch-slider"
       tabindex="0"
       role="switch"
-      :aria-checked="isOn"
+      :aria-checked="model"
       :value="value"
       @click="handleClick"
       @keydown="handleKeyDown"
@@ -36,9 +36,11 @@
 
 <script setup lang="ts">
 import {
+  ModelRef,
   computed, onMounted, ref, watch,
 } from 'vue';
-import { getComponentId } from '@/utils/helpers';
+import { getComponentId, invertBoolean } from '@/utils/helpers';
+import { toValue } from '@vueuse/core';
 
 type Props = {
   inputId?: string,
@@ -76,10 +78,10 @@ const labelState = computed(() => {
 onMounted(() => {
   if (!props.label?.startsWith('#')) return;
   const element = document.getElementById(props.label.slice(1)) as HTMLLabelElement | null;
-  if (element) element.htmlFor = idForInput.value;
+  if (element) element.htmlFor = toValue(idForInput);
 });
 // Update label HTMLFor if it is an ID.
-watch(() => [props.label, idForInput.value], (newVal, oldVal) => {
+watch(() => [props.label, toValue(idForInput)], (newVal, oldVal) => {
   const isLabelSame = newVal[0] === oldVal[0];
   const isIdSame = newVal[1] === oldVal[1];
   if (!isLabelSame) {
@@ -103,29 +105,18 @@ watch(() => [props.label, idForInput.value], (newVal, oldVal) => {
 
 
 // Handle values
-const model = defineModel<boolean>();
-const emit = defineEmits<{
-  'click': [isOn: boolean]
+const model = defineModel<boolean>() as ModelRef<boolean>;
+defineEmits<{
+  'update:modelValue': [isOn: boolean]
 }>();
 
-const isOn = ref(model.value ?? false);
-watch(
-  () => model.value,
-  () => {
-    if (model.value && model.value !== isOn.value) {
-      isOn.value = model.value;
-    }
-  }
-);
 function handleClick() {
-  isOn.value = !isOn.value;
-  emit('click', isOn.value);
+  invertBoolean(model);
 }
 function handleKeyDown(e: KeyboardEvent) {
   const key = e.key.toLowerCase();
   if (key === ' ') {
-    isOn.value = !isOn.value;
-    emit('click', isOn.value);
+    invertBoolean(model);
   }
 }
 

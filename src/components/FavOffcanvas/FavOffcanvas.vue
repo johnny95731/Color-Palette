@@ -74,6 +74,7 @@ import { isTabKey } from '@/utils/eventHandler';
 import usePltStore from '@/features/stores/usePltStore';
 import useFavStore from '@/features/stores/useFavStore';
 import type { IconType } from '@/utils/icons';
+import { toValue } from '@vueuse/core';
 
 
 const emit = defineEmits<{
@@ -88,14 +89,14 @@ const tabIdx = ref<number>(0);
 const tabRefs = ref<InstanceType<typeof TheBtn>[]>([]);
 watch(model, async (newVal) => { // focus dialog when open it.
   await nextTick();
-  newVal && tabRefs.value[tabIdx.value]?.$el.focus();
+  newVal && toValue(tabRefs)[toValue(tabIdx)]?.$el.focus();
 });
 
 function handleFocusoutDialog(e: KeyboardEvent) {
   if (isTabKey(e)) {
     e.preventDefault();
-    if (tabIdx.value !== TabLabels.length - 1)  // switch to next tab page.
-      tabRefs.value[++tabIdx.value]?.$el.focus();
+    if (toValue(tabIdx) !== TabLabels.length - 1)  // switch to next tab page.
+      toValue(tabRefs)[++tabIdx.value]?.$el.focus();
     else {
       model.value = false;
       emit('focusoutDialog');
@@ -112,7 +113,7 @@ const state = computed<{
   icon: IconType,
   text: string,
 }>(() => {
-  const isFavPlt = favState.plts.includes(pltStrings.value);
+  const isFavPlt = favState.plts.includes(toValue(pltStrings));
   if (isFavPlt) {
     return {
       icon: 'unfavPallete',
@@ -127,7 +128,7 @@ const state = computed<{
 });
 
 function favPltChanged() {
-  favState.favPltsChanged(pltStrings.value);
+  favState.favPltsChanged(toValue(pltStrings));
   tabIdx.value = 1;
 }
 </script>

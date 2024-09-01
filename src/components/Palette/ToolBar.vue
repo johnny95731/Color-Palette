@@ -58,6 +58,7 @@
 
 <script lang="ts" setup>
 import { computed } from 'vue';
+import { toValue } from '@vueuse/core';
 import $style from './TheCard.module.scss';
 import TheBtn from '../Custom/TheBtn.vue';
 import CondWrapper from '../Custom/CondWrapper.vue';
@@ -72,7 +73,6 @@ import type { CardType } from '@/features/types/pltType.ts';
 type Props = {
   cardIdx: number
   card: CardType;
-  fgFilter: CSSProperties;
   isSmall: boolean;
 }
 const props = defineProps<Props>();
@@ -89,7 +89,6 @@ const isFav = computed(() => {
 });
 const showToolbar = computed(() => {
   return {
-    ...props.fgFilter,
     opacity: pltState.isPending ? '0' : undefined
   };
 });
@@ -107,7 +106,7 @@ const isLock = computed(() => (
     { icon: 'unlock', label: '鎖定刷新' } as const
 ));
 const isFavIcon = computed(() => (
-  isFav.value ?
+  toValue(isFav) ?
     { icon: 'fav', label: '移出書籤' } as const :
     { icon: 'unfav', label: '加入書籤' } as const
 ));

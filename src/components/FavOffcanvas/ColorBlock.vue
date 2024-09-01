@@ -33,6 +33,7 @@
 
 <script lang="ts" setup>
 import { computed } from 'vue';
+import { toValue } from '@vueuse/core';
 import $style from './FavOffcanvas.module.scss';
 import TheIcon from '../TheIcon.vue';
 import { hex2rgb, rgb2gray } from '@/utils/colors';
@@ -50,7 +51,7 @@ const isLight = computed(() => {
   return rgb2gray(hex2rgb(props.hex) as number[]) > 127.5;
 });
 const iconFilterStyle = computed<CSSProperties>(() => (
-  { filter: isLight.value ? 'invert(1)' :  undefined }
+  { filter: toValue(isLight) ? 'invert(1)' :  undefined }
 ));
 
 const favState = useFavStore();

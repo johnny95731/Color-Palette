@@ -23,6 +23,7 @@
 
 <script setup lang='ts'>
 import { ref, onMounted, computed, defineAsyncComponent, onUnmounted } from 'vue';
+import { toValue } from '@vueuse/core';
 import TheHeader from './components/Header/TheHeader.vue';
 import ThePalette from './components/Palette/ThePalette.vue';
 // import FavOffcanvas from './components/FavOffcanvas/FavOffcanvas.vue';
@@ -43,6 +44,7 @@ const SettingDialog = defineAsyncComponent(
 );
 import { OverlayDiv } from '@/utils/constants';
 import { HOT_KEYS, refreshKey, sortingKey } from './utils/hotkeys';
+import { invertBoolean } from './utils/helpers';
 // Store and Context
 import usePltStore from './features/stores/usePltStore';
 
@@ -54,7 +56,7 @@ const isFirstTimeSettings = ref(false);
 const isFavShowing = ref(false);
 const isSettingsShowing = ref(false);
 const isShowOverlay = computed(() =>
-  pltState.isEditing || isFavShowing.value || isSettingsShowing.value
+  pltState.isEditing || toValue(isFavShowing) || toValue(isSettingsShowing)
 );
 
 const headerRef = ref<InstanceType<typeof TheHeader>>();
@@ -75,15 +77,15 @@ const handleOverlayChanged = () => {
 };
 
 const handleShowFav = async () => {
-  isFirstTimeFav.value && (isFavShowing.value = true);
+  toValue(isFirstTimeFav) && invertBoolean(isFavShowing);
   isFirstTimeFav.value = true;
 };
 
 const handleShowSettings = async () => {
-  isFirstTimeSettings.value && (isSettingsShowing.value = true);
-  isFirstTimeSettings.value = true;
+  toValue(isFirstTimeSettings) && invertBoolean(isSettingsShowing);
+  invertBoolean(isFirstTimeSettings, true);
   // shorter
-  // isFirstTimeSettings.value = !isFirstTimeSettings.value || (isSettingsShowing.value = true);
+  // isFirstTimeSettings.value = !toValue(isFirstTimeSettings) || (isSettingsShowing.value = true);
 };
 
 // Connect hotkey.
@@ -91,12 +93,12 @@ const handleShowSettings = async () => {
   const { [sortingKey]: sortingHotkey, [refreshKey]: refreshHotkey } = HOT_KEYS;
   const keyDownEvent = (e: KeyboardEvent) => {
     const key = e.key.toLowerCase();
-    if (key === 'escape' && !isCardPending.value && isShowOverlay.value) {
+    if (key === 'escape' && !toValue(isCardPending) && toValue(isShowOverlay)) {
       handleOverlayChanged();
     }
     if (
       // Prevent trigger hotkey when editing or add/remove/move (transition) card.
-      isCardPending.value || isShowOverlay.value ||
+      toValue(isCardPending) || toValue(isShowOverlay) ||
       // Opening some popup element or focusing their activator.
       OverlayDiv.contains(document.activeElement)
     ) return;

@@ -39,7 +39,7 @@
         type="text"
         inputmode="none"
         tabindex="-1"
-        :value="current.val"
+        :value="model"
         @focus="activatorRef?.$el.focus();"
       >
     </div>
@@ -89,17 +89,18 @@
 </template>
 
 <script setup lang="ts">
-import { watch, ref, onMounted, computed, nextTick, shallowRef, shallowReactive } from 'vue';
+import { watch, ref, onMounted, computed, nextTick, shallowRef } from 'vue';
+import { toValue } from '@vueuse/core';
 import OverlayContainer from './OverlayContainer.vue';
 import TheBtn from './TheBtn.vue';
 import TheIcon from '../TheIcon.vue';
 // utils
 import { CURRENT_OPTION_WEIGHT } from '@/utils/constants';
-import { getComponentId } from '@/utils/helpers';
+import { getComponentId, isNullish, invertBoolean } from '@/utils/helpers';
 import { mod } from '@/utils/numeric';
 import { noModifierKey, shiftOnly } from '@/utils/eventHandler.ts';
 // types
-import type { CSSProperties } from 'vue';
+import type { CSSProperties, MaybeRefOrGetter, ModelRef } from 'vue';
 
 type Props = {
   isMobile?: boolean,
@@ -127,6 +128,13 @@ const props = withDefaults(defineProps<Props>(), {
 const activatorRef = ref<InstanceType<typeof TheBtn>>();
 const containerRef = ref<HTMLDivElement>();
 
+
+/**
+ * Index not exceed range of options.
+ */
+const idxInRange = (idx: number): boolean => idx >= 0 && idx < props.options.length;
+
+
 // Handle form element
 /**
  * Create Id for input
@@ -151,10 +159,10 @@ const labelState = computed(() => {
 onMounted(() => {
   if (!props.label?.startsWith('#')) return;
   const element = document.getElementById(props.label.slice(1)) as HTMLLabelElement | null;
-  if (element) element.htmlFor = idForInput.value;
+  if (element) element.htmlFor = toValue(idForInput);
 });
 // Update label HTMLFor if it is an ID.
-watch(() => [props.label, idForInput.value], (newVal, oldVal) => {
+watch(() => [props.label, toValue(idForInput)], (newVal, oldVal) => {
   const isLabelSame = newVal[0] === oldVal[0];
   const isIdSame = newVal[1] === oldVal[1];
   if (!isLabelSame) {
@@ -185,83 +193,60 @@ defineEmits<{
   'update:index': [idx: number],
 }>();
 
+// initialize
 /**
- * Index not exceed range of options.
+ * Handle models when they are nullish.
+ * @return {boolean} True if any model is nullish else false.
  */
-const idxInRange = (idx: number): boolean => idx >= 0 && idx < props.options.length;
-
-const current = shallowReactive<{
-  val: string,
-  idx: number,
-}>((() => {
-  // @ts-expect-error
-  const idxOfModel = props.options.indexOf(model.value);
-  const modelIndexInRange = modelIndex.value && idxInRange(modelIndex.value);
-  const output =
-    idxOfModel !== -1 ? { // model.value is a option value
-      val: model.value as string,
-      idx: idxOfModel,
-    } :
-      modelIndexInRange ?
-        {
-          val: props.options[modelIndex.value as number],
-          idx: modelIndex.value as number,
-        } :
-        { // default
-          val: props.options[0],
-          idx: 0,
-        };
-  model.value = output.val;
-  modelIndex.value = output.idx;
-  return output;
-})());
-const valueLabel = computed(() =>
-  props.showValue ? current.val : (props.title ?? 'menu')
-);
-// Handle prop `value` changed.
-watch(
-  () => [model.value, modelIndex.value],
-  (newVal, oldVal) => {
-    if (newVal.every((val, i) => val === oldVal[i])) return;
-    if (model.value && model.value !== current.val) { // model changed
-      const idxOfModel = props.options.indexOf(model.value);
-      Object.assign(current, {
-        val: model.value,
-        idx: idxOfModel,
-      });
-      modelIndex.value = idxOfModel;
-    } else if ( // modelIndex changed
-      modelIndex.value && modelIndex.value !== current.idx &&
-      idxInRange(modelIndex.value)
-    ) {
-      Object.assign(current, {
-        val: props.options[modelIndex.value],
-        idx: modelIndex.value,
-      });
-      model.value = props.options[modelIndex.value];
-    }
-  }
-);
-
-const handleSelect = (idx: number) => {
-  const newVal = props.options[idx];
-  Object.assign(current, {
-    val: newVal,
-    idx: idx,
-  });
-  model.value = newVal;
-  modelIndex.value = idx;
+const handleNullishModel = (
+  value?: MaybeRefOrGetter<string>,
+  index?: MaybeRefOrGetter<number>
+) => {
+  if (isNullish(value) && isNullish(index)) {
+    model.value = props.options[0];
+    modelIndex.value = 0;
+  } else if (isNullish(value)) {
+    model.value = props.options[toValue(index) as number];
+  } else if (isNullish(index)) {
+    modelIndex.value = props.options.indexOf(toValue(value) as string);
+  } else return false;
+  return true;
 };
 
+watch(
+  () => [toValue(model), toValue(modelIndex)],
+  (newVal, oldVal) => {
+    if (
+      // @ts-expect-error Initialize or injected models are removed.
+      handleNullishModel(...newVal) ||
+      newVal.every((val, i) => val === (oldVal && oldVal[i]))
+    ) return;
+    else if (newVal[0] !== oldVal![0]) { // model changed
+      const idxOfModel = props.options.indexOf(toValue(model) as string);
+      modelIndex.value = idxOfModel;
+    } else if (idxInRange(newVal[1] as number)) { // modelIndex changed
+      model.value = props.options[toValue(modelIndex) as number];
+    } else {
+      handleNullishModel(newVal[0] as string | undefined);
+    }
+  }, { immediate: true }
+);
+
+const valueLabel = computed(() =>
+  props.showValue ? toValue(model) : (props.title ?? 'menu')
+);
+
+const handleSelect = (idx: number) => modelIndex.value = idx;
+
 const liStyle = (idx: number) =>
-  idx === current.idx ? CURRENT_OPTION_WEIGHT : undefined;
+  idx === toValue(modelIndex) ? CURRENT_OPTION_WEIGHT : undefined;
 
 // Open/Closing events
-const isOpened = ref(false);
+const isOpened = defineModel<boolean>('show') as ModelRef<boolean>;
 
 const menuStyle = shallowRef<CSSProperties>({});
 const updateMenuStyle = () => {
-  const rect = (activatorRef.value?.$el as HTMLElement).getBoundingClientRect();
+  const rect = (toValue(activatorRef)?.$el as HTMLElement).getBoundingClientRect();
   menuStyle.value = {
     width: `${rect.width}px`,
     maxHeight: `${
@@ -284,8 +269,8 @@ watch(isOpened, (newVal) => {
 });
 
 const handleClickBtn = (e: MouseEvent | FocusEvent, newVal?: boolean) => {
-  const activator = activatorRef.value as NonNullable<typeof activatorRef.value>;
-  const menu = containerRef.value as NonNullable<typeof containerRef.value>;
+  const activator = toValue(activatorRef) as NonNullable<typeof activatorRef.value>;
+  const menu = toValue(containerRef) as NonNullable<typeof containerRef.value>;
   if (// Avoid changing `isOpened` twice
     e.type === 'focusout' &&
     ( // Focusout activator when click menu content
@@ -294,7 +279,7 @@ const handleClickBtn = (e: MouseEvent | FocusEvent, newVal?: boolean) => {
       e.relatedTarget === activator.$el
     )
   ) return;
-  isOpened.value = newVal ?? !isOpened.value;
+  invertBoolean(isOpened, newVal);
 };
 
 const handleKeyDown = async (e: KeyboardEvent) => {
@@ -302,22 +287,22 @@ const handleKeyDown = async (e: KeyboardEvent) => {
   if (['Enter', ' '].includes(key)) {
     e.stopPropagation();
     e.preventDefault();
-    isOpened.value = !isOpened.value;
+    invertBoolean(isOpened);
     await nextTick();
     // Cant get ref before updated (`menu` is undefined).
-    (containerRef.value?.children[0] as HTMLButtonElement).focus();
+    (toValue(containerRef)?.children[0] as HTMLButtonElement).focus();
     return;
   }
-  if (!isOpened.value) {
+  if (!toValue(isOpened)) {
     // Only some keys works when menu is not openned.
     if (key.startsWith('Arrow')) {
-      isOpened.value = true;
+      invertBoolean(isOpened, true);
       await nextTick();
     } else return;
   }
 
-  const activator = activatorRef.value?.$el as HTMLButtonElement;
-  const menu = containerRef.value as typeof containerRef.value;
+  const activator = toValue(activatorRef)?.$el as HTMLButtonElement;
+  const menu = toValue(containerRef) as typeof containerRef.value;
   // @ts-expect-error
   const nthChildFocused = menu && [...menu.children].indexOf(document.activeElement);
   const noModifiers = noModifierKey(e);
@@ -342,7 +327,7 @@ const handleKeyDown = async (e: KeyboardEvent) => {
     } else if (nthChildFocused === 0 && shiftOnly_) {
       // Focusing first menu option and Shift + Tab => close menu and focus
       // activator.
-      isOpened.value = !isOpened.value;
+      invertBoolean(isOpened);
       target = activator;
       e.preventDefault();
     }
@@ -371,7 +356,7 @@ const handleKeyDown = async (e: KeyboardEvent) => {
     }
     break;
   case 'Escape':
-    isOpened.value = false;
+    invertBoolean(isOpened, false);
     target = activator;
     break;
   }

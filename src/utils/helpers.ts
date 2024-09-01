@@ -1,10 +1,29 @@
 import { getCurrentInstance } from 'vue';
+import { toValue } from '@vueuse/core';
 import { toPercent } from './numeric';
+import type { ModelRef, Ref, WritableComputedRef } from 'vue';
 
 
 const randomCharacter = (noDigit: boolean = false) =>
   `ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz${noDigit ? '' : '0123456789'}`
     .charAt(Math.floor(Math.random() * (noDigit ? 52 : 62)));
+
+export function getPropertyValue(el: HTMLElement, property: string): number;
+export function getPropertyValue(el: string): number;
+export function getPropertyValue(
+  el: HTMLElement | string,
+  property?: string
+) {
+  if (typeof el === 'string') {
+    property = el;
+    el = document.documentElement;
+  }
+  const num = +getComputedStyle(el)
+    .getPropertyValue(property ?? 'width' as string)
+    .replace(/(px)|%|(rem)/g, '');
+  return Number.isNaN(num) ? 0 : num;
+
+}
 
 /**
  * Check whether two object has same keys.
@@ -26,12 +45,6 @@ export const hasSameKeys = (obj1: object, obj2: object): boolean => {
   }
   return true;
 };
-/**
- * Object.assign
- */
-export const objAssign = (target: object, ...objs: object[]) =>
-  Object.assign(target, ...objs);
-
 
 // export const pick = <T extends {}, K extends keyof T>(obj: T, ...keys: K[]) => (
 //   Object.fromEntries(
@@ -41,8 +54,8 @@ export const objAssign = (target: object, ...objs: object[]) =>
 //   ) as Pick<T, K>
 // );
 
-export const inclusivePick = <T extends {}, K extends (string | number | symbol)>(
-  obj: T, ...keys: K[]
+export const objPick = <T extends {}, K extends (string | number | symbol)>(
+  obj: T, keys: K[]
 ) => (
   Object.fromEntries(
     keys
@@ -50,14 +63,27 @@ export const inclusivePick = <T extends {}, K extends (string | number | symbol)
   ) as {[key in K]: key extends keyof T ? T[key] : undefined}
   );
 
-export const omit = <T extends {}, K extends keyof T>(
-  obj: T, ...keys: K[]
-) =>(
-  Object.fromEntries(
-    Object.entries(obj)
-      .filter(([key]) => !keys.includes(key as K))
-  ) as Omit<T, K>
-  );
+// export const omit = <T extends {}, K extends keyof T>(
+//   obj: T, ...keys: K[]
+// ) =>(
+//   Object.fromEntries(
+//     Object.entries(obj)
+//       .filter(([key]) => !keys.includes(key as K))
+//   ) as Omit<T, K>
+//   );
+
+/**
+ * Check whether a value is 'null' or 'undefined'.
+ */
+export const isNullish = (val: unknown) => toValue(val) == null;
+
+/**
+ * Invert the boolean value of a ref. If `newVal` is given, assign newVal to ref.
+ */
+export const invertBoolean = (
+  ref: Ref<boolean> | ModelRef<boolean> | WritableComputedRef<boolean>,
+  newVal?: boolean
+) => ref.value = newVal ?? !toValue(ref);
 
 /**
  * Evaluate length that are divided evenly by `num`.

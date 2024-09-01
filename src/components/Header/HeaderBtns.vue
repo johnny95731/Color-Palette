@@ -129,28 +129,30 @@
 
 <script setup lang='ts'>
 import { ref, watch, computed } from 'vue';
+import { toValue } from '@vueuse/core';
 import $style from './TheHeader.module.scss';
 import DropdownMenu from '@/components/Custom/DropdownMenu.vue';
 import TheBtn from '@/components/Custom/TheBtn.vue';
-// Stores / Contexts
-import usePltStore from 'stores/usePltStore.ts';
-import useSettingStore from 'stores/useSettingStore.ts';
+import { HOT_KEYS, sortingKey } from '@/utils/hotkeys';
+import { invertBoolean } from '@/utils/helpers';
 import {
   COLOR_SPACES, BLEND_MODES, SORTING_ACTIONS,
 } from '@/utils/constants';
+// Stores / Contexts
+import usePltStore from 'stores/usePltStore.ts';
+import useSettingStore from 'stores/useSettingStore.ts';
 // Types
 import type { SortActionType } from 'types/pltType.ts';
 import type { BlendingType, ColorSpacesType } from 'types/pltType.ts';
-import { HOT_KEYS, sortingKey } from '@/utils/hotkeys';
 
 const bookmarksRef = ref<InstanceType<typeof TheBtn>>();
 const settingsRef = ref<InstanceType<typeof TheBtn>>();
 defineExpose({
   focusBookmarks() {
-    bookmarksRef.value?.$el.focus();
+    toValue(bookmarksRef)?.$el.focus();
   },
   focusSettings() {
-    settingsRef.value?.$el.focus();
+    toValue(settingsRef)?.$el.focus();
   }
 });
 
@@ -173,25 +175,25 @@ const intervalId = ref<number | null>(null);
 const delay = computed(() => Math.max(settingState.transition.color, 1000));
 function slidePlay() {
   intervalId.value = window.setInterval(
-    () => isRunning.value && pltState.refreshCard(-1),
-    delay.value);
+    () => toValue(isRunning) && pltState.refreshCard(-1),
+    toValue(delay));
 }
 function haldleClickSlides() {
-  if (isRunning.value) { // play -> pause
-    window.clearInterval(intervalId.value as number | undefined);
+  if (toValue(isRunning)) { // play -> pause
+    window.clearInterval(toValue(intervalId) as number | undefined);
     intervalId.value = null;
   } else { // pause -> play
     slidePlay();
     pltState.refreshCard(-1);
   }
-  isRunning.value = !isRunning.value;
-  pltState.setIsPending(isRunning.value);
+  invertBoolean(isRunning);
+  pltState.setIsPending(toValue(isRunning));
 }
 watch(
   () => settingState.transition.color,
   () => {
-    if (isRunning.value) {
-      window.clearInterval(intervalId.value as number | undefined);
+    if (toValue(isRunning)) {
+      window.clearInterval(toValue(intervalId) as number | undefined);
       slidePlay();
     }
   },

@@ -39,6 +39,7 @@
 
 <script setup lang='ts'>
 import { ref, computed } from 'vue';
+import { toValue } from '@vueuse/core';
 import $style from './TheHeader.module.scss';
 import DropdownMenu from '../Custom/DropdownMenu.vue';
 import HeaderBtns from './HeaderBtns.vue';
@@ -48,10 +49,10 @@ import media from '@/features/useMedia';
 const btnsRef = ref<InstanceType<typeof HeaderBtns>>();
 defineExpose({
   focusBookmarks() {
-    btnsRef.value?.focusBookmarks();
+    toValue(btnsRef)?.focusBookmarks();
   },
   focusSettings() {
-    btnsRef.value?.focusSettings();
+    toValue(btnsRef)?.focusSettings();
   }
 });
 

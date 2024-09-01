@@ -35,9 +35,7 @@ export const SORTING_ACTIONS = ['gray', 'random', 'inversion'] as const;
 /**
  * Methods of adjusting contrast.
  */
-export const CONTRAST_METHODS = [
-  'multiplication', 'gamma',
-] as const;
+export const CONTRAST_METHODS = ['linear', 'gamma'] as const;
 
 export const MULTIPLICATION_MAX = 10;
 export const GAMMA_MAX = 3;

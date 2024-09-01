@@ -37,6 +37,7 @@
 
 <script lang="ts" setup>
 import { computed } from 'vue';
+import { toValue } from '@vueuse/core';
 import $style from './FavOffcanvas.module.scss';
 import TheIcon from '../TheIcon.vue';
 import { isValidHex } from '@/utils/colors';
@@ -55,7 +56,7 @@ const diff = computed(() => {
 });
 const bgGrad = computed(() => {
   const midPoint = pltColors.reduce((acc, hex, i) => {
-    acc += `${hex} ${i * diff.value}%,${hex} ${(i+1) * diff.value}%,`;
+    acc += `${hex} ${i * toValue(diff)}%,${hex} ${(i+1) * toValue(diff)}%,`;
     return acc;
   }, '')
     .slice(0, -1);

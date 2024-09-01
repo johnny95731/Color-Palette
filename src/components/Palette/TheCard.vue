@@ -12,14 +12,12 @@
     <ToolBar
       :cardIdx="cardIdx"
       :card="card"
-      :fgFilter="fgFilter"
       :isSmall="media.isSmall"
       @remove="$emit('remove')"
       @dragging="$emit('dragging', $event)"
     />
     <div
       :class="$style.textDisplay"
-      :style="fgFilter"
     >
       <div
         :class="$style.hexText"
@@ -64,6 +62,7 @@
 
 <script lang="ts" setup>
 import { computed, reactive, ref, watch } from 'vue';
+import { toValue } from '@vueuse/core';
 import $style from './TheCard.module.scss';
 // Components
 import TheBtn from '@/components/Custom/TheBtn.vue';
@@ -104,9 +103,7 @@ defineEmits<{
 
 const pltState = usePltStore();
 
-const isLight = computed(() => {
-  return rgb2gray(hex2rgb(props.card.hex)) > 127;
-});
+const isLight = computed(() => rgb2gray(hex2rgb(props.card.hex)) > 127);
 
 const roundedColor = computed({
   get() {
@@ -115,12 +112,6 @@ const roundedColor = computed({
   set(newColorArr: number[]) {
     pltState.editCard({ idx: props.cardIdx, color: newColorArr });
   }
-});
-
-const fgFilter = computed<CSSProperties>(() => {
-  return {
-    filter: isLight.value ? undefined : 'invert(1)',
-  };
 });
 
 const showEditor = computed({
@@ -135,7 +126,7 @@ const showEditor = computed({
 const detail = computed(() => {
   return pltState.colorSpace === 'name' ?
     getClosestNamed(props.card.color) :
-    `${pltState.colorSpace}(${roundedColor.value.toString()})`;
+    `${pltState.colorSpace}(${toValue(roundedColor).toString()})`;
 });
 
 // states for dealing transition.
@@ -161,17 +152,18 @@ defineExpose({
   setTransProperty,
 });
 
-watch(() => pltState.numOfCards, () => {
-  Object.assign(cardStyle, props.cardDisplay);
-});
+watch(() => pltState.numOfCards, () =>
+  Object.assign(cardStyle, props.cardDisplay)
+);
 
 const style = computed<CSSProperties>(function() {
   return {
     ...props.styleInSettings,
+    color: toValue(isLight) ? '#000' : '#fff',
     backgroundColor: props.card.hex,
     [media.isSmall ? 'height' : 'width']: cardStyle.size,
     [media.pos]: cardStyle.position,
-    transitionProperty: transProperty.value,
+    transitionProperty: toValue(transProperty),
   };
 });
 

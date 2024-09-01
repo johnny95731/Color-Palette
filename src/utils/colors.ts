@@ -348,12 +348,15 @@ const lab2rgb = (lab: number[]): number[] => {
   return xyz2rgb(lab2xyz(lab));
 };
 
+export const removeNonHex = (str: string) => str.replace(/[^0-9A-F]/ig, '');
+
 /**
  * Convert Hex color to RGB color.
  * @param hex Hex color string. Note that this function will not hex hex is valid or not.
  * @return rgb
  */
 export const hex2rgb = (hex: string): number[] => {
+  hex = removeNonHex(hex);
   if (hex.length === 3)
     hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
   const num = parseInt(hex, 16);
@@ -366,10 +369,8 @@ export const hex2rgb = (hex: string): number[] => {
  * @param str String that need to be verified.
  * @return Validity of string.
  */
-export const isValidHex = (str: string): boolean => {
-  str = str.replace(/[^0-9A-F]/ig, '');
-  return [3, 6].includes(str.length);
-};
+export const isValidHex = (str: string): boolean =>
+  [3, 6].includes(removeNonHex(str).length);
 
 /**
  * Return labels(name of channels), range, converter(from RGB to space),

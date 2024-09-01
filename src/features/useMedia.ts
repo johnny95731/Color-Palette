@@ -1,14 +1,11 @@
 import { reactive } from 'vue';
 import type { MediaContextType } from './types/mediaType.ts';
+import { getPropertyValue } from '@/utils/helpers.ts';
 
 /**
  * Device is small if device width <= (maxSmallSize)px.
  */
-const maxSmallSize = Number( // Get var(--smallSize) in css.
-  getComputedStyle(document.documentElement)
-    .getPropertyValue('--small-view')
-    .slice(0, -2),
-);
+const maxSmallSize = getPropertyValue('--small-view');
 
 const initialState: MediaContextType = {
   windowSize: [1, 1],
@@ -25,11 +22,7 @@ const body = document.body;
 const handleWindowResize = () => {
   const windowSize: [number, number] = [body.offsetHeight, body.clientWidth];
   const isSmall = windowSize[1] <= maxSmallSize;
-  const headerHeight = Number( // Get var(--header-height) in css.
-    getComputedStyle(document.documentElement)
-      .getPropertyValue('--header-height')
-      .slice(0, -2),
-  );
+  const headerHeight = getPropertyValue('--header-height');
   // Mobile browser 100vh including toolbar.
   // window.innerHeight did not include toolbar.
   document.documentElement.style

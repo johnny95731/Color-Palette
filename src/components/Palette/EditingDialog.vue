@@ -84,6 +84,7 @@
 
 <script setup lang='ts'>
 import { computed, ref, shallowReactive, watch } from 'vue';
+import { toValue } from '@vueuse/core';
 import $style from './TheCard.module.scss';
 import OverlayContainer from '../Custom/OverlayContainer.vue';
 import TheBtn from '../Custom/TheBtn.vue';
@@ -138,9 +139,9 @@ const { rect } = useElementBounding(containerRef, { filter: ['width'] });
 const containerStyle = shallowReactive<
   Pick<CSSProperties, 'left' | 'transform' | 'right'>
 >({});
-watch(() => [modelShow.value, props.pos], ([newVal], [oldVal]) => {
+watch(() => [toValue(modelShow), props.pos], ([newVal], [oldVal]) => {
   if (!newVal) return;
-  newVal !== oldVal && hexInputRef.value?.focus();
+  newVal !== oldVal && toValue(hexInputRef)?.focus();
 
   let style: typeof containerStyle = { ...containerStyle };
   if (media.isSmall) {
@@ -181,7 +182,7 @@ const handleHexEditingFinished = function(e: FocusEvent | KeyboardEvent) {
   if (text !== props.card.hex && isValidHex(text)) {
     const newRGB = hex2rgb(text);
     if (!newRGB) return;
-    const newColorArr = space.value.converter(newRGB);
+    const newColorArr = toValue(space).converter(newRGB);
     model.value = newColorArr;
     if (text.length === 4) { // # and 3 hex character.
       const hex6 = `#${text[1]+text[1]}${text[2]+text[2]}${text[3]+text[3]}`;
@@ -201,7 +202,7 @@ const handleSliderChange = function(newVal: number, idx: number) {
   const textInput = (
     document.getElementById(`card${props.cardIdx}-hex`) as HTMLInputElement
   );
-  const rgb = space.value.inverter(newColorArr);
+  const rgb = toValue(space).inverter(newColorArr);
   textInput.value = rgb2hex(rgb);
 };
 

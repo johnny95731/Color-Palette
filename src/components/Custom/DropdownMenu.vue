@@ -71,17 +71,18 @@
 
 <script lang="ts" setup>
 import { computed, ref, watch, provide, inject, nextTick } from 'vue';
+import { toValue } from '@vueuse/core';
 import OverlayContainer from './OverlayContainer.vue';
 import TheBtn from './TheBtn.vue';
 import TheIcon from '../TheIcon.vue';
 // utils
-import { toTitleCase, getComponentId, sleep } from '@/utils/helpers.ts';
+import { toTitleCase, getComponentId, sleep, invertBoolean } from '@/utils/helpers.ts';
 import { mod } from '@/utils/numeric';
 import { noModifierKey, shiftOnly, hasPopup } from '@/utils/eventHandler.ts';
 import { CURRENT_OPTION_WEIGHT, MenuSymbol } from '@/utils/constants';
 import { useElementBounding } from '@/utils/composables/useElementBounding';
 // Types
-import type { CSSProperties } from 'vue';
+import type { CSSProperties, ModelRef } from 'vue';
 import type { IconType } from '@/utils/icons';
 
 type Item = {
@@ -130,15 +131,15 @@ const props = withDefaults(defineProps<Props>(), {
 const activatorRef = ref<InstanceType<typeof TheBtn>>();
 const containerRef = ref<HTMLDivElement>();
 
-const activator = computed<HTMLButtonElement>(() => activatorRef.value?.$el);
+const activator = computed<HTMLButtonElement>(() => toValue(activatorRef)?.$el);
 
 /**
  * Target is containing in this instance.
  */
 const isContaining = (target?: Element | EventTarget | null): boolean =>
   !!(
-    activator.value.contains(target as Node | null) ||
-    containerRef.value?.contains(target as Node | null)
+    toValue(activator).contains(target as Node | null) ||
+    toValue(containerRef)?.contains(target as Node | null)
   );
 
 /**
@@ -147,12 +148,12 @@ const isContaining = (target?: Element | EventTarget | null): boolean =>
  */
 const getDirectChildren = (target?: Element | EventTarget | null) => {
   if (
-    !containerRef.value ||
-    !containerRef.value.contains(target as Element) ||
-    containerRef.value === target
+    !toValue(containerRef) ||
+    !toValue(containerRef)!.contains(target as Element) ||
+    toValue(containerRef) === target
   ) return null;
   let children = target as Element;
-  while (children.parentElement !== containerRef.value)
+  while (children.parentElement !== toValue(containerRef))
     children = children.parentElement as HTMLElement;
   return children;
 };
@@ -184,13 +185,13 @@ const menuItems = computed(() =>
     const { val, name, hotkey }: Item = typeof item === 'object' ? item : { val: item };
     return {
       val,
-      name: letterConverter.value(name ?? val) + (hotkey ? ` (${hotkey})` : ''),
+      name: toValue(letterConverter)(name ?? val) + (hotkey ? ` (${hotkey})` : ''),
     };
   })
 );
 
 // Open/Closing events
-const isOpened = ref(false);
+const isOpened = defineModel<boolean>('show') as ModelRef<boolean>;
 const openedChild = ref(0);
 
 type MenuProvided = {
@@ -219,11 +220,11 @@ type MenuProvided = {
 const parent = inject<MenuProvided | null>(MenuSymbol, null);
 provide<MenuProvided>(MenuSymbol, {
   topActivator() {
-    return parent?.topActivator() ?? activator.value as HTMLButtonElement;
+    return parent?.topActivator() ?? toValue(activator) as HTMLButtonElement;
   },
   topNonLastActivator,
   isLast(target: Element | null) {
-    const menu = containerRef.value as NonNullable<typeof containerRef.value>;
+    const menu = toValue(containerRef) as NonNullable<typeof containerRef.value>;
     return menu.children[menu.children.length-1] === target;
   },
   register() {
@@ -239,8 +240,8 @@ provide<MenuProvided>(MenuSymbol, {
  * The topmost layer activator that is not the last element of a menu.
  */
 function topNonLastActivator() {
-  return !parent || !parent.isLast(activator.value) ?
-    activator.value :
+  return !parent || !parent.isLast(toValue(activator)) ?
+    toValue(activator) :
     parent.topNonLastActivator();
 }
 
@@ -250,13 +251,13 @@ function topNonLastActivator() {
 async function nestedClosing (target?: Element | EventTarget | null) {
   // `handleClick` may be trigger from multi-layers. Make sure that
   // menu is closing from bottommost layer.
-  if (openedChild.value) return;
+  if (toValue(openedChild)) return;
   if (
     !target ||
     // @ts-expect-error Function only be called when menu is openned.
-    !containerRef.value.contains(target as Element) //
+    !toValue(containerRef).contains(target as Element) //
   ) {
-    isOpened.value = false;
+    invertBoolean(isOpened, false);
     await sleep(100);
     await nextTick();
     parent?.nestedClosing(target);
@@ -293,17 +294,17 @@ const handleClick = (e: MouseEvent) => {
   // Click submenu activator
   else if (
     // @ts-expect-error
-    containerRef.value?.contains(e.target) && !hasPopup(getDirectChildren(e.target))
+    toValue(containerRef)?.contains(e.target) && !hasPopup(getDirectChildren(e.target))
   ) handleClickBtn();
 };
 
 const handleClickBtn = () =>
   // when submenu is openned, the event will handle by `handleClick`
-  !openedChild.value && (isOpened.value = !isOpened.value);
+  !toValue(openedChild) && invertBoolean(isOpened);
 
 const handleKeyDown = async (e: KeyboardEvent) => {
   // Ignore supermenu keydown event when submenu is opening.
-  if (openedChild.value) return;
+  if (toValue(openedChild)) return;
   const key = e.key;
   if (['Enter', ' '].includes(key)) {
     e.stopPropagation();
@@ -311,10 +312,10 @@ const handleKeyDown = async (e: KeyboardEvent) => {
     handleClickBtn();
     await nextTick();
     // Cant get ref before updated (`menu` is undefined).
-    (containerRef.value?.children[0] as HTMLButtonElement).focus();
+    (toValue(containerRef)?.children[0] as HTMLButtonElement).focus();
     return;
   }
-  if (!isOpened.value) {
+  if (!toValue(isOpened)) {
     // Only some keys works when menu is not openned.
     if (key.startsWith('Arrow')) {
       isOpened.value = true;
@@ -322,7 +323,7 @@ const handleKeyDown = async (e: KeyboardEvent) => {
     } else return;
   }
 
-  const menu = containerRef.value as typeof containerRef.value;
+  const menu = toValue(containerRef) as typeof containerRef.value;
   // @ts-expect-error
   const nthChildFocused = [...menu.children].indexOf(document.activeElement);
   const noModifiers = noModifierKey(e);
@@ -343,13 +344,13 @@ const handleKeyDown = async (e: KeyboardEvent) => {
     } else if (nthChildFocused === menu.children.length - 1 && noModifiers) {
       // Focusing last menu option and Tab => close menu and focus next
       // focusable element of activator.
-      target = topNonLastActivator() ?? activator.value;
+      target = topNonLastActivator() ?? toValue(activator);
       nestedClosing(target);
     } else if (nthChildFocused === 0 && shiftOnly_) {
       // Focusing first menu option and Shift + Tab => close menu and focus
       // activator.
       handleClickBtn();
-      target = activator.value;
+      target = toValue(activator);
       e.preventDefault();
     }
     break;
@@ -378,7 +379,7 @@ const handleKeyDown = async (e: KeyboardEvent) => {
     break;
   case 'Escape':
     isOpened.value = false;
-    target = activator.value;
+    target = toValue(activator);
     break;
   }
   target?.focus();

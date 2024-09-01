@@ -46,18 +46,18 @@
             <TheSwitch
               label="show border"
               hide-label
-              :model-value="border.show"
-              @click="handleSwitchStyle"
+              :model-value="settingsState.border.show"
+              @update:model-value="settingsState.setBorder('show', $event)"
             />
-            <template v-if="border.show">
+            <template v-if="settingsState.border.show">
               <label
                 id="border-width"
               >Width(px)</label>
               <TheSlider
                 label="#border-width"
                 :max="BORDER_MAX_WIDTH"
-                :model-value="border.width"
-                @update:model-value="handleWidth($event)"
+                :model-value="settingsState.border.width"
+                @update:model-value="settingsState.setBorder('width', $event)"
               />
               <label
                 id="border-color"
@@ -68,7 +68,7 @@
                 label="#border-color"
                 :options="BORDER_COLOR"
                 :model-value="settingsState.border.color"
-                @update:model-value="handleSelectColor($event)"
+                @update:model-value="settingsState.setBorder('color', $event)"
               />
             </template>
           </div>
@@ -81,7 +81,7 @@
               label="#transition-position"
               :max="TRANSITION_MAX_POS"
               :step="50"
-              :model-value="transition.pos"
+              :model-value="settingsState.transition.pos"
               @update:model-value="handleTransitionChanged($event, 'pos')"
             />
             <label
@@ -107,19 +107,21 @@
             <SelectMenu
               label="#contrast-method"
               :options="CONTRAST_METHODS"
-              v-model="contrastArgs.method"
+              v-model:index="contrastArgs.method"
+              @update:index="updateContrastColor"
             />
             <label
               id="contrast-coeff-name"
-            >{{
-              contrastViewData.coeff
-            }}</label>
+            >Coeff.</label>
             <TheSlider
               label="#contrast-coeff-name"
-              :max="contrastViewData.max"
+              :max="contrastCoeffMax"
               :step="0.001"
               :model-value="contrastArgs[contrastArgs.method]"
-              @update:model-value="contrastChanged($event)"
+              @update:model-value="
+                contrastArgs[contrastArgs.method] = $event;
+                updateContrastColor();
+              "
             />
             <div
               v-once
@@ -163,7 +165,6 @@ import useSettingStore from 'stores/useSettingStore';
 // Types
 import type { CSSProperties } from 'vue';
 import type { TransitionType } from 'types/settingType';
-import type { ContrastMethods } from 'types/pltType';
 
 const emit = defineEmits<{
   (e: 'focusoutDialog'): void
@@ -193,7 +194,7 @@ watch(model, async (newVal) => {
   if (newVal && tabIdx.value === 1) {
     // Start adjusting when open dialog and in 2nd tab
     pltState.setIsAdjustingPlt('start');
-    pltState.adjustContrast(contrastArgs.method, contrastArgs[contrastArgs.method]);
+    updateContrastColor();
   }
 });
 
@@ -215,7 +216,7 @@ const tabStyleState = computed<(CSSProperties | undefined)[]>(() =>
 const switchTab = (idx: number) => {
   if (idx === 1) { // Switch to tab-1
     pltState.setIsAdjustingPlt('start');
-    pltState.adjustContrast(contrastArgs.method, contrastArgs[contrastArgs.method]);
+    updateContrastColor();
   } else if (tabIdx.value === 1) // From tab-1 switch to another tab.
     pltState.setIsAdjustingPlt('cancel');
   tabIdx.value = idx;
@@ -223,14 +224,6 @@ const switchTab = (idx: number) => {
 
 
 // page 0: Card
-// -Border states
-const border = reactive<{
-  show: boolean,
-  width: number,
-}>({
-  show: settingsState.border.show,
-  width: settingsState.border.width,
-});
 // -Transition states
 const transition = reactive<{
   pos: number,
@@ -240,17 +233,6 @@ const transition = reactive<{
   color: settingsState.transition.color,
 });
 
-const handleSwitchStyle = (isOn: boolean) => {
-  border.show = isOn;
-  settingsState.setBorder('show', isOn);
-};
-const handleWidth = (val: number) => {
-  border.width = val;
-  settingsState.setBorder('width', val);
-};
-const handleSelectColor = (val: string) => {
-  settingsState.setBorder('color', val);
-};
 const handleTransitionChanged = (
   val: number, attr: keyof TransitionType,
 ) => {
@@ -260,34 +242,28 @@ const handleTransitionChanged = (
 };
 // page 1: Contrast
 type ContrastArgsType = {
-  method: ContrastMethods
+  method: number
 } & {
-  [key in ContrastMethods]: number;
+  [key in number]: number;
 }
-const contrastArgs = reactive<ContrastArgsType>((() => {
-  const args = { method: CONTRAST_METHODS[0] } as ContrastArgsType;
-  CONTRAST_METHODS.forEach((key) => {
-    args[key] = 1;
-  });
-  return args as ContrastArgsType;
-})());
-const contrastViewData = computed(() =>
-  contrastArgs.method === 'gamma' ? {
-    max: GAMMA_MAX,
-    coeff: 'gamma'
-  } : {
-    max:  MULTIPLICATION_MAX,
-    coeff: 'scale'
-  }
-);
+const contrastArgs = reactive<ContrastArgsType>(
+  CONTRAST_METHODS.reduce(
+    (prev, _, i) => (prev[i] = 1) && prev,
+    { method: 0 } as ContrastArgsType
+  ));
+const contrastCoeffMax = computed(() =>
+  contrastArgs.method ? GAMMA_MAX :  MULTIPLICATION_MAX);
 
-function contrastChanged(newVal: number) {
-  contrastArgs[contrastArgs.method] = newVal;
-  pltState.adjustContrast(contrastArgs.method, contrastArgs[contrastArgs.method]);
+function updateContrastColor() {
+  pltState.adjustContrast(
+    contrastArgs.method,
+    contrastArgs[contrastArgs.method]
+  );
 }
 
 const contrastBtnEvent = (state: 'start' | 'reset') => {
   pltState.setIsAdjustingPlt(state);
-  contrastChanged(1);
+  contrastArgs[contrastArgs.method] = 1;
+  updateContrastColor();
 };
 </script>

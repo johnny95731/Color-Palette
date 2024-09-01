@@ -37,6 +37,7 @@
 
 <script lang="ts" setup>
 import { ref, computed, reactive, watch } from 'vue';
+import { toValue } from '@vueuse/core';
 import $style from './ThePalette.module.scss';
 import TheBtn from '../Custom/TheBtn.vue';
 import TheCard from './TheCard.vue';
@@ -45,13 +46,13 @@ import { equallyLength, evalPosition } from '@/utils/helpers';
 import { round } from '@/utils/numeric';
 import { randRgbGen, rgb2hex } from '@/utils/colors';
 import { blenders } from '@/utils/blend';
+import { useWindowEventRegister } from '@/utils/composables/useWindowEventRegister';
 // Stores / Contexts
 import usePltStore from '@/features/stores/usePltStore';
 import useSettingStore from '@/features/stores/useSettingStore';
 import media from '@/features/useMedia';
 // Types
 import type { CSSProperties } from 'vue';
-import { useWindowEventRegister } from '@/utils/composables/useWindowEventRegister';
 
 type cardInstance = InstanceType<typeof TheCard>;
 
@@ -115,20 +116,20 @@ watch(() => pltState.numOfCards, () => {
  */
 const resetPosition = () => {
   for (let i = 0; i < pltState.numOfCards; i++) {
-    (i !== dragIdx.value.draggingIdx) &&
-      cardRefs.value[i].setPos(evalPosition(i, pltState.numOfCards));
+    (i !== toValue(dragIdx).draggingIdx) &&
+      toValue(cardRefs)[i].setPos(evalPosition(i, pltState.numOfCards));
   }
 };
 const removeTransition = () => {
   for (let i = 0; i < pltState.numOfCards; i++) {
-    cardRefs.value[i].setTransProperty('none');
+    toValue(cardRefs)[i].setTransProperty('none');
   }
 };
 const resetTransition = (end?: number) => {
   end ??= pltState.numOfCards;
   for (let i = 0; i < end; i++) {
-    i !== dragIdx.value.draggingIdx &&
-      cardRefs.value[i].setTransProperty('reset');
+    i !== toValue(dragIdx).draggingIdx &&
+      toValue(cardRefs)[i].setTransProperty('reset');
   }
 };
 
@@ -185,9 +186,9 @@ const handleAddCard = (idx: number) => {
   // Transition: shrink and move card. The enpty space is new card
   const length = equallyLength(pltState.numOfCards + 1);
   for (let i = 0; i < pltState.numOfCards; i++) {
-    cardRefs.value[i].setSize(length);
+    toValue(cardRefs)[i].setSize(length);
     const bias = i >= idx ? 1 : 0;
-    cardRefs.value[i].setPos(evalPosition(i + bias, pltState.numOfCards + 1));
+    toValue(cardRefs)[i].setPos(evalPosition(i + bias, pltState.numOfCards + 1));
   }
   // Trigger side effect when !isInTrans.some()
   Object.assign(isInTrans, { arr: Array.from({ length: pltState.numOfCards }, () => true) });
@@ -209,9 +210,9 @@ const handleRemoveCard = (idx: number) => {
   const newSize = equallyLength(pltState.numOfCards - 1);
   // Shrink target card and expand other card.
   for (let i = 0; i < pltState.numOfCards; i++) {
-    cardRefs.value[i].setSize(i === idx ? '0%' : newSize);
+    toValue(cardRefs)[i].setSize(i === idx ? '0%' : newSize);
     const bias = i > idx ? 1 : 0;
-    cardRefs.value[i].setPos(evalPosition(i - bias, pltState.numOfCards - 1));
+    toValue(cardRefs)[i].setPos(evalPosition(i - bias, pltState.numOfCards - 1));
   }
   eventInfo.value = { event: 'remove', idx };
   Object.assign(isInTrans, { arr: Array.from({ length: pltState.numOfCards }, () => true) });
@@ -250,7 +251,7 @@ const draggingCardEvent = computed(() => {
       draggingIdx: cardIdx,
       finalIdx: cardIdx,
     };
-    card = cardRefs.value[cardIdx];
+    card = toValue(cardRefs)[cardIdx];
     card.setPos(`${round(cursorPos - halfCardLength)}px`);
     card.setTransProperty('none');
     card.$el.classList.add($style.dragging);
@@ -280,8 +281,8 @@ const draggingCardEvent = computed(() => {
     card.setPos(`${round(cursorPos - halfCardLength)}px`);
     // Order of card that cursor at.
     const order = Math.floor(cursorPos * cursorRationCoeff);
-    const idx = dragIdx.value.draggingIdx as number;
-    const lastOrder = dragIdx.value.finalIdx as number;
+    const idx = toValue(dragIdx).draggingIdx as number;
+    const lastOrder = toValue(dragIdx).finalIdx as number;
     dragIdx.value.finalIdx = order;
     // Change `.order` attribute.
     pltState.moveCardOrder(idx, order);
@@ -308,8 +309,8 @@ const draggingCardEvent = computed(() => {
     document.body.style.overscrollBehavior = '';
     // `draggingIdx` and `finalIdx`setIsEventEnd are set to be non-null
     // together when mouse down.
-    const idx = dragIdx.value.draggingIdx;
-    const finalOrder = dragIdx.value.finalIdx as number;
+    const idx = toValue(dragIdx).draggingIdx;
+    const finalOrder = toValue(dragIdx).finalIdx as number;
     dragIdx.value.draggingIdx = null;
     dragIdx.value.finalIdx = null;
     if (idx === null) return;
@@ -338,26 +339,26 @@ const draggingCardEvent = computed(() => {
     end,
   };
 });
-watch(() => dragIdx.value.finalIdx, async (newQuestion) => {
+watch(() => toValue(dragIdx).finalIdx, async (newQuestion) => {
   if (newQuestion === null) return;
   for (let i = 0; i < pltState.numOfCards; i++) {
-    if (i === dragIdx.value.draggingIdx) continue;
-    cardRefs.value[i].setPos(cardAttrs.positions[pltState.cards[i].order]);
+    if (i === toValue(dragIdx).draggingIdx) continue;
+    toValue(cardRefs)[i].setPos(cardAttrs.positions[pltState.cards[i].order]);
   }
 });
 // Drag events end
 // Side effect when transition is over.
 watch(() => isInTrans.arr.some((val) => val),
   (someCardIsInTrans) => {
-    if (someCardIsInTrans || !eventInfo.value) return;
-    const info = eventInfo.value;
+    if (someCardIsInTrans || !toValue(eventInfo)) return;
+    const info = toValue(eventInfo) as NonNullable<typeof eventInfo.value>;
     // This LayoutEffect occurs only when transition is over.
     removeTransition();
     const start = info?.idx ? info.idx : 0;
     switch (info.event) {
     case 'add':
       document.body.style.backgroundColor = '';
-      pltState.addCard(start, eventInfo.value.rgb as number[]);
+      pltState.addCard(start, info.rgb as number[]);
       break;
     case 'remove':
       pltState.delCard(start);
@@ -370,7 +371,7 @@ watch(() => isInTrans.arr.some((val) => val),
     eventInfo.value = null;
   },
 );
-watch(() => eventInfo.value, (newVal) => {
+watch(() => toValue(eventInfo), (newVal) => {
   if (!newVal) {
     setTimeout(() => {
       resetTransition();

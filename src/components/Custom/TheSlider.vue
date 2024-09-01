@@ -63,6 +63,7 @@
 
 <script setup lang="ts">
 import { onMounted, watch, ref, computed } from 'vue';
+import { toValue } from '@vueuse/core';
 import { getComponentId } from '@/utils/helpers';
 import { clip, countDecimals, round, rangeMapping, isSameFloat } from '@/utils/numeric';
 import { useElementBounding } from '@/utils/composables/useElementBounding';
@@ -116,10 +117,10 @@ const labelState = computed(() => {
 onMounted(() => {
   if (!props.label?.startsWith('#')) return;
   const element = document.getElementById(props.label.slice(1)) as HTMLLabelElement | null;
-  if (element) element.htmlFor = idForInput.value;
+  if (element) element.htmlFor = toValue(idForInput);
 });
 // Update label HTMLFor if it is an ID.
-watch(() => [props.label, idForInput.value], (newVal, oldVal) => {
+watch(() => [props.label, toValue(idForInput)], (newVal, oldVal) => {
   const isLabelSame = newVal[0] === oldVal[0];
   const isIdSame = newVal[1] === oldVal[1];
   if (!isLabelSame) {
@@ -167,7 +168,7 @@ const numStep = computed<number>(() => +props.step);
  * Decimals counts of display text.
  */
 const decimals = computed<number>(() =>
-  numStep.value > 0 ? countDecimals(numStep.value) : 0
+  toValue(numStep) > 0 ? countDecimals(toValue(numStep)) : 0
 );
 
 /**
@@ -175,7 +176,7 @@ const decimals = computed<number>(() =>
  */
 const updateThumbPos = () => {
   pos.value = round(
-    rangeMapping(model.value, props.min, props.max, 0, 100),
+    rangeMapping(toValue(model), props.min, props.max, 0, 100),
     3
   );
 };
@@ -184,12 +185,12 @@ const updateThumbPos = () => {
  * Rounding the value to satify step.
  */
 const roundingValue = (newVal?: number) => {
-  newVal ??= model.value;
-  return numStep.value <= 0 ?
+  newVal ??= toValue(model);
+  return toValue(numStep) <= 0 ?
     newVal :
     round(
-      props.min + Math.floor((newVal - props.min) / numStep.value) * numStep.value,
-      decimals.value,
+      props.min + Math.floor((newVal - props.min) / toValue(numStep)) * toValue(numStep),
+      toValue(decimals),
     );
 };
 
@@ -198,7 +199,7 @@ const roundingValue = (newVal?: number) => {
  */
 function updateModel(newVal?: number) {
   newVal = roundingValue(newVal);
-  isSameFloat(newVal, model.value) || (model.value = newVal);
+  isSameFloat(newVal, toValue(model)) || (model.value = newVal);
 }
 
 watch(model, (newVal, oldVal) => {
@@ -210,13 +211,13 @@ watch(model, (newVal, oldVal) => {
 watch(
   () => [props.min, props.max],
   () => {
-    updateModel(clip(model.value, props.min, props.max));
+    updateModel(clip(toValue(model), props.min, props.max));
   }, { immediate: true });
 
 // Step increment function. If num < 0, then becomes decrement.
 const increment = (num: number = 1) => {
   updateModel(
-    clip(model.value + num * numStep.value, props.min, props.max)
+    clip(toValue(model) + num * toValue(numStep), props.min, props.max)
   );
 };
 
@@ -229,9 +230,9 @@ const handleDrag = (
   const isStartingDragging = !e.type.endsWith('move');
   if (isStartingDragging) { // touch start / mouse down
     (e.currentTarget as HTMLDivElement).focus();
-    if (tooltipRef.value === e.target) return; // Prevent dragging tooltip.
+    if (toValue(tooltipRef) === e.target) return; // Prevent dragging tooltip.
     isDragging.value = true;
-  } else if (!isDragging.value) return;
+  } else if (!toValue(isDragging)) return;
   // Get cursor position.
   const clientX = (
     (e as MouseEvent).clientX || (e as TouchEvent).touches[0].clientX

@@ -8,7 +8,6 @@
       v-bind="$attrs"
       :role="role"
       :aria-modal="ariaModal || undefined"
-      @keydown="handleKeydown"
     >
       <Transition
         name="fade-out"
@@ -37,7 +36,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { useWindowEventRegister } from '@/utils/composables/useWindowEventRegister';
+import { invertBoolean } from '@/utils/helpers';
+import { toValue } from '@vueuse/core';
+import { ModelRef, ref, watch } from 'vue';
 
 type Props = {
   /**
@@ -57,47 +59,43 @@ type Props = {
 const props = withDefaults(defineProps<Props>(), {
   eager: false,
   ariaModal: false,
-  duration: 200,
 });
 
 const containerRef = ref();
 const scrimRef = ref();
 
-const isActive = ref(false); // Dialog state
-const model = defineModel<boolean>(); // Control `isActive` and trigger transition;
+const isActive = ref(false); // Dialog show/hide state
+const model = defineModel<boolean>() as ModelRef<boolean>; // Control `isActive` and trigger transition;
 const isClosing = ref(true); // For rendering content when eager
 
+let keydownListener: void | (() => void);
 watch(model, (newVal) => {
   if (newVal) { // Open dialog when model is true
     isActive.value = true;
     isClosing.value = false;
+    keydownListener = useWindowEventRegister(
+      'keydown', handleKeydown, { once: true });
   } else if (!props.transition) {
     isActive.value = false;
     isClosing.value = true;
+    if (keydownListener) keydownListener = keydownListener();
   }
 });
 
-const emit = defineEmits<{
-  click: [ev: MouseEvent]
+defineEmits<{
   'update:modelValue': [newVal: boolean]
   'transitionEnd': []
 }>();
 
 const handleKeydown = (e: KeyboardEvent) => {
-  if (e.key === 'Escape') {
-    model.value = false;
+  if (toValue(model) && e.key === 'Escape') {
+    invertBoolean(model, false);
   }
 };
 
-const handleClickScrim = (e: MouseEvent) => {
-  emit('click', e);
-  model.value = false;
+const handleClickScrim = () => {
+  invertBoolean(model, false);
 };
-
-defineExpose({
-  container: containerRef,
-  scrim: props.hideScrim ? null : scrimRef,
-});
 
 defineOptions({
   inheritAttrs: false
