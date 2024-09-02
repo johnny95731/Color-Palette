@@ -220,7 +220,7 @@ const handleRemoveCard = (idx: number) => {
 };
 
 // Drag events start
-const draggingCardEvent = computed(() => {
+const draggingCardEvent = (() => {
   const halfCardLength = cardAttrs.size.px / 2;
   // Rewrite `cursorPos / cardLength` to `cursorPos * cursorRationCoeff`.
   // Since division cost much time than multiplication.
@@ -338,7 +338,7 @@ const draggingCardEvent = computed(() => {
     move,
     end,
   };
-});
+})();
 watch(() => toValue(dragIdx).finalIdx, async (newQuestion) => {
   if (newQuestion === null) return;
   for (let i = 0; i < pltState.numOfCards; i++) {

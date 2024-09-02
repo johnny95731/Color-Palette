@@ -1,6 +1,7 @@
-import { watch } from 'vue';
+import { isRef, watch } from 'vue';
+import { toValue } from '@vueuse/core';
 import { arraylize, arrFilter } from '../helpers';
-import { type MaybeRef, type Arrayable,  type WindowEventName, toValue } from '@vueuse/core';
+import type { MaybeRef, Arrayable,  WindowEventName } from '@vueuse/core';
 import type{ EventHandler } from '@/types/funcType';
 
 
@@ -19,20 +20,14 @@ type ListenerStore<EName extends WindowEventName, EType extends Event = Event> =
  * Create a handler that will excute funcs in order.
  */
 function createHandler<EName extends WindowEventName, EType extends Event = WindowEventMap[EName]>(
-  /**
-   * Listener options.
-   */
-  store: ListenerStore<EName, EType>,
-  optionKey: OptionKey
+  funcs: EventHandler<EType>[],
+  optionKey: OptionKey,
 ) {
   return async (e: EType) => {
-    if (!store.registedFuncs[optionKey]) return;
-    const re = !(
-      await Promise.all(store.registedFuncs[optionKey].map(func => func(e)))
-    ).some(val => !val);
+    const ret = await Promise.all(funcs.map(func => func(e)));
     // remove registed if once: true
-    if (optionKey.startsWith('o')) store.registedFuncs[optionKey].length = 0;
-    return re;
+    if (optionKey.startsWith('o')) funcs.length = 0;
+    return !ret.some(val => !val);
 
   };
 }
@@ -114,7 +109,11 @@ function updateListener<EName extends WindowEventName, EType extends Event>(
   removeListener(store, options, optionKey);
   // addListener
   if (store.registedFuncs[optionKey]?.length) {
-    store.currentHandler[optionKey] = createHandler(store, optionKey);
+    if (store.event === 'mousemove') {
+      store.registedFuncs[optionKey];
+    }
+    store.currentHandler[optionKey] = createHandler(
+      store.registedFuncs[optionKey], optionKey);
     window.addEventListener(
       store.event,
       store.currentHandler[optionKey] as EventHandler,
@@ -167,17 +166,14 @@ export const useWindowEventRegister = <
     handlers: MaybeRef<Arrayable<EventHandler<WindowEventMap[EName]>>>,
     options: ListenerOptions = {}
   ) => {
-  const stopWatch = watch(() => toValue(handlers), (newFuncs, oldFuncs) => {
-    const store = ListenerStores[event] ??= createListerenerStore(event);
-    // @ts-expect-error
-    updateRegisted(store, options, newFuncs, oldFuncs);
-    if (isEmptyStore(store)) delete ListenerStores[event];
-    if (event ==='click') {
-      console.log('trigger watch');
-      console.log(newFuncs, oldFuncs);
-      console.log(store.registedFuncs);
-    }
-  }, { immediate: true, flush: 'post' });
+  const stopWatch = watch(
+    () => isRef(handlers) ? toValue(handlers) : handlers,
+    (newFuncs, oldFuncs) => {
+      const store = ListenerStores[event] ??= createListerenerStore(event);
+      // @ts-expect-error
+      updateRegisted(store, options, newFuncs, oldFuncs);
+      if (isEmptyStore(store)) delete ListenerStores[event];
+    }, { immediate: true, flush: 'post' });
 
   const cleanup = () => {
     const store = ListenerStores[event];
