@@ -1,6 +1,6 @@
-import {  watch } from 'vue';
+import { watch } from 'vue';
 import { arraylize, arrFilter } from '../helpers';
-import type { Arrayable,  WindowEventName } from '@vueuse/core';
+import { type MaybeRef, type Arrayable,  type WindowEventName, toValue } from '@vueuse/core';
 import type{ EventHandler } from '@/types/funcType';
 
 
@@ -27,14 +27,13 @@ function createHandler<EName extends WindowEventName, EType extends Event = Wind
 ) {
   return async (e: EType) => {
     if (!store.registedFuncs[optionKey]) return;
-    let re;
-    for (const func of store.registedFuncs[optionKey]) {
-      const ret = await func(e);
-      ret === false && (re = false);
-    }
+    const re = !(
+      await Promise.all(store.registedFuncs[optionKey].map(func => func(e)))
+    ).some(val => !val);
     // remove registed if once: true
     if (optionKey.startsWith('o')) store.registedFuncs[optionKey].length = 0;
     return re;
+
   };
 }
 /**
@@ -165,14 +164,19 @@ export const useWindowEventRegister = <
   EName extends WindowEventName
 >(
     event: EName,
-    handlers: Arrayable<EventHandler<WindowEventMap[EName]>>,
+    handlers: MaybeRef<Arrayable<EventHandler<WindowEventMap[EName]>>>,
     options: ListenerOptions = {}
   ) => {
-  const stopWatch = watch(() => handlers, (newFuncs, oldFuncs) => {
+  const stopWatch = watch(() => toValue(handlers), (newFuncs, oldFuncs) => {
     const store = ListenerStores[event] ??= createListerenerStore(event);
     // @ts-expect-error
     updateRegisted(store, options, newFuncs, oldFuncs);
     if (isEmptyStore(store)) delete ListenerStores[event];
+    if (event ==='click') {
+      console.log('trigger watch');
+      console.log(newFuncs, oldFuncs);
+      console.log(store.registedFuncs);
+    }
   }, { immediate: true, flush: 'post' });
 
   const cleanup = () => {

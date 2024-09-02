@@ -373,27 +373,6 @@ const handleKeyDown = async (e: KeyboardEvent) => {
         e.preventDefault();
       }
     }
-    // if (
-    //   !menu  || nthChildFocused === -1 // Focusing activator
-    // ) {
-    //   if (noModifiers) { // Tab
-    //     // @ts-expect-error
-    //     target = menu.children[0];
-    //     e.preventDefault();
-    //   } else if (shiftOnly_) // Shift + Tab
-    //     isOpened.value = false;
-    // } else if (nthChildFocused === menu.children.length - 1 && noModifiers) {
-    //   // Focusing last menu option and Tab => close menu and focus next
-    //   // focusable element of activator.
-    //   target = topNonLastActivator() ?? toValue(activator);
-    //   nestedClosing(target);
-    // } else if (nthChildFocused === 0 && shiftOnly_) {
-    //   // Focusing first menu option and Shift + Tab => close menu and focus
-    //   // activator.
-    //   handleClickBtn();
-    //   target = toValue(activator);
-    //   e.preventDefault();
-    // }
     break;
   case 'Home':
     // @ts-expect-error
