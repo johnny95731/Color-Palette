@@ -31,16 +31,8 @@ $transDuration: 120ms;
     transition: transform $transDuration linear;
     font-size: 0.6rem;
   }
-}
-
-.active {
-  &.dropdown-menu, &.select-menu {
-    .triangle {
-      transform: rotate(180deg);
-    }
-  }
-  &.menu-container {
-    transform: scaleY(1);
+  &.activator.active .triangle {
+    transform: rotate(180deg);
   }
 }
 
@@ -51,7 +43,6 @@ $transDuration: 120ms;
   bottom: auto;
   left: auto;
   right: auto;
-  transform: scaleY(0);
   transform-origin: top;
   z-index: 999;
   // shape
@@ -59,7 +50,6 @@ $transDuration: 120ms;
   overflow: auto;
 
   background-color: $color1;
-  transition: transform $transDuration ease-in-out;
   box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
   pointer-events: all;
   // Hide Scrollbars But Keep Functionality

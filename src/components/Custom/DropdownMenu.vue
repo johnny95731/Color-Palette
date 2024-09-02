@@ -28,10 +28,13 @@
   </TheBtn>
   <OverlayContainer
     :id="idForMenu"
-    hideScrim
+    hide-scrim
     :eager="eager"
     aria-live="polite"
+    transition="scroll-y"
+    :esc-event="false"
     v-model="isOpened"
+    @resize="nestedClosing"
   >
     <div
       ref="containerRef"
@@ -84,6 +87,7 @@ import { useElementBounding } from '@/utils/composables/useElementBounding';
 // Types
 import type { CSSProperties, ModelRef } from 'vue';
 import type { IconType } from '@/utils/icons';
+import { useWindowEventRegister } from '@/utils/composables/useWindowEventRegister';
 
 type Item = {
     val: string,
@@ -254,15 +258,16 @@ async function nestedClosing (target?: Element | EventTarget | null) {
   if (toValue(openedChild)) return;
   if (
     !target ||
-    // @ts-expect-error Function only be called when menu is openned.
-    !toValue(containerRef).contains(target as Element) //
+    (
+      toValue(containerRef) &&
+      !toValue(containerRef)!.contains(target as Element)
+    )
   ) {
     invertBoolean(isOpened, false);
-    await sleep(100);
+    await sleep(250);
     await nextTick();
     parent?.nestedClosing(target);
-  } else
-    !hasPopup(getDirectChildren(target)) && nestedClosing();
+  }
 
 }
 
@@ -278,35 +283,46 @@ const menuContainerStyle = computed<CSSProperties>(() => {
   };
 });
 
+let stopClickListener: void | (() => void);
+let stopResizeListener: void | (() => void);
+const cleanListeners = () => {
+  stopClickListener &&= stopClickListener();
+  stopResizeListener &&= stopResizeListener();
+};
 watch(isOpened, (newVal) => {
   if (!newVal) {
     parent?.unregister();
-    document.removeEventListener('click', handleClick);
+    cleanListeners();
   } else {
     parent?.register();
-    document.addEventListener('click', handleClick);
+    cleanListeners();
+    stopClickListener = useWindowEventRegister('click', handleClickWindow);
+    stopResizeListener = useWindowEventRegister('resize', () => nestedClosing(), { once: true });
   }
 });
 
-const handleClick = (e: MouseEvent) => {
+const handleClickWindow = (e: MouseEvent) => {
   // Click outside
   if (!isContaining(e.target)) nestedClosing(e.target);
-  // Click submenu activator
+  // Click content that is not a activator of submenu.
   else if (
-    // @ts-expect-error
-    toValue(containerRef)?.contains(e.target) && !hasPopup(getDirectChildren(e.target))
-  ) handleClickBtn();
+    toValue(containerRef)?.contains(e.target as Node | null) &&
+    !hasPopup(getDirectChildren(e.target))
+  ) {
+    nestedClosing();
+  }
 };
 
-const handleClickBtn = () =>
-  // when submenu is openned, the event will handle by `handleClick`
-  !toValue(openedChild) && invertBoolean(isOpened);
+// When menu is nested, the parent should not close before submenu is closing.
+const handleClickBtn = () => !toValue(openedChild) && invertBoolean(isOpened);
+
 
 const handleKeyDown = async (e: KeyboardEvent) => {
   // Ignore supermenu keydown event when submenu is opening.
   if (toValue(openedChild)) return;
   const key = e.key;
-  if (['Enter', ' '].includes(key)) {
+  // Handle
+  if (key === 'Enter' || key === '') {
     e.stopPropagation();
     e.preventDefault();
     handleClickBtn();
@@ -318,7 +334,7 @@ const handleKeyDown = async (e: KeyboardEvent) => {
   if (!toValue(isOpened)) {
     // Only some keys works when menu is not openned.
     if (key.startsWith('Arrow')) {
-      isOpened.value = true;
+      invertBoolean(isOpened, true);
       await nextTick();
     } else return;
   }
@@ -332,27 +348,52 @@ const handleKeyDown = async (e: KeyboardEvent) => {
   let target: HTMLElement | null = null;
   switch(key) {
   case 'Tab':
-    if (
-      !menu  || nthChildFocused === -1 // Focusing activator
-    ) {
-      if (noModifiers) { // Tab
+    {
+      const focusingActivator = !menu  || nthChildFocused === -1;
+      // Tab-event
+      if (noModifiers && focusingActivator) {
         // @ts-expect-error
         target = menu.children[0];
         e.preventDefault();
-      } else if (shiftOnly_) // Shift + Tab
-        isOpened.value = false;
-    } else if (nthChildFocused === menu.children.length - 1 && noModifiers) {
-      // Focusing last menu option and Tab => close menu and focus next
-      // focusable element of activator.
-      target = topNonLastActivator() ?? toValue(activator);
-      nestedClosing(target);
-    } else if (nthChildFocused === 0 && shiftOnly_) {
-      // Focusing first menu option and Shift + Tab => close menu and focus
-      // activator.
-      handleClickBtn();
-      target = toValue(activator);
-      e.preventDefault();
+      } else if (
+        noModifiers &&
+        nthChildFocused + 1 === menu?.children.length // Focussing last option
+      ) {
+        // Set focus to activator and default Tab-event =>
+        // focus next focusable element of activator.
+        target = topNonLastActivator();
+        nestedClosing(target);
+      }
+      // (Shift+Tab)-event
+      else if (shiftOnly_ && focusingActivator) {
+        handleClickBtn();
+      } else if (shiftOnly_ && !nthChildFocused) { // Focussing first option
+        handleClickBtn();
+        target = toValue(activator);
+        e.preventDefault();
+      }
     }
+    // if (
+    //   !menu  || nthChildFocused === -1 // Focusing activator
+    // ) {
+    //   if (noModifiers) { // Tab
+    //     // @ts-expect-error
+    //     target = menu.children[0];
+    //     e.preventDefault();
+    //   } else if (shiftOnly_) // Shift + Tab
+    //     isOpened.value = false;
+    // } else if (nthChildFocused === menu.children.length - 1 && noModifiers) {
+    //   // Focusing last menu option and Tab => close menu and focus next
+    //   // focusable element of activator.
+    //   target = topNonLastActivator() ?? toValue(activator);
+    //   nestedClosing(target);
+    // } else if (nthChildFocused === 0 && shiftOnly_) {
+    //   // Focusing first menu option and Shift + Tab => close menu and focus
+    //   // activator.
+    //   handleClickBtn();
+    //   target = toValue(activator);
+    //   e.preventDefault();
+    // }
     break;
   case 'Home':
     // @ts-expect-error
@@ -378,8 +419,9 @@ const handleKeyDown = async (e: KeyboardEvent) => {
     }
     break;
   case 'Escape':
-    isOpened.value = false;
     target = toValue(activator);
+    nestedClosing(target);
+    e.stopPropagation();
     break;
   }
   target?.focus();

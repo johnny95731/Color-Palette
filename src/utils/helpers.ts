@@ -1,5 +1,5 @@
 import { getCurrentInstance } from 'vue';
-import { toValue } from '@vueuse/core';
+import { Arrayable, toValue } from '@vueuse/core';
 import { toPercent } from './numeric';
 import type { ModelRef, Ref, WritableComputedRef } from 'vue';
 
@@ -28,23 +28,23 @@ export function getPropertyValue(
 /**
  * Check whether two object has same keys.
  */
-export const hasSameKeys = (obj1: object, obj2: object): boolean => {
-  const keys1 = Object.keys(obj1);
-  const keys2 = Object.keys(obj2);
-  const allKeys = new Set([...keys1, ...keys2]);
-  if (!allKeys.size) return true;
-  if (!(allKeys.size === keys1.length && allKeys.size === keys2.length))
-    return false;
-  // Deep check
-  for (const key of allKeys) {
-    // @ts-expect-error Already deal `undefined` case.
-    const item1 = typeof obj1[key] === 'object' ? obj1[key] : {};
-    // @ts-expect-error Already deal `undefined` case.
-    const item2 = typeof obj2[key] === 'object' ? obj2[key] : {};
-    if (!hasSameKeys(item1, item2)) return false;
-  }
-  return true;
-};
+// export const hasSameKeys = (obj1: object, obj2: object): boolean => {
+//   const keys1 = Object.keys(obj1);
+//   const keys2 = Object.keys(obj2);
+//   const allKeys = new Set([...keys1, ...keys2]);
+//   if (!allKeys.size) return true;
+//   if (!(allKeys.size === keys1.length && allKeys.size === keys2.length))
+//     return false;
+//   // Deep check
+//   for (const key of allKeys) {
+//     // @ts-expect-error Already deal `undefined` case.
+//     const item1 = typeof obj1[key] === 'object' ? obj1[key] : {};
+//     // @ts-expect-error Already deal `undefined` case.
+//     const item2 = typeof obj2[key] === 'object' ? obj2[key] : {};
+//     if (!hasSameKeys(item1, item2)) return false;
+//   }
+//   return true;
+// };
 
 // export const pick = <T extends {}, K extends keyof T>(obj: T, ...keys: K[]) => (
 //   Object.fromEntries(
@@ -76,6 +76,18 @@ export const objPick = <T extends {}, K extends (string | number | symbol)>(
  * Check whether a value is 'null' or 'undefined'.
  */
 export const isNullish = (val: unknown) => toValue(val) == null;
+
+export const arraylize = (val: Arrayable<unknown>) =>
+  Array.isArray(val) ? val : [val];
+
+export const arrFilter = <T extends unknown>(
+  arr: T[],
+  callback: (value: T, index: number, array: T[]) => unknown
+) => {
+  const newArr = arr.filter(callback);
+  arr.length = 0;
+  return newArr;
+};
 
 /**
  * Invert the boolean value of a ref. If `newVal` is given, assign newVal to ref.

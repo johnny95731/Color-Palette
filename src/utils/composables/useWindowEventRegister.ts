@@ -1,5 +1,6 @@
-import { watch } from 'vue';
-import type { Arrayable, WindowEventName } from '@vueuse/core';
+import {  watch } from 'vue';
+import { arraylize, arrFilter } from '../helpers';
+import type { Arrayable,  WindowEventName } from '@vueuse/core';
 import type{ EventHandler } from '@/types/funcType';
 
 
@@ -8,101 +9,153 @@ const listenerOptions = ['once', 'capture', 'passive'] as const;
 type ListenerOptions = Partial<Record<typeof listenerOptions[number], boolean>>;
 type OptionKey =  '' | 'o' |'c' |'p' | 'oc' | 'op' |'cp' |'ocp';
 
-
-class ListerenerStore<EName extends WindowEventName, EType extends Event> {
+type ListenerStore<EName extends WindowEventName, EType extends Event = Event> = {
   event: EName;
-  currentListeners: Record<OptionKey, EventHandler<EType> | null>;
-  registedFuncs: Record<OptionKey, EventHandler<EType>[]>;
+  currentHandler: Partial<Record<OptionKey, EventHandler<EType> | null>>;
+  registedFuncs: Partial<Record<OptionKey, EventHandler<EType>[]>>;
+}
 
-  constructor (event: EName) {
-    this.event = event;
-    this.currentListeners = {
-      '': null,
-      'o': null,
-      'c': null,
-      'p': null,
-      'oc': null,
-      'op': null,
-      'cp': null,
-      'ocp': null,
-    };
-    this.registedFuncs = {
-      '': [],
-      'o': [],
-      'c': [],
-      'p': [],
-      'oc': [],
-      'op': [],
-      'cp': [],
-      'ocp': [],
-    };
-  }
-
-  static createListener<EName extends WindowEventName, EType = WindowEventMap[EName]>(
-    funcs: EventHandler<EType>[],
-    optionKey: OptionKey
-  ) {
-    return async (e: EType) => {
-      let re;
-      for (const func of funcs) {
-        const ret = await func(e);
-        ret === false && (re = false);
-      }
-      // remove registed if once: true
-      if (optionKey.startsWith('o')) funcs.length = 0;
-      return re;
-    };
-  }
-
-  updateRegisted(
-    options: ListenerOptions,
-    /**
-     * Functions that will be appended.
-     */
-    newFuncs?: Arrayable<EventHandler<EType>> | null,
-    /**
-     * Functions that will be removed.
-     */
-    oldFuncs?: Arrayable<EventHandler<EType>> | null,
-  ) {
-    const optionKey = options['once'] ? 'o' : listenerOptions.reduce(
-      (prev, val) => options[val] ? prev + val[0] : prev, ''
-    ) as any as OptionKey;
-    // unregist
-    if (oldFuncs && !Array.isArray(oldFuncs)) oldFuncs = [oldFuncs];
-    if (oldFuncs)
-      this.registedFuncs[optionKey] = this.registedFuncs[optionKey]
-        .filter(func => !oldFuncs.includes(func));
-    // regist
-    if (newFuncs && !Array.isArray(newFuncs)) newFuncs = [newFuncs];
-    if (newFuncs)
-      this.registedFuncs[optionKey].push(...newFuncs);
-    this.updateListener(options, optionKey);
-  }
-
-  updateListener(
-    options: ListenerOptions, optionKey?: OptionKey
-  ) {
-    if (optionKey == null) optionKey = (options['once'] ? 'o' : listenerOptions.reduce(
-      (prev, val) => options[val] ? prev + val[0] : prev, ''
-    )) as any as OptionKey;
-    if (this.currentListeners[optionKey])
-      window.removeEventListener(
-        this.event, this.currentListeners[optionKey] as EventHandler , options
-      );
-    if (this.registedFuncs[optionKey].length) {
-      this.currentListeners[optionKey] =
-        ListerenerStore.createListener<EName, EType>(this.registedFuncs[optionKey], optionKey);
-      window.addEventListener(
-        this.event, this.currentListeners[optionKey] as EventHandler, options
-      );
+/**
+ * Create a handler that will excute funcs in order.
+ */
+function createHandler<EName extends WindowEventName, EType extends Event = WindowEventMap[EName]>(
+  /**
+   * Listener options.
+   */
+  store: ListenerStore<EName, EType>,
+  optionKey: OptionKey
+) {
+  return async (e: EType) => {
+    if (!store.registedFuncs[optionKey]) return;
+    let re;
+    for (const func of store.registedFuncs[optionKey]) {
+      const ret = await func(e);
+      ret === false && (re = false);
     }
+    // remove registed if once: true
+    if (optionKey.startsWith('o')) store.registedFuncs[optionKey].length = 0;
+    return re;
+  };
+}
+/**
+ * Get key of a group from listener options.
+ */
+function getOptionKey(options: ListenerOptions) {
+  return (
+    listenerOptions.reduce(
+      (prev, val) => options[val] ? prev + val[0] : prev, ''
+    )
+  ) as unknown as OptionKey;
+}
+/**
+ * Unregist old functions and regist new functions with specific options.
+ * @param options Listener options. For spiliting functions into groups.
+ * @param newFuncs Functions that will be registed.
+ * @param oldFuncs Functions that will be unregisted.
+ */
+function updateRegisted<EName extends WindowEventName, EType extends Event>(
+  /**
+   * Listener options.
+   */
+  store: ListenerStore<EName, EType>,
+  /**
+   * Listener options.
+   */
+  options: ListenerOptions,
+  /**
+   * Functions that will be appended.
+   */
+  newFuncs?: Arrayable<EventHandler<EType>> | null,
+  /**
+   * Functions that will be removed.
+   */
+  oldFuncs?: Arrayable<EventHandler<EType>> | null,
+) {
+  const optionKey = getOptionKey(options);
+  // unregist
+  if (oldFuncs) {
+    oldFuncs = arraylize(oldFuncs);
+    store.registedFuncs[optionKey] = arrFilter(
+      store.registedFuncs[optionKey] ?? [],
+      func => !(oldFuncs as EventHandler<EType>[]).includes(func)
+    );
+  }
+  // regist
+  if (newFuncs) {
+    newFuncs = arraylize(newFuncs);
+    (store.registedFuncs[optionKey] ??= []).push(...newFuncs!);
+  }
+  updateListener(store, options, optionKey);
+}
+
+function removeListener<EName extends WindowEventName, EType extends Event>(
+  /**
+   * Listener options.
+   */
+  store: ListenerStore<EName, EType>,
+  options: ListenerOptions,
+  optionKey: OptionKey,
+) {
+  if (store.currentHandler[optionKey]) {
+    window.removeEventListener(
+      store.event, store.currentHandler[optionKey] as EventHandler, options
+    );
+    store.currentHandler[optionKey] = null;
   }
 }
 
-const eventStores: {
-  [K in WindowEventName]?: ListerenerStore<K, WindowEventMap[K]>
-} = {};
+function updateListener<EName extends WindowEventName, EType extends Event>(
+  /**
+   * Listener options.
+   */
+  store: ListenerStore<EName, EType>,
+  options: ListenerOptions,
+  optionKey: OptionKey,
+) {
+  removeListener(store, options, optionKey);
+  // addListener
+  if (store.registedFuncs[optionKey]?.length) {
+    store.currentHandler[optionKey] = createHandler(store, optionKey);
+    window.addEventListener(
+      store.event,
+      store.currentHandler[optionKey] as EventHandler,
+      options
+    );
+  }
+}
+
+/**
+ * Return whether some listener with a combination of options is working.
+ */
+function isEmptyStore<EName extends WindowEventName, EType extends Event>(
+  /**
+   * Listener options.
+   */
+  store: ListenerStore<EName, EType>,
+) {
+  return (
+    Object.entries(store.currentHandler) as [OptionKey, EventHandler<EType> | null][]
+  )
+    .every(([key, handler]) => {
+      // no
+      if (!handler && store.registedFuncs[key]) {
+        store.registedFuncs[key]!.length = 0;
+        delete store.registedFuncs[key];
+        return true;
+      }
+      return !handler;
+    });
+}
+
+const createListerenerStore = <EName extends WindowEventName, EType extends Event>(event: EName): ListenerStore<EName, EType> => ({
+  event,
+  currentHandler: {},
+  registedFuncs: {}
+});
+
+const ListenerStores:
+  Partial<Record<WindowEventName, ReturnType<typeof createListerenerStore>>>
+  = {};
 
 /**
  * Collect many event handlers and excute them in one event listener.
@@ -116,13 +169,19 @@ export const useWindowEventRegister = <
     options: ListenerOptions = {}
   ) => {
   const stopWatch = watch(() => handlers, (newFuncs, oldFuncs) => {
+    const store = ListenerStores[event] ??= createListerenerStore(event);
     // @ts-expect-error
-    const store = (eventStores[event] ??= new ListerenerStore(event));
-    store.updateRegisted(options, newFuncs, oldFuncs);
+    updateRegisted(store, options, newFuncs, oldFuncs);
+    if (isEmptyStore(store)) delete ListenerStores[event];
   }, { immediate: true, flush: 'post' });
 
-  const cleanup = () =>
-    eventStores[event]!.updateRegisted(options, null, handlers);
+  const cleanup = () => {
+    const store = ListenerStores[event];
+    if (!store) return;
+    // @ts-expect-error
+    updateRegisted(store, options, null, handlers);
+    if (isEmptyStore(store)) delete ListenerStores[event];
+  };
 
   const stop = () => {
     stopWatch();

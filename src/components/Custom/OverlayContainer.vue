@@ -54,6 +54,10 @@ type Props = {
   role?: string,
   ariaModal?: boolean,
   transition?: string,
+  /**
+   * Add listener to closing overlay when pressing Escape.
+   */
+  escEvent?: boolean,
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -73,18 +77,19 @@ watch(model, (newVal) => {
   if (newVal) { // Open dialog when model is true
     isActive.value = true;
     isClosing.value = false;
-    keydownListener = useWindowEventRegister(
-      'keydown', handleKeydown, { once: true });
+    if (props.escEvent)
+      keydownListener = useWindowEventRegister(
+        'keydown', handleKeydown, { once: true });
   } else if (!props.transition) {
     isActive.value = false;
     isClosing.value = true;
-    if (keydownListener) keydownListener = keydownListener();
+    keydownListener &&= keydownListener();
   }
-});
+}, { immediate: true });
 
 defineEmits<{
-  'update:modelValue': [newVal: boolean]
-  'transitionEnd': []
+  'update:modelValue': [newVal: boolean],
+  'transitionEnd': [],
 }>();
 
 const handleKeydown = (e: KeyboardEvent) => {

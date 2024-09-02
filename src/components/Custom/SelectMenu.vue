@@ -48,6 +48,7 @@
       hideScrim
       :eager="eager"
       aria-live="polite"
+      :esc-event="false"
       v-model="isOpened"
     >
       <div
