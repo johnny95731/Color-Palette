@@ -62,7 +62,7 @@ import { toValue } from '@vueuse/core';
 import $style from './TheCard.module.scss';
 import TheBtn from '../Custom/TheBtn.vue';
 import CondWrapper from '../Custom/CondWrapper.vue';
-import { stopPropagation } from '@/utils/eventHandler.ts';
+import { stopPropagation } from '@/utils/browser';
 // Stores
 import usePltStore from '@/features/stores/usePltStore.ts';
 import useFavStore from '@/features/stores/useFavStore.ts';

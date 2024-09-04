@@ -79,9 +79,10 @@ import OverlayContainer from './OverlayContainer.vue';
 import TheBtn from './TheBtn.vue';
 import TheIcon from '../TheIcon.vue';
 // utils
-import { toTitleCase, getComponentId, sleep, invertBoolean } from '@/utils/helpers.ts';
+import { toTitleCase, sleep, invertBoolean } from '@/utils/helpers';
+import { getComponentId } from '@/utils/browser';
 import { mod } from '@/utils/numeric';
-import { noModifierKey, shiftOnly, hasPopup } from '@/utils/eventHandler.ts';
+import { noModifierKey, shiftOnly, hasPopup } from '@/utils/browser';
 import { CURRENT_OPTION_WEIGHT, MenuSymbol } from '@/utils/constants';
 import { useElementBounding } from '@/utils/composables/useElementBounding';
 // Types

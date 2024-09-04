@@ -64,7 +64,7 @@
 <script setup lang="ts">
 import { onMounted, watch, ref, computed } from 'vue';
 import { toValue } from '@vueuse/core';
-import { getComponentId } from '@/utils/helpers';
+import { getComponentId } from '@/utils/browser';
 import { clip, countDecimals, round, rangeMapping, isSameFloat } from '@/utils/numeric';
 import { useElementBounding } from '@/utils/composables/useElementBounding';
 

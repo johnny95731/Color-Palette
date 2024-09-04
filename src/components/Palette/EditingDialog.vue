@@ -32,18 +32,18 @@
         ref="selectRef"
         :class="$style.nameSelect"
         aria-label="CSS named-color選單"
-        :options="fullNames"
+        :options="unzipedNameList"
         :contentClass="$style.nameSelectContent"
         :model-value="detail"
       >
         <template #items>
           <TheBtn
             v-once
-            v-for="(name, i) in fullNames"
+            v-for="(name, i) in unzipedNameList"
             :key="`Option${name}`"
             :text="name"
             :title="name"
-            @click="selectName(i);"
+            @click="selectName(unzipedNameList[i]);"
           >
             <template #prepend>
               <span
@@ -91,14 +91,14 @@ import TheBtn from '../Custom/TheBtn.vue';
 import TheSlider from '@/components/Custom/TheSlider.vue';
 import SelectMenu from '@/components/Custom/SelectMenu.vue';
 // Utils
-import { hexTextEdited, isTabKey } from '@/utils/eventHandler';
+import { hexTextEdited, isTabKey } from '@/utils/browser';
 import {
-  hex2rgb, rgb2hex, isValidHex, gradientGen, fullNames, getNamedColorRgb,
+  hex2rgb, rgb2hex, isValidHex, gradientGen, unzipedNameList, getNamedColorRgb,
 } from '@/utils/colors';
 import { useElementBounding } from '@/utils/composables/useElementBounding';
 // Stores
 import usePltStore from '@/features/stores/usePltStore';
-import media from '@/features/useMedia';
+import media from '@/utils/composables/useMedia';
 // Types
 import type { CSSProperties } from 'vue';
 import type { CardType, ColorSpacesType } from '@/features/types/pltType';
@@ -207,7 +207,9 @@ const handleSliderChange = function(newVal: number, idx: number) {
 };
 
 const selectRef = ref<InstanceType<typeof SelectMenu>>();
-const selectName = (idx: number) => {
-  pltState.editCard({ idx: props.cardIdx, color: getNamedColorRgb(idx) });
+const selectName = (name: string) => {
+  pltState.editCard({
+    idx: props.cardIdx,
+    color: getNamedColorRgb(name.replaceAll(' ', '')) });
 };
 </script>

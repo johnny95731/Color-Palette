@@ -12,7 +12,7 @@ export const CURRENT_OPTION_WEIGHT: CSSProperties = {
  * Support color spaces.
  */
 export const COLOR_SPACES = [
-  'rgb', 'name', 'hsl', 'hsb', 'cmy', 'cmyk', 'xyz', 'lab',
+  'rgb', 'name', 'hsl', 'hsb', 'hwb', 'cmy', 'cmyk', 'xyz', 'lab',
 ] as const;
 // const RGB = 0;
 // const NAME = 1;
@@ -52,7 +52,8 @@ export const GAMMA_MAX = 3;
 // } as const;
 export const RGB_MAXES = 255;
 export const HSL_MAXES = [359, 100, 100] as const;
-export const HSB_MAXES = [359, 100, 100] as const;
+export const HSB_MAXES = HSL_MAXES;
+export const HWB_MAXES = HSL_MAXES;
 export const CMY_MAXES = 100;
 export const CMYK_MAXES = 100;
 export const XYZ_MAXES = 100;

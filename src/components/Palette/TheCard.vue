@@ -62,7 +62,7 @@
 
 <script lang="ts" setup>
 import { computed, reactive, ref, watch } from 'vue';
-import { toValue } from '@vueuse/core';
+import { asyncComputed, toValue } from '@vueuse/core';
 import $style from './TheCard.module.scss';
 // Components
 import TheBtn from '@/components/Custom/TheBtn.vue';
@@ -71,12 +71,12 @@ import ToolBar from './ToolBar.vue';
 import EditingDialog from './EditingDialog.vue';
 // Utils
 import { round } from '@/utils/numeric';
-import { rgb2gray, getClosestNamed, hex2rgb } from '@/utils/colors';
-import { copyText } from '@/utils/eventHandler';
+import { rgb2gray, getClosestNamed, hex2rgb, unzipCssNamed } from '@/utils/colors';
+import { copyText } from '@/utils/browser';
 import { useElementBounding } from '@/utils/composables/useElementBounding';
 // Stores
 import usePltStore from '@/features/stores/usePltStore';
-import media from '@/features/useMedia';
+import media from '@/utils/composables/useMedia';
 // Types
 import type { CSSProperties } from 'vue';
 import type { CardType } from '@/features/types/pltType';
@@ -123,9 +123,15 @@ const showEditor = computed({
   }
 });
 
+const closestNamed = asyncComputed<string | undefined>(
+  () => pltState.colorSpace === 'name' ?
+    getClosestNamed(props.card.color) :
+    undefined,
+  'white'
+);
 const detail = computed(() => {
   return pltState.colorSpace === 'name' ?
-    getClosestNamed(props.card.color) :
+    unzipCssNamed(closestNamed.value as string) :
     `${pltState.colorSpace}(${toValue(roundedColor).toString()})`;
 });
 

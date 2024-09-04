@@ -37,7 +37,7 @@ import { toValue } from '@vueuse/core';
 import $style from './FavOffcanvas.module.scss';
 import TheIcon from '../TheIcon.vue';
 import { hex2rgb, rgb2gray } from '@/utils/colors';
-import { copyText } from '@/utils/eventHandler';
+import { copyText } from '@/utils/browser';
 import useFavStore from '@/features/stores/useFavStore';
 import type { CSSProperties } from 'vue';
 import TheBtn from '../Custom/TheBtn.vue';

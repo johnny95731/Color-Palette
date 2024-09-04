@@ -1,30 +1,9 @@
-import { getCurrentInstance } from 'vue';
 import { Arrayable, toValue } from '@vueuse/core';
 import { toPercent } from './numeric';
 import type { ModelRef, Ref, WritableComputedRef } from 'vue';
+import { hex2rgb } from './colors';
 
-
-const randomCharacter = (noDigit: boolean = false) =>
-  `ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz${noDigit ? '' : '0123456789'}`
-    .charAt(Math.floor(Math.random() * (noDigit ? 52 : 62)));
-
-export function getPropertyValue(el: HTMLElement, property: string): number;
-export function getPropertyValue(el: string): number;
-export function getPropertyValue(
-  el: HTMLElement | string,
-  property?: string
-) {
-  if (typeof el === 'string') {
-    property = el;
-    el = document.documentElement;
-  }
-  const num = +getComputedStyle(el)
-    .getPropertyValue(property ?? 'width' as string)
-    .replace(/(px)|%|(rem)/g, '');
-  return Number.isNaN(num) ? 0 : num;
-
-}
-
+// ### Object helpers
 /**
  * Check whether two object has same keys.
  */
@@ -72,11 +51,8 @@ export const objPick = <T extends {}, K extends (string | number | symbol)>(
 //   ) as Omit<T, K>
 //   );
 
-/**
- * Check whether a value is 'null' or 'undefined'.
- */
-export const isNullish = (val: unknown) => toValue(val) == null;
 
+// ### Array helpers
 export const arraylize = (val: Arrayable<unknown>) =>
   Array.isArray(val) ? val : [val];
 
@@ -90,67 +66,45 @@ export const arrFilter = <T extends unknown>(
 };
 
 /**
- * Invert the boolean value of a ref. If `newVal` is given, assign newVal to ref.
+ * L2-distance (not take square root yet) of two array.
  */
-export const invertBoolean = (
-  ref: Ref<boolean> | ModelRef<boolean> | WritableComputedRef<boolean>,
-  newVal?: boolean
-) => ref.value = newVal ?? !toValue(ref);
-
-/**
- * Evaluate length that are divided evenly by `num`.
- * @param num Total number.
- */
-export const equallyLength = (num: number): string => {
-  return `${toPercent(1 / num, 2)}%`;
+export const l2Dist = (arr1: number[], arr2: number[]) => {
+  return arr1.reduce((prev, val, i) => prev + (val - arr2[i])**2, 0);
 };
 
-/**
- * Divide evenly by `num` and return the `idx`-th position.
- * @param num Total number.
- */
-export const evalPosition = (idx: number, num: number): string => {
-  return `${toPercent(idx / num, 2)}%`;
+export const findClosestInHexMap =
+<T extends number[], E extends Record<string, string>>(
+    val: T,
+    list: E,
+    distCallback: (a: T, b: string) => number
+    = (val, hex) => l2Dist(val, hex2rgb(hex))
+  ): keyof E => {
+  let minDist = Infinity;
+  let dist: number;
+  let closest: keyof E;
+  for (const [key, hex] of Object.entries(list)) {
+    dist = distCallback(val, hex);
+    if (dist < minDist) {
+      closest = key as keyof E;
+      minDist = dist;
+    }
+  }
+  // @ts-expect-error `minDist` is init to be `Infinity`. Thus closest will be assigned value.
+  return closest;
 };
 
-/**
- * Capitalize a text.
- */
-export const toTitleCase = (str: string) =>
-  str.replace(
-    /\w\S*/g,
-    text => text[0].toUpperCase() + text.slice(1).toLowerCase()
-  );
-
-// About twice faster, but this function will not be called frequently.
-// export const capitalize = (text: string) => {
-//   const words = text.split(' ');
-//   words.forEach((str, i, arr) => {
-//     arr[i] = `${str[0].toUpperCase()}${str.slice(1)}`;
-//   });
-//   return words.join(' ');
-// };
-
-// export const kebabize = (text: string) =>
-//   text.replace(/[A-Z]+(?![a-z])|[A-Z]/g, ($, ofs) => (ofs ? '-' : '') + $.toLowerCase());
-
-/**
- * Array identity map.
- */
-export const identity = <T>(x: T[]): T[] => Array.from(x);
-
-// Sorting
 /**
  * Shuffle an array by Fisher-Yates shuffle. The process will change the input
  * array.
  * @template T
  * @param {Array<T>} arr The array be shuffled.
  */
-export function shuffle <T>(arr: Array<T>): void {
+export function shuffle <T>(arr: T[]): T[] {
   for (let i = arr.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [arr[i], arr[j]] = [arr[j], arr[i]];
   }
+  return arr;
 }
 /**
  * Quick sort an array in ascending order.
@@ -179,7 +133,6 @@ export function shuffle <T>(arr: Array<T>): void {
 //   return arr;
 // }
 
-// Averages
 /**
  * Evaluate elementwise mean of two arrays.
  * @param arr1 Numeric of a color.
@@ -194,17 +147,67 @@ export const elementwiseMean = (arr1: number[], arr2: number[]): number[] => {
   return newColor;
 };
 
-// Id generater
-const getRandomId = (prev?: string) => {
-  let id = (prev ?? '') + randomCharacter(true);
-  while (document.getElementById(id))
-    id += randomCharacter();
-  return id;
+
+
+// ### Value helpers
+/**
+ * Check whether a value is 'null' or 'undefined'.
+ */
+export const isNullish = (val: unknown) => toValue(val) == null;
+
+/**
+ * identity map.
+ */
+export const identity = <T>(x: T): T => x;
+
+/**
+ * Invert the boolean value of a ref. If `newVal` is given, assign newVal to ref.
+ */
+export const invertBoolean = (
+  ref: Ref<boolean> | ModelRef<boolean> | WritableComputedRef<boolean>,
+  newVal?: boolean
+) => ref.value = newVal ?? !toValue(ref);
+
+/**
+ * Evaluate length that are divided evenly by `num`.
+ * @param num Total number.
+ */
+export const equallyLength = (num: number): string => {
+  return `${toPercent(1 / num, 2)}%`;
 };
 
-export const getComponentId = (prefix: string = 'component') => {
-  const thisInstance = getCurrentInstance();
-  return thisInstance ? `${prefix}-${thisInstance.uid}` : getRandomId(prefix+'-');
+/**
+ * Divide evenly by `num` and return the `idx`-th position.
+ * @param num Total number.
+ */
+export const evalPosition = (idx: number, num: number): string => {
+  return `${toPercent(idx / num, 2)}%`;
 };
+
+export const randomCharacter = (noDigit: boolean = false) =>
+  `ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz${
+    noDigit ? '' : '0123456789'
+  }`.charAt(Math.floor(Math.random() * (noDigit ? 52 : 62)));
+
+/**
+ * Capitalize a text.
+ */
+export const toTitleCase = (str: string) =>
+  str.replace(
+    /\w\S*/g,
+    text => text[0].toUpperCase() + text.slice(1).toLowerCase()
+  );
+
+// About twice faster, but this function will not be called frequently.
+// export const capitalize = (text: string) => {
+//   const words = text.split(' ');
+//   words.forEach((str, i, arr) => {
+//     arr[i] = `${str[0].toUpperCase()}${str.slice(1)}`;
+//   });
+//   return words.join(' ');
+// };
+
+// export const kebabize = (text: string) =>
+//   text.replace(/[A-Z]+(?![a-z])|[A-Z]/g, ($, ofs) => (ofs ? '-' : '') + $.toLowerCase());
 
 export const sleep = (ms: number)  => new Promise(resolve => setTimeout(resolve, ms));

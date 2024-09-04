@@ -1,50 +1,33 @@
-import { identity } from './helpers';
+import { findClosestInHexMap, identity } from './helpers';
 import { clip, dot, mod, round, toPercent } from './numeric';
 import {
   RGB_MAXES, HSL_MAXES, HSB_MAXES, CMY_MAXES, CMYK_MAXES, XYZ_MAXES, LAB_MAXES,
+  HWB_MAXES,
 } from './constants.ts';
-import NAMED_COLORS from './named-color.json';
+import NamedColor from '@/assets/NamedColor.json';
 import type { ColorSpaceInfos, ColorSpaceTrans } from 'types/utilTypes.ts';
 import type { ColorSpacesType } from 'types/pltType.ts';
+
+export const unzipCssNamed = (name: string) => name.replace(/([A-Z])/g, ' $1').trim();
 
 /**
  * All names of CSS <named-color> (removed synonym name) with sapce between words.
  */
-export const fullNames = NAMED_COLORS.map(
-  ({ name }) => name.replace(/([A-Z])/g, ' $1').trim()
+export const unzipedNameList = Object.keys(NamedColor).map(
+  (name) => unzipCssNamed(name)
 );
 
 /**
  * Find the closet named-color.
  */
-export const getClosestNamed = (rgb: number[]): string => {
-  let minDist = Infinity;
-  let dist: number;
-  // `minDist` is init to be `Infinity`. Thus `name` will be assigned value.
-  let closestIdx: number = 0;
-  for (let i = 0; i < NAMED_COLORS.length; i++) {
-    const { value } = NAMED_COLORS[i];
-    // No need to take square root since we do not need the actual distance.
-    dist = 0;
-    for (let i = 0; i < 3; i++) {
-      dist += (rgb[i] - value[i])**2;
-    }
-
-    // Min dist between two named-color is about 4.24.
-    if (dist < 17.9) return fullNames[i]; // about 4.24**2 = 17.9776
-    if (dist < minDist) {
-      closestIdx = i;
-      minDist = dist;
-    }
-  }
-  return fullNames[closestIdx];
-};
+export const getClosestNamed = async (rgb: number[]): Promise<string> =>
+  findClosestInHexMap(rgb, NamedColor);
 
 /**
  * Get rgb values of CSS <named-color> by index of .json file
  */
-export const getNamedColorRgb = (idx: number) => {
-  return NAMED_COLORS[idx].value;
+export const getNamedColorRgb = (name: string): number[] => {
+  return hex2rgb(NamedColor[name as keyof typeof NamedColor] ?? 'fff');
 };
 
 
@@ -104,7 +87,7 @@ const lab2xyz = (lab: number[]): number[] => {
 };
 
 
-// From RGB.
+// ### From RGB.
 /**
  * Convert RGB to Hex.
  * @param rgb RGB color array.
@@ -126,6 +109,22 @@ export const rgb2gray = (rgb: number[]): number => {
   return rgb.reduce((cummul, val, i) => cummul += val * RGB_2_GRAY_COEFF[i], 0);
 };
 
+
+const srgb2linearRgb = (srgb: number[]) => {
+  return srgb.map(val =>
+    val < 10.31475 ?
+      val / 12.92 :
+      ((val/RGB_MAXES+0.055) / 1.055)**2.4 * RGB_MAXES
+  );
+};
+
+const linearRgb2srgb = (srgb: number[]) => {
+  return srgb.map(val =>
+    val < 0.798 ?
+      val * 12.92 :
+      ((val/RGB_MAXES)**0.42 * 1.055 - 0.055) * RGB_MAXES
+  );
+};
 
 /**
  * Calculate hue (H channel of HSL/HSB) from rgb. Also, returns minimum and
@@ -183,6 +182,19 @@ const rgb2hsb = (rgb: number[]): number[] => {
 };
 
 /**
+ * Convert RGB to HWB.
+ * @param rgb RGB color array.
+ * @return [hue, whiteness, blackness].
+ */
+const rgb2hwb = (rgb: number[]): number[] => {
+  const [hue, min, max] = rgb2hue(rgb);
+  return [
+    hue,
+    min * HWB_MAXES[1] / RGB_MAXES,
+    (RGB_MAXES - max) * HWB_MAXES[2] / RGB_MAXES];
+};
+
+/**
  * Convert RGB to CMY.
  * @param rgb RGB color array.
  * @return CMYK color array.
@@ -226,8 +238,9 @@ const RGB2XYZ_COEFF_ROW_SUM = RGB2XYZ_COEFF.map(row => row[0] + row[1] + row[2])
  */
 const rgb2xyz = (rgb: number[]): number[] => {
   const scalingCoeff = RGB2XYZ_COEFF_ROW_SUM.map(val => XYZ_MAXES / (RGB_MAXES * val));
+  const linearRgb = srgb2linearRgb(rgb);
   return RGB2XYZ_COEFF.map((row, i) => {
-    return dot(row, rgb) * scalingCoeff[i];
+    return dot(row, linearRgb) * scalingCoeff[i];
   });
 };
 
@@ -238,6 +251,34 @@ const rgb2xyz = (rgb: number[]): number[] => {
  */
 const rgb2lab = (rgb: number[]): number[] => {
   return xyz2lab(rgb2xyz(rgb));
+};
+
+/**
+ * Convert HSL to RGB.
+ * @param hsl HSL array.
+ * @return RGB color array.
+ */
+const hsl2rgb = (hsl: number[]): number[] => {
+  if (hsl[1] === 0) {
+    return hsl.map(() => hsl[2] / HSB_MAXES[2] * RGB_MAXES);
+  }
+  const temp = [...hsl];
+  // Normalize to [0, 1].
+  temp[1] /= HSL_MAXES[1];
+  temp[2] /= HSL_MAXES[2];
+  // Consts
+  const C = (1 - Math.abs(2 * temp[2] - 1)) * temp[1];
+  const X = C * (1 - Math.abs((temp[0] / 60) % 2 - 1));
+  const m = temp[2] - C / 2;
+  // Convert (Note: The formula can reduce.)
+  let rgbPrime;
+  if (temp[0] < 60) rgbPrime = [C, X, 0];
+  else if (temp[0] < 120) rgbPrime = [X, C, 0];
+  else if (temp[0] < 180) rgbPrime = [0, C, X];
+  else if (temp[0] < 240) rgbPrime = [0, X, C];
+  else if (temp[0] < 300) rgbPrime = [X, 0, C];
+  else rgbPrime = [C, 0, X];
+  return rgbPrime.map((val) => round(RGB_MAXES * (val + m), 2));
 };
 
 
@@ -270,32 +311,28 @@ const hsb2rgb = (hsb: number[]): number[] => {
   return rgbPrime.map((val) => round(RGB_MAXES * (val + m), 2));
 };
 
+
 /**
- * Convert HSL to RGB.
- * @param hsl HSL array.
+ * Convert HWB to HSB.
+ */
+const hwb2hsb = (hwb: number[]) => {
+  return [
+    hwb[0],
+    HSB_MAXES[1] * (1 - hwb[1] / (HWB_MAXES[1] - hwb[2])),
+    HSB_MAXES[2] * (1 - hwb[2] / HWB_MAXES[2])
+  ];
+};
+
+/**
+ * Convert HWB to RGB.
+ * @param hwb HWB color array.
  * @return RGB color array.
  */
-const hsl2rgb = (hsl: number[]): number[] => {
-  if (hsl[1] === 0) {
-    return hsl.map(() => hsl[2] / HSB_MAXES[2] * RGB_MAXES);
-  }
-  const temp = [...hsl];
-  // Normalize to [0, 1].
-  temp[1] /= HSL_MAXES[1];
-  temp[2] /= HSL_MAXES[2];
-  // Consts
-  const C = (1 - Math.abs(2 * temp[2] - 1)) * temp[1];
-  const X = C * (1 - Math.abs((temp[0] / 60) % 2 - 1));
-  const m = temp[2] - C / 2;
-  // Convert (Note: The formula can reduce.)
-  let rgbPrime;
-  if (temp[0] < 60) rgbPrime = [C, X, 0];
-  else if (temp[0] < 120) rgbPrime = [X, C, 0];
-  else if (temp[0] < 180) rgbPrime = [0, C, X];
-  else if (temp[0] < 240) rgbPrime = [0, X, C];
-  else if (temp[0] < 300) rgbPrime = [X, 0, C];
-  else rgbPrime = [C, 0, X];
-  return rgbPrime.map((val) => round(RGB_MAXES * (val + m), 2));
+const hwb2rgb = (hwb: number[]): number[] => {
+  // eslint-disable-next-line
+  let [h, w, b] = hwb;
+  if (w + b > HWB_MAXES[1]) [w, b] = [w / (w+b), b / (w+b)];
+  return hsb2rgb(hwb2hsb([h,w,b]));
 };
 
 /**
@@ -334,9 +371,10 @@ const XYZ2RGB_COEFF = [
 const xyz2rgb = (xyz: number[]): number[] => {
   const originXYZ = xyz.map((val, i) => val * RGB2XYZ_COEFF_ROW_SUM[i]);
   const scalingCoeff = RGB_MAXES / XYZ_MAXES;
-  return XYZ2RGB_COEFF.map((row) => {
+  const linearRgb = XYZ2RGB_COEFF.map((row) => {
     return clip(dot(row, originXYZ) * scalingCoeff, 0, RGB_MAXES);
   });
+  return linearRgb2srgb(linearRgb);
 };
 
 /**
@@ -391,6 +429,13 @@ export const getSpaceInfos = (space: ColorSpacesType): ColorSpaceInfos & ColorSp
       range: [...HSB_MAXES],
       converter: rgb2hsb,
       inverter: hsb2rgb,
+    };
+  case 'hwb':
+    return {
+      labels: ['Hue', 'Whiteness', 'Blackness'],
+      range: [...HWB_MAXES],
+      converter: rgb2hwb,
+      inverter: hwb2rgb,
     };
   case 'cmy':
     return {

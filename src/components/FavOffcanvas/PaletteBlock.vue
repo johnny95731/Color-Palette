@@ -41,7 +41,7 @@ import { toValue } from '@vueuse/core';
 import $style from './FavOffcanvas.module.scss';
 import TheIcon from '../TheIcon.vue';
 import { isValidHex } from '@/utils/colors';
-import { copyInnerHex } from '@/utils/eventHandler';
+import { copyInnerHex } from '@/utils/browser';
 import useFavStore from '@/features/stores/useFavStore';
 import usePltStore from '@/features/stores/usePltStore';
 

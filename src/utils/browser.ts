@@ -1,4 +1,37 @@
+import { getCurrentInstance } from 'vue';
+import { randomCharacter } from './helpers';
 import type { EventHandler } from '@/types/funcType';
+
+
+export function getPropertyValue(el: HTMLElement, property: string): number;
+export function getPropertyValue(el: string): number;
+export function getPropertyValue(
+  el: HTMLElement | string,
+  property?: string
+) {
+  if (typeof el === 'string') {
+    property = el;
+    el = document.documentElement;
+  }
+  const num = +getComputedStyle(el)
+    .getPropertyValue(property ?? 'width' as string)
+    .replace(/(px)|%|(rem)/g, '');
+  return Number.isNaN(num) ? 0 : num;
+
+}
+
+// Id generater
+const getRandomId = (prev?: string) => {
+  let id = (prev ?? '') + randomCharacter(true);
+  while (document.getElementById(id))
+    id += randomCharacter();
+  return id;
+};
+
+export const getComponentId = (prefix: string = 'component') => {
+  const thisInstance = getCurrentInstance();
+  return thisInstance ? `${prefix}-${thisInstance.uid}` : getRandomId(prefix+'-');
+};
 
 // Events
 export const stopPropagation = (e: Event) => e.stopPropagation();

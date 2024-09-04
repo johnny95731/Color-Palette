@@ -39,8 +39,9 @@ import {
   ModelRef,
   computed, onMounted, ref, watch,
 } from 'vue';
-import { getComponentId, invertBoolean } from '@/utils/helpers';
 import { toValue } from '@vueuse/core';
+import { invertBoolean } from '@/utils/helpers';
+import { getComponentId } from '@/utils/browser';
 
 type Props = {
   inputId?: string,

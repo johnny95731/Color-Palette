@@ -70,7 +70,7 @@ import TheBtn from '../Custom/TheBtn.vue';
 import OverlayContainer from '@/components/Custom/OverlayContainer.vue';
 import ColorBlock from './ColorBlock.vue';
 import PaletteBlock from './PaletteBlock.vue';
-import { isTabKey } from '@/utils/eventHandler';
+import { isTabKey } from '@/utils/browser';
 import usePltStore from '@/features/stores/usePltStore';
 import useFavStore from '@/features/stores/useFavStore';
 import type { IconType } from '@/utils/icons';

@@ -2,6 +2,7 @@ import {fileURLToPath, URL} from 'node:url';
 import {defineConfig} from 'vite';
 import vue from '@vitejs/plugin-vue';
 import autoprefixer from 'autoprefixer';
+import lightningcss from 'vite-plugin-lightningcss';
 
 const metaUrl = import.meta.url;
 // https://vitejs.dev/config/
@@ -12,9 +13,11 @@ export default defineConfig({
     assetsDir: '',
     sourcemap: false,
     minify: 'terser',
+    cssMinify: 'lightningcss',
     terserOptions: {
       compress: {
         booleans_as_integers: true,
+        drop_console: ['log', 'time', 'timeEnd']
       },
     }
   },
@@ -26,6 +29,9 @@ export default defineConfig({
         },
       },
     }),
+    lightningcss({
+      // browserslist: '>= 0.25%',
+    })
   ],
   resolve: {
     alias: {
@@ -41,7 +47,7 @@ export default defineConfig({
   css: {
     postcss: {
       plugins: [
-        autoprefixer({}) // add options if needed
+        autoprefixer()
       ],
     },
   },

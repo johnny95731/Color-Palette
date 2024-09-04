@@ -50,7 +50,7 @@ import { useWindowEventRegister } from '@/utils/composables/useWindowEventRegist
 // Stores / Contexts
 import usePltStore from '@/features/stores/usePltStore';
 import useSettingStore from '@/features/stores/useSettingStore';
-import media from '@/features/useMedia';
+import media from '@/utils/composables/useMedia';
 // Types
 import type { CSSProperties } from 'vue';
 

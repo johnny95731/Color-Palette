@@ -97,9 +97,10 @@ import TheBtn from './TheBtn.vue';
 import TheIcon from '../TheIcon.vue';
 // utils
 import { CURRENT_OPTION_WEIGHT } from '@/utils/constants';
-import { getComponentId, isNullish, invertBoolean } from '@/utils/helpers';
+import { isNullish, invertBoolean } from '@/utils/helpers';
+import { getComponentId } from '@/utils/browser';
 import { mod } from '@/utils/numeric';
-import { noModifierKey, shiftOnly } from '@/utils/eventHandler.ts';
+import { noModifierKey, shiftOnly } from '@/utils/browser';
 // types
 import type { CSSProperties, MaybeRefOrGetter, ModelRef } from 'vue';
 
@@ -264,9 +265,12 @@ onMounted(() => {
   updateMenuStyle();
 });
 
-watch(isOpened, (newVal) => {
+watch(isOpened, async (newVal) => {
   if (!newVal) return;
   updateMenuStyle();
+  await nextTick(); // Waiting DOM updated.
+  const target = toValue(containerRef)!.children[toValue(modelIndex)!];
+  target.scrollIntoView(true);
 });
 
 const handleClickBtn = (e: MouseEvent | FocusEvent, newVal?: boolean) => {

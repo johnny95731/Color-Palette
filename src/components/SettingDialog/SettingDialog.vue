@@ -158,7 +158,7 @@ import {
   CURRENT_OPTION_WEIGHT, BORDER_MAX_WIDTH, CONTRAST_METHODS, GAMMA_MAX,
   MULTIPLICATION_MAX, TRANSITION_MAX_COLOR, TRANSITION_MAX_POS, BORDER_COLOR,
 } from '@/utils/constants';
-import { isTabKey } from '@/utils/eventHandler';
+import { isTabKey } from '@/utils/browser';
 // Stores / Contexts
 import usePltStore from 'stores/usePltStore';
 import useSettingStore from 'stores/useSettingStore';

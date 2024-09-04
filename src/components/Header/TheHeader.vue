@@ -166,7 +166,7 @@ import { HOT_KEYS, sortingKey } from '@/utils/hotkeys';
 import { invertBoolean } from '@/utils/helpers';
 import { COLOR_SPACES, BLEND_MODES, SORTING_ACTIONS } from '@/utils/constants';
 // Stores / Contexts
-import media from '@/features/useMedia';
+import media from '@/utils/composables/useMedia';
 import usePltStore from '@/features/stores/usePltStore';
 import useSettingStore from '@/features/stores/useSettingStore';
 // Types
