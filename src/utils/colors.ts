@@ -331,7 +331,7 @@ const hwb2hsb = (hwb: number[]) => {
 const hwb2rgb = (hwb: number[]): number[] => {
   // eslint-disable-next-line
   let [h, w, b] = hwb;
-  if (w + b > HWB_MAXES[1]) [w, b] = [w / (w+b), b / (w+b)];
+  if (w + b > HWB_MAXES[1]) [w, b] = [HWB_MAXES[1] * w / (w+b), HWB_MAXES[2] * b / (w+b)];
   return hsb2rgb(hwb2hsb([h,w,b]));
 };
 
