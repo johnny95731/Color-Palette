@@ -1,4 +1,4 @@
-import { BORDER_COLOR } from '@/utils/constants';
+import { BORDER_COLOR } from '@/constants/settingStore';
 
 export type BorderStyleType = {
   /**
@@ -19,3 +19,14 @@ export type TransitionType = {
    */
   color: number
 }
+
+export type StateType = {
+  /**
+   * Border of cards.
+   */
+  border: BorderStyleType;
+  /**
+   * Transition of cards
+   */
+  transition: TransitionType;
+};

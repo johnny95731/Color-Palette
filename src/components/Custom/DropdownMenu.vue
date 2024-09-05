@@ -83,8 +83,9 @@ import { toTitleCase, sleep, invertBoolean } from '@/utils/helpers';
 import { getComponentId } from '@/utils/browser';
 import { mod } from '@/utils/numeric';
 import { noModifierKey, shiftOnly, hasPopup } from '@/utils/browser';
-import { CURRENT_OPTION_WEIGHT, MenuSymbol } from '@/utils/constants';
 import { useElementBounding } from '@/utils/composables/useElementBounding';
+// constants
+import { CURRENT_OPTION_WEIGHT, MenuSymbol } from '@/constants/browser';
 // Types
 import type { CSSProperties, ModelRef } from 'vue';
 import type { IconType } from '@/utils/icons';

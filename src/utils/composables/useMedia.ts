@@ -1,6 +1,6 @@
 import { reactive } from 'vue';
 import { getPropertyValue } from '@/utils/browser';
-import type { MediaContextType } from '@/features/types/mediaType';
+import type { MediaContextType } from 'types/media';
 
 /**
  * Device is small if device width <= (maxSmallSize)px.

@@ -41,11 +41,11 @@ import { toValue } from '@vueuse/core';
 import $style from './ThePalette.module.scss';
 import TheBtn from '../Custom/TheBtn.vue';
 import TheCard from './TheCard.vue';
-import { INIT_NUM_OF_CARDS, MAX_NUM_OF_CARDS } from '@/utils/constants';
+import { INIT_NUM_OF_CARDS, MAX_NUM_OF_CARDS } from '@/constants/pltStore';
 import { equallyLength, evalPosition } from '@/utils/helpers';
 import { round } from '@/utils/numeric';
 import { randRgbGen, rgb2hex } from '@/utils/colors';
-import { blenders } from '@/utils/blend';
+import { mixers } from '@/utils/mixing';
 import { useWindowEventRegister } from '@/utils/composables/useWindowEventRegister';
 // Stores / Contexts
 import usePltStore from '@/features/stores/usePltStore';
@@ -159,7 +159,7 @@ const eventInfo = ref<{
 const handleAddCard = (idx: number) => {
   // Evaluate new color.
   let rgb;
-  if (pltState.blendMode === 'random') rgb = randRgbGen();
+  if (pltState.mixMode === 'random') rgb = randRgbGen();
   else {
     const { inverter } = pltState.spaceInfos;
     // Pick cards.
@@ -171,7 +171,7 @@ const handleAddCard = (idx: number) => {
     // -Add to the last position. Blending the last card and white.
     if (idx === pltState.numOfCards) rightRgbColor = [255, 255, 255];
     else rightRgbColor = inverter(pltState.cards[idx].color);
-    rgb = blenders[pltState.blendMode](
+    rgb = mixers[`_${pltState.mixMode}`](
       leftRgbColor, rightRgbColor, pltState.colorSpace,
     );
   }

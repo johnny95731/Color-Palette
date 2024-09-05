@@ -1,17 +1,5 @@
 import { defineStore } from 'pinia';
-import type { BorderStyleType, TransitionType } from 'types/settingType.ts';
-
-
-type StateType = {
-  /**
-   * Border of cards.
-   */
-  border: BorderStyleType;
-  /**
-   * Transition of cards
-   */
-  transition: TransitionType;
-};
+import type { BorderStyleType, TransitionType, StateType } from 'types/settingStore';
 
 const initialState: StateType = {
   border: {

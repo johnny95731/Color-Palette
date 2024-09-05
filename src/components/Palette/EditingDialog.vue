@@ -101,7 +101,8 @@ import usePltStore from '@/features/stores/usePltStore';
 import media from '@/utils/composables/useMedia';
 // Types
 import type { CSSProperties } from 'vue';
-import type { CardType, ColorSpacesType } from '@/features/types/pltType';
+import type { CardType } from 'types/pltStore';
+import type { ColorSpacesType } from 'types/colors';
 
 type Props = {
   cardIdx: number;

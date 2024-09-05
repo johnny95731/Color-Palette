@@ -135,7 +135,7 @@ watch(() => [props.label, toValue(idForInput)], (newVal, oldVal) => {
       }
     });
   }
-  if (!isIdSame && newVal[0] && newVal[0].startsWith('#')) {
+  if (!isIdSame && newVal[0]?.startsWith('#')) {
     // Update HTMLFor for label if props.label refer to an element and input ID changed
     const element = document.getElementById(newVal[0].slice(1)) as HTMLLabelElement | null;
     if (element) element.htmlFor = newVal[1] as string;

@@ -1,5 +1,5 @@
 const iconMap = {
-  blend: 'file-earmark-plus',
+  mix: 'file-earmark-plus',
   bookmarks: 'bookmarks',
   caretDown: 'caret-down-fill',
   caretLeft: 'caret-left-fill',

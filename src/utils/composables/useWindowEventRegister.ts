@@ -2,7 +2,7 @@ import { isRef, watch } from 'vue';
 import { toValue } from '@vueuse/core';
 import { arraylize, arrFilter } from '../helpers';
 import type { MaybeRef, Arrayable,  WindowEventName } from '@vueuse/core';
-import type{ EventHandler } from '@/types/funcType';
+import type{ EventHandler } from '@/types/browser';
 
 
 const listenerOptions = ['once', 'capture', 'passive'] as const;

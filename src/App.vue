@@ -42,7 +42,7 @@ const SettingDialog = defineAsyncComponent(
       return component;
     })
 );
-import { OverlayDiv } from '@/utils/constants';
+import { OverlayDiv } from '@/constants/browser';
 import { HOT_KEYS, refreshKey, sortingKey } from './utils/hotkeys';
 import { invertBoolean } from './utils/helpers';
 // Store and Context

@@ -53,7 +53,7 @@ export const objPick = <T extends {}, K extends (string | number | symbol)>(
 
 
 // ### Array helpers
-export const arraylize = (val: Arrayable<unknown>) =>
+export const arraylize = <T>(val: Arrayable<T>) =>
   Array.isArray(val) ? val : [val];
 
 export const arrFilter = <T extends unknown>(

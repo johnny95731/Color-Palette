@@ -96,7 +96,7 @@ import OverlayContainer from './OverlayContainer.vue';
 import TheBtn from './TheBtn.vue';
 import TheIcon from '../TheIcon.vue';
 // utils
-import { CURRENT_OPTION_WEIGHT } from '@/utils/constants';
+import { CURRENT_OPTION_WEIGHT } from '@/constants/browser';
 import { isNullish, invertBoolean } from '@/utils/helpers';
 import { getComponentId } from '@/utils/browser';
 import { mod } from '@/utils/numeric';
@@ -179,7 +179,7 @@ watch(() => [props.label, toValue(idForInput)], (newVal, oldVal) => {
       }
     });
   }
-  if (!isIdSame && newVal[0] && newVal[0].startsWith('#')) {
+  if (!isIdSame && newVal[0]?.startsWith('#')) {
     // Update HTMLFor for label if props.label refer to an element and input ID changed
     const element = document.getElementById(newVal[0].slice(1)) as HTMLLabelElement | null;
     if (element) element.htmlFor = newVal[1] as string;

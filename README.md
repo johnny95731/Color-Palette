@@ -15,7 +15,7 @@
 - ### <span style="background: white"><img src="./src/assets/icons/sort-down.svg" alt="sort" /></span> Sort (排序)
   排序卡片。提供「依照亮度(Gray, 快捷鍵: `g`)」、「隨機排序(Random, 快捷鍵: `n`)」、「左右反轉(Inversion, 快捷鍵: `j`)」。
 
-- ### <span style="background: white"><img src="./src/assets/icons/file-earmark-plus.svg" alt="blend" /></span> Blend (混色方法)
+- ### <span style="background: white"><img src="./src/assets/icons/file-earmark-plus.svg" alt="mix" /></span> Blend (混色方法)
   新增卡片時的混色方法，提供「平均值（Mean，預設）」、「更亮(brighter)」、「更暗(deeper)」、「soft light」、「隨機(Random)」。平均值以指定的色彩空間計算。「brighter」與「deeper」先以RGB平均值計算，再透過HSL空間調整亮度與彩度。「[soft light](https://en.wikipedia.org/wiki/Blend_modes)」使用illusions.hu的公式(此方法非左右對稱)。
 
 - ### <span style="background: white"><img src="./src/assets/icons/sliders.svg" alt="edit" /></span> Space (色彩空間)

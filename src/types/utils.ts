@@ -1,6 +1,3 @@
-
-export type Blender = (c1: number[], c2: number[]) => number[];
-
 /**
  * Infomations about color space.
  */

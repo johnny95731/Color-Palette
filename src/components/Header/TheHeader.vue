@@ -25,11 +25,11 @@
     />
     <DropdownMenu
       text="Blend"
-      prepend-icon="blend"
+      prepend-icon="mix"
       :class="$style.btn"
-      :contents="BLEND_MODES"
-      :current-val="pltState.blendMode"
-      @click-item="pltState.setBlendMode($event as BlendingType)"
+      :contents="MIXING_MODES"
+      :current-val="pltState.mixMode"
+      @click-item="pltState.setBlendMode($event as MixingType)"
     />
     <DropdownMenu
       text="Space"
@@ -164,14 +164,16 @@ import TheBtn from '@/components/Custom/TheBtn.vue';
 // Utils
 import { HOT_KEYS, sortingKey } from '@/utils/hotkeys';
 import { invertBoolean } from '@/utils/helpers';
-import { COLOR_SPACES, BLEND_MODES, SORTING_ACTIONS } from '@/utils/constants';
+// Constants
+import { MIXING_MODES } from '@/constants/mixing';
+import { COLOR_SPACES, SORTING_ACTIONS } from '@/constants/colors';
 // Stores / Contexts
 import media from '@/utils/composables/useMedia';
 import usePltStore from '@/features/stores/usePltStore';
 import useSettingStore from '@/features/stores/useSettingStore';
 // Types
-import type { SortActionType } from 'types/pltType.ts';
-import type { BlendingType, ColorSpacesType } from 'types/pltType.ts';
+import type { ColorSpacesType, SortActionType } from 'types/colors';
+import type { MixingType } from 'types/mixing';
 
 // const btnsRef = ref<InstanceType<typeof HeaderBtns>>();
 const [DefineHeaderBtns, ReuseTemplate] = createReusableTemplate();

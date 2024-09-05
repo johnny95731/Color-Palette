@@ -65,10 +65,10 @@ import CondWrapper from '../Custom/CondWrapper.vue';
 import { stopPropagation } from '@/utils/browser';
 // Stores
 import usePltStore from '@/features/stores/usePltStore.ts';
-import useFavStore from '@/features/stores/useFavStore.ts';
+import useFavStore from '@/features/stores/useFavStore';
 // Types
 import type { CSSProperties } from 'vue';
-import type { CardType } from '@/features/types/pltType.ts';
+import type { CardType } from '@/features/types/pltStore';
 
 type Props = {
   cardIdx: number

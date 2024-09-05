@@ -79,7 +79,7 @@ import usePltStore from '@/features/stores/usePltStore';
 import media from '@/utils/composables/useMedia';
 // Types
 import type { CSSProperties } from 'vue';
-import type { CardType } from '@/features/types/pltType';
+import type { CardType } from '@/features/types/pltStore';
 
 const container = ref<HTMLElement>();
 const hexTextRef = ref<InstanceType<typeof TheBtn>>();

@@ -1,33 +1,17 @@
 import { defineStore } from 'pinia';
 import { get, update, set } from 'idb-keyval';
+import { favoritesDb, STORE_FAV_COLORS, STORE_FAV_PLTS } from '@/utils/database.ts';
+import type { StateType } from '../types/favStore';
 
-import {
-  favoritesDb, STORE_FAV_COLORS, STORE_FAV_PLTS,
-} from '../../utils/database.ts';
 
-type state = {
-  /**
-   * Favorite colors.
-   */
-  colors: string[];
-  /**
-   * Favorite palettes(plts).
-   */
-  plts: string[];
-  /**
-   * Whether the colors/plts is loaded.
-   */
-  isInitialized: [boolean, boolean];
-}
-
-const initialState: state = {
+const initialState: StateType = {
   colors: [],
   plts: [],
   isInitialized: [false, false],
 };
 
 const useFavStore = defineStore('favorites', {
-  state: (): state => initialState,
+  state: (): StateType => initialState,
   actions: {
     async initializeColors() {
       const colors = await get<string[]>(STORE_FAV_COLORS, favoritesDb);

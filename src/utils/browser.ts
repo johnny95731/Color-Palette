@@ -1,6 +1,6 @@
 import { getCurrentInstance } from 'vue';
 import { randomCharacter } from './helpers';
-import type { EventHandler } from '@/types/funcType';
+import type { EventHandler } from '@/types/browser';
 
 
 export function getPropertyValue(el: HTMLElement, property: string): number;

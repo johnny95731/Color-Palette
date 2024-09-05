@@ -1,6 +1,5 @@
 import { createStore } from 'idb-keyval';
 
-
 // Favorite
 export const favoritesDb = createStore('Palette', 'Favorites');
 // -Key: Favorite Colors

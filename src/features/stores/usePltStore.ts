@@ -2,16 +2,15 @@ import { defineStore } from 'pinia';
 // Utils
 import {
   rgb2gray, rgb2hex, randRgbGen, hex2rgb, getSpaceInfos, gammaCorrection, scaling,
+  sortingByGray,
 } from '@/utils/colors.ts';
 import { shuffle } from '@/utils/helpers.ts';
-import {
-  INIT_COLOR_SPACE, INIT_NUM_OF_CARDS, MAX_NUM_OF_CARDS,
-} from '@/utils/constants.ts';
+import { INIT_COLOR_SPACE, INIT_NUM_OF_CARDS, MAX_NUM_OF_CARDS } from '@/constants/pltStore';
 // Types
-import type {
-  CardType, OrderStateType, SortActionType, ColorSpacesType, BlendingType,
-} from '../types/pltType.ts';
-import type { ColorSpaceInfos, ColorSpaceTrans } from '@/types/utilTypes.ts';
+import type { CardType } from '@/features/types/pltStore';
+import type { OrderStateType, SortActionType, ColorSpacesType } from 'types/colors';
+import type { MixingType } from 'types/mixing';
+import type { ColorSpaceInfos, ColorSpaceTrans } from '@/types/utils.ts';
 
 
 /**
@@ -58,7 +57,7 @@ type StateType = {
   /**
    * How to evaluate a new color when insert a new card.
    */
-  blendMode: BlendingType;
+  mixMode: MixingType;
   /**
    * Color space which will be displayed under hex code and be used in edit
    * mode.
@@ -73,7 +72,7 @@ const initialState: StateType = {
   isPending: false,
   editingIdx: -1,
   isAdjustingPlt: false,
-  blendMode: 'mean',
+  mixMode: 'mean',
   colorSpace: INIT_COLOR_SPACE,
 };
 
@@ -113,10 +112,9 @@ const usePltStore = defineStore('plt', {
         if (this.cards[idx].isLock) return;
         this.cards[idx] = newCard(idx, this.colorSpace);
       } else if (idx === -1) {
-        for (let i = 0; i < this.numOfCards; i++) {
-          if (this.cards[i].isLock) continue;
-          this.cards[i] = newCard(i, this.colorSpace);
-        }
+        this.cards.forEach((card, i) =>
+          card.isLock || Object.assign(card, newCard(i, this.colorSpace))
+        );
       }
       this.sortBy = 'random';
     },
@@ -127,24 +125,18 @@ const usePltStore = defineStore('plt', {
       this.sortBy = 'random';
     },
     sortCards(sortBy: SortActionType) {
-      const { inverter } = this.spaceInfos;
       switch (sortBy) {
       case 'gray':
-        if (this.sortBy === 'gray') {
-          this.cards.reverse();
-          break;
-        }
-        this.cards.sort((a, b) => {
-          return rgb2gray(inverter(a.color)) - rgb2gray(inverter(b.color));
-        });
+        if (this.sortBy === 'gray') this.cards.reverse();
+        else sortingByGray(this.cards);
         this.sortBy = 'gray';
         break;
       case 'inversion':
         /**
-           * Inversion will not change sortBy. For example, if cards are sorted
-           * by gray (brightness), inversion just change most lightest card on
-           * left side or on right side.
-           */
+         * Inversion will not change sortBy. For example, if cards are sorted
+         * by gray, inversion just change the most lightest card on left side
+         * or on right side.
+         */
         this.cards.reverse();
         break;
       case 'random':
@@ -215,8 +207,8 @@ const usePltStore = defineStore('plt', {
         this.cards[i].color = converter(rgb);
       }
     },
-    setBlendMode(newBlendMode: BlendingType) {
-      this.blendMode = newBlendMode;
+    setBlendMode(newBlendMode: MixingType) {
+      this.mixMode = newBlendMode;
     },
     adjustContrast(method: number, coeff?: number) {
       if (!this.isAdjustingPlt) return;

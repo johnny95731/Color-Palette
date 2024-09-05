@@ -154,17 +154,19 @@ import TheBtn from './../Custom/TheBtn.vue';
 import SelectMenu from '../Custom/SelectMenu.vue';
 import TheSwitch from '../Custom/TheSwitch.vue';
 import TheSlider from '../Custom/TheSlider.vue';
-import {
-  CURRENT_OPTION_WEIGHT, BORDER_MAX_WIDTH, CONTRAST_METHODS, GAMMA_MAX,
-  MULTIPLICATION_MAX, TRANSITION_MAX_COLOR, TRANSITION_MAX_POS, BORDER_COLOR,
-} from '@/utils/constants';
 import { isTabKey } from '@/utils/browser';
+// constants
+import { CONTRAST_METHODS, GAMMA_MAX, MULTIPLICATION_MAX } from '@/constants/colors';
+import { CURRENT_OPTION_WEIGHT } from '@/constants/browser';
+import {
+  BORDER_MAX_WIDTH, TRANSITION_MAX_COLOR, TRANSITION_MAX_POS, BORDER_COLOR,
+} from '@/constants/settingStore';
 // Stores / Contexts
 import usePltStore from 'stores/usePltStore';
 import useSettingStore from 'stores/useSettingStore';
 // Types
 import type { CSSProperties } from 'vue';
-import type { TransitionType } from 'types/settingType';
+import type { TransitionType } from '@/features/types/settingStore';
 
 const emit = defineEmits<{
   (e: 'focusoutDialog'): void
