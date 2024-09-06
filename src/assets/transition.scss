@@ -1,29 +1,38 @@
 @use './commons.module.scss' as *;
 
-.slide-x-enter-active, .slide-x-leave-active {
-  transition: transform 250ms;
+$duration: 250ms;
+
+@keyframes slide-x {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+.slide-x-enter-active {
+  animation: slide-x $duration reverse;
+}
+.slide-x-leave-active {
+  animation: slide-x $duration;
 }
 
-.slide-x-enter-from, .slide-x-leave-to {
-  transform: translateX(100%);
-}
 
-
-@keyframes scroll-y-dialog {
+@keyframes slide-y {
   0% {
     opacity: 0;
-    transform: translate(-50%, calc(-50% - 50px));
+    transform: translateY(-50px);
   }
   100% {
     opacity: 1;
-    transform: translate(-50%, -50%);
+    transform: translateY(0);
   }
 }
-.scroll-y-dialog-enter-active {
-  animation: scroll-y-dialog 250ms;
+.slide-y-enter-active {
+  animation: slide-y $duration;
 }
-.scroll-y-dialog-leave-active {
-  animation: scroll-y-dialog 250ms reverse;
+.slide-y-leave-active {
+  animation: slide-y $duration reverse;
 }
 
 @keyframes ripple {
@@ -47,8 +56,8 @@
 }
 
 .fade-out-enter-active {
-  animation: fade 250ms reverse;
+  animation: fade $duration reverse;
 }
 .fade-out-leave-active {
-  animation: fade 250ms;
+  animation: fade $duration;
 }

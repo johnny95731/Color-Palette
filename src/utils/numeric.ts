@@ -83,13 +83,19 @@ export const rangeMapping = (
   val: number, min: number, max: number,
   newMin: number, newMax: number,
 ) => {
-  const ratio = clip((val - min) / (max - min), 0, 1);
+  const ratio = clip((val - min) / (max - min), 0, 1); // avoid floating problem.
   return newMin + ratio * (newMax - newMin);
 };
 
 /**
  * Dot product of two arrays.
  */
-export const dot = (a: readonly number[], b: readonly number[]): number => {
-  return a.reduce((prev, val, i) => prev + val * b[i], 0);
+export const dot = (arr1: readonly number[], arr2: readonly number[]): number => {
+  return arr1.reduce((prev, val, i) => prev + val * arr2[i], 0);
 };
+
+/**
+ * Sum of items of an array.
+ */
+export const sum = (arr: readonly number[]) =>
+  arr.reduce((prev, val) => prev + val, 0);

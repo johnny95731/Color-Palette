@@ -2,17 +2,20 @@
 
 // Containers
 .favOffcanvas {
-  position: fixed;
+  height: 100dvh;
+  width: 100vw;
+  pointer-events: none !important;
+}
+
+.container {
   display: flex;
   flex-direction: column;
-  top: 0;
-  right: 0;
-  height: 100vh;
+  margin-left: auto;
+  height: 100%;
   width: 300px;
   color: #fff;
   background-color: $color5;
-  z-index: 1;
-  pointer-events: all;
+  pointer-events: all !important;
   @include mobile {
     width: 100vw;
   }

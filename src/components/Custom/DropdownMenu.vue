@@ -31,7 +31,7 @@
     hide-scrim
     :eager="eager"
     aria-live="polite"
-    transition="scroll-y"
+    transition="slide-y"
     :esc-event="false"
     v-model="isOpened"
     @resize="nestedClosing"

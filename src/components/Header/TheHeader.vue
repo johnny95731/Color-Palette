@@ -16,7 +16,7 @@
       @click="haldleClickSlides"
     />
     <DropdownMenu
-      text="Sort"
+      text="Sorting"
       prepend-icon="sort"
       :class="$style.btn"
       :contents="sortingMenuItems"
@@ -24,7 +24,7 @@
       @click-item="pltState.sortCards($event as SortActionType)"
     />
     <DropdownMenu
-      text="Blend"
+      text="Mixing"
       prepend-icon="mix"
       :class="$style.btn"
       :contents="MIXING_MODES"
@@ -138,7 +138,7 @@
       v-if="!isSmall"
       :class="$style.menubar"
     >
-      <ReuseTemplate />
+      <HeaderBtns />
     </div>
     <DropdownMenu
       v-else
@@ -149,7 +149,7 @@
       hideTriangle
     >
       <template #items>
-        <ReuseTemplate />
+        <HeaderBtns />
       </template>
     </DropdownMenu>
   </header>
@@ -176,7 +176,7 @@ import type { ColorSpacesType, SortActionType } from 'types/colors';
 import type { MixingType } from 'types/mixing';
 
 // const btnsRef = ref<InstanceType<typeof HeaderBtns>>();
-const [DefineHeaderBtns, ReuseTemplate] = createReusableTemplate();
+const [DefineHeaderBtns, HeaderBtns] = createReusableTemplate();
 
 const bookmarksRef = ref<InstanceType<typeof TheBtn>>();
 const settingsRef = ref<InstanceType<typeof TheBtn>>();

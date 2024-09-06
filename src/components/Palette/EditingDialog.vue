@@ -209,8 +209,9 @@ const handleSliderChange = function(newVal: number, idx: number) {
 
 const selectRef = ref<InstanceType<typeof SelectMenu>>();
 const selectName = (name: string) => {
-  pltState.editCard({
-    idx: props.cardIdx,
-    color: getNamedColorRgb(name.replaceAll(' ', '')) });
+  pltState.editCard(
+    props.cardIdx,
+    getNamedColorRgb(name.replaceAll(' ', ''))
+  );
 };
 </script>

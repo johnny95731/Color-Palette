@@ -110,7 +110,7 @@ const roundedColor = computed({
     return props.card.color.map((val) => round(val));
   },
   set(newColorArr: number[]) {
-    pltState.editCard({ idx: props.cardIdx, color: newColorArr });
+    pltState.editCard(props.cardIdx, newColorArr);
   }
 });
 

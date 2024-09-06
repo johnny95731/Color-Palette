@@ -1,15 +1,17 @@
-import { findClosestInHexMap, identity } from './helpers';
-import { clip, dot, mod, round, toPercent } from './numeric';
 import NamedColor from '@/assets/NamedColor.json';
+import { findClosestInHexMap } from './helpers';
+import { clip, dot, mod, rangeMapping, round, toPercent } from './numeric';
 import {
   RGB_MAX, HSL_MAX, HWB_MAX, HSB_MAX, CMY_MAX, CMYK_MAX, XYZ_MAX, LAB_MAX,
   RGB2XYZ_COEFF_ROW_SUM, XYZ2RGB_COEFF, RGB2XYZ_COEFF, XYZ_MAX_SCALING,
+  YUV_MAX,
 } from '@/constants/colors.ts';
 import type { ColorSpaceInfos, ColorSpaceTrans } from '@/types/utils';
-import type { ColorSpacesType } from '@/types/colors';
+import type { ColorSpacesType, ContrastMethodType } from '@/types/colors';
 
 export const unzipCssNamed = (name: string) => name.replace(/([A-Z])/g, ' $1').trim();
 
+// ### CSS Named
 /**
  * All names of CSS <named-color> (removed synonym name) with sapce between words.
  */
@@ -32,33 +34,6 @@ export const getNamedColorRgb = (name: string): number[] => {
 
 
 // LAB
-// const LAB_DELTA = 6 / 29;
-// /**
-//  * Function that be used in the transformation of CIE XYZ to CIE LAB.
-//  * The function maps [0, 1] into [4/29, 1]
-//  */
-// const labFunc = (() => {
-//   const scaling = 1 / (3 * LAB_DELTA**2);
-//   const bias = 4 / 29;
-//   return (val: number): number => {
-//     return val > LAB_DELTA ** 3 ?
-//       val ** (1/3) :
-//       scaling * val + bias;
-//     // `4 / 29` is chosen for making the minimum of L (in LAB) equals 0.
-//   };
-// })();
-// /**
-//  * Function that be used in the transformation of CIE LAB to CIE XYZ.
-//  * The function maps [4/29, 1] into [0, 1]
-//  */
-// const labFuncInv = (val: number) => {
-//   const scaling = 1 / (3 * LAB_DELTA**2);
-//   const bias = 4 / 29;
-//   return val > LAB_DELTA ?
-//     val ** 3 :
-//     (val - bias) / scaling;
-// };
-
 const [labFunc, labFuncInv] = (() => {
   const thresh = (6/29) ** 3; // threshold
   const scaling = 7.787; // = 1 / (3 * LAB_DELTA**2)
@@ -116,7 +91,8 @@ const lab2xyz = (lab: number[]): number[] => {
   ].map((val, i) => val * XYZ_MAX_SCALING * RGB2XYZ_COEFF_ROW_SUM[i]);
 };
 
-// ### From RGB.
+
+// ### Convert from RGB to other spaces.
 /**
  * Convert RGB to Hex.
  * @param rgb RGB color array.
@@ -132,7 +108,7 @@ const RGB_2_GRAY_COEFF = [0.299, 0.587, 0.114];
 /**
  * Conver Hex to grayscale.
  * @param rgb Array of RGB color.
- * @return grayscale
+ * @return grayscale [0, RGB_Max]
  */
 export const rgb2gray = (rgb: number[]): number => {
   return rgb.reduce((cummul, val, i) => cummul += val * RGB_2_GRAY_COEFF[i], 0);
@@ -269,6 +245,26 @@ const rgb2lab = (rgb: number[]): number[] => {
 };
 
 /**
+ * Convert RGB to YUV.
+ * @param rgb RGB color array.
+ * @return YUV color array.
+ */
+const rgb2yuv = (() => {
+  const matrix = [
+    [ 0.299, 0.587, 0.114],
+    [-0.169,-0.331, 0.5  ],
+    [ 0.5,  -0.419,-0.081]
+  ];
+  return (rgb: number[]): number[] => {
+    return matrix
+      .map(row => dot(row, rgb))
+      .map((val, i) => val + (i&&128)); // [0, 128, 128]
+  };
+})();
+
+
+// ### Convert From other space to RGB.
+/**
  * Convert HSL to RGB.
  * @param hsl HSL array.
  * @return RGB color array.
@@ -394,7 +390,25 @@ const lab2rgb = (lab: number[]): number[] => {
   return xyz2rgb(lab2xyz(lab));
 };
 
-export const removeNonHex = (str: string) => str.replace(/[^0-9A-F]/ig, '');
+/**
+ * Convert YUV to sRGB.
+ * @param yuv YUV color array.
+ * @return sRGB color array.
+ */
+const yuv2rgb = (() => {
+  const matrix = [
+    [1,-0.00093, 1.401687],
+    [1,-0.3437, -0.71417 ],
+    [1, 1.77216, 0.00099 ]
+  ];
+  return (yuv: number[]): number[] => {
+    const pre = yuv.map((val, i) => val - (i&&128));
+    return matrix.map(row => clip(dot(row, pre), 0, RGB_MAX));
+
+  };
+})();
+
+const removeNonHex = (str: string) => str.replace(/[^0-9A-F]/ig, '');
 
 /**
  * Convert Hex color to RGB color.
@@ -422,7 +436,9 @@ export const isValidHex = (str: string): boolean =>
  * Return labels(name of channels), range, converter(from RGB to space),
  * and inverter(to RGB)
  */
-export const getSpaceInfos = (space: ColorSpacesType): ColorSpaceInfos & ColorSpaceTrans => {
+export const getSpaceInfos = (
+  space: ColorSpacesType
+): ColorSpaceInfos & ColorSpaceTrans => {
   switch (space) {
   case 'hsl':
     return {
@@ -473,65 +489,84 @@ export const getSpaceInfos = (space: ColorSpacesType): ColorSpaceInfos & ColorSp
       converter: rgb2lab,
       inverter: lab2rgb,
     };
+  case 'yuv':
+    return {
+      labels: ['Y', 'U', 'V'],
+      range: [YUV_MAX, YUV_MAX, YUV_MAX],
+      converter: rgb2yuv,
+      inverter: yuv2rgb,
+    };
   default: // "rgb" and "name"
     return {
       labels: ['Red', 'Green', 'Blue'],
       range: [RGB_MAX, RGB_MAX, RGB_MAX],
-      converter: identity,
-      inverter: identity,
+      converter: (x) => Array.from(x),
+      inverter: (x) => Array.from(x),
     };
   }
 };
 
 
-// Generators
+// ### Color distance
+
+
+// ### Harmonie palatte generators
+
+
+// ### Generators
 /**
  * Generate an RGB color.
  * @return [R, G, B]
  */
-export const randRgbGen = (): number[] => {
-  return Array.from({ length: 3 },
-    () => Math.floor(Math.random() * (RGB_MAX + 1)));
-};
+export const randRgbGen = (): number[] =>
+  [0,0,0].map(() => Math.floor(Math.random() * (RGB_MAX + 1)));
 
 /**
  * Generate a linear gradient along an axis for a given color and space.
  */
-export const gradientGen = (
-  colors: number[], axis: number, space: ColorSpacesType,
-) => {
-  const { inverter } = getSpaceInfos(space);
-  const { range } = getSpaceInfos(space);
+export const gradientGen = (() => {
+  /**
+   * S
+   */
   const steps = 8;
-  const minmax = (
-    typeof range[axis] === 'number' ?
-      [0, range[axis]] :
-      [...range[axis]]
-  );
-  const unitIncreament = (minmax[1] - minmax[0]) / steps;
-  const grads: string[] = [];
-  const arr = [...colors];
-  for (let j = 0; j < steps; j++) {
-    arr.splice(axis, 1, minmax[0] + j * unitIncreament);
-    grads.push(`${rgb2hex(inverter(arr))} ${toPercent(j/steps)}%`);
-  }
-  arr.splice(axis, 1, minmax[1]);
-  grads.push(`${rgb2hex(inverter(arr))} 100%`);
-  return `linear-gradient(90deg, ${grads.join(', ')})`;
-};
+  return (
+    colors: number[], axis: number, space: ColorSpacesType,
+  ) => {
+    const { inverter } = getSpaceInfos(space);
+    const { range } = getSpaceInfos(space);
+    /**
+     * Range of space in specific axis (channel).
+     */
+    const [min, max] = (
+      typeof range[axis] === 'number' ?
+        [0, range[axis]] :
+        [...range[axis]]
+    );
+    const unitIncreament = (max - min) / steps;
+    const grads: string[] = [];
+    const arr = [...colors];
+    for (let j = 0; j < steps+1; j++) {
+      arr.splice(axis, 1, min + j * unitIncreament);
+      grads.push(`${rgb2hex(inverter(arr))} ${toPercent(j/steps)}%`);
+    }
+    // arr.splice(axis, 1, max);
+    // grads.push(`${rgb2hex(inverter(arr))} 100%`);
+    return `linear-gradient(90deg, ${grads.join(', ')})`;
+  };
+})();
 
 
-// Adjusts contrast.
+// ### Adjusts contrast.
 /**
  * Scale ths values of RGB.
  * @param rgbs RGB arrays.
  * @param c Scaling coefficient.
  * @return `rgb` after scaling.
  */
-export const scaling = (rgbs: number[][], c: number): typeof rgbs => {
+const scaling = (rgbs: number[][], c: number): number[][] => {
   for (let i = 0; i < rgbs.length; i++) {
     for (let j = 0; j < rgbs[i].length; j++) {
-      rgbs[i][j] = rgbs[i][j] * c > RGB_MAX ? RGB_MAX : rgbs[i][j] * c;
+      rgbs[i][j] = clip(rgbs[i][j] * c, 0, RGB_MAX);
     }
   }
   return rgbs;
@@ -539,28 +574,43 @@ export const scaling = (rgbs: number[][], c: number): typeof rgbs => {
 
 /**
  * Gamma correction to RGB array(s).
- * @param rgb RGB array(s).
+ * @param rgbs RGB array(s).
  * @param gamma Gamma coefficient.
  * @return `rgb` after correction. The type is the
  * same as `rgb`.
  */
-export const gammaCorrection = (
-  rgb: number[] | number[][], gamma: number,
-): typeof rgb => {
-  if (typeof rgb[0] === 'number') {
-    const normalizeCoeff = RGB_MAX ** (1 - gamma);
-    return (rgb as number[]).map((val) => normalizeCoeff * (val ** gamma));
-  } else {
-    return (rgb as number[][]).map(
-      (arr) => gammaCorrection(arr, gamma) as number[],
-    );
-  }
+const gammaCorrection = (rgbs: number[][], gamma: number): number[][] => {
+  const normalizeCoeff = RGB_MAX ** (1 - gamma);
+  return rgbs.map(
+    (arr) => arr.map((val) => normalizeCoeff * (val ** gamma))
+  );
+};
+
+/**
+ * Scaling the range of brightness values of a color array in YUV space to a
+ * larger range.
+ */
+const brightnessScaling = (rgbs: number[][]): number[][] => {
+  const yuvs = rgbs.map((arr) => rgb2yuv(arr));
+  const [minY, maxY] = yuvs.reduce((prev, val) => {
+    if (val[2] < prev[0]) prev[0] = val[0];
+    if (val[2] > prev[1]) prev[1] = val[0];
+    return prev;
+  }, [YUV_MAX, 0]);
+  const range = [minY, maxY, Math.sqrt(minY), YUV_MAX] as const;
+  yuvs.forEach(yuv => yuv[0] = rangeMapping(yuv[0], ...range));
+  return yuvs.map(yuv => yuv2rgb(yuv));
 };
 
 
-// Sorting
+export const getContrastAdjuster = (method: ContrastMethodType) => {
+  if (method === 'linear') return scaling;
+  if (method === 'gamma') return gammaCorrection;
+  if (method === 'brightness scaling') return brightnessScaling;
+  return brightnessScaling;
+};
+
+// ### Sorting
 export const sortingByGray = <T extends {hex: string}>(arr: T[]) => {
-  return arr.sort((a, b) => {
-    return rgb2gray(hex2rgb(a.hex)) - rgb2gray(hex2rgb(b.hex));
-  });
+  return arr.toSorted((a, b) => rgb2gray(hex2rgb(a.hex)) - rgb2gray(hex2rgb(b.hex)));
 };

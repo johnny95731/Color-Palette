@@ -14,4 +14,4 @@ export type SortActionType = typeof SORTING_ACTIONS[number];
 /**
  * Support contrast adjusting methods.
  */
-export type ContrastMethods = typeof CONTRAST_METHODS[number];
+export type ContrastMethodType = typeof CONTRAST_METHODS[number];

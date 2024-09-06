@@ -10,13 +10,11 @@
   <FavOffcanvas
     v-if="isFirstTimeFav"
     v-model="isFavShowing"
-    @click="handleOverlayChanged"
     @focusout-dialog="headerRef?.focusBookmarks()"
   />
   <SettingDialog
     v-if="isFirstTimeSettings"
     v-model="isSettingsShowing"
-    @click="handleOverlayChanged"
     @focusout-dialog="headerRef?.focusSettings()"
   />
 </template>
@@ -62,19 +60,7 @@ const isShowOverlay = computed(() =>
 const headerRef = ref<InstanceType<typeof TheHeader>>();
 
 const pltState = usePltStore();
-const isCardPending = computed(() =>
-  pltState.isEditing || pltState.isPending
-);
-
-const handleOverlayChanged = () => {
-  // if (pltState.isEditing) {
-  //   pltState.setEditingIdx();
-  //   return;
-  // }
-  pltState.isEditing ?
-    pltState.setEditingIdx() :
-    pltState.setIsAdjustingPlt('cancel');
-};
+const isCardPending = computed(() => pltState.isEditing || pltState.isPending);
 
 const handleShowFav = async () => {
   toValue(isFirstTimeFav) && invertBoolean(isFavShowing);
@@ -93,9 +79,6 @@ const handleShowSettings = async () => {
   const { [sortingKey]: sortingHotkey, [refreshKey]: refreshHotkey } = HOT_KEYS;
   const keyDownEvent = (e: KeyboardEvent) => {
     const key = e.key.toLowerCase();
-    if (key === 'escape' && !toValue(isCardPending) && toValue(isShowOverlay)) {
-      handleOverlayChanged();
-    }
     if (
       // Prevent trigger hotkey when editing or add/remove/move (transition) card.
       toValue(isCardPending) || toValue(isShowOverlay) ||

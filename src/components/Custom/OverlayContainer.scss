@@ -2,13 +2,26 @@
 
 .overlay {
   @include overlay(fixed);
+  display: flex;
   z-index: 999;
-  > *:not(.overlay-scrim) {
-    pointer-events: all;
+  pointer-events: none;
+  > .overlay__content {
+    pointer-events: auto;
+    z-index: 1;
   }
 }
 
-.overlay-scrim {
-  @include overlay(fixed, $pointer: auto);
-  background-color: #0008;
+.overlay__scrim {
+  @include overlay(fixed);
+  background-color: #0007;
+  pointer-events: auto;
+}
+
+.dialog {
+  align-items: center;
+  justify-content: center;
+  margin: auto;
+  > .overlay__content {
+    display: inline-block;
+  }
 }

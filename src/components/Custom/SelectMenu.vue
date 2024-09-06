@@ -218,11 +218,8 @@ const handleNullishModel = (
 watch(
   () => [toValue(model), toValue(modelIndex)],
   (newVal, oldVal) => {
-    if (
-      // @ts-expect-error Initialize or injected models are removed.
-      handleNullishModel(...newVal) ||
-      newVal.every((val, i) => val === (oldVal && oldVal[i]))
-    ) return;
+    // @ts-expect-error Initialize or injected models are removed.
+    if (handleNullishModel(...newVal)) return;
     else if (newVal[0] !== oldVal![0]) { // model changed
       const idxOfModel = props.options.indexOf(toValue(model) as string);
       modelIndex.value = idxOfModel;

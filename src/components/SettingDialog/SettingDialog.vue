@@ -1,115 +1,115 @@
 <template>
   <OverlayContainer
+    :content-class="$style.settingDialog"
     role="dialog"
     :eager="true"
-    transition="scroll-y-dialog"
+    transition="slide-y"
+    transparent
     v-model="model"
   >
-    <div
-      :class="$style.settingDialog"
+    <header
+      v-once
+      :class="$style.header"
     >
-      <header
-        v-once
-        :class="$style.header"
-      >
-        <h2>Settings</h2>
-        <TheBtn
-          icon="close"
-          aria-label="close"
-          @click="model = false"
-        />
-      </header>
-      <div
-        :class="$style.menubar"
-      >
-        <TheBtn
-          v-for="(opt, i) in tabLabels"
-          :key="`setting-${opt}`"
-          :ref="el => tabRefs[i] = el as InstanceType<typeof TheBtn>"
-          :class="$style.tab"
-          :style="tabStyleState[i]"
-          :text="opt"
-          @click="switchTab(i)"
-        />
-      </div>
-      <div :class="$style.content">
-        <!-- Page 0: Card -->
-        <template v-if="tabIdx === 0">
-          <div
-            :class="$style.region"
-            aria-labelledby="title-Border"
-          >
-            <h3 id="title-Border">
-              Border
-            </h3>
-            <span>Show</span>
-            <TheSwitch
-              label="show border"
-              hide-label
-              :model-value="settingsState.border.show"
-              @update:model-value="settingsState.setBorder('show', $event)"
-            />
-            <template v-if="settingsState.border.show">
-              <label
-                id="border-width"
-              >Width(px)</label>
-              <TheSlider
-                label="#border-width"
-                :max="BORDER_MAX_WIDTH"
-                :model-value="settingsState.border.width"
-                @update:model-value="settingsState.setBorder('width', $event)"
-              />
-              <label
-                id="border-color"
-                :class="$style.subOption"
-              >Color</label>
-              <SelectMenu
-                :class="$style.subOption"
-                label="#border-color"
-                :options="BORDER_COLOR"
-                :model-value="settingsState.border.color"
-                @update:model-value="settingsState.setBorder('color', $event)"
-              />
-            </template>
-          </div>
-          <div :class="$style.region">
-            <h3>Transition</h3>
+      <h2>Settings</h2>
+      <TheBtn
+        icon="close"
+        aria-label="close"
+        @click="model = false"
+      />
+    </header>
+    <div
+      :class="$style.menubar"
+    >
+      <TheBtn
+        v-for="(opt, i) in tabLabels"
+        :key="`setting-${opt}`"
+        :ref="el => tabRefs[i] = el as InstanceType<typeof TheBtn>"
+        :class="$style.tab"
+        :style="tabStyleState[i]"
+        :text="opt"
+        @click="switchTab(i)"
+      />
+    </div>
+    <div :class="$style.content">
+      <!-- Page 0: Card -->
+      <template v-if="tabIdx === 0">
+        <div
+          :class="$style.region"
+          aria-labelledby="title-Border"
+        >
+          <h3 id="title-Border">
+            Border
+          </h3>
+          <span>Show</span>
+          <TheSwitch
+            label="show border"
+            hide-label
+            :model-value="settingsState.border.show"
+            @update:model-value="settingsState.setBorder('show', $event)"
+          />
+          <template v-if="settingsState.border.show">
             <label
-              id="transition-position"
-            >Position1(ms)</label>
+              id="border-width"
+            >Width(px)</label>
             <TheSlider
-              label="#transition-position"
-              :max="TRANSITION_MAX_POS"
-              :step="50"
-              :model-value="settingsState.transition.pos"
-              @update:model-value="handleTransitionChanged($event, 'pos')"
+              label="#border-width"
+              :max="BORDER_MAX_WIDTH"
+              :model-value="settingsState.border.width"
+              @update:model-value="settingsState.setBorder('width', $event)"
             />
             <label
-              id="transition-color"
-            >Color(ms)</label>
-            <TheSlider
-              label="#transition-color"
-              :max="TRANSITION_MAX_COLOR"
-              :step="50"
-              :model-value="transition.color"
-              @update:model-value="handleTransitionChanged($event, 'color')"
-              @keydown="switchTab(1)"
-            />
-          </div>
-        </template>
-        <!-- Page 1: Contrast -->
-        <template v-else-if="tabIdx === 1">
-          <div :class="$style.region">
-            <label
-              v-once
-              id="contrast-method"
-            >Method</label>
+              id="border-color"
+              :class="$style.subOption"
+            >Color</label>
             <SelectMenu
-              label="#contrast-method"
-              :options="CONTRAST_METHODS"
-              v-model:index="contrastArgs.method"
-              @update:index="updateContrastColor"
+              :class="$style.subOption"
+              label="#border-color"
+              :options="BORDER_COLOR"
+              :model-value="settingsState.border.color"
+              @update:model-value="settingsState.setBorder('color', $event)"
             />
+          </template>
+        </div>
+        <div :class="$style.region">
+          <h3>Transition</h3>
+          <label
+            id="transition-position"
+          >Position1(ms)</label>
+          <TheSlider
+            label="#transition-position"
+            :max="TRANSITION_MAX_POS"
+            :step="50"
+            :model-value="settingsState.transition.pos"
+            @update:model-value="handleTransitionChanged($event, 'pos')"
+          />
+          <label
+            id="transition-color"
+          >Color(ms)</label>
+          <TheSlider
+            label="#transition-color"
+            :max="TRANSITION_MAX_COLOR"
+            :step="50"
+            :model-value="transition.color"
+            @update:model-value="handleTransitionChanged($event, 'color')"
+            @keydown.tab="switchTab(1)"
+          />
+        </div>
+      </template>
+      <!-- Page 1: Contrast -->
+      <template v-else-if="tabIdx === 1">
+        <div :class="$style.region">
+          <label
+            v-once
+            id="contrast-method"
+          >Method</label>
+          <SelectMenu
+            label="#contrast-method"
+            :options="CONTRAST_METHODS"
+            :index="contrastArgs.method"
+            @update:index="handleMethodChanged($event)"
+          />
+          <template v-if="contrastArgs.method !== 2">
             <label
               id="contrast-coeff-name"
             >Coeff.</label>
@@ -120,28 +120,28 @@
               :model-value="contrastArgs[contrastArgs.method]"
               @update:model-value="
                 contrastArgs[contrastArgs.method] = $event;
-                updateContrastColor();
+                updateContrastDisplay();
               "
             />
-            <div
-              v-once
-              :class="$style.buttons"
-            >
-              <TheBtn
-                text="Reset"
-                :class="$style.resetBtn"
-                @click="contrastBtnEvent('reset')"
-              />
-              <TheBtn
-                text="Apply"
-                :class="$style.applyBtn"
-                @keydown="handleFocusoutDialog"
-                @click="contrastBtnEvent('start')"
-              />
-            </div>
+          </template>
+          <div
+            v-once
+            :class="$style.buttons"
+          >
+            <TheBtn
+              text="Reset"
+              :class="$style.resetBtn"
+              @click="contrastBtnEvent('reset')"
+            />
+            <TheBtn
+              text="Apply"
+              :class="$style.applyBtn"
+              @keydown="handleFocusoutDialog"
+              @click="contrastBtnEvent('start')"
+            />
           </div>
-        </template>
-      </div>
+        </div>
+      </template>
     </div>
   </OverlayContainer>
 </template>
@@ -192,12 +192,11 @@ function handleFocusoutDialog(e: KeyboardEvent) {
 
 watch(model, async (newVal) => {
   await nextTick();
-  newVal && tabRefs.value[tabIdx.value]?.$el.focus();
   if (newVal && tabIdx.value === 1) {
     // Start adjusting when open dialog and in 2nd tab
     pltState.setIsAdjustingPlt('start');
-    updateContrastColor();
-  }
+    updateContrastDisplay();
+  } else if (!newVal) pltState.setIsAdjustingPlt('cancel');
 });
 
 /**
@@ -206,8 +205,7 @@ watch(model, async (newVal) => {
 const tabSelectedStyle = {
   ...CURRENT_OPTION_WEIGHT,
   color: $style.color5,
-  backgroundColor: $style.color1,
-  '--overlay-hover-opacity': 0,
+  backgroundColor: $style.color1
 } as CSSProperties;
 const tabStyleState = computed<(CSSProperties | undefined)[]>(() =>
   tabLabels.map((_, i) => (
@@ -218,7 +216,7 @@ const tabStyleState = computed<(CSSProperties | undefined)[]>(() =>
 const switchTab = (idx: number) => {
   if (idx === 1) { // Switch to tab-1
     pltState.setIsAdjustingPlt('start');
-    updateContrastColor();
+    updateContrastDisplay();
   } else if (tabIdx.value === 1) // From tab-1 switch to another tab.
     pltState.setIsAdjustingPlt('cancel');
   tabIdx.value = idx;
@@ -253,10 +251,17 @@ const contrastArgs = reactive<ContrastArgsType>(
     (prev, _, i) => (prev[i] = 1) && prev,
     { method: 0 } as ContrastArgsType
   ));
-const contrastCoeffMax = computed(() =>
-  contrastArgs.method ? GAMMA_MAX :  MULTIPLICATION_MAX);
+const contrastCoeffMax = computed(() => {
+  return contrastArgs.method ? GAMMA_MAX : MULTIPLICATION_MAX;
+});
 
-function updateContrastColor() {
+const handleMethodChanged = (idx: number) => {
+  contrastArgs.method = idx!;
+  pltState.setIsAdjustingPlt('reset');
+  updateContrastDisplay();
+};
+
+function updateContrastDisplay() {
   pltState.adjustContrast(
     contrastArgs.method,
     contrastArgs[contrastArgs.method]
@@ -266,6 +271,6 @@ function updateContrastColor() {
 const contrastBtnEvent = (state: 'start' | 'reset') => {
   pltState.setIsAdjustingPlt(state);
   contrastArgs[contrastArgs.method] = 1;
-  updateContrastColor();
+  updateContrastDisplay();
 };
 </script>

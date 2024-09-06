@@ -38,20 +38,22 @@ const additive = (
   return inverter(newColor);
 };
 
-const GAMMA_CONST = 2**(- 2 / 255);
 /**
  * Blending two colors by  illusions.hu's Soft Light formula.
  * @param color1 Numeric of a color.
  * @param color2 Numeric of a color.
  * @returns The mean value of color1 and color2.
  */
-const softLightBlend = (color1: number[], color2: number[]) => {
-  const newColor = new Array(color1.length);
-  for (let i = 0; i < color1.length; i++) {
-    newColor[i] = 255 * (color1[i] / 255) ** (2 * GAMMA_CONST**color2[i]);
-  }
-  return newColor;
-};
+const softLightBlend = (() => {
+  const GAMMA_CONST = 2**(- 2 / 255);
+  return (color1: number[], color2: number[]) => {
+    const newColor = new Array(color1.length);
+    for (let i = 0; i < color1.length; i++) {
+      newColor[i] = 255 * (color1[i] / 255) ** (2 * GAMMA_CONST**color2[i]);
+    }
+    return newColor;
+  };
+})();
 
 /**
  * Take the mean mix of color1 and color2 and do gamma correction to adjust

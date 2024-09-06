@@ -1,10 +1,13 @@
 <template>
   <Teleport to="#overlay-container">
     <div
-      v-if="eager || isActive"
-      v-show="isActive"
+      v-if="eager || model || isActive"
+      v-show="model || isActive"
       ref="containerRef"
-      class="overlay"
+      :class="[
+        'overlay',
+        role === 'dialog' && 'dialog'
+      ]"
       v-bind="$attrs"
       :role="role"
       :aria-modal="ariaModal || undefined"
@@ -13,33 +16,38 @@
         name="fade-out"
       >
         <div
-          v-if="!hideScrim && model"
+          v-if="!hideScrim"
+          v-show="isActive && model"
           ref="scrimRef"
-          class="overlay-scrim"
+          class="overlay__scrim"
           :style="{
             backgroundColor: transparent ? 'transparent' : undefined,
           }"
-          @click="handleClickScrim"
+          @click="isActive = false"
         />
       </Transition>
       <Transition
-        v-if="transition"
         :name="transition"
-        @after-enter="$emit('transitionEnd')"
-        @after-leave="isActive=false;isClosing = true;$emit('transitionEnd')"
+        @after-enter="$emit('transitionEnd');"
+        @after-leave="handleTransition"
       >
-        <slot v-if="model" />
+        <div
+          v-show="isActive && model"
+          class="overlay__content"
+          v-bind="{class: contentClass}"
+        >
+          <slot />
+        </div>
       </Transition>
-      <slot v-if="!transition || isClosing" />
     </div>
   </Teleport>
 </template>
 
 <script setup lang="ts">
+import { ModelRef, ref, watch } from 'vue';
+import { toValue } from '@vueuse/core';
 import { useWindowEventRegister } from '@/utils/composables/useWindowEventRegister';
 import { invertBoolean } from '@/utils/helpers';
-import { toValue } from '@vueuse/core';
-import { ModelRef, ref, watch } from 'vue';
 
 type Props = {
   /**
@@ -54,8 +62,9 @@ type Props = {
   role?: string,
   ariaModal?: boolean,
   transition?: string,
+  contentClass?: string | unknown[] | {[key in string]: unknown}
   /**
-   * Add listener to closing overlay when pressing Escape.
+   * Adding listener to closing overlay when pressing Escape.
    */
   escEvent?: boolean,
 }
@@ -68,38 +77,40 @@ const props = withDefaults(defineProps<Props>(), {
 const containerRef = ref();
 const scrimRef = ref();
 
-const isActive = ref(false); // Dialog show/hide state
+// Container must close after content transition end.
+// Need another state to delay closing container.
+const isActive = ref(false);
 const model = defineModel<boolean>() as ModelRef<boolean>; // Control `isActive` and trigger transition;
-const isClosing = ref(true); // For rendering content when eager
 
 let keydownListener: void | (() => void);
 watch(model, (newVal) => {
   if (newVal) { // Open dialog when model is true
     isActive.value = true;
-    isClosing.value = false;
     if (props.escEvent)
       keydownListener = useWindowEventRegister(
         'keydown', handleKeydown, { once: true });
+    return;
   } else if (!props.transition) {
     isActive.value = false;
-    isClosing.value = true;
-    keydownListener &&= keydownListener();
   }
-}, { immediate: true });
+  keydownListener &&= keydownListener();
+}, { immediate: true, flush: 'post' });
+// flush: 'post' to maker container updated first when eager is false
 
-defineEmits<{
+const emit = defineEmits<{
   'update:modelValue': [newVal: boolean],
   'transitionEnd': [],
 }>();
+
+const handleTransition = () => {
+  model.value = false;
+  emit('transitionEnd');
+};
 
 const handleKeydown = (e: KeyboardEvent) => {
   if (toValue(model) && e.key === 'Escape') {
     invertBoolean(model, false);
   }
-};
-
-const handleClickScrim = () => {
-  invertBoolean(model, false);
 };
 
 defineOptions({

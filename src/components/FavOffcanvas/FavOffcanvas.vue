@@ -1,13 +1,12 @@
 <template>
   <OverlayContainer
+    :content-class="$style.favOffcanvas"
     role="dialog"
     :eager="true"
     transition="slide-x"
     v-model="model"
   >
-    <div
-      :class="$style.favOffcanvas"
-    >
+    <div :class="$style.container">
       <header
         :class="$style.header"
       >
@@ -65,6 +64,7 @@
 
 <script lang="ts" setup>
 import { ref, computed, watch, nextTick } from 'vue';
+import { toValue } from '@vueuse/core';
 import $style from './FavOffcanvas.module.scss';
 import TheBtn from '../Custom/TheBtn.vue';
 import OverlayContainer from '@/components/Custom/OverlayContainer.vue';
@@ -74,7 +74,6 @@ import { isTabKey } from '@/utils/browser';
 import usePltStore from '@/features/stores/usePltStore';
 import useFavStore from '@/features/stores/useFavStore';
 import type { IconType } from '@/utils/icons';
-import { toValue } from '@vueuse/core';
 
 
 const emit = defineEmits<{
@@ -89,7 +88,8 @@ const tabIdx = ref<number>(0);
 const tabRefs = ref<InstanceType<typeof TheBtn>[]>([]);
 watch(model, async (newVal) => { // focus dialog when open it.
   await nextTick();
-  newVal && toValue(tabRefs)[toValue(tabIdx)]?.$el.focus();
+  if (newVal) toValue(tabRefs)[toValue(tabIdx)]?.$el.focus();
+  else pltState.setEditingIdx();
 });
 
 function handleFocusoutDialog(e: KeyboardEvent) {

@@ -1,8 +1,8 @@
 import { defineStore } from 'pinia';
 // Utils
 import {
-  rgb2gray, rgb2hex, randRgbGen, hex2rgb, getSpaceInfos, gammaCorrection, scaling,
-  sortingByGray,
+  rgb2hex, randRgbGen, hex2rgb, getSpaceInfos, sortingByGray,
+  getContrastAdjuster,
 } from '@/utils/colors.ts';
 import { shuffle } from '@/utils/helpers.ts';
 import { INIT_COLOR_SPACE, INIT_NUM_OF_CARDS, MAX_NUM_OF_CARDS } from '@/constants/pltStore';
@@ -11,6 +11,7 @@ import type { CardType } from '@/features/types/pltStore';
 import type { OrderStateType, SortActionType, ColorSpacesType } from 'types/colors';
 import type { MixingType } from 'types/mixing';
 import type { ColorSpaceInfos, ColorSpaceTrans } from '@/types/utils.ts';
+import { CONTRAST_METHODS } from '@/constants/colors';
 
 
 /**
@@ -118,7 +119,7 @@ const usePltStore = defineStore('plt', {
       }
       this.sortBy = 'random';
     },
-    editCard({ idx, color }: {idx: number; color: number[]}) {
+    editCard(idx: number, color: number[]) {
       const { inverter } = this.spaceInfos;
       this.cards[idx].color = color;
       this.cards[idx].hex = rgb2hex(inverter(color));
@@ -213,19 +214,14 @@ const usePltStore = defineStore('plt', {
     adjustContrast(method: number, coeff?: number) {
       if (!this.isAdjustingPlt) return;
       const { converter, inverter } = this.spaceInfos;
-      const originRgbs = this.cards.map((card) => inverter(card.originColor));
-      let newRgbs = originRgbs;
-      switch (method) {
-      case 0:
-        newRgbs = scaling(originRgbs, coeff as number) as number[][];
-        break;
-      case 1:
-        newRgbs = gammaCorrection(originRgbs, coeff as number) as number[][];
-        break;
-      }
+      const arr = this.cards.map((card) => inverter(card.originColor));
+      const adjuster = getContrastAdjuster(CONTRAST_METHODS[method]);
+
+      const newRgbs = adjuster!(arr, coeff!);
       for (let i = 0; i < this.numOfCards; i++) {
         this.cards[i].color = converter(newRgbs[i]);
         this.cards[i].hex = rgb2hex(newRgbs[i]);
+        // or, this.editCard(i, converter(newRgbs[i]))
       }
     },
   },

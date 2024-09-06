@@ -156,11 +156,6 @@ export const elementwiseMean = (arr1: number[], arr2: number[]): number[] => {
 export const isNullish = (val: unknown) => toValue(val) == null;
 
 /**
- * identity map.
- */
-export const identity = <T>(x: T): T => x;
-
-/**
  * Invert the boolean value of a ref. If `newVal` is given, assign newVal to ref.
  */
 export const invertBoolean = (
