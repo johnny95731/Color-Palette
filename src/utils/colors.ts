@@ -103,15 +103,17 @@ export const rgb2hex = (rgb: number[]): string => {
   ).toUpperCase();
 };
 
-const RGB_2_GRAY_COEFF = [0.299, 0.587, 0.114];
 /**
  * Conver Hex to grayscale.
  * @param rgb Array of RGB color.
  * @return grayscale [0, RGB_Max]
  */
-export const rgb2gray = (rgb: number[]): number => {
-  return rgb.reduce((cummul, val, i) => cummul += val * RGB_2_GRAY_COEFF[i], 0);
-};
+export const rgb2gray = (() => {
+  const RGB_2_GRAY_COEFF = [0.299, 0.587, 0.114];
+  return (rgb: number[]): number => {
+    return rgb.reduce((cummul, val, i) => cummul += val * RGB_2_GRAY_COEFF[i], 0);
+  };
+})();
 
 /**
  * Convert sRGB to linear RGB.
