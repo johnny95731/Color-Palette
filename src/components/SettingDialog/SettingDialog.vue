@@ -172,7 +172,7 @@ const emit = defineEmits<{
   (e: 'focusoutDialog'): void
 }>();
 
-const model = defineModel<boolean>();
+const model = defineModel<boolean>(); // Show/Hide
 
 const pltState = usePltStore();
 const settingsState = useSettingStore();
@@ -196,7 +196,8 @@ watch(model, async (newVal) => {
     // Start adjusting when open dialog and in 2nd tab
     pltState.setIsAdjustingPlt('start');
     updateContrastDisplay();
-  } else if (!newVal) pltState.setIsAdjustingPlt('cancel');
+  } else if (!newVal && pltState.isAdjustingPlt)
+    pltState.setIsAdjustingPlt('cancel');
 });
 
 /**

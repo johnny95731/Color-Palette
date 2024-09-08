@@ -83,7 +83,7 @@
 </template>
 
 <script setup lang='ts'>
-import { computed, ref, shallowReactive, watch } from 'vue';
+import { computed, ref, shallowReactive, watch, nextTick } from 'vue';
 import { toValue } from '@vueuse/core';
 import $style from './TheCard.module.scss';
 import OverlayContainer from '../Custom/OverlayContainer.vue';
@@ -114,7 +114,7 @@ type Props = {
 
 const props = defineProps<Props>();
 const containerRef = ref<HTMLDivElement>();
-const hexInputRef = ref<HTMLDivElement>();
+const hexInputRef = ref<HTMLInputElement>();
 
 const modelShow = defineModel<boolean>('show', { required: true });
 const model = defineModel<number[]>({ required: true });
@@ -140,10 +140,8 @@ const { rect } = useElementBounding(containerRef, { filter: ['width'] });
 const containerStyle = shallowReactive<
   Pick<CSSProperties, 'left' | 'transform' | 'right'>
 >({});
-watch(() => [toValue(modelShow), props.pos], ([newVal], [oldVal]) => {
-  if (!newVal) return;
-  newVal !== oldVal && toValue(hexInputRef)?.focus();
-
+watch(() => [toValue(modelShow), props.pos], async ([newShow, newPos], [oldShow]) => {
+  if (!newShow) return;
   let style: typeof containerStyle = { ...containerStyle };
   if (media.isSmall) {
     style = {
@@ -152,19 +150,21 @@ watch(() => [toValue(modelShow), props.pos], ([newVal], [oldVal]) => {
       right: undefined
     };
   } else {
-    const center = +props.pos.replace('px', '');
+    const center = +(newPos as string).replace('px', '');
     const outOfWindow = {
       l: center - rect.width / 2 < media.bound[0],
       r: center + rect.width / 2 > media.bound[1],
     };
     style = {
       transform: outOfWindow.l || outOfWindow.r ? 'none' : undefined,
-      left: outOfWindow.l ? '0' : outOfWindow.r ? 'auto' : props.pos,
+      left: outOfWindow.l ? '0' : outOfWindow.r ? 'auto' : newPos as string,
       right: outOfWindow.r ? '0' : undefined
     };
   }
   Object.assign(containerStyle, style);
-}, { flush: 'post' });
+  await nextTick();
+  newShow !== oldShow && toValue(hexInputRef)!.focus();
+});
 
 const onLeaveFocusing = (e: KeyboardEvent) => {
   if (isTabKey(e)) {
@@ -196,15 +196,14 @@ const handleHexEditingFinished = function(e: FocusEvent | KeyboardEvent) {
  * Slider changed event.
  */
 const handleSliderChange = function(newVal: number, idx: number) {
+  const textInput = toValue(hexInputRef);
+  if (!textInput) return;
   const newColorArr = [...props.card.color];
   newColorArr[idx] = newVal;
   model.value = newColorArr;
   // Set hex to hex input.
-  const textInput = (
-    document.getElementById(`card${props.cardIdx}-hex`) as HTMLInputElement
-  );
-  const rgb = toValue(space).inverter(newColorArr);
-  textInput.value = rgb2hex(rgb);
+  const hex = rgb2hex(toValue(space).inverter(newColorArr));
+  if (hex) textInput.value = hex;
 };
 
 const selectRef = ref<InstanceType<typeof SelectMenu>>();

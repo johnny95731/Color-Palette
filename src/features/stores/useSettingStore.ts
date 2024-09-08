@@ -27,7 +27,7 @@ for (const key of Object.keys(initialState)) {
     // Assign previous value to current state for common attributes.
     for (const itemKey of Object.keys(storageObj)) {
       type attrKey = keyof typeof initItem;
-      if (typeof initItem[itemKey as attrKey] === storageObj[itemKey])
+      if (typeof initItem[itemKey as attrKey] === typeof storageObj[itemKey])
         initItem[itemKey as attrKey] = storageObj[itemKey];
     }
   }

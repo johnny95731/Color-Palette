@@ -85,9 +85,9 @@ const brighter: Mixer = (color1: number[], color2: number[]) =>
 const deeperBlend: Mixer = (color1: number[], color2: number[]) =>
   mixingNGamma(color1, color2, 1.5);
 
-export const mixers = Object.freeze<Record<`_${Exclude<MixingType, 'random'>}`, Mixer>>({
-  '_mean': meanMixing,
-  '_brighter': brighter,
-  '_deeper': deeperBlend,
-  '_soft light': softLightBlend,
+export const mixers = Object.freeze<Record<Exclude<MixingType, 'random'>, Mixer>>({
+  'mean': meanMixing,
+  'brighter': brighter,
+  'deeper': deeperBlend,
+  'soft light': softLightBlend,
 });

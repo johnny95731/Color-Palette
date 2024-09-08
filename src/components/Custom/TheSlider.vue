@@ -245,20 +245,20 @@ const handleDrag = (
   );
   updateModel(val);
   if (isStartingDragging) {
-    window.addEventListener('mousemove', handleDrag);
-    window.addEventListener('touchmove', handleDrag);
-    window.addEventListener('mouseup', handleDragEnd);
-    window.addEventListener('touchend', handleDragEnd);
+    addEventListener('mousemove', handleDrag);
+    addEventListener('touchmove', handleDrag);
+    addEventListener('mouseup', handleDragEnd);
+    addEventListener('touchend', handleDragEnd);
   }
 };
 
 // -Mouse up / Touch end.
 const handleDragEnd = () => {
   isDragging.value = false;
-  window.removeEventListener('mousemove', handleDrag);
-  window.removeEventListener('touchmove', handleDrag);
-  window.removeEventListener('mouseup', handleDragEnd);
-  window.removeEventListener('touchend', handleDragEnd);
+  removeEventListener('mousemove', handleDrag);
+  removeEventListener('touchmove', handleDrag);
+  removeEventListener('mouseup', handleDragEnd);
+  removeEventListener('touchend', handleDragEnd);
 };
 
 // -Key down

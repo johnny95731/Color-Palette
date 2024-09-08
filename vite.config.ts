@@ -10,8 +10,8 @@ export default defineConfig({
   base: './',
   build: {
     outDir: 'dist',
-    assetsDir: '',
     sourcemap: false,
+    assetsDir: '',
     minify: 'terser',
     cssMinify: 'lightningcss',
     terserOptions: {
@@ -19,11 +19,6 @@ export default defineConfig({
         booleans_as_integers: true,
         drop_console: ['log', 'time', 'timeEnd']
       },
-      mangle: {
-        properties: {
-          regex: /^_/
-        }
-      }
     }
   },
   plugins: [

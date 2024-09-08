@@ -1,8 +1,7 @@
 import { shallowReactive, watch } from 'vue';
 import {
-  tryOnMounted, unrefElement, useMutationObserver, useResizeObserver,
+  tryOnMounted, unrefElement, useEventListener, useMutationObserver, useResizeObserver,
 } from '@vueuse/core';
-import { useWindowEventRegister } from './useWindowEventRegister';
 import { objPick } from '../helpers';
 import type {
   MaybeComputedElementRef, UseElementBoundingOptions
@@ -72,11 +71,9 @@ export function useElementBounding<K extends RectKeys>(
   });
 
   if (windowScroll)
-    useWindowEventRegister('scroll', update, { capture: true, passive: true });
-    // useEventListener('scroll', update, { capture: true, passive: true });
+    useEventListener('scroll', update, { capture: true, passive: true });
   if (windowResize)
-    useWindowEventRegister('resize', update, { passive: true });
-    // useEventListener('resize', update, { passive: true });
+    useEventListener('resize', update, { passive: true });
 
   tryOnMounted(() => {
     if (immediate)

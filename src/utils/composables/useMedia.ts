@@ -37,6 +37,6 @@ const handleWindowResize = () => {
     bound: isSmall ? [headerHeight, windowSize[0]] : [0, windowSize[1]],
   });
 };
-window.addEventListener('resize', handleWindowResize);
+addEventListener('resize', handleWindowResize);
 handleWindowResize();
 export default media;

@@ -56,6 +56,9 @@ export const objPick = <T extends {}, K extends (string | number | symbol)>(
 export const arraylize = <T>(val: Arrayable<T>) =>
   Array.isArray(val) ? val : [val];
 
+/**
+ * array.prototype.filter and clean items of original array
+ */
 export const arrFilter = <T extends unknown>(
   arr: T[],
   callback: (value: T, index: number, array: T[]) => unknown
@@ -106,6 +109,7 @@ export function shuffle <T>(arr: T[]): T[] {
   }
   return arr;
 }
+
 /**
  * Quick sort an array in ascending order.
  */
@@ -205,4 +209,4 @@ export const toTitleCase = (str: string) =>
 // export const kebabize = (text: string) =>
 //   text.replace(/[A-Z]+(?![a-z])|[A-Z]/g, ($, ofs) => (ofs ? '-' : '') + $.toLowerCase());
 
-export const sleep = (ms: number)  => new Promise(resolve => setTimeout(resolve, ms));
+export const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));

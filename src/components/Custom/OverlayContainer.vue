@@ -3,7 +3,6 @@
     <div
       v-if="eager || model || isActive"
       v-show="model || isActive"
-      ref="containerRef"
       :class="[
         'overlay',
         role === 'dialog' && 'dialog'
@@ -18,7 +17,6 @@
         <div
           v-if="!hideScrim"
           v-show="isActive && model"
-          ref="scrimRef"
           class="overlay__scrim"
           :style="{
             backgroundColor: transparent ? 'transparent' : undefined,
@@ -46,7 +44,6 @@
 <script setup lang="ts">
 import { ModelRef, ref, watch } from 'vue';
 import { toValue } from '@vueuse/core';
-import { useWindowEventRegister } from '@/utils/composables/useWindowEventRegister';
 import { invertBoolean } from '@/utils/helpers';
 
 type Props = {
@@ -72,30 +69,8 @@ type Props = {
 const props = withDefaults(defineProps<Props>(), {
   eager: false,
   ariaModal: false,
+  escEvent: true,
 });
-
-const containerRef = ref();
-const scrimRef = ref();
-
-// Container must close after content transition end.
-// Need another state to delay closing container.
-const isActive = ref(false);
-const model = defineModel<boolean>() as ModelRef<boolean>; // Control `isActive` and trigger transition;
-
-let keydownListener: void | (() => void);
-watch(model, (newVal) => {
-  if (newVal) { // Open dialog when model is true
-    isActive.value = true;
-    if (props.escEvent)
-      keydownListener = useWindowEventRegister(
-        'keydown', handleKeydown, { once: true });
-    return;
-  } else if (!props.transition) {
-    isActive.value = false;
-  }
-  keydownListener &&= keydownListener();
-}, { immediate: true, flush: 'post' });
-// flush: 'post' to maker container updated first when eager is false
 
 const emit = defineEmits<{
   'update:modelValue': [newVal: boolean],
@@ -112,6 +87,24 @@ const handleKeydown = (e: KeyboardEvent) => {
     invertBoolean(model, false);
   }
 };
+
+// Container must close after content transition end.
+// Need another state to delay closing container.
+const isActive = ref(false);
+const model = defineModel<boolean>() as ModelRef<boolean>; // Control `isActive` and trigger transition;
+
+watch(model, (newVal) => {
+  if (newVal) { // Open dialog when model is true
+    isActive.value = true;
+    if (props.escEvent)
+      addEventListener('keydown', handleKeydown);
+    return;
+  } else if (!props.transition) {
+    isActive.value = false;
+  }
+  removeEventListener('keydown', handleKeydown);
+}, { immediate: true, flush: 'post' });
+// flush: 'post' to maker container updated first when eager is false
 
 defineOptions({
   inheritAttrs: false

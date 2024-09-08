@@ -12,7 +12,7 @@
     :styleInSettings="styleInSettings"
     @transitionend="setIsInTrans(i, false)"
     @remove="handleRemoveCard(i)"
-    @dragging="draggingCardEvent.start($event, i)"
+    @dragging="draggingCardEvent($event, i)"
   />
   <!-- Insert Region -->
   <div
@@ -46,7 +46,6 @@ import { equallyLength, evalPosition } from '@/utils/helpers';
 import { round } from '@/utils/numeric';
 import { randRgbGen, rgb2hex } from '@/utils/colors';
 import { mixers } from '@/utils/mixing';
-import { useWindowEventRegister } from '@/utils/composables/useWindowEventRegister';
 // Stores / Contexts
 import usePltStore from '@/features/stores/usePltStore';
 import useSettingStore from '@/features/stores/useSettingStore';
@@ -56,18 +55,6 @@ import type { CSSProperties } from 'vue';
 
 type cardInstance = InstanceType<typeof TheCard>;
 
-const dragIdx = ref<{
-      /**
-       * Index of card in `cards` state.
-       */
-      draggingIdx: number | null;
-      /**
-       * Final index(order) that cursor at.
-       */
-      finalIdx: number | null;
-  }>({
-    draggingIdx: null, finalIdx: null,
-  });
 const cardRefs = ref<cardInstance[]>([]);
 
 const pltState = usePltStore();
@@ -114,9 +101,9 @@ watch(() => pltState.numOfCards, () => {
  * @param end The final index that be set position.
  * @param total Total number of cards.
  */
-const resetPosition = () => {
+const resetPosition = (pass?: number) => {
   for (let i = 0; i < pltState.numOfCards; i++) {
-    (i !== toValue(dragIdx).draggingIdx) &&
+    if (i !== pass)
       toValue(cardRefs)[i].setPos(evalPosition(i, pltState.numOfCards));
   }
 };
@@ -125,10 +112,10 @@ const removeTransition = () => {
     toValue(cardRefs)[i].setTransProperty('none');
   }
 };
-const resetTransition = (end?: number) => {
+const resetTransition = (end?: number, pass?: number) => {
   end ??= pltState.numOfCards;
   for (let i = 0; i < end; i++) {
-    i !== toValue(dragIdx).draggingIdx &&
+    if (i !== pass)
       toValue(cardRefs)[i].setTransProperty('reset');
   }
 };
@@ -171,7 +158,7 @@ const handleAddCard = (idx: number) => {
     // -Add to the last position. Blending the last card and white.
     if (idx === pltState.numOfCards) rightRgbColor = [255, 255, 255];
     else rightRgbColor = inverter(pltState.cards[idx].color);
-    rgb = mixers[`_${pltState.mixMode}`](
+    rgb = mixers[pltState.mixMode](
       leftRgbColor, rightRgbColor, pltState.colorSpace,
     );
   }
@@ -220,15 +207,23 @@ const handleRemoveCard = (idx: number) => {
 };
 
 // Drag events start
-const draggingCardEvent = (() => {
+const draggingCardEvent = computed(() => {
   const halfCardLength = cardAttrs.size.px / 2;
   // Rewrite `cursorPos / cardLength` to `cursorPos * cursorRationCoeff`.
   // Since division cost much time than multiplication.
   const cursorRationCoeff = 1 / cardAttrs.size.px;
   const cursorLimited = media.bound[1] - media.bound[0];
-  let card: cardInstance | null;
-  let eventCleanups: Function[] = [];
+  let draggingIdx: number | null,
+    finalIdx: number | null,
+    card: cardInstance | null;
 
+  const setNewPosition = (cardPos?: string) => {
+    cardPos && card?.setPos(cardPos);
+    for (let i = 0; i < pltState.numOfCards; i++) {
+      if (i !== draggingIdx)
+        toValue(cardRefs)[i].setPos(cardAttrs.positions[pltState.cards[i].order]);
+    }
+  };
   /**
    * The event is triggered when the `<->` icon on a card is dragging.
    * @param {number} cardIdx The n-th card.
@@ -247,75 +242,63 @@ const draggingCardEvent = (() => {
       setIsInTrans(cardIdx, true);
     }
     pltState.setIsPending(true);
-    dragIdx.value = {
-      draggingIdx: cardIdx,
-      finalIdx: cardIdx,
-    };
+    draggingIdx = cardIdx;
+    finalIdx = cardIdx;
     card = toValue(cardRefs)[cardIdx];
     card.setPos(`${round(cursorPos - halfCardLength)}px`);
     card.setTransProperty('none');
     card.$el.classList.add($style.dragging);
-    eventCleanups = [
-      useWindowEventRegister('mousemove', move),
-      useWindowEventRegister('touchmove', move, { passive: true }),
-      useWindowEventRegister('mouseup', end),
-      useWindowEventRegister('touchend', end),
-    ];
-    // window.addEventListener('mousemove', move);
-    // window.addEventListener('touchmove', move, { passive: true });
-    // window.addEventListener('mouseup', end);
-    // window.addEventListener('touchend', end);
+    addEventListener('mousemove', move);
+    addEventListener('touchmove', move, { passive: true });
+    addEventListener('mouseup', end);
+    addEventListener('touchend', end);
   }
   /**
    * The event is triggered when the `<->` icon on a card is dragging and
    * cursor is moving.
    */
   function move(e: MouseEvent | TouchEvent) {
-    if (!card) return;
     const cursorPos = (
       (e as MouseEvent)[media.clientPos] ||
         (e as TouchEvent).touches[0][media.clientPos]
     ) - media.bound[0];
       // Mouse is not in range.
-    if (cursorPos < 0 || cursorPos > cursorLimited) return;
-    card.setPos(`${round(cursorPos - halfCardLength)}px`);
+    if (!card || cursorPos < 0 || cursorPos > cursorLimited) return false;
     // Order of card that cursor at.
     const order = Math.floor(cursorPos * cursorRationCoeff);
-    const idx = toValue(dragIdx).draggingIdx as number;
-    const lastOrder = toValue(dragIdx).finalIdx as number;
-    dragIdx.value.finalIdx = order;
+    finalIdx = order;
     // Change `.order` attribute.
-    pltState.moveCardOrder(idx, order);
+    pltState.moveCardOrder(draggingIdx!, order);
+    setNewPosition(`${round(cursorPos - halfCardLength)}px`);
     // Update state: which card start transition.
-    if (settingsState.transition.pos && order !== lastOrder) {
-      const moveToRightSide = lastOrder < order;
+    if (settingsState.transition.pos && order !== finalIdx!) {
+      const moveToRightSide = finalIdx! < order;
       setIsInTrans(
-        (order < idx && !moveToRightSide) ||
-        (idx < order && moveToRightSide) ?
+        (order < draggingIdx! && !moveToRightSide) ||
+        (draggingIdx! < order && moveToRightSide) ?
           order :
-          lastOrder,
+          finalIdx!,
         true,
       );
     }
+    return false;
   }
   /**
    * The event is triggered when release left buton.
    */
   function end() {
     if (!card) return;
-    const card_ = card;
-    card = null;
+    removeEventListener('mousemove', move);
+    removeEventListener('touchmove', move);
+    removeEventListener('mouseup', end);
+    removeEventListener('touchend', end);
     // Able pull-to-refresh on mobile.
     document.body.style.overscrollBehavior = '';
     // `draggingIdx` and `finalIdx`setIsEventEnd are set to be non-null
     // together when mouse down.
-    const idx = toValue(dragIdx).draggingIdx;
-    const finalOrder = toValue(dragIdx).finalIdx as number;
-    dragIdx.value.draggingIdx = null;
-    dragIdx.value.finalIdx = null;
-    if (idx === null) return;
+    if (draggingIdx === null) return;
     // Remove class.
-    card_.$el.classList.remove($style.dragging);
+    card.$el.classList.remove($style.dragging);
     eventInfo.value = { event: 'mouseup' };
     if (!settingsState.transition.pos) {
       removeTransition();
@@ -323,28 +306,13 @@ const draggingCardEvent = (() => {
       resetPosition();
       return;
     }
+    draggingIdx = null;
+    finalIdx = null;
     // Dragging card move to target position.
-    card_.setPos(cardAttrs.positions[finalOrder]);
-    card_.setTransProperty('reset');
-    eventCleanups.forEach(func => func());
-    eventCleanups.length = 0;
-    // window.removeEventListener('mousemove', move);
-    // window.removeEventListener('touchmove', move);
-    // window.removeEventListener('mouseup', end);
-    // window.removeEventListener('touchend', end);
+    setNewPosition();
+    card.setTransProperty('reset');
   }
-  return {
-    start,
-    move,
-    end,
-  };
-})();
-watch(() => toValue(dragIdx).finalIdx, async (newQuestion) => {
-  if (newQuestion === null) return;
-  for (let i = 0; i < pltState.numOfCards; i++) {
-    if (i === toValue(dragIdx).draggingIdx) continue;
-    toValue(cardRefs)[i].setPos(cardAttrs.positions[pltState.cards[i].order]);
-  }
+  return start;
 });
 // Drag events end
 // Side effect when transition is over.
@@ -369,7 +337,7 @@ watch(() => isInTrans.arr.some((val) => val),
       break;
     }
     eventInfo.value = null;
-  },
+  }, { flush: 'post' }
 );
 watch(() => toValue(eventInfo), (newVal) => {
   if (!newVal) {

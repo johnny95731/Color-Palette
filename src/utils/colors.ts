@@ -6,8 +6,7 @@ import {
   RGB2XYZ_COEFF_ROW_SUM, XYZ2RGB_COEFF, RGB2XYZ_COEFF, XYZ_MAX_SCALING,
   YUV_MAX,
 } from '@/constants/colors.ts';
-import type { ColorSpaceInfos, ColorSpaceTrans } from '@/types/utils';
-import type { ColorSpacesType, ContrastMethodType } from '@/types/colors';
+import type { ColorSpacesType, ColorSpaceInfos, ContrastMethodType } from '@/types/colors';
 
 export const unzipCssNamed = (name: string) => name.replace(/([A-Z])/g, ' $1').trim();
 
@@ -438,7 +437,7 @@ export const isValidHex = (str: string): boolean =>
  */
 export const getSpaceInfos = (
   space: ColorSpacesType
-): ColorSpaceInfos & ColorSpaceTrans => {
+): ColorSpaceInfos => {
   switch (space) {
   case 'hsl':
     return {
@@ -612,5 +611,6 @@ export const getContrastAdjuster = (method: ContrastMethodType) => {
 
 // ### Sorting
 export const sortingByGray = <T extends {hex: string}>(arr: T[]) => {
-  return arr.toSorted((a, b) => rgb2gray(hex2rgb(a.hex)) - rgb2gray(hex2rgb(b.hex)));
+  const copied = JSON.parse(JSON.stringify(arr)) as T[];
+  return copied.sort((a, b) => rgb2gray(hex2rgb(a.hex)) - rgb2gray(hex2rgb(b.hex)));
 };

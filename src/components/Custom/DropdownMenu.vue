@@ -89,7 +89,6 @@ import { CURRENT_OPTION_WEIGHT, MenuSymbol } from '@/constants/browser';
 // Types
 import type { CSSProperties, ModelRef } from 'vue';
 import type { IconType } from '@/utils/icons';
-import { useWindowEventRegister } from '@/utils/composables/useWindowEventRegister';
 
 type Item = {
     val: string,
@@ -285,11 +284,10 @@ const menuContainerStyle = computed<CSSProperties>(() => {
   };
 });
 
-let stopClickListener: void | (() => void);
-let stopResizeListener: void | (() => void);
+const resizeCallback =  () => nestedClosing();
 const cleanListeners = () => {
-  stopClickListener &&= stopClickListener();
-  stopResizeListener &&= stopResizeListener();
+  removeEventListener('click', handleClickWindow, true);
+  removeEventListener('resize', resizeCallback, true);
 };
 watch(isOpened, (newVal) => {
   if (!newVal) {
@@ -297,9 +295,8 @@ watch(isOpened, (newVal) => {
     cleanListeners();
   } else {
     parent?.register();
-    cleanListeners();
-    stopClickListener = useWindowEventRegister('click', handleClickWindow);
-    stopResizeListener = useWindowEventRegister('resize', () => nestedClosing(), { once: true });
+    addEventListener('click', handleClickWindow, true);
+    removeEventListener('resize', resizeCallback, true);
   }
 });
 
@@ -313,6 +310,7 @@ const handleClickWindow = (e: MouseEvent) => {
   ) {
     nestedClosing();
   }
+  // return false;
 };
 
 // When menu is nested, the parent should not close before submenu is closing.

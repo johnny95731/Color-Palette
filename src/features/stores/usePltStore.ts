@@ -6,12 +6,12 @@ import {
 } from '@/utils/colors.ts';
 import { shuffle } from '@/utils/helpers.ts';
 import { INIT_COLOR_SPACE, INIT_NUM_OF_CARDS, MAX_NUM_OF_CARDS } from '@/constants/pltStore';
+import { CONTRAST_METHODS } from '@/constants/colors';
 // Types
 import type { CardType } from '@/features/types/pltStore';
 import type { OrderStateType, SortActionType, ColorSpacesType } from 'types/colors';
 import type { MixingType } from 'types/mixing';
-import type { ColorSpaceInfos, ColorSpaceTrans } from '@/types/utils.ts';
-import { CONTRAST_METHODS } from '@/constants/colors';
+import type { ColorSpaceInfos } from '@/types/colors';
 
 
 /**
@@ -86,7 +86,7 @@ const usePltStore = defineStore('plt', {
     isEditing(): boolean {
       return this.editingIdx !== -1;
     },
-    spaceInfos(): ColorSpaceTrans & ColorSpaceInfos {
+    spaceInfos(): ColorSpaceInfos  {
       return getSpaceInfos(this.colorSpace);
     }
   },
