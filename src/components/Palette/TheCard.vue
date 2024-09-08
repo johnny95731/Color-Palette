@@ -66,7 +66,7 @@ import { asyncComputed, toValue } from '@vueuse/core';
 import $style from './TheCard.module.scss';
 // Components
 import TheBtn from '@/components/Custom/TheBtn.vue';
-import TheIcon from '../TheIcon.vue';
+import TheIcon from '../Custom/TheIcon.vue';
 import ToolBar from './ToolBar.vue';
 import EditingDialog from './EditingDialog.vue';
 // Utils

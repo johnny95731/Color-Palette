@@ -592,10 +592,10 @@ const gammaCorrection = (rgbs: number[][], gamma: number): number[][] => {
  * larger range.
  */
 const brightnessScaling = (rgbs: number[][]): number[][] => {
-  const yuvs = rgbs.map((arr) => rgb2yuv(arr));
-  const [minY, maxY] = yuvs.reduce((prev, val) => {
-    if (val[2] < prev[0]) prev[0] = val[0];
-    if (val[2] > prev[1]) prev[1] = val[0];
+  const yuvs = rgbs.map((rgb) => rgb2yuv(rgb));
+  const [minY, maxY] = yuvs.reduce((prev, yuv) => {
+    if (yuv[0] < prev[0]) prev[0] = yuv[0];
+    if (yuv[0] > prev[1]) prev[1] = yuv[0];
     return prev;
   }, [YUV_MAX, 0]);
   const range = [minY, maxY, Math.sqrt(minY), YUV_MAX] as const;

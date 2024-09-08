@@ -217,7 +217,7 @@ const usePltStore = defineStore('plt', {
       const arr = this.cards.map((card) => inverter(card.originColor));
       const adjuster = getContrastAdjuster(CONTRAST_METHODS[method]);
 
-      const newRgbs = adjuster!(arr, coeff!);
+      const newRgbs = adjuster(arr, coeff!);
       for (let i = 0; i < this.numOfCards; i++) {
         this.cards[i].color = converter(newRgbs[i]);
         this.cards[i].hex = rgb2hex(newRgbs[i]);

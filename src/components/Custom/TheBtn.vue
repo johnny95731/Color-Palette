@@ -47,7 +47,7 @@
 </template>
 
 <script setup lang="ts">
-import TheIcon from '@/components/TheIcon.vue';
+import TheIcon from '@/components/Custom/TheIcon.vue';
 // Types
 import type { IconType } from '@/utils/icons';
 

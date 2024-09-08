@@ -77,7 +77,7 @@ import { computed, ref, watch, provide, inject, nextTick } from 'vue';
 import { toValue } from '@vueuse/core';
 import OverlayContainer from './OverlayContainer.vue';
 import TheBtn from './TheBtn.vue';
-import TheIcon from '../TheIcon.vue';
+import TheIcon from './TheIcon.vue';
 // utils
 import { toTitleCase, sleep, invertBoolean } from '@/utils/helpers';
 import { getComponentId } from '@/utils/browser';

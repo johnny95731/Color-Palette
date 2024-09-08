@@ -94,7 +94,7 @@ import { watch, ref, onMounted, computed, nextTick, shallowRef } from 'vue';
 import { toValue } from '@vueuse/core';
 import OverlayContainer from './OverlayContainer.vue';
 import TheBtn from './TheBtn.vue';
-import TheIcon from '../TheIcon.vue';
+import TheIcon from './TheIcon.vue';
 // utils
 import { CURRENT_OPTION_WEIGHT } from '@/constants/browser';
 import { isNullish, invertBoolean } from '@/utils/helpers';
