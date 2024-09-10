@@ -45,6 +45,7 @@
 import { ModelRef, ref, watch } from 'vue';
 import { toValue } from '@vueuse/core';
 import { invertBoolean } from '@/utils/helpers';
+import type { VueClass } from 'types/browser';
 
 type Props = {
   /**
@@ -59,7 +60,7 @@ type Props = {
   role?: string,
   ariaModal?: boolean,
   transition?: string,
-  contentClass?: string | unknown[] | {[key in string]: unknown}
+  contentClass?: VueClass
   /**
    * Adding listener to closing overlay when pressing Escape.
    */

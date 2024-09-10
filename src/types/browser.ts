@@ -8,3 +8,5 @@ export type EventHandler<E extends Event = Event> = (
 export type MaybeRef <T = unknown> = T | Ref<T> | ShallowRef<T> | WritableComputedRef<T>
 
 export type WindowEventName = keyof WindowEventMap;
+
+export type VueClass = string | unknown[] | {[key in string]: unknown}

@@ -103,6 +103,7 @@ import { mod } from '@/utils/numeric';
 import { noModifierKey, shiftOnly } from '@/utils/browser';
 // types
 import type { CSSProperties, MaybeRefOrGetter, ModelRef } from 'vue';
+import type { VueClass } from 'types/browser';
 
 type Props = {
   isMobile?: boolean,
@@ -114,8 +115,8 @@ type Props = {
   listboxLabel?: string,
   title?: string,
   showValue?: boolean,
-  titleClass?: string,
-  contentClass?: string,
+  titleClass?: VueClass,
+  contentClass?: VueClass,
   /**
    * Letter case for menu items (display name). Default to be title case.
    */

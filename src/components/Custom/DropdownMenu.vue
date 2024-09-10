@@ -89,6 +89,7 @@ import { CURRENT_OPTION_WEIGHT, MenuSymbol } from '@/constants/browser';
 // Types
 import type { CSSProperties, ModelRef } from 'vue';
 import type { IconType } from '@/utils/icons';
+import type { VueClass } from 'types/browser';
 
 type Item = {
     val: string,
@@ -115,8 +116,8 @@ type Props = {
   })[];
   activatorId?:string,
   menuId?:string,
-  titleClass?: string,
-  contentClass?: string,
+  titleClass?: VueClass,
+  contentClass?: VueClass,
   currentVal?: string,
   /**
    * Style of currently selected element.
