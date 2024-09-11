@@ -5,11 +5,12 @@
       v-show="model || isActive"
       :class="[
         'overlay',
-        role === 'dialog' && 'dialog'
+        type
       ]"
       v-bind="$attrs"
       :role="role"
       :aria-modal="ariaModal || undefined"
+      aria-live="polite"
     >
       <Transition
         name="fade-out"
@@ -58,6 +59,7 @@ type Props = {
   transparent?: boolean,
   hideScrim?: boolean,
   role?: string,
+  type?: 'menu' | 'dialog' | 'offcanvas'
   ariaModal?: boolean,
   transition?: string,
   contentClass?: VueClass
@@ -69,6 +71,7 @@ type Props = {
 
 const props = withDefaults(defineProps<Props>(), {
   eager: false,
+  type: 'dialog',
   ariaModal: false,
   escEvent: true,
 });

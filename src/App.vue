@@ -7,7 +7,7 @@
   <main id="main">
     <ThePalette />
   </main>
-  <FavOffcanvas
+  <TheBookmarks
     v-if="isFirstTimeFav"
     v-model="isFavShowing"
     @focusout-dialog="headerRef?.focusBookmarks()"
@@ -26,8 +26,8 @@ import TheHeader from './components/Header/TheHeader.vue';
 import ThePalette from './components/Palette/ThePalette.vue';
 // import FavOffcanvas from './components/FavOffcanvas/FavOffcanvas.vue';
 // import SettingDialog from './components/SettingDialog/SettingDialog.vue';
-const FavOffcanvas = defineAsyncComponent(
-  () => import('./components/FavOffcanvas/FavOffcanvas.vue')
+const TheBookmarks = defineAsyncComponent(
+  () => import('./components/TheBookmarks/TheBookmarks.vue')
     .then(component => {
       setTimeout(() => handleShowFav(), 50);
       return component;

@@ -30,7 +30,7 @@
     :id="idForMenu"
     hide-scrim
     :eager="eager"
-    aria-live="polite"
+    type="menu"
     transition="slide-y"
     :esc-event="false"
     v-model="isOpened"

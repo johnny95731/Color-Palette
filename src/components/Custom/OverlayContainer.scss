@@ -20,8 +20,9 @@
 .dialog {
   align-items: center;
   justify-content: center;
-  margin: auto;
-  > .overlay__content {
-    display: inline-block;
-  }
+}
+
+.offcanvas {
+  align-items: stretch;
+  justify-content: right;
 }

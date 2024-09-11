@@ -1,12 +1,6 @@
 @use "@/assets/commons.module.scss" as *;
 
 // Containers
-.favOffcanvas {
-  height: 100dvh;
-  width: 100vw;
-  pointer-events: none !important;
-}
-
 .container {
   display: flex;
   flex-direction: column;
@@ -15,7 +9,6 @@
   width: 300px;
   color: #fff;
   background-color: $color5;
-  pointer-events: all !important;
   @include mobile {
     width: 100vw;
   }

@@ -47,7 +47,7 @@
       :id="idForMenu"
       hideScrim
       :eager="eager"
-      aria-live="polite"
+      type="menu"
       :esc-event="false"
       v-model="isOpened"
     >

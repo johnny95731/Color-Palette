@@ -1,78 +1,80 @@
 <template>
   <OverlayContainer
-    :content-class="$style.favOffcanvas"
+    :content-class="$style.container"
     role="dialog"
+    type="offcanvas"
     :eager="true"
     transition="slide-x"
     v-model="model"
   >
-    <div :class="$style.container">
-      <header
-        :class="$style.header"
-      >
-        <h2>Bookmarks</h2>
-        <TheBtn
-          icon="close"
-          aria-label="關閉"
-          @click="model = false"
-        />
-      </header>
-      <div
-        :class="$style.menuBar"
-      >
-        <TheBtn
-          v-for="(label, i) in TabLabels"
-          :key="`page ${label}`"
-          :ref="(el) => tabRefs[i] = el as InstanceType<typeof TheBtn>"
-          :text="label"
-          :class="i === tabIdx ? $style.selected : undefined"
-          @click="tabIdx = i"
-        />
-      </div>
-      <!-- Page content -->
-      <ul
-        :class="$style.pageContent"
-      >
-        <template
-          v-if="tabIdx === 0"
-        >
-          <ColorBlock
-            v-for="(hex) in favState.colors"
-            :key="`favColor ${hex}`"
-            :hex="hex"
-          />
-        </template>
-        <template v-else-if="tabIdx === 1">
-          <PaletteBlock
-            v-for="(plt) in favState.plts"
-            :key="`favPlt ${plt}`"
-            :plt="plt"
-          />
-        </template>
-      </ul>
+    <header
+      :class="$style.header"
+    >
+      <h2>Bookmarks</h2>
       <TheBtn
-        :prepend-icon="state.icon"
-        :class="$style.appendPlt"
-        @keydown="handleFocusoutDialog"
-        @click="favPltChanged"
-      >
-        {{ state.text }}
-      </TheBtn>
+        icon="close"
+        aria-label="關閉"
+        @click="model = false"
+      />
+    </header>
+    <div
+      :class="$style.menuBar"
+    >
+      <TheBtn
+        v-for="(label, i) in TabLabels"
+        :key="`page ${label}`"
+        :ref="(el) => tabRefs[i] = el as InstanceType<typeof TheBtn>"
+        :text="label"
+        :class="i === tabIdx ? $style.selected : undefined"
+        @click="tabIdx = i"
+      />
     </div>
+    <!-- Page content -->
+    <ul
+      :class="$style.pageContent"
+    >
+      <template
+        v-if="tabIdx === 0"
+      >
+        <ColorBlock
+          v-for="(hex) in favState.colors"
+          :key="`favColor ${hex}`"
+          :hex="hex"
+        />
+      </template>
+      <template v-else-if="tabIdx === 1">
+        <PaletteBlock
+          v-for="(plt) in favState.plts"
+          :key="`favPlt ${plt}`"
+          :plt="plt"
+        />
+      </template>
+    </ul>
+    <TheBtn
+      :prepend-icon="state.icon"
+      :class="$style.appendPlt"
+      @keydown="handleFocusoutDialog"
+      @click="favPltChanged"
+    >
+      {{ state.text }}
+    </TheBtn>
   </OverlayContainer>
 </template>
 
 <script lang="ts" setup>
 import { ref, computed, watch, nextTick } from 'vue';
 import { toValue } from '@vueuse/core';
-import $style from './FavOffcanvas.module.scss';
+import $style from './TheBookmarks.module.scss';
 import TheBtn from '../Custom/TheBtn.vue';
 import OverlayContainer from '@/components/Custom/OverlayContainer.vue';
 import ColorBlock from './ColorBlock.vue';
 import PaletteBlock from './PaletteBlock.vue';
+// Utils
 import { isTabKey } from '@/utils/browser';
-import usePltStore from '@/features/stores/usePltStore';
-import useFavStore from '@/features/stores/useFavStore';
+// Store
+import usePltStore from 'stores/usePltStore';
+import useFavStore from 'stores/useFavStore';
+// Types
 import type { IconType } from '@/utils/icons';
 
 

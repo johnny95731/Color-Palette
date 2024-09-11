@@ -38,7 +38,7 @@
 <script lang="ts" setup>
 import { computed } from 'vue';
 import { toValue } from '@vueuse/core';
-import $style from './FavOffcanvas.module.scss';
+import $style from './TheBookmarks.module.scss';
 import TheIcon from '../Custom/TheIcon.vue';
 import { isValidHex } from '@/utils/colors';
 import { copyInnerHex } from '@/utils/browser';
