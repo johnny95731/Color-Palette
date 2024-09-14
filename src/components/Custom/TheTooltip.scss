@@ -1,0 +1,11 @@
+@use "@/assets/commons.module.scss" as *;
+
+$tooltip-bg-color: #0008;
+.tooltip-wrapper {
+  position: fixed;
+  border-radius: $radius-md;
+  padding: 8px 12px;
+  color: #fff;
+  background: $tooltip-bg-color;
+  text-wrap: nowrap;
+}

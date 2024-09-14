@@ -3,18 +3,69 @@
     ref="activatorRef"
     :class="[
       'dropdown-menu activator',
-      isOpened && 'active',
-      titleClass
+      isOpened && 'active'
     ]"
     :prepend-icon="icon ? undefined : prependIcon"
-    :icon="icon"
     :aria-controls="eager || isOpened ? idForMenu : undefined"
     :data-haspopup="true"
-    v-bind="$attrs"
-    :text="text"
     @click="handleClickBtn"
     @keydown="handleKeyDown"
   >
+    <template #default>
+      <TheIcon
+        v-if="icon"
+        :type="icon"
+        class="triangle"
+        aria-hidden="true"
+      />
+      <template v-else>
+        {{ text }}
+      </template>
+      <OverlayContainer
+        :id="idForMenu"
+        hide-scrim
+        :eager="eager"
+        type="menu"
+        transition="slide-y"
+        :esc-event="false"
+        v-model="isOpened"
+        @resize="nestedClosing"
+      >
+        <div
+          ref="containerRef"
+          :class="[
+            'dropdown-menu menu-container',
+            isMobile && 'is-mobile',
+            isOpened && 'active',
+            contentClass
+          ]"
+          :tabindex="-1"
+          :style="menuContainerStyle"
+          @keydown="handleKeyDown"
+        >
+          <slot
+            name="items"
+            items="menuItems"
+          >
+            <button
+              v-for="item in menuItems"
+              :key="item.val"
+              :style="item.val === props.currentVal ? currentStyle : undefined"
+              type="button"
+              role="menuitem"
+              @click="$emit('click-item', item.val)"
+            >
+              <slot
+                :name="`item.${item.val}`"
+                :label="item.name"
+              >
+                {{ item.name }}
+              </slot>
+            </button>
+          </slot>
+        </div>
+      </OverlayContainer>
+    </template>
     <template
       v-if="!hideTriangle"
       #append
@@ -26,50 +77,6 @@
       />
     </template>
   </TheBtn>
-  <OverlayContainer
-    :id="idForMenu"
-    hide-scrim
-    :eager="eager"
-    type="menu"
-    transition="slide-y"
-    :esc-event="false"
-    v-model="isOpened"
-    @resize="nestedClosing"
-  >
-    <div
-      ref="containerRef"
-      :class="[
-        'dropdown-menu menu-container',
-        isMobile && 'is-mobile',
-        isOpened && 'active',
-        contentClass
-      ]"
-      :tabindex="-1"
-      :style="menuContainerStyle"
-      @keydown="handleKeyDown"
-    >
-      <slot
-        name="items"
-        items="menuItems"
-      >
-        <button
-          v-for="item in menuItems"
-          :key="item.val"
-          :style="item.val === props.currentVal ? currentStyle : undefined"
-          type="button"
-          role="menuitem"
-          @click="$emit('click-item', item.val)"
-        >
-          <slot
-            :name="`item.${item.val}`"
-            :label="item.name"
-          >
-            {{ item.name }}
-          </slot>
-        </button>
-      </slot>
-    </div>
-  </OverlayContainer>
 </template>
 
 <script lang="ts" setup>
@@ -116,7 +123,6 @@ type Props = {
   })[];
   activatorId?:string,
   menuId?:string,
-  titleClass?: VueClass,
   contentClass?: VueClass,
   currentVal?: string,
   /**
@@ -340,9 +346,8 @@ const handleKeyDown = async (e: KeyboardEvent) => {
     } else return;
   }
 
-  const menu = toValue(containerRef) as typeof containerRef.value;
-  // @ts-expect-error
-  const nthChildFocused = [...menu.children].indexOf(document.activeElement);
+  const menu = toValue(containerRef)!;
+  const nthChildFocused = [...menu.children].indexOf(document.activeElement!);
   const noModifiers = noModifierKey(e);
   const shiftOnly_ = shiftOnly(e);
 

@@ -30,7 +30,9 @@ const getRandomId = (prev?: string) => {
 
 export const getComponentId = (prefix: string = 'component') => {
   const thisInstance = getCurrentInstance();
-  return thisInstance ? `${prefix}-${thisInstance.uid}` : getRandomId(prefix+'-');
+  if (!thisInstance || document.getElementById(`${prefix}-${thisInstance.uid}`))
+    return getRandomId(prefix+'-');
+  return `${prefix}-${thisInstance.uid}`;
 };
 
 // Events

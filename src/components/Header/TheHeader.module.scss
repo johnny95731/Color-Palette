@@ -46,9 +46,15 @@
 }
 
 .btn {
-  padding: 8px;
+  padding: 8px !important;
   :global(.btn__prepend i::before)  {
     font-size: $font-lg;
+  }
+  &:not(:global(.dropdown-menu)) {
+    gap: 0 !important;
+  }
+  &:global(.dropdown-menu) {
+    gap: 2px !important;
   }
   @include small {
     grid-template-columns: max-content min-content max-content;

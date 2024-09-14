@@ -26,3 +26,10 @@
   align-items: stretch;
   justify-content: right;
 }
+
+.tooltip {
+  display: block;
+  > .overlay__content {
+    pointer-events: none;
+  }
+}

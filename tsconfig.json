@@ -16,7 +16,7 @@
     "allowJs": true,
     "skipLibCheck": true,
     "noEmit": true,
-    "lib": ["DOM", "ES2022"],
+    "lib": ["DOM", "DOM.Iterable", "ES2022"],
     "paths": {
       "@/*": ["./src/*"],
       "types/*": ["./src/features/types/*", "./src/types/*"],

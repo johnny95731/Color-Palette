@@ -10,7 +10,6 @@
       v-bind="$attrs"
       :role="role"
       :aria-modal="ariaModal || undefined"
-      aria-live="polite"
     >
       <Transition
         name="fade-out"
@@ -33,7 +32,10 @@
         <div
           v-show="isActive && model"
           class="overlay__content"
-          v-bind="{class: contentClass}"
+          v-bind="{
+            class: contentClass,
+            style: contentStyle,
+          }"
         >
           <slot />
         </div>
@@ -46,6 +48,7 @@
 import { ModelRef, ref, watch } from 'vue';
 import { toValue } from '@vueuse/core';
 import { invertBoolean } from '@/utils/helpers';
+import type { CSSProperties } from 'vue';
 import type { VueClass } from 'types/browser';
 
 type Props = {
@@ -59,10 +62,11 @@ type Props = {
   transparent?: boolean,
   hideScrim?: boolean,
   role?: string,
-  type?: 'menu' | 'dialog' | 'offcanvas'
+  type?: 'menu' | 'dialog' | 'offcanvas' | 'tooltip'
   ariaModal?: boolean,
   transition?: string,
   contentClass?: VueClass
+  contentStyle?: CSSProperties
   /**
    * Adding listener to closing overlay when pressing Escape.
    */

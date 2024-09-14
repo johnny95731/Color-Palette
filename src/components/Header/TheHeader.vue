@@ -1,44 +1,76 @@
 <template>
   <DefineHeaderBtns>
     <!-- Left side -->
-    <TheBtn
+    <TheTooltip
+      text="刷新"
+    >
+      <template #activator="{props}">
+        <TheBtn
+          v-bind="props"
+          :class="$style.btn"
+          prepend-icon="refresh"
+          aria-label="刷新調色盤"
+          @click="pltState.refreshCard(-1)"
+        />
+      </template>
+    </TheTooltip>
+    <TheTooltip
+      :text="isRunning ? '暫停' : '播放'"
+    >
+      <template #activator="{props}">
+        <TheBtn
+          v-bind="props"
+          :class="$style.btn"
+          :prepend-icon="isRunning ? 'pause' : 'play'"
+          :aria-label="isRunning ? '暫停' : '播放'"
+          :text="isSmall ? 'Slides' : undefined"
+          @click="haldleClickSlides"
+        />
+      </template>
+    </TheTooltip>
+    <!-- <TheBtn
       :class="$style.btn"
-      prepend-icon="refresh"
-      aria-label="刷新調色盤"
-      text="Refresh"
-      @click="pltState.refreshCard(-1)"
-    />
-    <TheBtn
-      :class="$style.btn"
-      :prepend-icon="isRunning ? 'pause' : 'play'"
-      :aria-label="isRunning ? '暫停' : '自動刷新'"
-      text="Slides"
-      @click="haldleClickSlides"
-    />
+      text="Gen"
+    /> -->
     <DropdownMenu
-      text="Sorting"
+      ref="sortingRef"
       prepend-icon="sort"
       :class="$style.btn"
+      aria-label="排序"
       :contents="sortingMenuItems"
       :current-val="pltState.sortBy"
       @click-item="pltState.sortCards($event as SortActionType)"
     />
+    <TheTooltip
+      :activator="sortingRef"
+      text="排序調色盤"
+    />
     <DropdownMenu
-      text="Mixing"
+      ref="mixingRef"
       prepend-icon="mix"
       :class="$style.btn"
+      aria-label="混色"
       :contents="MIXING_MODES"
       :current-val="pltState.mixMode"
       @click-item="pltState.setBlendMode($event as MixingType)"
     />
+    <TheTooltip
+      :activator="mixingRef"
+      text="設定混色方法"
+    />
     <DropdownMenu
-      text="Space"
+      ref="spacegRef"
       prepend-icon="edit"
       :class="$style.btn"
+      aria-label="色彩空間"
       letterCase="all-caps"
       :contents="COLOR_SPACES"
       :current-val="pltState.colorSpace"
       @click-item="pltState.setColorSpace($event as ColorSpacesType)"
+    />
+    <TheTooltip
+      :activator="spacegRef"
+      text="設定色彩空間"
     />
     <div
       v-if="!isSmall"
@@ -49,19 +81,25 @@
       ref="bookmarksRef"
       :class="$style.btn"
       prepend-icon="bookmarks"
-      text="Bookmarks"
       aria-label="書籤"
       aria-haspopup="dialog"
       @click="$emit('show-fav')"
+    />
+    <TheTooltip
+      :activator="bookmarksRef"
+      text="開啟書籤頁"
     />
     <TheBtn
       ref="settingsRef"
       :class="$style.btn"
       prepend-icon="setting"
-      text="Settings"
       aria-label="設定"
       aria-haspopup="dialog"
       @click="$emit('show-settings')"
+    />
+    <TheTooltip
+      :activator="settingsRef"
+      text="開啟設定欄"
     />
     <!-- <TheBtn
       :class="$style.btn"
@@ -160,6 +198,7 @@ import { ref, computed, watch } from 'vue';
 import { createReusableTemplate, toValue } from '@vueuse/core';
 import $style from './TheHeader.module.scss';
 import DropdownMenu from '../Custom/DropdownMenu.vue';
+import TheTooltip from '../Custom/TheTooltip.vue';
 import TheBtn from '@/components/Custom/TheBtn.vue';
 // Utils
 import { HOT_KEYS, sortingKey } from '@/utils/hotkeys';
@@ -178,6 +217,15 @@ import type { MixingType } from 'types/mixing';
 // const btnsRef = ref<InstanceType<typeof HeaderBtns>>();
 const [DefineHeaderBtns, HeaderBtns] = createReusableTemplate();
 
+defineEmits<{
+  (e: 'show-fav'): void,
+  (e: 'show-settings'): void
+}>();
+
+// Refs of btns and menus
+const sortingRef = ref<InstanceType<typeof DropdownMenu>>();
+const mixingRef = ref<InstanceType<typeof DropdownMenu>>();
+const spacegRef = ref<InstanceType<typeof DropdownMenu>>();
 const bookmarksRef = ref<InstanceType<typeof TheBtn>>();
 const settingsRef = ref<InstanceType<typeof TheBtn>>();
 defineExpose({
@@ -188,11 +236,6 @@ defineExpose({
     toValue(settingsRef)?.$el.focus();
   }
 });
-
-defineEmits<{
-  (e: 'show-fav'): void,
-  (e: 'show-settings'): void
-}>();
 
 const isSmall = computed(() => media.isSmall);
 

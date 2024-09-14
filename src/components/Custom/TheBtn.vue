@@ -21,7 +21,10 @@
         />
       </slot>
     </div>
-    <div class="btn__content">
+    <div
+      v-if="$slots.default || icon || text"
+      class="btn__content"
+    >
       <slot>
         <TheIcon
           v-if="icon"

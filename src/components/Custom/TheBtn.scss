@@ -9,7 +9,7 @@ $transDuration: 120ms;
   justify-content: center;
   grid-template-areas: "prepend content append";
   grid-template-columns: max-content auto max-content;
-  column-gap: 4px;
+  gap: 4px;
   text-align: center;
   // shape;
   border: none;
