@@ -6,6 +6,7 @@
   />
   <OverlayContainer
     :id="idForContainer"
+    :transition="transition"
     role="tooltip"
     type="tooltip"
     :eager="eager"
@@ -39,6 +40,7 @@ type Props = {
   class?: VueClass,
   eager?: boolean,
   text?: string,
+  transition?: string,
   closeDelay?: string | number,
   openDelay?: string | number,
   location?: 'top' | 'bottom' | 'left' | 'right',
@@ -47,6 +49,7 @@ type Props = {
 const props = withDefaults(defineProps<Props>(), {
   location: 'bottom',
   eager: true,
+  transition: 'fade-out',
   openDelay: 100,
   closeDelay: 200,
 });
