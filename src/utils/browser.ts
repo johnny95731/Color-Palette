@@ -38,6 +38,25 @@ export const getComponentId = (prefix: string = 'component') => {
 // Events
 export const stopPropagation = (e: Event) => e.stopPropagation();
 
+export function getMousePosition(e: MouseEvent | TouchEvent): MouseEvent | Touch
+export function getMousePosition(
+  e: MouseEvent | TouchEvent,
+  client: `${'client' | 'page' | 'screen'}${'Y' | 'X'}`
+): number
+/**
+ * Return TouchList if `e` is TouchEvent else return `e`
+ */
+export function getMousePosition(
+  e: MouseEvent | TouchEvent,
+  client?: `${'client' | 'page' | 'screen'}${'Y' | 'X'}`
+) {
+  // @ts-expect-error
+  const obj = e.touches ?
+    (e as TouchEvent).touches[0] :
+    (e as MouseEvent);
+  return client ? obj[client] : obj;
+}
+
 /**
  * Remove non-hex text and add "#" to first word.
  */

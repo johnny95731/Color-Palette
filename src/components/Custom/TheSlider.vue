@@ -64,7 +64,7 @@
 <script setup lang="ts">
 import { onMounted, watch, ref, computed } from 'vue';
 import { toValue } from '@vueuse/core';
-import { getComponentId } from '@/utils/browser';
+import { getComponentId, getMousePosition } from '@/utils/browser';
 import { clip, countDecimals, round, rangeMapping, isSameFloat } from '@/utils/numeric';
 import { useElementBounding } from '@/utils/composables/useElementBounding';
 
@@ -234,9 +234,7 @@ const handleDrag = (
     isDragging.value = true;
   } else if (!toValue(isDragging)) return;
   // Get cursor position.
-  const clientX = (
-    (e as MouseEvent).clientX || (e as TouchEvent).touches[0].clientX
-  );
+  const clientX = getMousePosition(e, 'clientX');
   // Evaluate value.
   const val = rangeMapping(
     clip(clientX - trackerRect.left, 0, trackerRect.width),

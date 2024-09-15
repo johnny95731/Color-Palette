@@ -52,6 +52,7 @@ import useSettingStore from '@/features/stores/useSettingStore';
 import media from '@/utils/composables/useMedia';
 // Types
 import type { CSSProperties } from 'vue';
+import { getMousePosition } from '@/utils/browser';
 
 type cardInstance = InstanceType<typeof TheCard>;
 
@@ -234,10 +235,7 @@ const draggingCardEvent = computed(() => {
     // Disable pull-to-refresh on mobile.
     document.body.style.overscrollBehavior = 'none';
     // Cursor position when mouse down.
-    const cursorPos = (
-      (e as MouseEvent)[media.clientPos] ||
-        (e as TouchEvent).touches[0][media.clientPos]
-    ) - media.bound[0];
+    const cursorPos = getMousePosition(e, media.clientPos) - media.bound[0];
     if (settingsState.transition.pos) {
       setIsInTrans(cardIdx, true);
     }
@@ -258,11 +256,8 @@ const draggingCardEvent = computed(() => {
    * cursor is moving.
    */
   function move(e: MouseEvent | TouchEvent) {
-    const cursorPos = (
-      (e as MouseEvent)[media.clientPos] ||
-        (e as TouchEvent).touches[0][media.clientPos]
-    ) - media.bound[0];
-      // Mouse is not in range.
+    const cursorPos = getMousePosition(e, media.clientPos) - media.bound[0];
+    // Mouse is not in range.
     if (!card || cursorPos < 0 || cursorPos > cursorLimited) return false;
     // Order of card that cursor at.
     const order = Math.floor(cursorPos * cursorRationCoeff);
