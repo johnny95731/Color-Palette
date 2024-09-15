@@ -153,10 +153,6 @@ const { rect: trackerRect } = useElementBounding(
 const model = defineModel<number>({ required: true });
 model.value ??=  (props.max + props.min) / 2;
 
-defineEmits<{
-  'update:modelValue': [newVal: number]
-}>();
-
 const pos = ref<number>(0); // thumb position
 
 /**

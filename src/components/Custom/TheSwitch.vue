@@ -107,9 +107,6 @@ watch(() => [props.label, toValue(idForInput)], (newVal, oldVal) => {
 
 // Handle values
 const model = defineModel<boolean>() as ModelRef<boolean>;
-defineEmits<{
-  'update:modelValue': [isOn: boolean]
-}>();
 
 function handleClick() {
   invertBoolean(model);

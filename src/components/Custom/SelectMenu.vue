@@ -191,11 +191,6 @@ watch(() => [props.label, toValue(idForInput)], (newVal, oldVal) => {
 const model = defineModel<string>(); // Higher priority than modelIndex.
 const modelIndex = defineModel<number>('index');
 
-defineEmits<{
-  'update:modelValue': [val: string]
-  'update:index': [idx: number],
-}>();
-
 // initialize
 /**
  * Handle models when they are nullish.
