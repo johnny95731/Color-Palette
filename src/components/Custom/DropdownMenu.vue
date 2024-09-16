@@ -90,7 +90,7 @@ import { toTitleCase, sleep, invertBoolean } from '@/utils/helpers';
 import { getComponentId } from '@/utils/browser';
 import { mod } from '@/utils/numeric';
 import { noModifierKey, shiftOnly, hasPopup } from '@/utils/browser';
-import { useElementBounding } from '@/utils/composables/useElementBounding';
+import { useElementBounding } from '@/composables/useElementBounding';
 // constants
 import { CURRENT_OPTION_WEIGHT, MenuSymbol } from '@/constants/browser';
 // Types
@@ -292,14 +292,11 @@ const menuContainerStyle = computed<CSSProperties>(() => {
 });
 
 const resizeCallback =  () => nestedClosing();
-const cleanListeners = () => {
-  removeEventListener('click', handleClickWindow, true);
-  removeEventListener('resize', resizeCallback, true);
-};
 watch(isOpened, (newVal) => {
   if (!newVal) {
     parent?.unregister();
-    cleanListeners();
+    removeEventListener('click', handleClickWindow, true);
+    removeEventListener('resize', resizeCallback, true);
   } else {
     parent?.register();
     addEventListener('click', handleClickWindow, true);
@@ -328,8 +325,7 @@ const handleKeyDown = async (e: KeyboardEvent) => {
   // Ignore supermenu keydown event when submenu is opening.
   if (toValue(openedChild)) return;
   const key = e.key;
-  // Handle
-  if (key === 'Enter' || key === '') {
+  if (key === 'Enter' || key === ' ') {
     e.stopPropagation();
     e.preventDefault();
     handleClickBtn();
@@ -351,14 +347,14 @@ const handleKeyDown = async (e: KeyboardEvent) => {
   const noModifiers = noModifierKey(e);
   const shiftOnly_ = shiftOnly(e);
 
-  let target: HTMLElement | null = null;
+  let target: Element | null = null;
   switch(key) {
   case 'Tab':
     {
-      const focusingActivator = !menu  || nthChildFocused === -1;
+      const focusingActivator = !menu || nthChildFocused === -1;
+      // const focusingActivator = toValue(activator).contains(document.activeElement);
       // Tab-event
       if (noModifiers && focusingActivator) {
-        // @ts-expect-error
         target = menu.children[0];
         e.preventDefault();
       } else if (
@@ -381,11 +377,9 @@ const handleKeyDown = async (e: KeyboardEvent) => {
     }
     break;
   case 'Home':
-    // @ts-expect-error
     target = menu.children[0];
     break;
   case 'End':
-    // @ts-expect-error
     target = menu.lastElementChild;
     break;
   case 'ArrowLeft':
@@ -394,12 +388,10 @@ const handleKeyDown = async (e: KeyboardEvent) => {
   case 'ArrowDown':
     e.preventDefault();
     if (nthChildFocused === -1) { // focusing activator
-      // @ts-expect-error
-      target = ['U', 'L'].includes(key[5]) ? menu.lastElementChild : menu.children[0];
+      target = ['U', 'L'].includes(key[5]) ? menu.lastElementChild : menu.firstElementChild;
     }
     else {
       const bias = ['U', 'L'].includes(key[5]) ? -1 : 1;
-      // @ts-expect-error
       target = menu.children[mod(nthChildFocused + bias, menu.children.length)];
     }
     break;
@@ -409,7 +401,8 @@ const handleKeyDown = async (e: KeyboardEvent) => {
     e.stopPropagation();
     break;
   }
-  target?.focus();
+  // @ts-expect-error
+  target?.focus && target.focus();
 };
 </script>
 

@@ -207,7 +207,7 @@ import { invertBoolean } from '@/utils/helpers';
 import { MIXING_MODES } from '@/constants/mixing';
 import { COLOR_SPACES, SORTING_ACTIONS } from '@/constants/colors';
 // Stores / Contexts
-import media from '@/utils/composables/useMedia';
+import media from '@/composables/useMedia';
 import usePltStore from '@/features/stores/usePltStore';
 import useSettingStore from '@/features/stores/useSettingStore';
 // Types

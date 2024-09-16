@@ -1,4 +1,4 @@
-import { Arrayable, toValue } from '@vueuse/core';
+import { toValue } from '@vueuse/core';
 import { toPercent } from './numeric';
 import type { ModelRef, Ref, WritableComputedRef } from 'vue';
 import { hex2rgb } from './colors';
@@ -50,23 +50,6 @@ export const objPick = <T extends {}, K extends (string | number | symbol)>(
 //       .filter(([key]) => !keys.includes(key as K))
 //   ) as Omit<T, K>
 //   );
-
-
-// ### Array helpers
-export const arraylize = <T>(val: Arrayable<T>) =>
-  Array.isArray(val) ? val : [val];
-
-/**
- * array.prototype.filter and clean items of original array
- */
-export const arrFilter = <T extends unknown>(
-  arr: T[],
-  callback: (value: T, index: number, array: T[]) => unknown
-) => {
-  const newArr = arr.filter(callback);
-  arr.length = 0;
-  return newArr;
-};
 
 /**
  * L2-distance (not take square root yet) of two array.

@@ -131,6 +131,7 @@ const props = withDefaults(defineProps<Props>(), {
 const activatorRef = ref<InstanceType<typeof TheBtn>>();
 const containerRef = ref<HTMLDivElement>();
 
+const activator = computed<HTMLButtonElement>(() => toValue(activatorRef)?.$el);
 
 /**
  * Index not exceed range of options.
@@ -282,7 +283,7 @@ const handleClickBtn = (e: MouseEvent | FocusEvent, newVal?: boolean) => {
 
 const handleKeyDown = async (e: KeyboardEvent) => {
   const key = e.key;
-  if (['Enter', ' '].includes(key)) {
+  if (key === 'Enter' || key === ' ') {
     e.stopPropagation();
     e.preventDefault();
     invertBoolean(isOpened);
@@ -299,43 +300,43 @@ const handleKeyDown = async (e: KeyboardEvent) => {
     } else return;
   }
 
-  const activator = toValue(activatorRef)?.$el as HTMLButtonElement;
-  const menu = toValue(containerRef) as typeof containerRef.value;
+  const menu = toValue(containerRef)!;
   // @ts-expect-error
   const nthChildFocused = menu && [...menu.children].indexOf(document.activeElement);
   const noModifiers = noModifierKey(e);
   const shiftOnly_ = shiftOnly(e);
 
-  let target: HTMLElement | null = null;
+  let target: Element | null = null;
   switch(key) {
   case 'Tab':
-    if (
-      !menu  || nthChildFocused === -1 // Focusing activator
-    ) {
-      if (noModifiers) { // Tab
-        // @ts-expect-error
+    {
+      const focusingActivator = !menu || nthChildFocused === -1;
+      // Tab-event
+      if (noModifiers && focusingActivator) {
         target = menu.children[0];
         e.preventDefault();
-      } else if (shiftOnly_) // Shift + Tab
-        isOpened.value = false;
-    } else if (nthChildFocused === menu.children.length - 1 && noModifiers) {
-      // Focusing last menu option and Tab => close menu and focus next
-      // focusable element of activator.
-      target = activator;
-    } else if (nthChildFocused === 0 && shiftOnly_) {
-      // Focusing first menu option and Shift + Tab => close menu and focus
-      // activator.
-      invertBoolean(isOpened);
-      target = activator;
-      e.preventDefault();
+      } else if (
+        noModifiers &&
+        nthChildFocused + 1 === menu?.children.length // Focussing last option
+      ) {
+        // Set focus to activator and default Tab-event =>
+        // focus next focusable element of activator.
+        target = toValue(activator);
+      }
+      // (Shift+Tab)-event
+      else if (shiftOnly_ && focusingActivator) {
+        invertBoolean(isOpened);
+      } else if (shiftOnly_ && !nthChildFocused) { // Focussing first option
+        invertBoolean(isOpened);
+        target = toValue(activator);
+        e.preventDefault();
+      }
     }
     break;
   case 'Home':
-    // @ts-expect-error
     target = menu.children[0];
     break;
   case 'End':
-    // @ts-expect-error
     target = menu.lastElementChild;
     break;
   case 'ArrowLeft':
@@ -344,21 +345,20 @@ const handleKeyDown = async (e: KeyboardEvent) => {
   case 'ArrowDown':
     e.preventDefault();
     if (nthChildFocused === -1) { // focusing activator
-      // @ts-expect-error
-      target = ['U', 'L'].includes(key[5]) ? menu.lastElementChild : menu.children[0];
+      target = ['U', 'L'].includes(key[5]) ? menu.lastElementChild : menu.firstElementChild;
     }
     else {
       const bias = ['U', 'L'].includes(key[5]) ? -1 : 1;
-      // @ts-expect-error
       target = menu.children[mod(nthChildFocused + bias, menu.children.length)];
     }
     break;
   case 'Escape':
     invertBoolean(isOpened, false);
-    target = activator;
+    target = toValue(activator);
     break;
   }
-  target?.focus();
+  // @ts-expect-error
+  target?.focus && target.focus();
 };
 </script>
 

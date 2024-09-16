@@ -2,7 +2,7 @@ import { shallowReactive, watch } from 'vue';
 import {
   tryOnMounted, unrefElement, useEventListener, useMutationObserver, useResizeObserver,
 } from '@vueuse/core';
-import { objPick } from '../helpers';
+import { objPick } from '../utils/helpers';
 import type {
   MaybeComputedElementRef, UseElementBoundingOptions
 } from '@vueuse/core';

@@ -95,10 +95,10 @@ import { hexTextEdited, isTabKey } from '@/utils/browser';
 import {
   hex2rgb, rgb2hex, isValidHex, gradientGen, unzipedNameList, getNamedColorRgb,
 } from '@/utils/colors';
-import { useElementBounding } from '@/utils/composables/useElementBounding';
+import { useElementBounding } from '@/composables/useElementBounding';
 // Stores
 import usePltStore from '@/features/stores/usePltStore';
-import media from '@/utils/composables/useMedia';
+import media from '@/composables/useMedia';
 // Types
 import type { CSSProperties } from 'vue';
 import type { CardType } from 'types/pltStore';

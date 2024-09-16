@@ -1,6 +1,33 @@
-import { reactive } from 'vue';
+import { shallowReactive } from 'vue';
 import { getPropertyValue } from '@/utils/browser';
-import type { MediaContextType } from 'types/media';
+
+type MediaContextType = {
+  /**
+   * The device size, [height, width].
+   */
+  windowSize: [number, number];
+  /**
+   * Height of header.
+   */
+  headerHeight: number;
+  /**
+   * The device is small (width <= 900px) or not.
+   */
+  isSmall: boolean;
+  /**
+   * Card pos along flow direction. For getting data from event.
+   */
+  pos: 'left' | 'top';
+  /**
+   * Cursor pos direction along flow direction. For getting data from event.
+   */
+  clientPos: 'clientX' | 'clientY';
+  /**
+   * For adjusting card position or varifying valid cursor position.
+   * Along y-direction if isSmall else x-direction.
+   */
+  bound: [number, number];
+}
 
 /**
  * Device is small if device width <= (maxSmallSize)px.
@@ -16,11 +43,12 @@ const initialState: MediaContextType = {
   bound: [0, 1],
 };
 
-const media = reactive<MediaContextType>(initialState);
-
-const body = document.body;
+const media = shallowReactive<MediaContextType>(initialState);
 const handleWindowResize = () => {
-  const windowSize: [number, number] = [body.offsetHeight, body.clientWidth];
+  const windowSize: [number, number] = [
+    document.body.offsetHeight,
+    document.body.offsetWidth
+  ];
   const isSmall = windowSize[1] <= maxSmallSize;
   const headerHeight = getPropertyValue('--header-height');
   // Mobile browser 100vh including toolbar.
@@ -37,6 +65,7 @@ const handleWindowResize = () => {
     bound: isSmall ? [headerHeight, windowSize[0]] : [0, windowSize[1]],
   });
 };
-addEventListener('resize', handleWindowResize);
+
+addEventListener('resize', handleWindowResize, { capture: true });
 handleWindowResize();
 export default media;

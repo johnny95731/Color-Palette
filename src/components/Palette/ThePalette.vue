@@ -49,7 +49,7 @@ import { mixers } from '@/utils/mixing';
 // Stores / Contexts
 import usePltStore from '@/features/stores/usePltStore';
 import useSettingStore from '@/features/stores/useSettingStore';
-import media from '@/utils/composables/useMedia';
+import media from '@/composables/useMedia';
 // Types
 import type { CSSProperties } from 'vue';
 import { getMousePosition } from '@/utils/browser';
@@ -225,6 +225,7 @@ const draggingCardEvent = computed(() => {
         toValue(cardRefs)[i].setPos(cardAttrs.positions[pltState.cards[i].order]);
     }
   };
+  const listenerOptions: AddEventListenerOptions = { capture: true, passive: false };
   /**
    * The event is triggered when the `<->` icon on a card is dragging.
    * @param {number} cardIdx The n-th card.
@@ -246,10 +247,10 @@ const draggingCardEvent = computed(() => {
     card.setPos(`${round(cursorPos - halfCardLength)}px`);
     card.setTransProperty('none');
     card.$el.classList.add($style.dragging);
-    addEventListener('mousemove', move);
-    addEventListener('touchmove', move, { passive: true });
-    addEventListener('mouseup', end);
-    addEventListener('touchend', end);
+    addEventListener('mousemove', move, listenerOptions);
+    addEventListener('touchmove', move, listenerOptions);
+    addEventListener('mouseup', end, listenerOptions);
+    addEventListener('touchend', end, listenerOptions);
   }
   /**
    * The event is triggered when the `<->` icon on a card is dragging and
@@ -283,10 +284,10 @@ const draggingCardEvent = computed(() => {
    */
   function end() {
     if (!card) return;
-    removeEventListener('mousemove', move);
-    removeEventListener('touchmove', move);
-    removeEventListener('mouseup', end);
-    removeEventListener('touchend', end);
+    removeEventListener('mousemove', move, listenerOptions);
+    removeEventListener('touchmove', move, listenerOptions);
+    removeEventListener('mouseup', end, listenerOptions);
+    removeEventListener('touchend', end, listenerOptions);
     // Able pull-to-refresh on mobile.
     document.body.style.overscrollBehavior = '';
     // `draggingIdx` and `finalIdx`setIsEventEnd are set to be non-null
@@ -306,6 +307,7 @@ const draggingCardEvent = computed(() => {
     // Dragging card move to target position.
     setNewPosition();
     card.setTransProperty('reset');
+    return false;
   }
   return start;
 });

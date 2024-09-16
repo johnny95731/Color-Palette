@@ -66,7 +66,7 @@ import { onMounted, watch, ref, computed } from 'vue';
 import { toValue } from '@vueuse/core';
 import { getComponentId, getMousePosition } from '@/utils/browser';
 import { clip, countDecimals, round, rangeMapping, isSameFloat } from '@/utils/numeric';
-import { useElementBounding } from '@/utils/composables/useElementBounding';
+import { useElementBounding } from '@/composables/useElementBounding';
 
 type Props = {
   inputId?: string,
@@ -218,42 +218,50 @@ const increment = (num: number = 1) => {
 };
 
 // onChange event => Drag or key down.
-// -Mouse down / Touch start.
-// -Mouse move / Touch move.
-const handleDrag = (
-  e: MouseEvent | TouchEvent,
-) => {
-  const isStartingDragging = !e.type.endsWith('move');
-  if (isStartingDragging) { // touch start / mouse down
-    (e.currentTarget as HTMLDivElement).focus();
-    if (toValue(tooltipRef) === e.target) return; // Prevent dragging tooltip.
-    isDragging.value = true;
-  } else if (!toValue(isDragging)) return;
-  // Get cursor position.
-  const clientX = getMousePosition(e, 'clientX');
-  // Evaluate value.
-  const val = rangeMapping(
-    clip(clientX - trackerRect.left, 0, trackerRect.width),
-    0, trackerRect.width,
-    props.min, props.max,
-  );
-  updateModel(val);
-  if (isStartingDragging) {
-    addEventListener('mousemove', handleDrag);
-    addEventListener('touchmove', handleDrag);
-    addEventListener('mouseup', handleDragEnd);
-    addEventListener('touchend', handleDragEnd);
-  }
-};
+const handleDrag = (() => {
+  const listenerOptions: AddEventListenerOptions = { capture: true, passive: false };
+  // -Mouse down / Touch start.
+  // -Mouse move / Touch move.
+  const handleDrag = (
+    e: MouseEvent | TouchEvent,
+  ) => {
+    const isStartingDragging = !e.type.endsWith('move');
+    if (isStartingDragging) { // touch start / mouse down
+      (e.currentTarget as HTMLDivElement).focus();
+      if (toValue(tooltipRef) === e.target) return; // Prevent dragging tooltip.
+      isDragging.value = true;
+      // Disable pull-to-refresh on mobile.
+      document.body.style.overscrollBehavior = 'none';
+    } else if (!toValue(isDragging)) return;
+    // Get cursor position.
+    const clientX = getMousePosition(e, 'clientX');
+    // Evaluate value.
+    const val = rangeMapping(
+      clip(clientX - trackerRect.left, 0, trackerRect.width),
+      0, trackerRect.width,
+      props.min, props.max,
+    );
+    updateModel(val);
+    if (isStartingDragging) {
+      addEventListener('mousemove', handleDrag, listenerOptions);
+      addEventListener('touchmove', handleDrag, listenerOptions);
+      addEventListener('mouseup', handleDragEnd, listenerOptions);
+      addEventListener('touchend', handleDragEnd, listenerOptions);
+    }
+    return false;
+  };
 
-// -Mouse up / Touch end.
-const handleDragEnd = () => {
-  isDragging.value = false;
-  removeEventListener('mousemove', handleDrag);
-  removeEventListener('touchmove', handleDrag);
-  removeEventListener('mouseup', handleDragEnd);
-  removeEventListener('touchend', handleDragEnd);
-};
+  // -Mouse up / Touch end.
+  const handleDragEnd = () => {
+    document.body.style.overscrollBehavior = '';
+    isDragging.value = false;
+    removeEventListener('mousemove', handleDrag, listenerOptions);
+    removeEventListener('touchmove', handleDrag, listenerOptions);
+    removeEventListener('mouseup', handleDragEnd, listenerOptions);
+    removeEventListener('touchend', handleDragEnd, listenerOptions);
+  };
+  return handleDrag;
+})();
 
 // -Key down
 const handleKeyDown = (e: KeyboardEvent) => {

@@ -73,10 +73,10 @@ import EditingDialog from './EditingDialog.vue';
 import { round } from '@/utils/numeric';
 import { rgb2gray, getClosestNamed, hex2rgb, unzipCssNamed } from '@/utils/colors';
 import { copyText } from '@/utils/browser';
-import { useElementBounding } from '@/utils/composables/useElementBounding';
+import { useElementBounding } from '@/composables/useElementBounding';
 // Stores
 import usePltStore from '@/features/stores/usePltStore';
-import media from '@/utils/composables/useMedia';
+import media from '@/composables/useMedia';
 // Types
 import type { CSSProperties } from 'vue';
 import type { CardType } from '@/features/types/pltStore';
