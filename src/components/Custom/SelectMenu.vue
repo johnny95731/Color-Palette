@@ -283,34 +283,30 @@ const handleClickBtn = (e: MouseEvent | FocusEvent, newVal?: boolean) => {
 
 const handleKeyDown = async (e: KeyboardEvent) => {
   const key = e.key;
-  if (key === 'Enter' || key === ' ') {
-    e.stopPropagation();
-    e.preventDefault();
-    invertBoolean(isOpened);
-    await nextTick();
-    // Cant get ref before updated (`menu` is undefined).
-    (toValue(containerRef)?.children[0] as HTMLButtonElement).focus();
-    return;
-  }
+  let target: Element | null = null;
   if (!toValue(isOpened)) {
     // Only some keys works when menu is not openned.
-    if (key.startsWith('Arrow')) {
-      invertBoolean(isOpened, true);
+    if (key.startsWith('Arrow') || key === 'Enter' || key === ' ') {
+      e.stopPropagation();
+      e.preventDefault();
+      invertBoolean(isOpened);
       await nextTick();
-    } else return;
+      // Cant get ref before updated (`menu` is undefined).
+      target = toValue(containerRef)?.children[0]!;
+    }
+    else return;
   }
-
+  // `undefined` is handled.
   const menu = toValue(containerRef)!;
-  // @ts-expect-error
-  const nthChildFocused = menu && [...menu.children].indexOf(document.activeElement);
+  // @ts-expect-error null still work (index -1)
+  const nthChildFocused = [...menu.children].indexOf(document.activeElement);
+  const focusingActivator = nthChildFocused === -1; // event triggered from activator.
   const noModifiers = noModifierKey(e);
   const shiftOnly_ = shiftOnly(e);
 
-  let target: Element | null = null;
   switch(key) {
   case 'Tab':
     {
-      const focusingActivator = !menu || nthChildFocused === -1;
       // Tab-event
       if (noModifiers && focusingActivator) {
         target = menu.children[0];
@@ -343,8 +339,7 @@ const handleKeyDown = async (e: KeyboardEvent) => {
   case 'ArrowUp':
   case 'ArrowRight':
   case 'ArrowDown':
-    e.preventDefault();
-    if (nthChildFocused === -1) { // focusing activator
+    if (focusingActivator) { // focusing activator
       target = ['U', 'L'].includes(key[5]) ? menu.lastElementChild : menu.firstElementChild;
     }
     else {
@@ -357,7 +352,7 @@ const handleKeyDown = async (e: KeyboardEvent) => {
     target = toValue(activator);
     break;
   }
-  // @ts-expect-error
+  // @ts-expect-error Check is instanceof HTMLElement
   target?.focus && target.focus();
 };
 </script>
