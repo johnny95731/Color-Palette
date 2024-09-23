@@ -185,6 +185,7 @@
       icon="list"
       :isMobile="true"
       hideTriangle
+      aria-label="選單"
     >
       <template #items>
         <HeaderBtns />
