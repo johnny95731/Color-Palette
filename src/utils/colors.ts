@@ -4,13 +4,13 @@ import { clip, dot, mod, rangeMapping, round, toPercent } from './numeric';
 import {
   RGB_MAX, HSL_MAX, HWB_MAX, HSB_MAX, CMY_MAX, CMYK_MAX, XYZ_MAX, LAB_MAX,
   RGB2XYZ_COEFF_ROW_SUM, XYZ2RGB_COEFF, RGB2XYZ_COEFF, XYZ_MAX_SCALING,
-  YUV_MAX,
+  YUV_MAX, CONTRAST_METHODS,
 } from '@/constants/colors.ts';
 import type { ColorSpacesType, ColorSpaceInfos, ContrastMethodType } from '@/types/colors';
 
+// ### CSS Named
 export const unzipCssNamed = (name: string) => name.replace(/([A-Z])/g, ' $1').trim();
 
-// ### CSS Named
 /**
  * All names of CSS <named-color> (removed synonym name) with sapce between words.
  */
@@ -99,7 +99,7 @@ const lab2xyz = (lab: number[]): number[] => {
  */
 export const rgb2hex = (rgb: number[]): string => {
   return rgb.reduce(
-    (prev, val) => prev + round(val).toString(16).padStart(2, '0'), '#'
+    (prev, val) => prev + (round(val) < 16 ? 0 : '') + round(val).toString(16), '#'
   ).toUpperCase();
 };
 
@@ -108,12 +108,7 @@ export const rgb2hex = (rgb: number[]): string => {
  * @param rgb Array of RGB color.
  * @return grayscale [0, RGB_Max]
  */
-export const rgb2gray = (() => {
-  const RGB_2_GRAY_COEFF = [0.299, 0.587, 0.114];
-  return (rgb: number[]): number => {
-    return rgb.reduce((cummul, val, i) => cummul += val * RGB_2_GRAY_COEFF[i], 0);
-  };
-})();
+export const rgb2gray = (rgb: number[]) => dot(rgb, [0.299, 0.587, 0.114]);
 
 /**
  * Convert sRGB to linear RGB.
@@ -147,19 +142,14 @@ const rgb2hue = (rgb: number[]): number[] => {
   const min = Math.min(r, g, b);
   const delta = max - min;
   let hue;
-  switch (max) {
-  case min:
+  if (max === min)
     hue = 0;
-    break;
-  case r:
+  else if (max === r)
     hue = mod(((g - b) / delta), 6);
-    break;
-  case g:
+  else if (max === g)
     hue = (b - r) / delta + 2;
-    break;
-  default: // case b:
+  else // case b:
     hue = (r - g) / delta + 4;
-  }
   return [60 * hue, min, max];
 };
 
@@ -209,8 +199,7 @@ const rgb2hwb = (rgb: number[]): number[] => {
  * @return CMYK color array.
  */
 const rgb2cmy = (rgb: number[]): number[] => {
-  const scalingCoeff = CMY_MAX / RGB_MAX;
-  return rgb.map((val) => (RGB_MAX - val) * scalingCoeff);
+  return rgb.map((val) => (RGB_MAX - val) * CMY_MAX / RGB_MAX);
 };
 
 /**
@@ -221,9 +210,7 @@ const rgb2cmy = (rgb: number[]): number[] => {
 const rgb2cmyk = (rgb: number[]): number[] => {
   const cmy = rgb2cmy(rgb);
   const k = Math.min(...cmy);
-  const cmyk = cmy.map(val => val - k);
-  cmyk.push(k);
-  return cmyk;
+  return [...cmy.map(val => val - k), k];
 };
 /**
  * Convert RGB to CIE XYZ.
@@ -231,9 +218,8 @@ const rgb2cmyk = (rgb: number[]): number[] => {
  * @return CIE XYZ color array. The result will be scaling to [0, 100]
  */
 const rgb2xyz = (rgb: number[]): number[] => {
-  const scaling = XYZ_MAX_SCALING / RGB_MAX;
   const linearRgb = srgb2linearRgb(rgb);
-  return RGB2XYZ_COEFF.map((row) => dot(row, linearRgb) * scaling);
+  return RGB2XYZ_COEFF.map((row) => dot(row, linearRgb) * XYZ_MAX_SCALING / RGB_MAX);
 };
 
 /**
@@ -250,18 +236,11 @@ const rgb2lab = (rgb: number[]): number[] => {
  * @param rgb RGB color array.
  * @return YUV color array.
  */
-const rgb2yuv = (() => {
-  const matrix = [
-    [ 0.299, 0.587, 0.114],
-    [-0.169,-0.331, 0.5  ],
-    [ 0.5,  -0.419,-0.081]
-  ];
-  return (rgb: number[]): number[] => {
-    return matrix
-      .map(row => dot(row, rgb))
-      .map((val, i) => val + (i&&128)); // [0, 128, 128]
-  };
-})();
+const rgb2yuv = (rgb: number[]) => [
+  rgb2gray(rgb),
+  dot([-0.169,-0.331, 0.5  ], rgb) + 128,
+  dot([ 0.5,  -0.419,-0.081], rgb) + 128
+];
 
 
 // ### Convert From other space to RGB.
@@ -274,21 +253,18 @@ const hsl2rgb = (hsl: number[]): number[] => {
   if (hsl[1] === 0) {
     return hsl.map(() => hsl[2] / HSB_MAX[2] * RGB_MAX);
   }
-  const temp = [...hsl];
-  // Normalize to [0, 1].
-  temp[1] /= HSL_MAX[1];
-  temp[2] /= HSL_MAX[2];
   // Consts
-  const C = (1 - Math.abs(2 * temp[2] - 1)) * temp[1];
-  const X = C * (1 - Math.abs((temp[0] / 60) % 2 - 1));
-  const m = temp[2] - C / 2;
+  const C = (1 - Math.abs(2 * hsl[2]/HSL_MAX[2] - 1)) * hsl[1]/HSL_MAX[1];
+  const X = C * (1 - Math.abs((hsl[0] / 60) % 2 - 1));
+  const m = hsl[2]/HSL_MAX[2] - C / 2;
+  const angleLevel = hsl[0] / 60;
   // Convert (Note: The formula can reduce.)
   let rgbPrime;
-  if (temp[0] < 60) rgbPrime = [C, X, 0];
-  else if (temp[0] < 120) rgbPrime = [X, C, 0];
-  else if (temp[0] < 180) rgbPrime = [0, C, X];
-  else if (temp[0] < 240) rgbPrime = [0, X, C];
-  else if (temp[0] < 300) rgbPrime = [X, 0, C];
+  if (angleLevel < 1) rgbPrime = [C, X, 0];
+  else if (angleLevel < 2) rgbPrime = [X, C, 0];
+  else if (angleLevel < 3) rgbPrime = [0, C, X];
+  else if (angleLevel < 4) rgbPrime = [0, X, C];
+  else if (angleLevel < 5) rgbPrime = [X, 0, C];
   else rgbPrime = [C, 0, X];
   return rgbPrime.map((val) => round(RGB_MAX * (val + m), 2));
 };
@@ -304,21 +280,18 @@ const hsb2rgb = (hsb: number[]): number[] => {
   if (hsb[1] === 0) {
     return hsb.map(() => hsb[2] / HSB_MAX[2] * RGB_MAX);
   }
-  const temp = [...hsb];
-  // Normalize to [0, 1].
-  temp[1] /= HSB_MAX[1];
-  temp[2] /= HSB_MAX[2];
   // Consts
-  const C = temp[1] * temp[2];
-  const X = C * (1 - Math.abs((temp[0]/60) % 2 - 1));
-  const m = temp[2] - C;
-  // Convert. (Note: The formula can reduce.)
-  let rgbPrime: number[];
-  if (temp[0] < 60) rgbPrime = [C, X, 0];
-  else if (temp[0] < 120) rgbPrime = [X, C, 0];
-  else if (temp[0] < 180) rgbPrime = [0, C, X];
-  else if (temp[0] < 240) rgbPrime = [0, X, C];
-  else if (temp[0] < 300) rgbPrime = [X, 0, C];
+  const C = hsb[1]/HSB_MAX[1] * hsb[2]/HSB_MAX[2];
+  const X = C * (1 - Math.abs((hsb[0]/60) % 2 - 1));
+  const m = hsb[2]/HSB_MAX[1] - C;
+  const angleLevel = hsb[0] / 60;
+  // Convert. (Note formula can reduce.)
+  let rgbPrime;
+  if (angleLevel < 1) rgbPrime = [C, X, 0];
+  else if (angleLevel < 2) rgbPrime = [X, C, 0];
+  else if (angleLevel < 3) rgbPrime = [0, C, X];
+  else if (angleLevel < 4) rgbPrime = [0, X, C];
+  else if (angleLevel < 5) rgbPrime = [X, 0, C];
   else rgbPrime = [C, 0, X];
   return rgbPrime.map((val) => round(RGB_MAX * (val + m), 2));
 };
@@ -343,7 +316,7 @@ const hwb2hsb = (hwb: number[]) => {
 const hwb2rgb = (hwb: number[]): number[] => {
   // eslint-disable-next-line
   let [h, w, b] = hwb;
-  if (w + b > HWB_MAX[1]) [w, b] = [HWB_MAX[1] * w / (w+b), HWB_MAX[2] * b / (w+b)];
+  if (w + b > 100) [w, b] = [100 * w / (w+b), 100 * b / (w+b)];
   return hsb2rgb(hwb2hsb([h,w,b]));
 };
 
@@ -364,10 +337,9 @@ const cmy2rgb = (cmy: number[]): number[] => {
  * @return RGB color array.
  */
 const cmyk2rgb = (cmyk: number[]): number[] => {
-  const cmy = Array.from(
-    { length: 3 }, (_, i) => clip(cmyk[i] + cmyk[3], 0, CMY_MAX),
+  return cmy2rgb(
+    [0,0,0].map((_, i) => clip(cmyk[i] + cmyk[3], 0, CMY_MAX))
   );
-  return cmy2rgb(cmy);
 };
 /**
  * Convert CIE XYZ to RGB.
@@ -396,18 +368,14 @@ const lab2rgb = (lab: number[]): number[] => {
  * @param yuv YUV color array.
  * @return sRGB color array.
  */
-const yuv2rgb = (() => {
-  const matrix = [
-    [1,-0.00093, 1.401687],
-    [1,-0.3437, -0.71417 ],
-    [1, 1.77216, 0.00099 ]
+const yuv2rgb = (yuv: number[]) => {
+  const pre = yuv.map((val, i) => val - (i&&128)); // bias
+  return [
+    clip(dot([1,-0.00093, 1.401687], pre), 0, RGB_MAX),
+    clip(dot([1,-0.3437, -0.71417 ], pre), 0, RGB_MAX),
+    clip(dot([1, 1.77216, 0.00099 ], pre), 0, RGB_MAX)
   ];
-  return (yuv: number[]): number[] => {
-    const pre = yuv.map((val, i) => val - (i&&128));
-    return matrix.map(row => clip(dot(row, pre), 0, RGB_MAX));
-
-  };
-})();
+};
 
 const removeNonHex = (str: string) => str.replace(/[^0-9A-F]/ig, '');
 
@@ -501,8 +469,8 @@ export const getSpaceInfos = (
     return {
       labels: ['Red', 'Green', 'Blue'],
       range: [RGB_MAX, RGB_MAX, RGB_MAX],
-      converter: (x) => Array.from(x),
-      inverter: (x) => Array.from(x),
+      converter: (x) => [...x],
+      inverter: (x) => [...x],
     };
   }
 };
@@ -605,9 +573,9 @@ const brightnessScaling = (rgbs: number[][]): number[][] => {
 
 
 export const getContrastAdjuster = (method: ContrastMethodType) => {
-  if (method === 'linear') return scaling;
-  if (method === 'gamma') return gammaCorrection;
-  if (method === 'brightness scaling') return brightnessScaling;
+  if (method === CONTRAST_METHODS[0]) return scaling;
+  if (method === CONTRAST_METHODS[1]) return gammaCorrection;
+  if (method === CONTRAST_METHODS[2]) return brightnessScaling;
   return brightnessScaling;
 };
 

@@ -46,7 +46,7 @@ export const countDecimals = (num: number)  => { // Twice faster
  * @return Percentage number.
  */
 export const round = (num: number, digits: number = 0): number =>
-  digits ? Math.round(10**(digits) * num) / 10**(digits) : Math.round(num);
+  Math.round(10**(digits) * num) / 10**(digits);
 
 /**
  * Convert a number `num` to percentage form, that is, `num * 100%`.
