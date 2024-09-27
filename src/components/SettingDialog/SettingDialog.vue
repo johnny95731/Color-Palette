@@ -167,6 +167,7 @@ import useSettingStore from 'stores/useSettingStore';
 // Types
 import type { CSSProperties } from 'vue';
 import type { TransitionType } from '@/features/types/settingStore';
+import { toValue } from '@vueuse/core';
 
 const emit = defineEmits<{
   (e: 'focusoutDialog'): void
@@ -198,6 +199,7 @@ watch(model, async (newVal) => {
     updateContrastDisplay();
   } else if (!newVal && pltState.isAdjustingPlt)
     pltState.setIsAdjustingPlt('cancel');
+  toValue(tabRefs)[toValue(tabIdx)]?.$el.focus();
 });
 
 /**
