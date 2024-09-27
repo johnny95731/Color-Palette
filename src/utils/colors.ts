@@ -1,6 +1,5 @@
 import NamedColor from '@/assets/NamedColor.json';
-import { findClosestInHexMap } from './helpers';
-import { clip, dot, mod, rangeMapping, round, toPercent } from './numeric';
+import { clip, dot, mod, randomInt, rangeMapping, round, toPercent, l2Dist } from './numeric';
 import {
   RGB_MAX, HSL_MAX, HWB_MAX, HSB_MAX, CMY_MAX, CMYK_MAX, XYZ_MAX, LAB_MAX,
   RGB2XYZ_COEFF_ROW_SUM, XYZ2RGB_COEFF, RGB2XYZ_COEFF, XYZ_MAX_SCALING,
@@ -21,8 +20,21 @@ export const unzipedNameList = Object.keys(NamedColor).map(
 /**
  * Find the closet named-color.
  */
-export const getClosestNamed = async (rgb: number[]): Promise<string> =>
-  findClosestInHexMap(rgb, NamedColor);
+export const getClosestNamed = async (rgb: number[]): Promise<keyof typeof NamedColor> => {
+  let minDist = Infinity;
+  let dist: number;
+  let closest: keyof typeof NamedColor;
+  for (const [key, hex] of Object.entries(NamedColor)) {
+    dist = l2Dist(rgb, hex2rgb(hex));
+    if (dist < 9) return key as keyof typeof NamedColor;
+    if (dist < minDist) {
+      closest = key as keyof typeof NamedColor;
+      minDist = dist;
+    }
+  }
+  // @ts-expect-error `minDist` is init to be `Infinity`. Thus closest will be assigned value.
+  return closest;
+};
 
 /**
  * Get rgb values of CSS <named-color> by index of .json file
@@ -488,14 +500,17 @@ export const getSpaceInfos = (
  * @return [R, G, B]
  */
 export const randRgbGen = (): number[] =>
-  [0,0,0].map(() => Math.floor(Math.random() * (RGB_MAX + 1)));
+  [0,0,0].map(() => randomInt(RGB_MAX));
 
 /**
  * Generate a linear gradient along an axis for a given color and space.
  */
 export const gradientGen = (() => {
   /**
-   * S
+   * Segment the gradient into several part. The Gradient in different space may
+   * not work as expect. So we join multiple gradient
+   * For example, red -> green -> blue contains two parts of gradient,
+   * red to green and green to blue.
    */
   const steps = 8;
   return (

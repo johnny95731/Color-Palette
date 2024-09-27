@@ -179,7 +179,7 @@ const handleAddCard = (idx: number) => {
     toValue(cardRefs)[i].setPos(evalPosition(i + bias, pltState.numOfCards + 1));
   }
   // Trigger side effect when !isInTrans.some()
-  Object.assign(isInTrans, { arr: Array.from({ length: pltState.numOfCards }, () => true) });
+  isInTrans.arr = Array.from({ length: pltState.numOfCards }, () => true);
   pltState.setIsPending(true);
 };
 
@@ -203,7 +203,7 @@ const handleRemoveCard = (idx: number) => {
     toValue(cardRefs)[i].setPos(evalPosition(i - bias, pltState.numOfCards - 1));
   }
   eventInfo.value = { event: 'remove', idx };
-  Object.assign(isInTrans, { arr: Array.from({ length: pltState.numOfCards }, () => true) });
+  isInTrans.arr = Array.from({ length: pltState.numOfCards }, () => true);
   pltState.setIsPending(true);
 };
 

@@ -1,4 +1,3 @@
-
 /**
  * The modulo function. Equivalent to
  *   `let a = n % m;
@@ -9,6 +8,24 @@
  */
 export const mod = (n: number, m: number): number => {
   return ((n % m) + m) % m;
+};
+
+// export function randomInt(max: number): number
+// /**
+//  * Generate a random integer between [min, max). If only first argument `min` is
+//  * given, generate a integer between [0, min)
+//  */
+// export function randomInt(min: number, max: number): number
+/**
+ * Generate a random integer between [0,max].
+ */
+export const randomInt = (max: number) => {
+  // if (isNullish(max)) {
+  //   max = min;
+  //   min = 0;
+  // }
+  // return Math.floor(Math.random() * (max!-min+1) + min);
+  return Math.trunc(Math.random() * (max+1));
 };
 
 /**
@@ -66,8 +83,9 @@ export const toPercent = (num: number, digits: number = 0): number => {
  * @returns Clipped number.
  */
 export const clip = (num: number, min?: number, max?: number): number => {
-  if (max !== undefined && num > max) num = max;
-  if (min !== undefined && num < min) num = min; // max < min also return min
+  // +undifined = NaN. The comparison always get false
+  if (num < +min!) num = min!; // max < min return min
+  else if (num > +max!) num = max!;
   return num;
 };
 
@@ -99,3 +117,10 @@ export const dot = (arr1: readonly number[], arr2: readonly number[]): number =>
  */
 export const sum = (arr: readonly number[]) =>
   arr.reduce((prev, val) => prev + val, 0);
+
+/**
+ * L2-distance (not take square root yet) of two array.
+ */
+export const l2Dist = (arr1: number[], arr2: number[]) => {
+  return arr1.reduce((prev, val, i) => prev + (val - arr2[i])**2, 0);
+};

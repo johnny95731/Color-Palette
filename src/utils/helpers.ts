@@ -1,7 +1,6 @@
 import { toValue } from '@vueuse/core';
-import { toPercent } from './numeric';
+import { randomInt, toPercent } from './numeric';
 import type { ModelRef, Ref, WritableComputedRef } from 'vue';
-import { hex2rgb } from './colors';
 
 // ### Object helpers
 /**
@@ -52,42 +51,12 @@ export const objPick = <T extends {}, K extends (string | number | symbol)>(
 //   );
 
 /**
- * L2-distance (not take square root yet) of two array.
- */
-export const l2Dist = (arr1: number[], arr2: number[]) => {
-  return arr1.reduce((prev, val, i) => prev + (val - arr2[i])**2, 0);
-};
-
-export const findClosestInHexMap =
-<T extends number[], E extends Record<string, string>>(
-    val: T,
-    list: E,
-    distCallback: (a: T, b: string) => number
-    = (val, hex) => l2Dist(val, hex2rgb(hex))
-  ): keyof E => {
-  let minDist = Infinity;
-  let dist: number;
-  let closest: keyof E;
-  for (const [key, hex] of Object.entries(list)) {
-    dist = distCallback(val, hex);
-    if (dist < minDist) {
-      closest = key as keyof E;
-      minDist = dist;
-    }
-  }
-  // @ts-expect-error `minDist` is init to be `Infinity`. Thus closest will be assigned value.
-  return closest;
-};
-
-/**
  * Shuffle an array by Fisher-Yates shuffle. The process will change the input
  * array.
- * @template T
- * @param {Array<T>} arr The array be shuffled.
  */
 export function shuffle <T>(arr: T[]): T[] {
   for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
+    const j = randomInt(i);
     [arr[i], arr[j]] = [arr[j], arr[i]];
   }
   return arr;
@@ -138,9 +107,9 @@ export const elementwiseMean = (arr1: number[], arr2: number[]): number[] => {
 
 // ### Value helpers
 /**
- * Check whether a value is 'null' or 'undefined'.
+ * Check whether a value/ref is 'null' or 'undefined'.
  */
-export const isNullish = (val: unknown) => toValue(val) == null;
+export const isNullish = (val: unknown | Ref<unknown>) => toValue(val) == null;
 
 /**
  * Invert the boolean value of a ref. If `newVal` is given, assign newVal to ref.
@@ -167,9 +136,9 @@ export const evalPosition = (idx: number, num: number): string => {
 };
 
 export const randomCharacter = (noDigit: boolean = false) =>
-  `ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz${
-    noDigit ? '' : '0123456789'
-  }`.charAt(Math.floor(Math.random() * (noDigit ? 52 : 62)));
+  `ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz${ // 52 letters
+    noDigit ? '' : '0123456789' // 10 letters
+  }`.charAt(randomInt(noDigit ? 51 : 61)); // randomInt is inclusive
 
 /**
  * Capitalize a text.
