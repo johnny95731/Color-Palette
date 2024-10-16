@@ -10,7 +10,7 @@
     <header
       :class="$style.header"
     >
-      <h2>Bookmarks</h2>
+      <h2>書籤</h2>
       <TheBtn
         icon="close"
         aria-label="關閉"

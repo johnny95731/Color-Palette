@@ -39,7 +39,7 @@
     />
     <TheTooltip
       :activator="sortingRef"
-      text="排序調色盤"
+      text="排序"
     />
     <DropdownMenu
       ref="mixingRef"
@@ -52,7 +52,7 @@
     />
     <TheTooltip
       :activator="mixingRef"
-      text="設定混色方法"
+      text="混色方法"
     />
     <DropdownMenu
       ref="spacegRef"
@@ -66,7 +66,7 @@
     />
     <TheTooltip
       :activator="spacegRef"
-      text="設定色彩空間"
+      text="色彩空間"
     />
     <div
       v-if="!isSmall"
@@ -93,7 +93,7 @@
     />
     <TheTooltip
       :activator="bookmarksRef"
-      text="開啟書籤頁"
+      text="書籤頁"
     />
     <TheBtn
       ref="settingsRef"
@@ -105,7 +105,7 @@
     />
     <TheTooltip
       :activator="settingsRef"
-      text="開啟設定欄"
+      text="設定欄"
     />
     <!-- <TheBtn
       :class="$style.btn"

@@ -11,7 +11,7 @@
       v-once
       :class="$style.header"
     >
-      <h2>Settings</h2>
+      <h2>設定</h2>
       <TheBtn
         icon="close"
         aria-label="close"
