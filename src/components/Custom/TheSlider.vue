@@ -67,6 +67,7 @@ import { toValue } from '@vueuse/core';
 import { getComponentId, getMousePosition } from '@/utils/browser';
 import { clip, countDecimals, round, rangeMapping, isSameFloat } from '@/utils/numeric';
 import { useElementBounding } from '@/composables/useElementBounding';
+import type { ModelRef } from 'vue';
 
 type Props = {
   inputId?: string,
@@ -150,7 +151,7 @@ const { rect: trackerRect } = useElementBounding(
 );
 
 // Handle values
-const model = defineModel<number>({ required: true });
+const model = defineModel<number>() as ModelRef<number>;
 model.value ??=  (props.max + props.min) / 2;
 
 const pos = ref<number>(0); // thumb position

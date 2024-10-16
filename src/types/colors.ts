@@ -1,4 +1,4 @@
-import { COLOR_SPACES, SORTING_ACTIONS, CONTRAST_METHODS } from '@/constants/colors';
+import { COLOR_SPACES, SORTING_ACTIONS, CONTRAST_METHODS, HARMONY_METHODS } from '@/constants/colors';
 
 /**
  * Support color spaces.
@@ -44,3 +44,8 @@ export type SortActionType = typeof SORTING_ACTIONS[number];
  * Support contrast adjusting methods.
  */
 export type ContrastMethodType = typeof CONTRAST_METHODS[number];
+
+/**
+ * Support harmony adjusting methods.
+ */
+export type HarmonyMethodType = typeof HARMONY_METHODS[number];

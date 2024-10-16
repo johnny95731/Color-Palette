@@ -4,10 +4,11 @@ import {
   RGB_MAX, HSL_MAX, HWB_MAX, HSB_MAX, CMY_MAX, CMYK_MAX, XYZ_MAX, LAB_MAX,
   RGB2XYZ_COEFF_ROW_SUM, XYZ2RGB_COEFF, RGB2XYZ_COEFF, XYZ_MAX_SCALING,
   YUV_MAX, CONTRAST_METHODS,
+  HARMONY_METHODS,
 } from '@/constants/colors.ts';
-import type { ColorSpacesType, ColorSpaceInfos, ContrastMethodType } from '@/types/colors';
+import type { ColorSpacesType, ColorSpaceInfos, ContrastMethodType, HarmonyMethodType } from '@/types/colors';
 
-// ### CSS Named
+// # CSS named-color
 export const unzipCssNamed = (name: string) => name.replace(/([A-Z])/g, ' $1').trim();
 
 /**
@@ -43,8 +44,51 @@ export const getNamedColorRgb = (name: string): number[] => {
   return hex2rgb(NamedColor[name as keyof typeof NamedColor] ?? 'fff');
 };
 
+// #Transformations
+// ## Helpers
+/**
+ * Convert sRGB to linear RGB.
+ * Maps [0, RGB_MAX] into [0, RGB_MAX]
+ */
+const srgb2linearRgb = (srgb: number[]) => {
+  return srgb.map(val =>
+    val/RGB_MAX < 0.04045 ?
+      val / 12.92 :
+      ((val/RGB_MAX+0.055) / 1.055)**2.4 * RGB_MAX
+  );
+};
 
-// LAB
+const linearRgb2srgb = (srgb: number[]) => {
+  return srgb.map(val =>
+    val < 0.798 ?
+      val * 12.92 :
+      ((val/RGB_MAX)**0.42 * 1.055 - 0.055) * RGB_MAX
+  );
+};
+
+/**
+ * Calculate hue (H channel of HSL/HSB) from rgb. Also, returns minimum and
+ * maximum of rgb.
+ * @param rgb RGB array.
+ * @return [hue, min(r,g,b), max(r,g,b)].
+ */
+export const rgb2hue = (rgb: number[]): number[] => {
+  const [r, g, b] = rgb;
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  const delta = max - min;
+  let hue;
+  if (max === min)
+    hue = 0;
+  else if (max === r)
+    hue = mod((g - b) / delta, 6);
+  else if (max === g)
+    hue = (b - r) / delta + 2;
+  else // max === g:
+    hue = (r - g) / delta + 4;
+  return [60 * hue, min, max];
+};
+
 const [labFunc, labFuncInv] = (() => {
   const thresh = (6/29) ** 3; // threshold
   const scaling = 7.787; // = 1 / (3 * LAB_DELTA**2)
@@ -66,6 +110,8 @@ const [labFunc, labFuncInv] = (() => {
   return [labFunc, labFuncInv];
 })();
 
+
+// ## CIE LAB <-> CIE XYZ
 /**
  * Convert CIE XYZ to CIE LAB.
  * @param xyz CIE XYZ color array.
@@ -103,67 +149,13 @@ const lab2xyz = (lab: number[]): number[] => {
 };
 
 
-// ### Convert from RGB to other spaces.
-/**
- * Convert RGB to Hex.
- * @param rgb RGB color array.
- * @return Hex color.
- */
-export const rgb2hex = (rgb: number[]): string => {
-  return rgb.reduce(
-    (prev, val) => prev + (round(val) < 16 ? 0 : '') + round(val).toString(16), '#'
-  ).toUpperCase();
-};
-
+// ## RGB to other spaces.
 /**
  * Conver Hex to grayscale.
  * @param rgb Array of RGB color.
  * @return grayscale [0, RGB_Max]
  */
 export const rgb2gray = (rgb: number[]) => dot(rgb, [0.299, 0.587, 0.114]);
-
-/**
- * Convert sRGB to linear RGB.
- * Maps [0, RGB_MAX] into [0, RGB_MAX]
- */
-const srgb2linearRgb = (srgb: number[]) => {
-  return srgb.map(val =>
-    val/RGB_MAX < 0.04045 ?
-      val / 12.92 :
-      ((val/RGB_MAX+0.055) / 1.055)**2.4 * RGB_MAX
-  );
-};
-
-const linearRgb2srgb = (srgb: number[]) => {
-  return srgb.map(val =>
-    val < 0.798 ?
-      val * 12.92 :
-      ((val/RGB_MAX)**0.42 * 1.055 - 0.055) * RGB_MAX
-  );
-};
-
-/**
- * Calculate hue (H channel of HSL/HSB) from rgb. Also, returns minimum and
- * maximum of rgb.
- * @param rgb RGB array.
- * @return [hue, min(r,g,b), max(r,g,b)].
- */
-const rgb2hue = (rgb: number[]): number[] => {
-  const [r, g, b] = rgb;
-  const max = Math.max(r, g, b);
-  const min = Math.min(r, g, b);
-  const delta = max - min;
-  let hue;
-  if (max === min)
-    hue = 0;
-  else if (max === r)
-    hue = mod(((g - b) / delta), 6);
-  else if (max === g)
-    hue = (b - r) / delta + 2;
-  else // case b:
-    hue = (r - g) / delta + 4;
-  return [60 * hue, min, max];
-};
 
 /**
  * Convert RGB to HSL.
@@ -185,7 +177,7 @@ const rgb2hsl = (rgb: number[]): number[] => {
  * @param rgb RGB color array.
  * @return [hue, sat, brightness].
  */
-const rgb2hsb = (rgb: number[]): number[] => {
+export const rgb2hsb = (rgb: number[]): number[] => {
   const [hue, min, max] = rgb2hue(rgb);
   const sat = max ? ((max - min) / max) : 0;
   const bri = max / RGB_MAX;
@@ -255,7 +247,7 @@ const rgb2yuv = (rgb: number[]) => [
 ];
 
 
-// ### Convert From other space to RGB.
+// ## From other space to RGB.
 /**
  * Convert HSL to RGB.
  * @param hsl HSL array.
@@ -288,7 +280,7 @@ const hsl2rgb = (hsl: number[]): number[] => {
  * @param hsb HSB color array.
  * @return RGB color array.
  */
-const hsb2rgb = (hsb: number[]): number[] => {
+export const hsb2rgb = (hsb: number[]): number[] => {
   if (hsb[1] === 0) {
     return hsb.map(() => hsb[2] / HSB_MAX[2] * RGB_MAX);
   }
@@ -389,7 +381,20 @@ const yuv2rgb = (yuv: number[]) => {
   ];
 };
 
+// ## Hex
+/** Remove Non-hex characters */
 const removeNonHex = (str: string) => str.replace(/[^0-9A-F]/ig, '');
+
+/**
+ * Convert RGB to Hex.
+ * @param rgb RGB color array.
+ * @return Hex color.
+ */
+export const rgb2hex = (rgb: number[]): string => {
+  return rgb.reduce(
+    (prev, val) => prev + (round(val) < 16 ? 0 : '') + round(val).toString(16), '#'
+  ).toUpperCase();
+};
 
 /**
  * Convert Hex color to RGB color.
@@ -404,7 +409,6 @@ export const hex2rgb = (hex: string): number[] => {
   return [num >> 16, (num >> 8) & 255, num & 255];
 };
 
-// Validator
 /**
  * Verify the string whether is a (3 channel, no alpha channel) Hex color.
  * @param str String that need to be verified.
@@ -413,6 +417,8 @@ export const hex2rgb = (hex: string): number[] => {
 export const isValidHex = (str: string): boolean =>
   [3, 6].includes(removeNonHex(str).length);
 
+
+// ## Transformation wrap
 /**
  * Return labels(name of channels), range, converter(from RGB to space),
  * and inverter(to RGB)
@@ -488,13 +494,13 @@ export const getSpaceInfos = (
 };
 
 
-// ### Color distance
+// # Color distance
 
 
-// ### Harmonie palatte generators
+// # Harmonie palatte generators
 
 
-// ### Generators
+// # Generators
 /**
  * Generate an RGB color.
  * @return [R, G, B]
@@ -540,7 +546,7 @@ export const gradientGen = (() => {
 })();
 
 
-// ### Adjusts contrast.
+// # Adjusts contrast.
 /**
  * Scale ths values of RGB.
  * @param rgbs RGB arrays.
@@ -594,8 +600,138 @@ export const getContrastAdjuster = (method: ContrastMethodType) => {
   return brightnessScaling;
 };
 
-// ### Sorting
+// # Sorting
 export const sortingByGray = <T extends {hex: string}>(arr: T[]) => {
   const copied = JSON.parse(JSON.stringify(arr)) as T[];
   return copied.sort((a, b) => rgb2gray(hex2rgb(a.hex)) - rgb2gray(hex2rgb(b.hex)));
+};
+
+// # Harmony
+// ## Hue harmony
+/**
+ * Generate a harmony palette from a primary color (in HSB).
+ * The hues of palette are [
+ *   primary, primary + start, primary + start + increment,
+ *   primary + start + 2 * increment, ...
+ * ]
+ * @param primaryHsb Primary color in HSB space.
+ * @param start The first increasing amout of hue in degree.
+ * @param increment The increment of degree after second color.
+ * @param num Color numbers (including primary).
+ * @returns
+ */
+function harmonize(primaryHsb: number[], start: number, increment: number, num: number) {
+  const colors = [primaryHsb];
+  const [h, s, b] = primaryHsb;
+  // start from 1 'cause first color is primary color.
+  for (let i = 1; i < num; i++ ) {
+    colors.push([(h + start) % 360, s, b]);
+    start += increment;
+  }
+  return colors;
+}
+
+/**
+ * 2 colors.
+ * Secondary color is complementary color (+180 deg in hue)
+ **/
+const complement = (primaryHsb: number[]) => harmonize(primaryHsb, 0, 180, 2);
+/**
+ * 3 colors.
+ * Generate analogous colors (+-30 deg in hue) of complementary color
+ */
+const split = (primaryHsb: number[]) => harmonize(primaryHsb, 150, 60, 3);
+/**
+ * 3 colors divided hue wheel equally (120 deg).
+ */
+const triad = (primaryHsb: number[]) => harmonize(primaryHsb, 120, 120, 3);
+/**
+ * 4 colors divided hue wheel equally (90 deg).
+ */
+const square = (primaryHsb: number[]) => harmonize(primaryHsb, 90, 90, 4);
+/**
+ * 3 colors.
+ * The difference of hue to primary is +-30deg.
+ */
+const analogous = (primaryHsb: number[]) => {
+  const [h,s,b] = primaryHsb;
+  return [
+    primaryHsb,
+    [mod(h + 30, 360), s, b], // secondary color
+    [mod(h - 30, 360), s, b], // tertiary
+  ];
+};
+/**
+ * 4 colors.
+ * Primary, its complement, and their clockwise analogous in different side of hue wheel.
+ * Or, equivalentlly, primary, its clockwise analogous, and their complement.
+ */
+const tetrad = (primaryHsb: number[]) => {
+  const [h,s,b] = primaryHsb;
+  const colors = complement(primaryHsb);
+  colors.push(...complement([( h + 30 ) % 360, s, b]));
+  return colors;
+};
+/**
+ * 4 colors.
+ * Primary, its complement, and their analogous in same side of hue wheel.
+ */
+const compound = (primaryHsb: number[]) => {
+  const colors = complement(primaryHsb);
+  const [h,s,b] = primaryHsb;
+  const [h2] = colors[1]; // Complement color. s and b are same.
+  colors.push([mod(h  + 30, 360), s, b]);
+  colors.push([mod(h2 - 30, 360), s, b]);
+  return colors;
+};
+
+// ## Saturation/Brightness harmony
+/**
+ * Generate gradient that decreasing in brightness.
+ */
+const shades = (primaryHsb: number[], num: number = 6) => {
+  const [h,s,b] = primaryHsb;
+  const step = b / num;
+  return Array.from({ length: num }, (_, i) =>
+    [h, s, b - i * step]);
+};
+
+/**
+ * Generate gradient that decreasing in saturation.
+ */
+const tints = (primaryHsb: number[], num: number = 6) => {
+  const [h,s,b] = primaryHsb;
+  const step = s / num;
+  return Array.from({ length: num }, (_, i) =>
+    [h, s - i * step, b]
+  );
+};
+
+/**
+ * Generate gradient that decreasing in both saturation and brightness.
+ */
+const tones = (primaryHsb: number[], num: number = 6) => {
+  const [h,s,b] = primaryHsb;
+  const stepSat = s / num;
+  const stepBri = b / num;
+  return Array.from({ length: num }, (_, i) =>
+    [h, s - i * stepSat, b - i * stepBri]
+  );
+};
+
+/**
+ * Get the harmony palette generator of specific method.
+ */
+export const getHarmonize = (method: HarmonyMethodType) => {
+  if (method === HARMONY_METHODS[0]) return analogous;
+  if (method === HARMONY_METHODS[1]) return shades;
+  if (method === HARMONY_METHODS[2]) return tints;
+  if (method === HARMONY_METHODS[3]) return tones;
+  if (method === HARMONY_METHODS[4]) return triad;
+  if (method === HARMONY_METHODS[5]) return complement;
+  if (method === HARMONY_METHODS[6]) return split;
+  if (method === HARMONY_METHODS[7]) return tetrad;
+  if (method === HARMONY_METHODS[8]) return square;
+  if (method === HARMONY_METHODS[9]) return compound;
+  return compound;
 };

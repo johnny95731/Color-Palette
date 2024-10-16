@@ -1,19 +1,24 @@
 <template>
   <TheHeader
     ref="headerRef"
+    @show-gen="handleShowGen"
     @show-fav="handleShowFav"
     @show-settings="handleShowSettings"
   />
   <main id="main">
     <ThePalette />
   </main>
+  <HarmonyGenDialog
+    v-if="isInitGen"
+    v-model="isGenShowing"
+  />
   <TheBookmarks
-    v-if="isFirstTimeFav"
+    v-if="isInitFav"
     v-model="isFavShowing"
     @focusout-dialog="headerRef?.focusBookmarks()"
   />
   <SettingDialog
-    v-if="isFirstTimeSettings"
+    v-if="isInitSettings"
     v-model="isSettingsShowing"
     @focusout-dialog="headerRef?.focusSettings()"
   />
@@ -24,8 +29,13 @@ import { ref, onMounted, computed, defineAsyncComponent, onUnmounted } from 'vue
 import { toValue } from '@vueuse/core';
 import TheHeader from './components/Header/TheHeader.vue';
 import ThePalette from './components/Palette/ThePalette.vue';
-// import FavOffcanvas from './components/FavOffcanvas/FavOffcanvas.vue';
-// import SettingDialog from './components/SettingDialog/SettingDialog.vue';
+const HarmonyGenDialog = defineAsyncComponent(
+  () => import('./components/HarmonyGenDialog/HarmonyGenDialog.vue')
+    .then(component => {
+      setTimeout(() => handleShowGen(), 50);
+      return component;
+    })
+);
 const TheBookmarks = defineAsyncComponent(
   () => import('./components/TheBookmarks/TheBookmarks.vue')
     .then(component => {
@@ -46,33 +56,36 @@ import { invertBoolean } from './utils/helpers';
 // Store and Context
 import usePltStore from './features/stores/usePltStore';
 
+const headerRef = ref<InstanceType<typeof TheHeader>>();
 // Show/Hide dialogs
 // -start load resource
-const isFirstTimeFav = ref(false);
-const isFirstTimeSettings = ref(false);
+const isInitGen = ref(false);
+const isInitFav = ref(false);
+const isInitSettings = ref(false);
 // -open/close state
+const isGenShowing = ref(false);
 const isFavShowing = ref(false);
 const isSettingsShowing = ref(false);
-const isShowOverlay = computed(() =>
-  pltState.isEditing || toValue(isFavShowing) || toValue(isSettingsShowing)
-);
 
-const headerRef = ref<InstanceType<typeof TheHeader>>();
-
-const pltState = usePltStore();
-const isCardPending = computed(() => pltState.isEditing || pltState.isPending);
-
+const handleShowGen = async () => {
+  toValue(isInitGen) && invertBoolean(isGenShowing);
+  invertBoolean(isInitGen, true);
+};
 const handleShowFav = async () => {
-  toValue(isFirstTimeFav) && invertBoolean(isFavShowing);
-  isFirstTimeFav.value = true;
+  toValue(isInitFav) && invertBoolean(isFavShowing);
+  invertBoolean(isInitFav, true);
 };
 
 const handleShowSettings = async () => {
-  toValue(isFirstTimeSettings) && invertBoolean(isSettingsShowing);
-  invertBoolean(isFirstTimeSettings, true);
-  // shorter
-  // isFirstTimeSettings.value = !toValue(isFirstTimeSettings) || (isSettingsShowing.value = true);
+  toValue(isInitSettings) && invertBoolean(isSettingsShowing);
+  invertBoolean(isInitSettings, true);
 };
+
+const pltState = usePltStore();
+const isShowingOverlay = computed(() =>
+  pltState.isEditing || toValue(isFavShowing) || toValue(isSettingsShowing)
+);
+const isCardPending = computed(() => pltState.isEditing || pltState.isPending);
 
 // Connect hotkey.
 (() => {
@@ -81,7 +94,7 @@ const handleShowSettings = async () => {
     const key = e.key.toLowerCase();
     if (
       // Prevent trigger hotkey when editing or add/remove/move (transition) card.
-      toValue(isCardPending) || toValue(isShowOverlay) ||
+      toValue(isCardPending) || toValue(isShowingOverlay) ||
       // Opening some popup element or focusing their activator.
       OverlayDiv.contains(document.activeElement)
     ) return;

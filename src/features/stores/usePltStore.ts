@@ -19,12 +19,11 @@ import type { ColorSpaceInfos } from '@/types/colors';
  * @return {CardType} State object.
  */
 export const newCard = (
-  order: number, colorSpace: ColorSpacesType, rgb?: number[],
+  order: number, colorSpace: ColorSpacesType, color?: number[],
 ): CardType => {
-  const infos = getSpaceInfos(colorSpace);
-  if (!rgb) rgb = randRgbGen();
-  const color = infos.converter(rgb);
-  const hex = rgb2hex(rgb);
+  const { converter, inverter } = getSpaceInfos(colorSpace);
+  if (!color) color = converter(randRgbGen());
+  const hex = rgb2hex(inverter(color));
   return {
     order,
     hex,
@@ -94,7 +93,7 @@ const usePltStore = defineStore('plt', {
     addCard(idx: number, rgb: number[]) {
       if (this.numOfCards == MAX_NUM_OF_CARDS) return;
       const cards = this.cards;
-      const cardState = newCard(idx, this.colorSpace, rgb);
+      const cardState = newCard(idx, this.colorSpace, this.spaceInfos.converter(rgb));
       cards.forEach((card) => {
         if (card.order >= idx) card.order++;
       });
@@ -194,9 +193,13 @@ const usePltStore = defineStore('plt', {
         });
       }
     },
-    setPlt(plt: string[]) {
-      this.cards = plt.map((hex, i) => newCard(
-        i, this.colorSpace, hex2rgb(hex) as number[],
+    setPlt(plt: string[] | number[][]) {
+      const { converter } = this.spaceInfos;
+      const callback = (color: string | number[]) => {
+        return Array.isArray(color) ? color : converter(hex2rgb(color));
+      };
+      this.cards = plt.map((color, i) => newCard(
+        i, this.colorSpace, callback(color),
       ));
       this.sortBy = 'random';
     },

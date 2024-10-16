@@ -14,6 +14,7 @@ const iconMap = {
   insert: 'arrows-expand-vertical',
   list: 'list',
   lock: 'lock-fill',
+  palette: 'palette',
   pause: 'pause-fill',
   play: 'play',
   refresh: 'arrow-clockwise',

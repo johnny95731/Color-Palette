@@ -28,10 +28,6 @@
         />
       </template>
     </TheTooltip>
-    <!-- <TheBtn
-      :class="$style.btn"
-      text="Gen"
-    /> -->
     <DropdownMenu
       ref="sortingRef"
       prepend-icon="sort"
@@ -77,6 +73,16 @@
       class="spacer"
     />
     <!-- Right side -->
+    <TheBtn
+      ref="harmonyGenRef"
+      :class="$style.btn"
+      prepend-icon="palette"
+      @click="$emit('show-gen')"
+    />
+    <TheTooltip
+      :activator="harmonyGenRef"
+      text="調和調色盤"
+    />
     <TheBtn
       ref="bookmarksRef"
       :class="$style.btn"
@@ -219,6 +225,7 @@ import type { MixingType } from 'types/mixing';
 const [DefineHeaderBtns, HeaderBtns] = createReusableTemplate();
 
 defineEmits<{
+  (e: 'show-gen'): void,
   (e: 'show-fav'): void,
   (e: 'show-settings'): void
 }>();
@@ -227,6 +234,7 @@ defineEmits<{
 const sortingRef = ref<InstanceType<typeof DropdownMenu>>();
 const mixingRef = ref<InstanceType<typeof DropdownMenu>>();
 const spacegRef = ref<InstanceType<typeof DropdownMenu>>();
+const harmonyGenRef = ref<InstanceType<typeof TheBtn>>();
 const bookmarksRef = ref<InstanceType<typeof TheBtn>>();
 const settingsRef = ref<InstanceType<typeof TheBtn>>();
 defineExpose({

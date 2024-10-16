@@ -1,5 +1,6 @@
 import { sum } from '@/utils/numeric';
 
+// #Space
 /**
  * Matrix factors for sRGB to CIE XYZ.
  * Observer. = 2°, Illuminant = D65
@@ -37,7 +38,7 @@ export const COLOR_SPACES = [
 
 // Maximums of each color space.
 export const RGB_MAX = 255;
-export const HSL_MAX = [359, 100, 100] as const;
+export const HSL_MAX = [360, 100, 100] as const;
 export const HSB_MAX = HSL_MAX;
 export const HWB_MAX = HSL_MAX;
 export const CMY_MAX = 100;
@@ -52,6 +53,7 @@ export const YUV_MAX = RGB_MAX;
  */
 export const SORTING_ACTIONS = ['gray', 'random', 'inversion'] as const;
 
+// #Contrast
 /**
  * Methods of adjusting contrast.
  */
@@ -59,3 +61,12 @@ export const CONTRAST_METHODS = ['linear', 'gamma', 'brightness scaling'] as con
 
 export const MULTIPLICATION_MAX = 10;
 export const GAMMA_MAX = 3;
+
+// #Harmonies
+/**
+ * Methods of adjusting contrast.
+ */
+export const HARMONY_METHODS = [
+  'analogous', 'shades', 'tints', 'tones', 'triad', 'complement',
+  'split complement', 'tetrad', 'square', 'compound'
+] as const;
