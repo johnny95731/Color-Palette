@@ -1,5 +1,5 @@
 import NamedColor from '@/assets/NamedColor.json';
-import { clip, dot, mod, randomInt, rangeMapping, round, toPercent, l2Dist } from './numeric';
+import { clip, dot, mod, randInt, rangeMapping, round, toPercent, l2Dist } from './numeric';
 import {
   RGB_MAX, HSL_MAX, HWB_MAX, HSB_MAX, CMY_MAX, CMYK_MAX, XYZ_MAX, LAB_MAX,
   RGB2XYZ_COEFF_ROW_SUM, XYZ2RGB_COEFF, RGB2XYZ_COEFF, XYZ_MAX_SCALING,
@@ -506,7 +506,7 @@ export const getSpaceInfos = (
  * @return [R, G, B]
  */
 export const randRgbGen = (): number[] =>
-  [0,0,0].map(() => randomInt(RGB_MAX));
+  [0,0,0].map(() => randInt(RGB_MAX));
 
 /**
  * Generate a linear gradient along an axis for a given color and space.
@@ -608,6 +608,10 @@ export const sortingByGray = <T extends {hex: string}>(arr: T[]) => {
 
 // # Harmony
 // ## Hue harmony
+const hueRotation = ([h, s, b]: number[], deg: number) => (
+  [mod(h + deg, 360), s, b]
+);
+
 /**
  * Generate a harmony palette from a primary color (in HSB).
  * The hues of palette are [
@@ -622,10 +626,9 @@ export const sortingByGray = <T extends {hex: string}>(arr: T[]) => {
  */
 function harmonize(primaryHsb: number[], start: number, increment: number, num: number) {
   const colors = [primaryHsb];
-  const [h, s, b] = primaryHsb;
   // start from 1 'cause first color is primary color.
   for (let i = 1; i < num; i++ ) {
-    colors.push([(h + start) % 360, s, b]);
+    colors.push(hueRotation(primaryHsb, start));
     start += increment;
   }
   return colors;
@@ -635,7 +638,7 @@ function harmonize(primaryHsb: number[], start: number, increment: number, num: 
  * 2 colors.
  * Secondary color is complementary color (+180 deg in hue)
  **/
-const complement = (primaryHsb: number[]) => harmonize(primaryHsb, 0, 180, 2);
+const complement = (primaryHsb: number[]) => harmonize(primaryHsb, 180, 180, 2);
 /**
  * 3 colors.
  * Generate analogous colors (+-30 deg in hue) of complementary color
@@ -654,11 +657,10 @@ const square = (primaryHsb: number[]) => harmonize(primaryHsb, 90, 90, 4);
  * The difference of hue to primary is +-30deg.
  */
 const analogous = (primaryHsb: number[]) => {
-  const [h,s,b] = primaryHsb;
   return [
     primaryHsb,
-    [mod(h + 30, 360), s, b], // secondary color
-    [mod(h - 30, 360), s, b], // tertiary
+    hueRotation(primaryHsb, 30), // secondary color
+    hueRotation(primaryHsb,-30), // tertiary
   ];
 };
 /**
@@ -667,9 +669,8 @@ const analogous = (primaryHsb: number[]) => {
  * Or, equivalentlly, primary, its clockwise analogous, and their complement.
  */
 const tetrad = (primaryHsb: number[]) => {
-  const [h,s,b] = primaryHsb;
   const colors = complement(primaryHsb);
-  colors.push(...complement([( h + 30 ) % 360, s, b]));
+  colors.push(...complement(hueRotation(primaryHsb, 30)));
   return colors;
 };
 /**
@@ -678,10 +679,8 @@ const tetrad = (primaryHsb: number[]) => {
  */
 const compound = (primaryHsb: number[]) => {
   const colors = complement(primaryHsb);
-  const [h,s,b] = primaryHsb;
-  const [h2] = colors[1]; // Complement color. s and b are same.
-  colors.push([mod(h  + 30, 360), s, b]);
-  colors.push([mod(h2 - 30, 360), s, b]);
+  colors.push(hueRotation(primaryHsb, 30));
+  colors.push(hueRotation(colors[1], -30));
   return colors;
 };
 

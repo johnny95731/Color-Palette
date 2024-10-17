@@ -10,16 +10,16 @@ export const mod = (n: number, m: number): number => {
   return ((n % m) + m) % m;
 };
 
-// export function randomInt(max: number): number
+// export function randInt(max: number): number
 // /**
 //  * Generate a random integer between [min, max). If only first argument `min` is
 //  * given, generate a integer between [0, min)
 //  */
-// export function randomInt(min: number, max: number): number
+// export function randInt(min: number, max: number): number
 /**
  * Generate a random integer between [0,max].
  */
-export const randomInt = (max: number) => {
+export const randInt = (max: number) => {
   // if (isNullish(max)) {
   //   max = min;
   //   min = 0;

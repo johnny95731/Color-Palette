@@ -73,7 +73,6 @@
   // shape
   width: 100%;
   padding: 3px 20px 10px;
-  box-sizing: border-box;
   font-size: $font-md;
   >label, >div, >input, >span {
     max-height: min-content;
@@ -96,7 +95,6 @@
     grid-column-start: 2;
     grid-column-end: 3;
     border-radius: $radius-sm;
-    box-sizing: border-box;
     width: 100%;
   }
 }

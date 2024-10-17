@@ -1,5 +1,5 @@
 import { toValue } from '@vueuse/core';
-import { randomInt, toPercent } from './numeric';
+import { randInt, toPercent } from './numeric';
 import type { ModelRef, Ref, WritableComputedRef } from 'vue';
 
 // ### Object helpers
@@ -56,7 +56,7 @@ export const objPick = <T extends {}, K extends (string | number | symbol)>(
  */
 export function shuffle <T>(arr: T[]): T[] {
   for (let i = arr.length - 1; i > 0; i--) {
-    const j = randomInt(i);
+    const j = randInt(i);
     [arr[i], arr[j]] = [arr[j], arr[i]];
   }
   return arr;
@@ -138,7 +138,7 @@ export const evalPosition = (idx: number, num: number): string => {
 export const randomCharacter = (noDigit: boolean = false) =>
   `ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz${ // 52 letters
     noDigit ? '' : '0123456789' // 10 letters
-  }`.charAt(randomInt(noDigit ? 51 : 61)); // randomInt is inclusive
+  }`.charAt(randInt(noDigit ? 51 : 61)); // randInt is inclusive
 
 /**
  * Capitalize a text.

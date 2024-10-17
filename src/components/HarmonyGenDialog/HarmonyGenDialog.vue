@@ -98,9 +98,9 @@ const saveOrininal = () => {
   originalPalette.value = pltState.cards.map(card => card.color);
 };
 watch(isShowing, () => {
-  if (toValue(isShowing)) // Open
+  if (toValue(isShowing))
     saveOrininal();
-  else // Close
+  else
     pltState.setPlt(toValue(originalPalette)); // restore palette from `originalPalette`
 });
 
@@ -119,13 +119,15 @@ const palette = computed<string[]>(() => {
     .map(hsb => rgb2hex(hsb2rgb(hsb)));
 });
 
-const preview = () => {
-  pltState.setPlt(toValue(palette));
-};
-/** Set  */
+/**
+ * Preview the palette (will restore when dialog is closed).
+ */
+const preview = () => pltState.setPlt(toValue(palette));
+/** Overwrite current palette and close. (will not restore when dialog is closed) */
 const comfirm = () => {
   preview();
-  // Overwrite `originalPalette`. Close dialog will restore palette from `originalPalette`.
+  // Overwrite `originalPalette`. Because close dialog will restore palette from
+  // `originalPalette`.
   saveOrininal();
   invertBoolean(isShowing);
 };
@@ -176,7 +178,6 @@ const comfirm = () => {
   flex-direction: column;
   align-items: center;
   padding: 8px 16px 16px;
-  box-sizing: border-box;
   background-color: $color1;
 }
 
@@ -184,7 +185,6 @@ const comfirm = () => {
   height: 30px;
   width: max-content;
   overflow: hidden;
-  box-sizing: border-box;
   div {
     display: inline-block;
     height: 100%;
@@ -199,7 +199,6 @@ const comfirm = () => {
 .numbers {
   width: 100%;
   padding: 8px 8px;
-  box-sizing: border-box;
   input {
     margin-left: 4px;
     padding: 2px 8px;

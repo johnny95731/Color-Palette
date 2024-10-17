@@ -32,43 +32,19 @@
   overflow: hidden;
 }
 
-[class~="ripple"], [class*="ripple-"] {
+.ripple {
   position: relative;
   overflow: hidden;
   &:before {
     content: '';
     @include overlay;
-  }
-}
-
-.ripple {
-  &:before {
     visibility: hidden;
   }
-  &:not(:active):before {
+  &:not(:active):before, &:not(:focus):before {
     animation: ripple 1s ease-in-out;
     transition: visibility 1s step-end; // prevent triggering animation when page onload
   }
-  &:active:before {
+  &:active:before, &:focus:before {
     visibility: visible;
-  }
-}
-
-.ripple-focus {
-  &:before {
-    visibility: hidden;
-  }
-  &:not(:focus):before {
-    animation: ripple 1s ease-in-out;
-    transition: visibility 1s step-end; // prevent triggering animation when page onload
-  }
-  &:focus:before {
-    visibility: visible;
-  }
-}
-
-.ripple-hover {
-  &:hover:before {
-    animation: ripple 1s 1;
   }
 }

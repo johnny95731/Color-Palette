@@ -14,7 +14,6 @@
   width: 100%;
   border-style: none solid; // horizontal derrection
   border-color: transparent;
-  box-sizing: border-box;
   //
   transition-property: left, width, background-color;
   transition-duration: 0s;
@@ -54,7 +53,6 @@
   transform: scaleX(0);
   //
   width: min-content;
-  box-sizing: border-box;
 
   :global(.btn) {
     padding: 8px;
@@ -172,7 +170,6 @@
   width: 150px;
   padding: 4px 12px;
   border-radius: $radius-lg;
-  box-sizing: border-box;
 
   background-color: $color1;
   pointer-events: auto;
@@ -223,7 +220,6 @@
   border-width: 1px;
   padding: 0px 8px;
   margin: 0 auto 6px;
-  box-sizing: border-box;
   font-size: $font-lg;
   user-select: text;
   cursor: text;

@@ -2,7 +2,9 @@
   <button
     type="button"
     :class="[
-      'btn', icon && 'icon'
+      'btn',
+      icon && 'btn--icon',
+      ripple && 'ripple'
     ]"
     :aria-label="text"
   >
@@ -60,13 +62,11 @@ type Props = {
   icon?: IconType,
   prependIcon?: IconType,
   appendIcon?: IconType,
-  contents?: readonly string[] | {
-    name: string,
-    val: string,
-  }[];
+  ripple?: boolean
 }
 withDefaults(defineProps<Props>(), {
   variant: 'std',
+  ripple: true,
 });
 </script>
 

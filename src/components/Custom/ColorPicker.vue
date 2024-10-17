@@ -76,7 +76,7 @@ import { rangeMapping, round } from '@/utils/numeric';
 import { hex2rgb, hsb2rgb, isValidHex, rgb2hex, rgb2hsb } from '@/utils/colors';
 import { HSB_MAX } from '@/constants/colors';
 import { isNullish } from '@/utils/helpers';
-import type { ModelRef } from 'vue';
+import type { MaybeRef, ModelRef } from 'vue';
 
 type Props = {
   width?: number | `${number}`;
@@ -93,14 +93,28 @@ const colorPickerCanvasRef = ref<HTMLCanvasElement>();
 const hueTrackRef = ref<HTMLDivElement>();
 
 const currentColor = reactive<number[]>([0, HSB_MAX[1]*0.8, HSB_MAX[2]*0.8]); // hsb color
+const setCurrentColor = (
+  color: MaybeRef<number[]> | MaybeRef<string>,
+  rounding: boolean = true
+) => {
+  color = toValue(color);
+  let hsb = typeof color === 'string' ?
+    rgb2hsb(hex2rgb(color)) :
+    color;
+  if (rounding)
+    hsb = hsb.map(val => round(val, 2));
+  Object.assign(currentColor, hsb);
+};
 const hexColor = computed({
   get() {
     return rgb2hex(hsb2rgb(toValue(currentColor)));
   },
   set(hex: string) {
-    if (isValidHex(hex) && hex !== hexColor.value) {
-      const hsb = rgb2hsb(hex2rgb(hex)).map(val => round(val, 2));
-      Object.assign(currentColor, hsb);
+    if (
+      isValidHex(hex) &&
+      hex !== hexColor.value // Avoid recursive updating `currentColor`
+    ) {
+      setCurrentColor(hex);
     }
   }
 });
@@ -228,24 +242,21 @@ const modelHex = defineModel<string>() as ModelRef<string>;
     hex: isNullish(toValue(modelHex))
   };
   if (nullish.color && !nullish.hex) // only hex is given
-    Object.assign(currentColor, rgb2hsb(hex2rgb(toValue(modelHex))));
+    setCurrentColor(modelHex, false);
   else if (!nullish.color && nullish.hex) // only hsb is given
-    Object.assign(currentColor, toValue(modelColor));
+    setCurrentColor(modelColor, false);
 })();
-
+// Binding currentColor and models
 watch(currentColor, (newVal) => {
   modelColor.value = newVal;
   modelHex.value = toValue(colorPointerStyle).backgroundColor;
 }, { deep: true, immediate: true });
 watch(modelColor, (newVal) =>
-  Object.assign(currentColor, toValue(newVal).map(val => round(val, 2))),
+  setCurrentColor(newVal),
 { deep: true });
 watch(modelHex, (newVal) => {
-  if (newVal !== toValue(hexColor))
-    Object.assign(
-      currentColor,
-      rgb2hsb(hex2rgb(toValue(newVal))).map(val => round(val, 2))
-    );
+  if (newVal !== toValue(hexColor)) // Avoid recursive updating `currentColor`
+    setCurrentColor(newVal);
 });
 </script>
 
@@ -263,7 +274,6 @@ $pointer-diam: $tracker-width + 2 * $pointer-border;
   transform: translate(-50%, -50%);
   // size
   aspect-ratio: 1 / 1;
-  box-sizing: border-box;
 
   border: $pointer-border solid #fff;
   border-radius: 50%;
@@ -277,7 +287,6 @@ $pointer-diam: $tracker-width + 2 * $pointer-border;
   gap: 12px;
   min-width: 320px;
   padding: 12px 16px;
-  box-sizing: border-box;
   .pickers {
     line-height: 0;
     > * {
@@ -317,11 +326,9 @@ $pointer-diam: $tracker-width + 2 * $pointer-border;
     display: block;
     padding: 0 8px;
     width: 100%;
-    box-sizing: border-box;
     input {
       margin-left: 4px;
       padding: 2px 8px;
-      box-sizing: border-box;
       border-radius: $radius-md;
       background-color: $input-bg;
     }
@@ -331,14 +338,12 @@ $pointer-diam: $tracker-width + 2 * $pointer-border;
     gap: 8px;
     padding: 0 8px;
     width: 100%;
-    box-sizing: border-box;
     label {
       flex: 1 1 30%;
     }
     input {
       width: 100%;
       padding: 2px 8px;
-      box-sizing: border-box;
       border-radius: $radius-sm;
       background-color: $input-bg;
     }

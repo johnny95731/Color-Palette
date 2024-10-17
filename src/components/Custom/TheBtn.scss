@@ -16,7 +16,6 @@ $transDuration: 120ms;
   border-radius: $radius-lg;
   padding: 4px 8px;
   overflow: hidden;
-  box-sizing: border-box;
   // style
   background-color: inherit;
   color: inherit;
@@ -42,7 +41,7 @@ $transDuration: 120ms;
   }
 }
 
-.btn.icon {
+.btn.btn--icon {
   aspect-ratio: 1 / 1;
 }
 

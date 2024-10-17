@@ -28,7 +28,6 @@
         />
         <TheBtn
           ref="hexTextRef"
-          class="ripple ripple-focus"
           :text="card.hex"
         />
       </div>
@@ -41,7 +40,6 @@
           type="copy"
         />
         <TheBtn
-          class="ripple ripple-focus"
           :text="detail"
         />
       </div>
