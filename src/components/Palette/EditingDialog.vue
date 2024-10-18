@@ -72,14 +72,14 @@
           :max="max"
           :model-value="model[i]"
           @update:model-value="handleSliderChange($event, i)"
-          @keydown="i === model.length - 1 && onLeaveFocusing($event)"
+          @keydown="i === model.length - 1 && handleLeaveFocusing($event)"
         />
       </template>
     </div>
   </OverlayContainer>
 </template>
 
-<script setup lang='ts'>
+<script setup lang="ts">
 import { computed, ref, shallowReactive, watch, nextTick } from 'vue';
 import { toValue } from '@vueuse/core';
 import $style from './TheCard.module.scss';
@@ -90,7 +90,7 @@ import SelectMenu from '@/components/Custom/SelectMenu.vue';
 // Utils
 import { hexTextEdited, isTabKey } from '@/utils/browser';
 import {
-  hex2rgb, rgb2hex, isValidHex, gradientGen, unzipedNameList, getNamedColorRgb,
+  hex2rgb, isValidHex, gradientGen, unzipedNameList, getNamedColorRgb,
 } from '@/utils/colors';
 import { useElementBounding } from '@/composables/useElementBounding';
 // Stores
@@ -110,44 +110,29 @@ type Props = {
 }
 
 const props = defineProps<Props>();
-const containerRef = ref<InstanceType<typeof OverlayContainer>>();
-const contendRef = computed(() => toValue(containerRef)?.contentRef);
-const hexInputRef = ref<HTMLInputElement>();
-
-const modelShow = defineModel<boolean>('show', { required: true });
-const model = defineModel<number[]>({ required: true });
 
 const emits = defineEmits<{
   'tabOffDialog': []
 }>();
 
-const pltState = usePltStore();
-const space = computed(() => {
-  const infos = pltState.spaceInfos;
-  return {
-    ...infos,
-    range: infos.range.map((vals) =>
-      typeof vals === 'number' ?
-        [0, vals] :
-        [...vals]
-    )
-  };
-});
-
+const modelShow = defineModel<boolean>('show', { required: true });
+// Dialog position
+const containerRef = ref<InstanceType<typeof OverlayContainer>>();
+const contendRef = computed(() => toValue(containerRef)?.contentRef);
+const hexInputRef = ref<HTMLInputElement>();
 const { rect } = useElementBounding(contendRef, { filter: ['width'] });
 const containerStyle = shallowReactive<
-  Pick<CSSProperties, 'left' | 'transform' | 'right'>
+  Pick<CSSProperties, 'left' | 'right' | 'transform'>
 >({});
-watch(() => [toValue(modelShow), props.pos], async ([newShow, newPos], [oldShow]) => {
+watch(() => [toValue(modelShow), props.pos], async ([newShow, newPos]) => {
   if (!newShow) return;
-  let style: typeof containerStyle = { ...containerStyle };
-  if (media.isSmall) {
-    style = {
-      transform: undefined,
-      left: '50%',
-      right: undefined
-    };
-  } else {
+  // Dialog position
+  let style: typeof containerStyle = { // At center of the screen.
+    transform: undefined,
+    left: '50%',
+    right: undefined
+  };
+  if (!media.isSmall) {
     const center = +(newPos as string).replace('px', '');
     const outOfWindow = {
       l: center - rect.width / 2 < media.bound[0],
@@ -160,11 +145,12 @@ watch(() => [toValue(modelShow), props.pos], async ([newShow, newPos], [oldShow]
     };
   }
   Object.assign(containerStyle, style);
+  // Focus on input
   await nextTick();
-  newShow !== oldShow && toValue(hexInputRef)!.focus();
+  toValue(hexInputRef)!.focus();
 });
 
-const onLeaveFocusing = (e: KeyboardEvent) => {
+const handleLeaveFocusing = (e: KeyboardEvent) => {
   if (isTabKey(e)) {
     e.preventDefault();
     modelShow.value = false;
@@ -172,36 +158,29 @@ const onLeaveFocusing = (e: KeyboardEvent) => {
   }
 };
 
+// Handle values
+const model = defineModel<number[]>({ required: true });
+const pltState = usePltStore();
+const space = computed(() => {
+  const infos = pltState.spaceInfos;
+  return {
+    ...infos,
+    range: infos.range.map((vals) =>
+      typeof vals === 'number' ?
+        [0, vals] :
+        [...vals]
+    )
+  };
+});
 /**
  * Finish Hex editing when input is blurred or press 'Enter'
  */
 const handleHexEditingFinished = function(e: FocusEvent | KeyboardEvent) {
-  const textInput = e.currentTarget as HTMLInputElement;
-  const text = textInput.value;
+  const text = (e.currentTarget as HTMLInputElement).value;
   if (text !== props.card.hex && isValidHex(text)) {
-    const newRGB = hex2rgb(text);
-    if (!newRGB) return;
-    const newColorArr = toValue(space).converter(newRGB);
-    model.value = newColorArr;
-    if (text.length === 4) { // # and 3 hex character.
-      const hex6 = `#${text[1]+text[1]}${text[2]+text[2]}${text[3]+text[3]}`;
-      textInput.value = hex6;
-    }
+    const newColor = toValue(space).converter(hex2rgb(text));
+    model.value = newColor;
   }
-};
-
-/**
- * Slider changed event.
- */
-const handleSliderChange = function(newVal: number, idx: number) {
-  const textInput = toValue(hexInputRef);
-  if (!textInput) return;
-  const newColorArr = [...props.card.color];
-  newColorArr[idx] = newVal;
-  model.value = newColorArr;
-  // Set hex to hex input.
-  const hex = rgb2hex(toValue(space).inverter(newColorArr));
-  if (hex) textInput.value = hex;
 };
 
 const selectRef = ref<InstanceType<typeof SelectMenu>>();
@@ -210,5 +189,14 @@ const selectName = (name: string) => {
     props.cardIdx,
     getNamedColorRgb(name.replaceAll(' ', ''))
   );
+};
+
+/**
+ * Slider changed event.
+ */
+const handleSliderChange = function(newVal: number, idx: number) {
+  const newColor = [...props.card.color];
+  newColor[idx] = newVal;
+  model.value = newColor;
 };
 </script>
