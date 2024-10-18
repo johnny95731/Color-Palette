@@ -1,83 +1,80 @@
 <template>
   <OverlayContainer
+    ref="containerRef"
     :transparent="true"
     role="dialog"
     :aria-modal="true"
+    :contentClass="$style.editor"
+    :contentStyle="containerStyle"
     v-model="modelShow"
   >
-    <div
-      ref="containerRef"
-      :class="$style.editor"
-      :style="containerStyle"
+    <label
+      :for="`card${cardIdx}-hex`"
+      :style="{backgroundColor: card.hex}"
     >
-      <label
-        :for="`card${cardIdx}-hex`"
-        :style="{backgroundColor: card.hex}"
-      >
-        {{ card.hex }}
-      </label>
-      <input
-        ref="hexInputRef"
-        :id="`card${cardIdx}-hex`"
-        :class="$style.hexInput"
-        type="text"
-        maxlength="7"
-        :value="card.hex"
-        @input="hexTextEdited($event)"
-        @blur="handleHexEditingFinished($event)"
-        @keydown.enter="handleHexEditingFinished($event)"
-      >
-      <SelectMenu
-        v-if="colorSpace === 'name'"
-        ref="selectRef"
-        :class="$style.nameSelect"
-        aria-label="CSS named-color選單"
-        :options="unzipedNameList"
-        :contentClass="$style.nameSelectContent"
-        :model-value="detail"
-      >
-        <template #items>
-          <TheBtn
-            v-once
-            v-for="(name, i) in unzipedNameList"
-            :key="`Option${name}`"
-            :text="name"
-            :title="name"
-            @click="selectName(unzipedNameList[i]);"
-          >
-            <template #prepend>
-              <span
-                :style="{
-                  backgroundColor: name.replace(/\s/g, ''),
-                  zIndex: 1,
-                }"
-              />
-            </template>
-          </TheBtn>
-        </template>
-      </SelectMenu>
-      <div :class="$style.sliders">
-        <template
-          v-for="([min, max], i) in space.range"
-          :key="`card${cardIdx}-label${i}`"
+      {{ card.hex }}
+    </label>
+    <input
+      ref="hexInputRef"
+      :id="`card${cardIdx}-hex`"
+      :class="$style.hexInput"
+      type="text"
+      maxlength="7"
+      :value="card.hex"
+      @input="hexTextEdited($event)"
+      @blur="handleHexEditingFinished($event)"
+      @keydown.enter="handleHexEditingFinished($event)"
+    >
+    <SelectMenu
+      v-if="colorSpace === 'name'"
+      ref="selectRef"
+      :class="$style.nameSelect"
+      aria-label="CSS named-color選單"
+      :options="unzipedNameList"
+      :contentClass="$style.nameSelectContent"
+      :model-value="detail"
+    >
+      <template #items>
+        <TheBtn
+          v-once
+          v-for="(name, i) in unzipedNameList"
+          :key="`Option${name}`"
+          :text="name"
+          :title="name"
+          @click="selectName(unzipedNameList[i]);"
         >
-          <div>
-            {{ `${space.labels[i]}: ${model[i]}` }}
-          </div>
-          <TheSlider
-            :label="space.labels[i]"
-            :showRange="false"
-            :showVal="false"
-            :trackerBackground="gradientGen(model, i, colorSpace)"
-            :thumbBackground="card.hex"
-            :min="min"
-            :max="max"
-            :model-value="model[i]"
-            @update:model-value="handleSliderChange($event, i)"
-            @keydown="i === model.length - 1 && onLeaveFocusing($event)"
-          />
-        </template>
-      </div>
+          <template #prepend>
+            <span
+              :style="{
+                backgroundColor: name.replace(/\s/g, ''),
+                zIndex: 1,
+              }"
+            />
+          </template>
+        </TheBtn>
+      </template>
+    </SelectMenu>
+    <div :class="$style.sliders">
+      <template
+        v-for="([min, max], i) in space.range"
+        :key="`card${cardIdx}-label${i}`"
+      >
+        <div>
+          {{ `${space.labels[i]}: ${model[i]}` }}
+        </div>
+        <TheSlider
+          :label="space.labels[i]"
+          :showRange="false"
+          :showVal="false"
+          :trackerBackground="gradientGen(model, i, colorSpace)"
+          :thumbBackground="card.hex"
+          :min="min"
+          :max="max"
+          :model-value="model[i]"
+          @update:model-value="handleSliderChange($event, i)"
+          @keydown="i === model.length - 1 && onLeaveFocusing($event)"
+        />
+      </template>
     </div>
   </OverlayContainer>
 </template>
@@ -113,7 +110,8 @@ type Props = {
 }
 
 const props = defineProps<Props>();
-const containerRef = ref<HTMLDivElement>();
+const containerRef = ref<InstanceType<typeof OverlayContainer>>();
+const contendRef = computed(() => toValue(containerRef)?.contentRef);
 const hexInputRef = ref<HTMLInputElement>();
 
 const modelShow = defineModel<boolean>('show', { required: true });
@@ -136,7 +134,7 @@ const space = computed(() => {
   };
 });
 
-const { rect } = useElementBounding(containerRef, { filter: ['width'] });
+const { rect } = useElementBounding(contendRef, { filter: ['width'] });
 const containerStyle = shallowReactive<
   Pick<CSSProperties, 'left' | 'transform' | 'right'>
 >({});

@@ -21,15 +21,15 @@
           :style="{
             backgroundColor: transparent ? 'transparent' : undefined,
           }"
-          @click="isActive = false"
         />
       </Transition>
       <Transition
         :name="transition"
-        @after-enter="$emit('transitionEnd');"
-        @after-leave="handleTransition"
+        @after-enter="handleAfterEnter"
+        @after-leave="handleAfterLeave"
       >
         <div
+          ref="contentRef"
           v-show="isActive && model"
           class="overlay__content"
           v-bind="{
@@ -50,6 +50,7 @@ import { toValue } from '@vueuse/core';
 import { invertBoolean } from '@/utils/helpers';
 import type { CSSProperties } from 'vue';
 import type { VueClass } from 'types/browser';
+import { useElementBounding } from '@/composables/useElementBounding';
 
 type Props = {
   /**
@@ -74,21 +75,17 @@ type Props = {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  eager: false,
   type: 'dialog',
-  ariaModal: false,
   escEvent: true,
 });
+
+const contentRef = ref<HTMLDivElement>();
+const { rect } = useElementBounding(contentRef);
 
 const emit = defineEmits<{
   'update:modelValue': [newVal: boolean],
   'transitionEnd': [],
 }>();
-
-const handleTransition = () => {
-  model.value = false;
-  emit('transitionEnd');
-};
 
 const handleKeydown = (e: KeyboardEvent) => {
   if (toValue(model) && e.key === 'Escape') {
@@ -96,26 +93,52 @@ const handleKeydown = (e: KeyboardEvent) => {
   }
 };
 
-// Container must close after content transition end.
+const clickOutside = (e: MouseEvent) => {
+  if (
+    // toValue(contentRef) && !toValue(contentRef)!.contains(e.target)
+    // .contains() can not avoid closing when clicking tooltips
+    !(
+      rect.top <= e.clientY && e.clientY <= rect.bottom &&
+      rect.left <= e.clientX && e.clientX <= rect.right
+    )
+  ) {
+    model.value = false;
+  }
+};
+
+// Control show and hide
+const model = defineModel<boolean>() as ModelRef<boolean>;
+// Container can not be closed before content transition end.
 // Need another state to delay closing container.
 const isActive = ref(false);
-const model = defineModel<boolean>() as ModelRef<boolean>; // Control `isActive` and trigger transition;
+
+// Events when dom show/hide.
+const handleAfterEnter = () => {
+  addEventListener('click', clickOutside);
+  if (props.escEvent)
+    addEventListener('keydown', handleKeydown);
+  emit('transitionEnd');
+};
+const handleAfterLeave = () => {
+  isActive.value = false;
+  removeEventListener('click', clickOutside);
+  removeEventListener('keydown', handleKeydown);
+  emit('transitionEnd');
+};
 
 watch(model, (newVal) => {
   if (newVal) { // Open dialog when model is true
     isActive.value = true;
-    if (props.escEvent)
-      addEventListener('keydown', handleKeydown);
-    return;
-  } else if (!props.transition) {
-    isActive.value = false;
   }
-  removeEventListener('keydown', handleKeydown);
-}, { immediate: true, flush: 'post' });
+}, { flush: 'post' });
 // flush: 'post' to maker container updated first when eager is false
 
 defineOptions({
   inheritAttrs: false
+});
+
+defineExpose({
+  contentRef
 });
 </script>
 
