@@ -1,3 +1,5 @@
+import { isNullish } from './helpers';
+
 /**
  * The modulo function. Equivalent to
  *   `let a = n % m;
@@ -98,11 +100,16 @@ export const clip = (num: number, min?: number, max?: number): number => {
  * @param newMax Maximum of new range.
  */
 export const rangeMapping = (
-  val: number, min: number, max: number,
-  newMin: number, newMax: number,
+  val: number,
+  min: number,
+  max: number,
+  newMin: number,
+  newMax: number,
+  digit?: number,
 ) => {
   const ratio = clip((val - min) / (max - min), 0, 1); // avoid floating problem.
-  return newMin + ratio * (newMax - newMin);
+  const newVal = newMin + ratio * (newMax - newMin);
+  return isNullish(digit) ? newVal : round(newVal, digit);
 };
 
 /**

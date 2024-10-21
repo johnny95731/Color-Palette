@@ -96,7 +96,7 @@ const props = defineProps<Props>();
 defineEmits<{
   (e: 'transitionend'): void,
   (e: 'remove'): void,
-  (e: 'dragging', val: MouseEvent | TouchEvent): void
+  (e: 'dragging', val: PointerEvent): void
 }>();
 
 const pltState = usePltStore();

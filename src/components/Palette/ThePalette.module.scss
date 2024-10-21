@@ -1,5 +1,10 @@
 @use "@/assets/commons.module.scss" as *;
 
+.container {
+  height: 100%;
+  width: 100%;
+}
+
 .insertOverlay {
   top: var(--header-height);
   z-index: 0;
@@ -43,8 +48,6 @@
 
 .dragging {
   box-shadow: 0px 0px 10px black;
-  pointer-events: none;
-  overscroll-behavior: none;
   z-index: 1;
   will-change: left, top;
 }

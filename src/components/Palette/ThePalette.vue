@@ -1,62 +1,69 @@
 <template>
-  <TheCard
-    v-for="(card, i) in pltState.cards"
-    :key="`card${i}`"
-    :ref="(el) => cardRefs[i] = (el as cardInstance)"
-    :cardIdx="i"
-    :card="card"
-    :cardDisplay="{
-      size: cardAttrs.size.percent,
-      position: cardAttrs.positions[i]
-    }"
-    :styleInSettings="styleInSettings"
-    @transitionend="setIsInTrans(i, false)"
-    @remove="handleRemoveCard(i)"
-    @dragging="draggingCardEvent($event, i)"
-  />
-  <!-- Insert Region -->
   <div
-    v-show="isShowInsert"
-    :class="$style.insertOverlay"
+    ref="cardContainerRef"
+    :class="$style.container"
   >
+    <TheCard
+      v-for="(card, i) in pltState.cards"
+      :key="`card${i}`"
+      :ref="(el) => cardRefs[i] = (el as CardInstance)"
+      :class="draggingIdx === i && $style.dragging"
+      :cardIdx="i"
+      :card="card"
+      :cardDisplay="{
+        size: cardAttrs.size.percent,
+        position: cardAttrs.positions[i]
+      }"
+      :styleInSettings="styleInSettings"
+      @transitionend="setIsInTrans(i, false)"
+      @remove="handleRemoveCard(i)"
+      @dragging="startDragging($event)"
+    />
+    <!-- Insert Region -->
     <div
-      v-for="(val, i) in cardAttrs.positions"
-      :key="`insert${i}`"
-      :class="$style.insertWrapper"
-      :style="{[media.pos]: val}"
+      v-show="isShowInsert"
+      :class="$style.insertOverlay"
     >
-      <TheBtn
-        variant="flat"
-        icon="insert"
-        @click="handleAddCard(i)"
-        :aria-label="`新增於位置${i}`"
-      />
+      <div
+        v-for="(val, i) in cardAttrs.positions"
+        :key="`insert${i}`"
+        :class="$style.insertWrapper"
+        :style="{[media.pos]: val}"
+      >
+        <TheBtn
+          variant="flat"
+          icon="insert"
+          @click="handleAddCard(i)"
+          :aria-label="`新增於位置${i}`"
+        />
+      </div>
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, reactive, watch } from 'vue';
-import { toValue } from '@vueuse/core';
+import { ref, computed, reactive, toValue, watch, nextTick } from 'vue';
 import $style from './ThePalette.module.scss';
 import TheBtn from '../Custom/TheBtn.vue';
 import TheCard from './TheCard.vue';
-import { INIT_NUM_OF_CARDS, MAX_NUM_OF_CARDS } from '@/constants/pltStore';
+import { useDragableElement } from '@/composables/useDragableElement';
 import { equallyLength, evalPosition } from '@/utils/helpers';
-import { round } from '@/utils/numeric';
+import { rangeMapping, round } from '@/utils/numeric';
 import { randRgbGen, rgb2hex } from '@/utils/colors';
 import { mixers } from '@/utils/mixing';
+import { INIT_NUM_OF_CARDS, MAX_NUM_OF_CARDS } from '@/constants/pltStore';
 // Stores / Contexts
 import usePltStore from '@/features/stores/usePltStore';
 import useSettingStore from '@/features/stores/useSettingStore';
 import media from '@/composables/useMedia';
 // Types
 import type { CSSProperties } from 'vue';
-import { getMousePosition } from '@/utils/browser';
+import type { Position } from '@vueuse/core';
 
-type cardInstance = InstanceType<typeof TheCard>;
+type CardInstance = InstanceType<typeof TheCard>;
 
-const cardRefs = ref<cardInstance[]>([]);
+const cardContainerRef = ref<HTMLDivElement>();
+const cardRefs = ref<CardInstance[]>([]);
 
 const pltState = usePltStore();
 const settingsState = useSettingStore();
@@ -208,93 +215,48 @@ const handleRemoveCard = (idx: number) => {
 };
 
 // Drag events start
-const draggingCardEvent = computed(() => {
-  const halfCardLength = cardAttrs.size.px / 2;
-  // Rewrite `cursorPos / cardLength` to `cursorPos * cursorRationCoeff`.
-  // Since division cost much time than multiplication.
-  const cursorRationCoeff = 1 / cardAttrs.size.px;
-  const cursorLimited = media.bound[1] - media.bound[0];
-  let draggingIdx: number | null,
-    finalIdx: number | null,
-    card: cardInstance | null;
+const draggingIdx = ref<number | null>(null);
+const { start: startDragging } = (() => {
+  let card: CardInstance | null;
+  const halfCardLength = computed(() => 100 / (2 * pltState.numOfCards));
+  /** Get mouse position along specific axis. */
+  const getCoordinate = (pos: Position) => media.isSmall ? pos.y : pos.x;
+  /** Get index of card that cursor on  */
+  const getIdx = (pos: Position) => {
+    return rangeMapping(
+      getCoordinate(pos),
+      0, 100,
+      -0.49, pltState.numOfCards-0.51,
+      0
+    );
+  };
 
-  const setNewPosition = (cardPos?: string) => {
-    cardPos && card?.setPos(cardPos);
+  const setNewPosition = (pos?: Position) => {
+    pos && card?.setPos(`${round(getCoordinate(pos) - halfCardLength.value, 2)}%`);
     for (let i = 0; i < pltState.numOfCards; i++) {
-      if (i !== draggingIdx)
+      if (i !== draggingIdx.value)
         toValue(cardRefs)[i].setPos(cardAttrs.positions[pltState.cards[i].order]);
     }
   };
-  const listenerOptions: AddEventListenerOptions = { capture: true, passive: false };
-  /**
-   * The event is triggered when the `<->` icon on a card is dragging.
-   * @param {number} cardIdx The n-th card.
-   */
-  function start(
-    e: MouseEvent | TouchEvent, cardIdx: number,
-  ) {
-    // Disable pull-to-refresh on mobile.
-    document.body.style.overscrollBehavior = 'none';
-    // Cursor position when mouse down.
-    const cursorPos = getMousePosition(e, media.clientPos) - media.bound[0];
+
+  const onStart = (pos: Position) => {
+    draggingIdx.value = getIdx(pos);
     if (settingsState.transition.pos) {
-      setIsInTrans(cardIdx, true);
+      setIsInTrans(draggingIdx.value, true);
     }
     pltState.setIsPending(true);
-    draggingIdx = cardIdx;
-    finalIdx = cardIdx;
-    card = toValue(cardRefs)[cardIdx];
-    card.setPos(`${round(cursorPos - halfCardLength)}px`);
+    card = toValue(cardRefs)[draggingIdx.value];
+    setNewPosition(pos);
     card.setTransProperty('none');
-    card.$el.classList.add($style.dragging);
-    addEventListener('mousemove', move, listenerOptions);
-    addEventListener('touchmove', move, listenerOptions);
-    addEventListener('mouseup', end, listenerOptions);
-    addEventListener('touchend', end, listenerOptions);
-  }
-  /**
-   * The event is triggered when the `<->` icon on a card is dragging and
-   * cursor is moving.
-   */
-  function move(e: MouseEvent | TouchEvent) {
-    const cursorPos = getMousePosition(e, media.clientPos) - media.bound[0];
-    // Mouse is not in range.
-    if (!card || cursorPos < 0 || cursorPos > cursorLimited) return false;
-    // Order of card that cursor at.
-    const order = Math.floor(cursorPos * cursorRationCoeff);
-    finalIdx = order;
-    // Change `.order` attribute.
-    pltState.moveCardOrder(draggingIdx!, order);
-    setNewPosition(`${round(cursorPos - halfCardLength)}px`);
-    // Update state: which card start transition.
-    if (settingsState.transition.pos && order !== finalIdx!) {
-      const moveToRightSide = finalIdx! < order;
-      setIsInTrans(
-        (order < draggingIdx! && !moveToRightSide) ||
-        (draggingIdx! < order && moveToRightSide) ?
-          order :
-          finalIdx!,
-        true,
-      );
-    }
-    return false;
-  }
-  /**
-   * The event is triggered when release left buton.
-   */
-  function end() {
+  };
+  const onMove = (pos: Position) => {
     if (!card) return;
-    removeEventListener('mousemove', move, listenerOptions);
-    removeEventListener('touchmove', move, listenerOptions);
-    removeEventListener('mouseup', end, listenerOptions);
-    removeEventListener('touchend', end, listenerOptions);
-    // Able pull-to-refresh on mobile.
-    document.body.style.overscrollBehavior = '';
-    // `draggingIdx` and `finalIdx`setIsEventEnd are set to be non-null
-    // together when mouse down.
-    if (draggingIdx === null) return;
-    // Remove class.
-    card.$el.classList.remove($style.dragging);
+    // Change `.order` attribute.
+    pltState.moveCardOrder(draggingIdx.value!, getIdx(pos));
+    setNewPosition(pos);
+  };
+  const onEnd = () => {
+    if (!card) return;
     eventInfo.value = { event: 'mouseup' };
     if (!settingsState.transition.pos) {
       removeTransition();
@@ -302,19 +264,24 @@ const draggingCardEvent = computed(() => {
       resetPosition();
       return;
     }
-    draggingIdx = null;
-    finalIdx = null;
+    draggingIdx.value = null;
     // Dragging card move to target position.
     setNewPosition();
     card.setTransProperty('reset');
-    return false;
-  }
-  return start;
-});
+    card = null;
+  };
+  return useDragableElement(cardContainerRef, {
+    containerElement: cardContainerRef,
+    binding: false,
+    onStart,
+    onMove,
+    onEnd,
+  });
+})();
 // Drag events end
 // Side effect when transition is over.
 watch(() => isInTrans.arr.some((val) => val),
-  (someCardIsInTrans) => {
+  async (someCardIsInTrans) => {
     if (someCardIsInTrans || !toValue(eventInfo)) return;
     const info = toValue(eventInfo) as NonNullable<typeof eventInfo.value>;
     // This LayoutEffect occurs only when transition is over.
@@ -334,16 +301,11 @@ watch(() => isInTrans.arr.some((val) => val),
       break;
     }
     eventInfo.value = null;
-  }, { flush: 'post' }
-);
-watch(() => toValue(eventInfo), (newVal) => {
-  if (!newVal) {
-    setTimeout(() => {
-      resetTransition();
-      pltState.setIsPending(false);
-    }, 50);
+    await nextTick();
+    resetTransition();
+    pltState.setIsPending(false);
   }
-});
+);
 
 /**
  * Style of insertion region.

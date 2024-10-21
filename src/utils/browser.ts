@@ -38,15 +38,15 @@ export const getComponentId = (prefix: string = 'component') => {
 // Events
 export const stopPropagation = (e: Event) => e.stopPropagation();
 
-export function getMousePosition(e: MouseEvent | TouchEvent): MouseEvent | Touch
-export function getMousePosition(
+export function getCursorPosition(e: MouseEvent | TouchEvent): MouseEvent | Touch
+export function getCursorPosition(
   e: MouseEvent | TouchEvent,
   client: `${'client' | 'page' | 'screen'}${'Y' | 'X'}`
 ): number
 /**
  * Return TouchList if `e` is TouchEvent else return `e`
  */
-export function getMousePosition(
+export function getCursorPosition(
   e: MouseEvent | TouchEvent,
   client?: `${'client' | 'page' | 'screen'}${'Y' | 'X'}`
 ) {

@@ -497,10 +497,7 @@ export const getSpaceInfos = (
 // # Color distance
 
 
-// # Harmonie palatte generators
-
-
-// # Generators
+// # Generator
 /**
  * Generate an RGB color.
  * @return [R, G, B]

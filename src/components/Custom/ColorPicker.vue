@@ -8,8 +8,8 @@
       class="pickers"
     >
       <div
+        ref="colorPickerRef"
         class="color-picker"
-        @mousedown="startDraggingColor"
       >
         <canvas
           ref="colorPickerCanvasRef"
@@ -22,11 +22,10 @@
         />
       </div>
       <div
+        ref="huePickerRef"
         class="hue-picker"
-        @mousedown="startDraggingHue"
       >
         <div
-          ref="hueTrackRef"
           class="hue-track"
         />
         <div
@@ -70,13 +69,13 @@
 
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref, toValue, watch } from 'vue';
-import { useEventListener } from '@vueuse/core';
-import { useElementBounding } from '@/composables/useElementBounding';
+import { useDragableElement } from '@/composables/useDragableElement';
 import { rangeMapping, round } from '@/utils/numeric';
 import { hex2rgb, hsb2rgb, isValidHex, rgb2hex, rgb2hsb } from '@/utils/colors';
-import { HSB_MAX } from '@/constants/colors';
 import { isNullish } from '@/utils/helpers';
+import { HSB_MAX } from '@/constants/colors';
 import type { MaybeRef, ModelRef } from 'vue';
+import type { Position } from '@vueuse/core';
 
 type Props = {
   width?: number | `${number}`;
@@ -89,8 +88,9 @@ const props = withDefaults(defineProps<Props>(), {
 
 // DOM refs
 const containerRef = ref<HTMLDivElement>();
+const colorPickerRef = ref<HTMLCanvasElement>();
 const colorPickerCanvasRef = ref<HTMLCanvasElement>();
-const hueTrackRef = ref<HTMLDivElement>();
+const huePickerRef = ref<HTMLDivElement>();
 
 const currentColor = reactive<number[]>([0, HSB_MAX[1]*0.8, HSB_MAX[2]*0.8]); // hsb color
 const setCurrentColor = (
@@ -107,7 +107,7 @@ const setCurrentColor = (
 };
 const hexColor = computed({
   get() {
-    return rgb2hex(hsb2rgb(toValue(currentColor)));
+    return rgb2hex(hsb2rgb(currentColor));
   },
   set(hex: string) {
     if (
@@ -119,7 +119,7 @@ const hexColor = computed({
   }
 });
 const baseColor = computed<string>(() =>
-  rgb2hex(hsb2rgb([toValue(currentColor)[0], HSB_MAX[1], HSB_MAX[2]]))
+  rgb2hex(hsb2rgb([currentColor[0], HSB_MAX[1], HSB_MAX[2]]))
 );
 type ColorPointerStyle = {
   top: `${number}%`,
@@ -127,12 +127,12 @@ type ColorPointerStyle = {
   backgroundColor: string,
 }
 const colorPointerStyle = computed<ColorPointerStyle>(() => ({
-  top: `${HSB_MAX[2] - toValue(currentColor)[2]}%`,
-  left: `${toValue(currentColor)[1]}%`,
-  backgroundColor: rgb2hex(hsb2rgb(toValue(currentColor))),
+  top: `${HSB_MAX[2] - currentColor[2]}%`,
+  left: `${currentColor[1]}%`,
+  backgroundColor: rgb2hex(hsb2rgb(currentColor)),
 }));
 const huePointerPos = computed<`${number}%`>(() =>
-  `${rangeMapping(toValue(currentColor)[0], 0, HSB_MAX[0], 0, 100)}%`
+  `${rangeMapping(currentColor[0], 0, HSB_MAX[0], 0, 100)}%`
 );
 
 // canvas background gradient color
@@ -164,72 +164,31 @@ onMounted(paintGradient);
 watch(baseColor, paintGradient);
 
 // Canvas event
-const startDraggingColor = (() => {
-  let isDragging = false;
-  let cleanups: (() => void)[] = [];
-  const { rect: domRect, update: updateDOM } = useElementBounding(colorPickerCanvasRef);
-
-  const update = (e: MouseEvent) => {
-    const ratioX = round(rangeMapping(e.clientX, domRect.left, domRect.right, 0, HSB_MAX[1]), 2);
-    toValue(currentColor)[1] = ratioX;
-    const ratioY = round(rangeMapping(e.clientY, domRect.top, domRect.bottom, HSB_MAX[2], 0), 2);
-    toValue(currentColor)[2] = ratioY; // top is 100% brightness
+(() => {
+  const update = (pos: Position) => {
+    currentColor[1] = rangeMapping(pos.x, 0, 100, 0, HSB_MAX[1], 2);
+    // top is 100% brightness
+    currentColor[2] = rangeMapping(pos.y, 0, 100, HSB_MAX[2], 0, 2);
   };
-  // Dragging events
-  function start(e: MouseEvent) {
-    e.preventDefault();
-    cleanups = [
-      useEventListener('mousemove', move, { capture: true }),
-      useEventListener('mouseup', end, { capture: true }),
-    ];
-    updateDOM();
-    update(e);
-    isDragging = true;
-  }
-  function move(e: MouseEvent) {
-    if (!isDragging) return;
-    update(e);
-    return false;
-  }
-  function end() {
-    isDragging = false;
-    cleanups.forEach(fn => fn());
-  }
-  return start;
+  useDragableElement(colorPickerRef, {
+    containerElement: colorPickerRef,
+    onStart: update,
+    onMove: update,
+  });
 })();
 
 // Hue events
-const startDraggingHue = (() => {
-  let isDragging = false;
-  let cleanups: (() => void)[] = [];
-  const { rect: domRect, update: updateDOM } = useElementBounding(
-    hueTrackRef, { filter: ['top', 'bottom'] }
-  );
-  const update = (e: MouseEvent) => {
-    const ratio = round(rangeMapping(e.clientY, domRect.top, domRect.bottom, 0, HSB_MAX[0]), 2);
-    toValue(currentColor)[0] = ratio;
+(() => {
+  const update = (pos: Position) => {
+    const ratio = rangeMapping(pos.y, 0, 100, 0, HSB_MAX[0], 2);
+    currentColor[0] = ratio;
   };
-  // Dragging events
-  function start(e: MouseEvent) {
-    e.preventDefault();
-    cleanups = [
-      useEventListener('mousemove', move, { capture: true }),
-      useEventListener('mouseup', end, { capture: true }),
-    ];
-    updateDOM();
-    update(e);
-    isDragging = true;
-  }
-  function move(e: MouseEvent) {
-    if (!isDragging) return;
-    update(e);
-    return false;
-  }
-  function end() {
-    isDragging = false;
-    cleanups.forEach(fn => fn());
-  }
-  return start;
+  useDragableElement(huePickerRef, {
+    containerElement: huePickerRef,
+    onStart: update,
+    onMove: update,
+    axis: 'y'
+  });
 })();
 
 // models
@@ -241,10 +200,10 @@ const modelHex = defineModel<string>() as ModelRef<string>;
     color: isNullish(toValue(modelColor)),
     hex: isNullish(toValue(modelHex))
   };
-  if (nullish.color && !nullish.hex) // only hex is given
-    setCurrentColor(modelHex, false);
-  else if (!nullish.color && nullish.hex) // only hsb is given
+  if (!nullish.color && nullish.hex) // only hsb is given
     setCurrentColor(modelColor, false);
+  else if (nullish.color && !nullish.hex) // only hex is given
+    setCurrentColor(modelHex, false);
 })();
 // Binding currentColor and models
 watch(currentColor, (newVal) => {
@@ -289,6 +248,7 @@ $pointer-diam: $tracker-width + 2 * $pointer-border;
   padding: 12px 16px;
   .pickers {
     line-height: 0;
+    touch-action: none;
     > * {
       display: inline-block;
       position: relative;

@@ -15,6 +15,7 @@ $thumb-radius: math.div($thumb-size, 2);
 
   font-size: $font-sm;
   background-color: $color5;
+  touch-action: none;
   >input,
   >label {
     display: block;

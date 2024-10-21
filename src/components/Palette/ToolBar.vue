@@ -36,10 +36,9 @@
     >
       <TheBtn
         icon="draggable"
-        style="cursor: grab;"
+        style="cursor: grab;touch-action: none;"
         aria-label="拖動"
-        @mousedown.passive="$emit('dragging', $event)"
-        @touchstart.passive="$emit('dragging', $event)"
+        @pointerdown="$emit('dragging', $event)"
       />
       <TheBtn
         icon="refresh"
@@ -79,7 +78,7 @@ const props = defineProps<Props>();
 
 defineEmits<{
   (e: 'remove'): void,
-  (e: 'dragging', val: MouseEvent | TouchEvent): void
+  (e: 'dragging', val: PointerEvent): void
 }>();
 // States / Consts
 const pltState = usePltStore();

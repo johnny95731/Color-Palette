@@ -33,14 +33,12 @@
       :aria-valuemin="min"
       :aria-valuemax="max"
       :aria-valuenow="model"
-      @mousedown="handleDrag"
-      @touchstart="handleDrag"
       @keydown="handleKeyDown"
     >
       <div
         class="slider-thumb"
         :style="{
-          left: `${pos}%`,
+          left: style.left,
           background: thumbBackground,
         }"
       />
@@ -50,7 +48,7 @@
         ref="tooltipRef"
         :style="{
           display: isDragging ? 'block' : undefined,
-          left: `${pos}%`,
+          left: style.left,
         }"
       >
         {{
@@ -63,11 +61,11 @@
 
 <script setup lang="ts">
 import { onMounted, watch, ref, computed } from 'vue';
-import { toValue } from '@vueuse/core';
-import { getComponentId, getMousePosition } from '@/utils/browser';
+import { Position, toValue } from '@vueuse/core';
+import { getComponentId } from '@/utils/browser';
 import { clip, countDecimals, round, rangeMapping, isSameFloat } from '@/utils/numeric';
-import { useElementBounding } from '@/composables/useElementBounding';
 import type { ModelRef } from 'vue';
+import { useDragableElement } from '@/composables/useDragableElement';
 
 type Props = {
   inputId?: string,
@@ -95,7 +93,6 @@ const props = withDefaults(defineProps<Props>(), {
 
 const trackerRef = ref<HTMLDivElement>();
 const tooltipRef = ref<HTMLDivElement>();
-const isDragging = ref<boolean>(false);
 
 // Handle form element
 /**
@@ -143,18 +140,8 @@ watch(() => [props.label, toValue(idForInput)], (newVal, oldVal) => {
   }
 });
 
-/**
- * Bounding rect of tracker.
- */
-const { rect: trackerRect } = useElementBounding(
-  trackerRef, { filter: ['width', 'left'] }
-);
-
 // Handle values
 const model = defineModel<number>() as ModelRef<number>;
-model.value ??=  (props.max + props.min) / 2;
-
-const pos = ref<number>(0); // thumb position
 
 /**
  * Convert props.step to number.
@@ -167,16 +154,6 @@ const numStep = computed<number>(() => +props.step);
 const decimals = computed<number>(() =>
   toValue(numStep) > 0 ? countDecimals(toValue(numStep)) : 0
 );
-
-/**
- * Update thumb position. If newPos is not given, it will be computed by model.
- */
-const updateThumbPos = () => {
-  pos.value = round(
-    rangeMapping(toValue(model), props.min, props.max, 0, 100),
-    3
-  );
-};
 
 /**
  * Rounding the value to satify step.
@@ -196,13 +173,13 @@ const roundingValue = (newVal?: number) => {
  */
 function updateModel(newVal?: number) {
   newVal = roundingValue(newVal);
-  isSameFloat(newVal, toValue(model)) || (model.value = newVal);
+  if (!isSameFloat(newVal, toValue(model))) model.value = newVal;
 }
 
-watch(model, (newVal, oldVal) => {
-  if (oldVal == null || !isSameFloat(newVal, oldVal))
-    updateThumbPos();
-}, { immediate: true });
+// Init model
+(() => {
+  model.value = roundingValue(model.value ?? (props.max + props.min) / 2);
+})();
 
 // Handle model, `props.min`, and `props.max` changed.
 watch(
@@ -219,51 +196,22 @@ const increment = (num: number = 1) => {
 };
 
 // onChange event => Drag or key down.
-const handleDrag = (() => {
-  const listenerOptions: AddEventListenerOptions = { capture: true, passive: false };
-  // -Mouse down / Touch start.
-  // -Mouse move / Touch move.
-  const handleDrag = (
-    e: MouseEvent | TouchEvent,
-  ) => {
-    const isStartingDragging = !e.type.endsWith('move');
-    if (isStartingDragging) { // touch start / mouse down
-      (e.currentTarget as HTMLDivElement).focus();
-      if (toValue(tooltipRef) === e.target) return; // Prevent dragging tooltip.
-      isDragging.value = true;
-      // Disable pull-to-refresh on mobile.
-      document.body.style.overscrollBehavior = 'none';
-    } else if (!toValue(isDragging)) return;
-    // Get cursor position.
-    const clientX = getMousePosition(e, 'clientX');
-    // Evaluate value.
-    const val = rangeMapping(
-      clip(clientX - trackerRect.left, 0, trackerRect.width),
-      0, trackerRect.width,
-      props.min, props.max,
-    );
+const { isDragging, style } = (() => {
+  const update = (pos: Position) => {
+    const val = rangeMapping(pos.x, 0, 100, props.min, props.max);
     updateModel(val);
-    if (isStartingDragging) {
-      addEventListener('mousemove', handleDrag, listenerOptions);
-      addEventListener('touchmove', handleDrag, listenerOptions);
-      addEventListener('mouseup', handleDragEnd, listenerOptions);
-      addEventListener('touchend', handleDragEnd, listenerOptions);
-    }
-    return false;
   };
-
-  // -Mouse up / Touch end.
-  const handleDragEnd = () => {
-    document.body.style.overscrollBehavior = '';
-    isDragging.value = false;
-    removeEventListener('mousemove', handleDrag, listenerOptions);
-    removeEventListener('touchmove', handleDrag, listenerOptions);
-    removeEventListener('mouseup', handleDragEnd, listenerOptions);
-    removeEventListener('touchend', handleDragEnd, listenerOptions);
-  };
-  return handleDrag;
+  return useDragableElement(trackerRef, {
+    containerElement: trackerRef,
+    onStart: update,
+    onMove: update,
+    initialValue: {
+      x: rangeMapping(model.value, props.min, props.max, 0, 100),
+      y: 0,
+    },
+    axis: 'x'
+  });
 })();
-
 // -Key down
 const handleKeyDown = (e: KeyboardEvent) => {
   const key = e.key;
