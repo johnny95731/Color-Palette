@@ -79,7 +79,7 @@
           <TheSlider
             label="#transition-position"
             :max="TRANSITION_MAX_POS"
-            :step="50"
+            step="50"
             :model-value="settingsState.transition.pos"
             @update:model-value="handleTransitionChanged($event, 'pos')"
           />
@@ -89,7 +89,7 @@
           <TheSlider
             label="#transition-color"
             :max="TRANSITION_MAX_COLOR"
-            :step="50"
+            step="50"
             :model-value="transition.color"
             @update:model-value="handleTransitionChanged($event, 'color')"
             @keydown.tab="switchTab(1)"
@@ -116,7 +116,7 @@
             <TheSlider
               label="#contrast-coeff-name"
               :max="contrastCoeffMax"
-              :step="0.001"
+              step="0.001"
               :model-value="contrastArgs[contrastArgs.method]"
               @update:model-value="
                 contrastArgs[contrastArgs.method] = $event;

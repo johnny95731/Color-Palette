@@ -5,8 +5,8 @@
       background: trackerBackground,
     }"
     role="slider"
-    :aria-valuemin="min"
-    :aria-valuemax="max"
+    :aria-valuemin="min_"
+    :aria-valuemax="max_"
     :aria-valuenow="model"
     tabindex="0"
     @keydown="handleKeyDown"
@@ -19,8 +19,8 @@
       v-bind="labelState"
       :id="idForInput"
       type="range"
-      :min="min"
-      :max="max"
+      :min="min_"
+      :max="max_"
       :step="step"
       :value="model"
       tabindex="-1"
@@ -39,7 +39,7 @@
         ref="thumbRef"
         class="slider__thumb"
         :style="{
-          left: style.left,
+          left: thumbPos,
           background: thumbBackground,
         }"
       />
@@ -67,8 +67,8 @@ type Props = {
   inputId?: string,
   label?: string,
   // input attrs
-  min?: number,
-  max?: number,
+  min?: number | `${number}`,
+  max?: number | `${number}`,
   /**
    * The value of slider will be restrict to min + n * step for some integer n.
    * If step < 0, it will not apply.
@@ -138,8 +138,12 @@ watch(() => [props.label, toValue(idForInput)], (newVal, oldVal) => {
   }
 });
 
+const min_ = computed(() => isNaN(+props.min) ? 0 : +props.min);
+const max_ = computed(() => isNaN(+props.max) ? 100 : +props.max);
+
 // Handle values
 const model = defineModel<number>() as ModelRef<number>;
+const thumbPos = ref<string>();
 
 /**
  * Convert props.step to number.
@@ -150,19 +154,19 @@ const numStep = computed<number>(() => +props.step);
  * Decimals counts of display text.
  */
 const decimals = computed<number>(() =>
-  toValue(numStep) > 0 ? countDecimals(toValue(numStep)) : 0
+  numStep.value > 0 ? countDecimals(numStep.value) : 0
 );
 
 /**
  * Rounding the value to satify step.
  */
 const roundingValue = (newVal?: number) => {
-  newVal ??= toValue(model);
-  return toValue(numStep) <= 0 ?
+  newVal ??= model.value;
+  return numStep.value <= 0 ?
     newVal :
     round(
-      props.min + Math.floor((newVal - props.min) / toValue(numStep)) * toValue(numStep),
-      toValue(decimals),
+      min_.value + Math.floor((newVal - min_.value) / numStep.value) * numStep.value,
+      decimals.value,
     );
 };
 
@@ -176,35 +180,38 @@ function updateModel(newVal?: number) {
 
 // Init model
 (() => {
-  model.value = roundingValue(model.value ?? (props.max + props.min) / 2);
+  model.value = roundingValue(model.value ?? (max_.value + min_.value) / 2);
 })();
 
 // Handle model, `props.min`, and `props.max` changed.
 watch(
   () => [props.min, props.max],
   () => {
-    updateModel(clip(toValue(model), props.min, props.max));
+    updateModel(clip(model.value, min_.value, max_.value));
   }, { immediate: true });
 
 // Step increment function. If num < 0, then becomes decrement.
 const increment = (num: number = 1) => {
   updateModel(
-    clip(toValue(model) + num * toValue(numStep), props.min, props.max)
+    clip(model.value + num * numStep.value, min_.value, max_.value)
   );
 };
 
+watch(model, (newVal) => {
+  thumbPos.value = `${rangeMapping(newVal, min_.value, max_.value, 0, 100)}%`;
+});
+
 // onChange event => Drag or key down.
-const { isDragging, style } = (() => {
+const { isDragging } = (() => {
   const update = (pos: Position) => {
-    const val = rangeMapping(pos.x, 0, 100, props.min, props.max);
-    updateModel(val);
+    updateModel(rangeMapping(pos.x, 0, 100, min_.value, max_.value));
   };
   return useDragableElement(trackerRef, {
     containerElement: trackerRef,
     onStart: update,
     onMove: update,
     initialValue: {
-      x: rangeMapping(model.value, props.min, props.max, 0, 100),
+      x: rangeMapping(model.value, min_.value, max_.value, 0, 100),
       y: 0,
     },
     axis: 'x'
@@ -219,8 +226,8 @@ const handleKeyDown = (e: KeyboardEvent) => {
     else // ArrorDown, ArrorLeft
       increment(-1);
   }
-  else if (key === 'Home') updateModel(props.min);
-  else if (key === 'End') updateModel(props.max);
+  else if (key === 'Home') updateModel(min_.value);
+  else if (key === 'End') updateModel(max_.value);
   else if (key === 'PageUp') increment(10);
   else if (key === 'PageDown') increment(-10);
 };
@@ -243,6 +250,7 @@ defineExpose({
 $thumb-size: 14px;
 $thumb-radius: math.div($thumb-size, 2);
 .slider {
+  $root: &;
   // Layout
   position: relative;
   margin: #{$thumb-radius + 4px} 0px #{$thumb-radius + 8px};
@@ -271,29 +279,26 @@ $thumb-radius: math.div($thumb-size, 2);
 
     cursor: pointer;
     user-select: none;
-    &:focus-visible .slider-thumb {
-      outline-width: 2px;
-    }
-    @supports not selector(:focus-visible) {
-      &:focus .slider-thumb {
-          outline-width: 2px;
-      }
-    }
-    &:hover .slider-tooltip {
-      display: block;
-    }
   }
 
   &__thumb {
     @extend %center;
-
     height: $thumb-size;
     aspect-ratio: 1 / 1;
     border: solid 3px white;
     outline: solid 1px $color5;
     border-radius: 100%;
     background-color: $color5;
-    cursor: pointer;
+    @at-root {
+      #{$root}:focus-visible #{$root}__thumb {
+        outline-width: 2px;
+      }
+      @supports not selector(:focus-visible) {
+        #{$root}:focus #{$root}__thumb {
+            outline-width: 2px;
+        }
+      }
+    }
   }
 
   &__bound-label {
