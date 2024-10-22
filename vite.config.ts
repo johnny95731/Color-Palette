@@ -20,6 +20,11 @@ export default defineConfig({
         booleans_as_integers: true,
         drop_console: ['log', 'time', 'timeEnd']
       },
+      mangle: {
+        properties: {
+          regex: /_$/
+        }
+      }
     }
   },
   plugins: [
