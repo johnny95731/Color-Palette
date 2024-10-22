@@ -1,9 +1,15 @@
 <template>
   <div
-    class="slider-container"
+    class="slider"
     :style="{
       background: trackerBackground,
     }"
+    role="slider"
+    :aria-valuemin="min"
+    :aria-valuemax="max"
+    :aria-valuenow="model"
+    tabindex="0"
+    @keydown="handleKeyDown"
   >
     <label
       v-if="labelState && 'aria-label' in labelState"
@@ -21,29 +27,24 @@
       @focusin="trackerRef?.focus()"
     >
     <template v-if="showRange">
-      <span class="slider-limit-label">{{ min }}</span>
-      <span class="slider-limit-label">{{ max }}</span>
+      <span class="slider__bound-label">{{ min }}</span>
+      <span class="slider__bound-label">{{ max }}</span>
     </template>
     <div
       v-bind="labelState"
       ref="trackerRef"
-      class="slider-tracker"
-      tabindex="0"
-      role="slider"
-      :aria-valuemin="min"
-      :aria-valuemax="max"
-      :aria-valuenow="model"
-      @keydown="handleKeyDown"
+      class="slider__tracker"
     >
       <div
         ref="thumbRef"
-        class="slider-thumb"
+        class="slider__thumb"
         :style="{
           left: style.left,
           background: thumbBackground,
         }"
       />
       <TheTooltip
+        v-if="props.tooltip"
         location="top"
         :activator="thumbRef"
         :text="model"
@@ -235,4 +236,78 @@ defineExpose({
 });
 </script>
 
-<style src="./TheSlider.scss" />
+<style lang="scss">
+@use "sass:math";
+@use "@/assets/commons.module.scss" as *;
+
+$thumb-size: 14px;
+$thumb-radius: math.div($thumb-size, 2);
+.slider {
+  // Layout
+  position: relative;
+  margin: #{$thumb-radius + 4px} 0px #{$thumb-radius + 8px};
+  // Shape
+  height: 5px;
+  width: 100%;
+  padding: 0px $thumb-radius;
+  border-radius: $radius-lg;
+
+  font-size: $font-sm;
+  background-color: $color5;
+  touch-action: none;
+  >input,
+  >label {
+    display: block;
+    opacity: 0;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+  }
+  &__tracker {
+    position: relative;
+    // shape
+    height: 100%;
+    width: 100%;
+
+    cursor: pointer;
+    user-select: none;
+    &:focus-visible .slider-thumb {
+      outline-width: 2px;
+    }
+    @supports not selector(:focus-visible) {
+      &:focus .slider-thumb {
+          outline-width: 2px;
+      }
+    }
+    &:hover .slider-tooltip {
+      display: block;
+    }
+  }
+
+  &__thumb {
+    @extend %center;
+
+    height: $thumb-size;
+    aspect-ratio: 1 / 1;
+    border: solid 3px white;
+    outline: solid 1px $color5;
+    border-radius: 100%;
+    background-color: $color5;
+    cursor: pointer;
+  }
+
+  &__bound-label {
+    display: inline-block;
+    position: absolute;
+    bottom: 100%;
+    font-size: $font-sm;
+    &:first-of-type{
+      left: 0;
+    }
+    &:last-of-type {
+      left: auto;
+      right: 0;
+    }
+  }
+}
+</style>
