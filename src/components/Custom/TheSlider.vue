@@ -36,25 +36,19 @@
       @keydown="handleKeyDown"
     >
       <div
+        ref="thumbRef"
         class="slider-thumb"
         :style="{
           left: style.left,
           background: thumbBackground,
         }"
       />
-      <div
-        v-if="showVal"
-        class="slider-tooltip"
-        ref="tooltipRef"
-        :style="{
-          display: isDragging ? 'block' : undefined,
-          left: style.left,
-        }"
-      >
-        {{
-          model
-        }}
-      </div>
+      <TheTooltip
+        location="top"
+        :activator="thumbRef"
+        :text="model"
+        :model-value="isShowLabel"
+      />
     </div>
   </div>
 </template>
@@ -66,6 +60,7 @@ import { getComponentId } from '@/utils/browser';
 import { clip, countDecimals, round, rangeMapping, isSameFloat } from '@/utils/numeric';
 import type { ModelRef } from 'vue';
 import { useDragableElement } from '@/composables/useDragableElement';
+import TheTooltip from './TheTooltip.vue';
 
 type Props = {
   inputId?: string,
@@ -82,6 +77,7 @@ type Props = {
   showVal?: boolean,
   trackerBackground?: string,
   thumbBackground?: string,
+  tooltip?: boolean | 'always'
 }
 const props = withDefaults(defineProps<Props>(), {
   min: 0,
@@ -89,10 +85,11 @@ const props = withDefaults(defineProps<Props>(), {
   step: 1,
   showRange: true,
   showVal: true,
+  tooltip: true,
 });
 
 const trackerRef = ref<HTMLDivElement>();
-const tooltipRef = ref<HTMLDivElement>();
+const thumbRef = ref<HTMLDivElement>();
 
 // Handle form element
 /**
@@ -226,6 +223,12 @@ const handleKeyDown = (e: KeyboardEvent) => {
   else if (key === 'PageUp') increment(10);
   else if (key === 'PageDown') increment(-10);
 };
+
+// Label/Tooltip
+const isShowLabel = computed(() => {
+  if (props.tooltip === 'always') return true;
+  else return isDragging.value;
+});
 
 defineExpose({
   inputId: idForInput

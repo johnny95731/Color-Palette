@@ -1,9 +1,4 @@
 <template>
-  <slot
-    name="activator"
-    :isShow="isShow"
-    :props="activatorSlotProps"
-  />
   <OverlayContainer
     :id="idForContainer"
     :transition="transition"
@@ -16,7 +11,8 @@
     <div
       :style="tooltipStyle"
       :class="['tooltip-wrapper', location, props.class]"
-      v-bind="activatorSlotProps"
+      @mouseenter="handleShow"
+      @mouseleave="handleHide"
     >
       <slot name="text">
         {{ text }}
@@ -27,19 +23,20 @@
 
 <script setup lang="ts">
 import { computed, ref, watch, toValue, getCurrentInstance, onMounted } from 'vue';
-import './TheTooltip.scss';
+import { useEventListener } from '@vueuse/core';
 import OverlayContainer from './OverlayContainer.vue';
+import { useElementBounding } from '@/composables/useElementBounding';
 import { isNullish, invertBoolean } from '@/utils/helpers';
-import type { ModelRef, CSSProperties, Component } from 'vue';
-import type { VueClass } from 'types/browser';
 import { getComponentId } from '@/utils/browser';
+import type { CSSProperties, Component } from 'vue';
+import type { VueClass } from 'types/browser';
 
 type Props = {
   activator?: `#${string}` | 'parent' | HTMLElement | Component,
   id?: string,
   class?: VueClass,
   eager?: boolean,
-  text?: string,
+  text?: string | number,
   transition?: string,
   closeDelay?: string | number,
   openDelay?: string | number,
@@ -55,11 +52,11 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 
-const refreshOtherActivatorsKey = ref<boolean>(false);
+const refreshActivatorElKey = ref<boolean>(false);
 const instance = getCurrentInstance();
 /** Activators that is not in slots. */
-const otherActivators = computed<HTMLElement | null>(() => {
-  refreshOtherActivatorsKey.value;
+const activatorEl = computed<HTMLElement | null>(() => {
+  refreshActivatorElKey.value;
   if (props.activator === 'parent')
     return instance?.parent?.proxy?.$el;
   if (typeof props.activator === 'string')
@@ -68,8 +65,8 @@ const otherActivators = computed<HTMLElement | null>(() => {
   // @ts-expect-error
   return props.activator?.$el;
 });
-onMounted(async () => {
-  invertBoolean(refreshOtherActivatorsKey); // trigger computed
+onMounted(() => {
+  invertBoolean(refreshActivatorElKey); // trigger computed
 });
 
 const idForContainer = computed<string>(() =>
@@ -83,7 +80,7 @@ const addAttributes = (el: HTMLElement | null, id: string) => {
 };
 
 watch(
-  () => [toValue(otherActivators), toValue(idForContainer)] as const,
+  () => [toValue(activatorEl), toValue(idForContainer)] as const,
   (newEl, oldEl) => {
     if (oldEl)
       removeAttributes(oldEl[0]);
@@ -99,31 +96,16 @@ const closeDelay_ = computed<number>(() =>
 );
 
 // Tooltip position
-const tooltipStyle = ref<CSSProperties>({});
 //** Current activator */
-let currentTarget: EventTarget | null = null;
-const calcTooltipPos = (): CSSProperties => {
-  if (!(currentTarget instanceof Element)) return {};
-  const rect = currentTarget.getBoundingClientRect();
+const currentTarget = ref<HTMLElement | null>(null);
+const { rect } = useElementBounding(currentTarget);
+const tooltipStyle = computed<CSSProperties>(() => {
+  if (!(currentTarget.value instanceof Element)) return {};
   const location = props.location;
-  if (location === 'top') {
-    return {
-      bottom: `${rect.top - 4}px`,
-      left: `${rect.left + rect.width / 2}px`,
-      transform: 'translateX(-50%)',
-    };
-  }
-  if (location === 'bottom') {
-    return {
-      top: `${rect.bottom + 4}px`,
-      left: `${rect.left + rect.width / 2}px`,
-      transform: 'translateX(-50%)',
-    };
-  }
   if (location === 'left') {
     return {
       top: `${rect.top + rect.height / 2}px`,
-      right: `${rect.left - 4}px`,
+      right: `${window.innerWidth - (rect.left - 4)}px`,
       transform: 'translateY(-50%)',
     };
   }
@@ -134,11 +116,24 @@ const calcTooltipPos = (): CSSProperties => {
       transform: 'translateY(-50%)',
     };
   }
-  return {};
-};
+  if (location === 'top') {
+    return {
+      bottom: `${window.innerHeight - (rect.top - 4)}px`,
+      left: `${rect.left + rect.width / 2}px`,
+      transform: 'translateX(-50%)',
+    };
+  }
+  else { // 'bottom'
+    return {
+      top: `${rect.bottom + 4}px`,
+      left: `${rect.left + rect.width / 2}px`,
+      transform: 'translateX(-50%)',
+    };
+  }
+});
 
 // Show/Hide events
-const isShow = defineModel<boolean>() as ModelRef<boolean>;
+const isShow = defineModel<boolean>();
 let delayTimeoutId: number | void;
 const handleShow = (e: MouseEvent) => {
   // Clear timeout
@@ -147,7 +142,8 @@ const handleShow = (e: MouseEvent) => {
   toValue(openDelay_) ?
     delayTimeoutId = setTimeout(invertBoolean, toValue(openDelay_), isShow, true) as unknown as number :
     invertBoolean(isShow, true);
-  currentTarget = e.currentTarget;
+  if (e.currentTarget instanceof HTMLElement)
+    currentTarget.value = e.currentTarget;
 };
 const handleHide = () => {
   // Clear timeout
@@ -158,23 +154,9 @@ const handleHide = () => {
     invertBoolean(isShow, false);
 };
 
-watch(isShow, (newVal) => {
-  if (newVal) tooltipStyle.value = calcTooltipPos();
-}, { flush: 'sync' });
-
-
 // Binding events
-watch(otherActivators, (newEl, oldEl) => {
-  oldEl?.removeEventListener('mouseenter', handleShow);
-  oldEl?.removeEventListener('mouseleave', handleHide);
-  newEl?.addEventListener('mouseenter', handleShow);
-  newEl?.addEventListener('mouseleave', handleHide);
-}, { immediate: true, flush: 'post' });
-/** Binding on activator manually by slot-template */
-const activatorSlotProps = computed(() => ({
-  onMouseenter: handleShow,
-  onMouseleave: handleHide,
-  'aria-describedby': idForContainer.value
-}));
-
+useEventListener(activatorEl, 'mouseenter', handleShow);
+useEventListener(activatorEl, 'mouseleave', handleHide);
 </script>
+
+<style src="./TheTooltip.scss" />

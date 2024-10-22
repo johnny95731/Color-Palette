@@ -72,35 +72,3 @@ $thumb-radius: math.div($thumb-size, 2);
     right: 0;
   }
 }
-
-.slider-tooltip { // Tooltip
-  display: none;
-  // position
-  position: absolute;
-  left: 50%;
-  bottom: 100%;
-  transform: translate(-50%, -9px);
-  // shape
-  min-width: 10px;
-  padding: 3px 8px;
-  border-radius: $radius-md;
-
-  font-size: $font-sm;
-  text-align: center;
-  color: $color1;
-  background-color: $color5;
-  cursor: default;
-  user-select: all;
-  &::after {
-    content: "";
-    position: absolute;
-    top: 100%;
-    left: 50%;
-    transform: translate(-50%);
-    width: 0;
-    height: 0;
-    border-width: 5px 6px;
-    border-style: solid;
-    border-color: $color5 transparent transparent transparent;
-  }
-}

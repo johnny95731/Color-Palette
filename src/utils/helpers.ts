@@ -1,6 +1,6 @@
 import { toValue } from '@vueuse/core';
 import { randInt, toPercent } from './numeric';
-import type { ModelRef, Ref, WritableComputedRef } from 'vue';
+import type { Ref, WritableComputedRef } from 'vue';
 
 // ### Object helpers
 /**
@@ -115,7 +115,7 @@ export const isNullish = (val: unknown | Ref<unknown>) => toValue(val) == null;
  * Invert the boolean value of a ref. If `newVal` is given, assign newVal to ref.
  */
 export const invertBoolean = (
-  ref: Ref<boolean> | ModelRef<boolean> | WritableComputedRef<boolean>,
+  ref: Ref<boolean | undefined> | WritableComputedRef<boolean | undefined>,
   newVal?: boolean
 ) => ref.value = newVal ?? !toValue(ref);
 
