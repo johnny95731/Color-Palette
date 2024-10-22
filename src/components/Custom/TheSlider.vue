@@ -24,7 +24,7 @@
       :step="step"
       :value="model"
       tabindex="-1"
-      @focusin="trackerRef?.focus()"
+      @focusin="$el.focus()"
     >
     <template v-if="showRange">
       <span class="slider__bound-label">{{ min }}</span>
@@ -44,7 +44,7 @@
         }"
       />
       <TheTooltip
-        v-if="props.tooltip"
+        v-if="props.showVal"
         location="top"
         :activator="thumbRef"
         :text="model"
@@ -75,10 +75,9 @@ type Props = {
    */
   step?: number | `${number}`,
   showRange?: boolean,
-  showVal?: boolean,
+  showVal?: boolean | 'always',
   trackerBackground?: string,
   thumbBackground?: string,
-  tooltip?: boolean | 'always'
 }
 const props = withDefaults(defineProps<Props>(), {
   min: 0,
@@ -86,7 +85,6 @@ const props = withDefaults(defineProps<Props>(), {
   step: 1,
   showRange: true,
   showVal: true,
-  tooltip: true,
 });
 
 const trackerRef = ref<HTMLDivElement>();
@@ -234,7 +232,7 @@ const handleKeyDown = (e: KeyboardEvent) => {
 
 // Label/Tooltip
 const isShowLabel = computed(() => {
-  if (props.tooltip === 'always') return true;
+  if (props.showVal === 'always') return true;
   else return isDragging.value;
 });
 
