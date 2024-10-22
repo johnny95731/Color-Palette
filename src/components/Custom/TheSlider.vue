@@ -56,12 +56,12 @@
 
 <script setup lang="ts">
 import { onMounted, watch, ref, computed } from 'vue';
-import { Position, toValue } from '@vueuse/core';
+import TheTooltip from './TheTooltip.vue';
+import { useDragableElement } from '@/composables/useDragableElement';
 import { getComponentId } from '@/utils/browser';
 import { clip, countDecimals, round, rangeMapping, isSameFloat } from '@/utils/numeric';
 import type { ModelRef } from 'vue';
-import { useDragableElement } from '@/composables/useDragableElement';
-import TheTooltip from './TheTooltip.vue';
+import type { Position } from '@vueuse/core';
 
 type Props = {
   inputId?: string,
@@ -113,10 +113,10 @@ const labelState = computed(() => {
 onMounted(() => {
   if (!props.label?.startsWith('#')) return;
   const element = document.getElementById(props.label.slice(1)) as HTMLLabelElement | null;
-  if (element) element.htmlFor = toValue(idForInput);
+  if (element) element.htmlFor = idForInput.value;
 });
 // Update label HTMLFor if it is an ID.
-watch(() => [props.label, toValue(idForInput)], (newVal, oldVal) => {
+watch(() => [props.label, idForInput.value], (newVal, oldVal) => {
   const isLabelSame = newVal[0] === oldVal[0];
   const isIdSame = newVal[1] === oldVal[1];
   if (!isLabelSame) {
@@ -175,7 +175,7 @@ const roundingValue = (newVal?: number) => {
  */
 function updateModel(newVal?: number) {
   newVal = roundingValue(newVal);
-  if (!isSameFloat(newVal, toValue(model))) model.value = newVal;
+  if (!isSameFloat(newVal, model.value)) model.value = newVal;
 }
 
 // Init model
