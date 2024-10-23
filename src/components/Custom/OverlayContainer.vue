@@ -45,7 +45,7 @@
 </template>
 
 <script setup lang="ts">
-import { ModelRef, ref, watch } from 'vue';
+import { ModelRef, onMounted, ref, watch } from 'vue';
 import { toValue } from '@vueuse/core';
 import { invertBoolean } from '@/utils/helpers';
 import type { CSSProperties } from 'vue';
@@ -130,7 +130,10 @@ watch(model, (newVal) => {
   if (newVal) { // Open dialog when model is true
     isActive.value = true;
   }
-}, { flush: 'post' });
+});
+onMounted(() => {
+  if (model.value) isActive.value = true;
+});
 // flush: 'post' to maker container updated first when eager is false
 
 defineOptions({

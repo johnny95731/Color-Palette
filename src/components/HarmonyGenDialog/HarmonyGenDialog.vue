@@ -102,7 +102,7 @@ watch(isShowing, () => {
     saveOrininal();
   else
     pltState.setPlt(toValue(originalPalette)); // restore palette from `originalPalette`
-});
+}, { immediate: true });
 
 const currentColor = ref<number[]>([0, HSB_MAX[1]*0.85, HSB_MAX[2]*0.85]); // hsb color
 const harmonyArgs = reactive<{

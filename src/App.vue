@@ -9,16 +9,16 @@
     <ThePalette />
   </main>
   <HarmonyGenDialog
-    v-if="isInitGen"
+    v-if="isInitGen || isGenShowing"
     v-model="isGenShowing"
   />
   <TheBookmarks
-    v-if="isInitFav"
+    v-if="isInitFav || isFavShowing"
     v-model="isFavShowing"
     @focusout-dialog="headerRef?.focusBookmarks()"
   />
   <SettingDialog
-    v-if="isInitSettings"
+    v-if="isInitSettings || isSettingsShowing"
     v-model="isSettingsShowing"
     @focusout-dialog="headerRef?.focusSettings()"
   />
@@ -32,21 +32,21 @@ import ThePalette from './components/Palette/ThePalette.vue';
 const HarmonyGenDialog = defineAsyncComponent(
   () => import('./components/HarmonyGenDialog/HarmonyGenDialog.vue')
     .then(component => {
-      setTimeout(() => handleShowGen(), 50);
+      invertBoolean(isInitGen, true);
       return component;
     })
 );
 const TheBookmarks = defineAsyncComponent(
   () => import('./components/TheBookmarks/TheBookmarks.vue')
     .then(component => {
-      setTimeout(() => handleShowFav(), 50);
+      invertBoolean(isInitFav, true);
       return component;
     })
 );
 const SettingDialog = defineAsyncComponent(
   () => import('./components/SettingDialog/SettingDialog.vue')
     .then(component => {
-      setTimeout(() => handleShowSettings(), 50);
+      invertBoolean(isInitSettings, true);
       return component;
     })
 );
@@ -67,18 +67,15 @@ const isGenShowing = ref(false);
 const isFavShowing = ref(false);
 const isSettingsShowing = ref(false);
 
-const handleShowGen = async () => {
-  toValue(isInitGen) && invertBoolean(isGenShowing);
-  invertBoolean(isInitGen, true);
+const handleShowGen = () => {
+  invertBoolean(isGenShowing);
 };
-const handleShowFav = async () => {
-  toValue(isInitFav) && invertBoolean(isFavShowing);
-  invertBoolean(isInitFav, true);
+const handleShowFav = () => {
+  invertBoolean(isFavShowing);
 };
 
-const handleShowSettings = async () => {
-  toValue(isInitSettings) && invertBoolean(isSettingsShowing);
-  invertBoolean(isInitSettings, true);
+const handleShowSettings = () => {
+  invertBoolean(isSettingsShowing);
 };
 
 const pltState = usePltStore();
