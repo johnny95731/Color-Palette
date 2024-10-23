@@ -35,8 +35,9 @@
       :model-value="detail"
     >
       <template #items>
+        <!-- v-once cause vscode vue extension crashed -->
         <TheBtn
-          v-once
+          v-memo="[]"
           v-for="(name, i) in unzipedNameList"
           :key="`Option${name}`"
           :text="name"
