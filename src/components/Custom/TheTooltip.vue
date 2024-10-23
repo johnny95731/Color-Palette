@@ -1,4 +1,9 @@
 <template>
+  <slot
+    name="activator"
+    :isShow="isShow"
+    :props="activatorProps"
+  />
   <OverlayContainer
     :id="idForContainer"
     :transition="transition"
@@ -157,6 +162,11 @@ const handleHide = () => {
 // Binding events
 useEventListener(activatorEl, 'mouseenter', handleShow);
 useEventListener(activatorEl, 'mouseleave', handleHide);
+const activatorProps = computed(() => ({
+  onMouseenter: handleShow,
+  onMouseleave: handleHide,
+  'aria-describedby': idForContainer.value,
+}));
 </script>
 
 <style src="./TheTooltip.scss" />

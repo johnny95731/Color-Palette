@@ -130,7 +130,7 @@ watch(model, (newVal) => {
   if (newVal) { // Open dialog when model is true
     isActive.value = true;
   }
-});
+}, { flush: 'post' });
 onMounted(() => {
   if (model.value) isActive.value = true;
 });
