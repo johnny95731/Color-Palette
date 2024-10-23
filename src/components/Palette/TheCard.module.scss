@@ -164,7 +164,7 @@
 
 .editor {
   // position
-  @extend %horizontalCenter;
+  position: absolute;
   bottom: 10px;
   // shape
   width: 150px;
@@ -199,17 +199,15 @@
 }
 
 .nameSelectContent {
-  padding: 0;
-  :global(.btn) {
-    height: 20px;
-    text-align: start !important;
-    span {
-      display: inline-block;
-      height: 12px;
-      margin-right: 4px;
-      aspect-ratio: 1 / 1;
-      outline: 1px solid black;
-    }
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  button {
+    height: 16px;
+    width: 16px;
+    padding: 0 !important;
+    margin: 4px;
+    outline: 1px solid #999;
   }
 }
 

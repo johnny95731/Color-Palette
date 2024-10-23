@@ -1,21 +1,77 @@
 <template>
   <div
-    ref="container"
+    ref="cardContainerRef"
     :class="[
       $style.cardContainer,
       cardIdx === 0 && $style.first,
       cardIdx === pltState.numOfCards-1 && $style.last,
     ]"
-    :style="style"
+    :style="cardStyle"
     @transitionend="$emit('transitionend')"
   >
-    <ToolBar
-      :cardIdx="cardIdx"
-      :card="card"
-      :isSmall="media.isSmall"
-      @remove="$emit('remove')"
-      @dragging="$emit('dragging', $event)"
-    />
+    <div
+      :class="$style.toolContainer"
+      :style="showToolbar"
+      role="toolbar"
+      :aria-label="`卡片${cardIdx}工具列`"
+      @keydown.stop
+    >
+      <CondWrapper
+        tag="div"
+        :is-wrap="media.isSmall"
+      >
+        <TheBtn
+          v-once
+          icon="close"
+          :style="closeIconStyle"
+          aria-label="移除"
+          :ripple="false"
+          @click="$emit('remove')"
+        />
+        <TheBtn
+          v-memo="[card.isLock]"
+          :icon="isLock.icon"
+          :style="closeIconStyle"
+          :aria-label="isLock.label"
+          :ripple="false"
+          @click="pltState.setIsLock(cardIdx)"
+        />
+        <TheBtn
+          :icon="isFavIcon.icon"
+          :aria-label="isFavIcon.label"
+          :ripple="false"
+          @click="favState.favColorsChanged(card.hex);"
+        />
+      </CondWrapper>
+      <CondWrapper
+        tag="div"
+        :is-wrap="media.isSmall"
+      >
+        <TheBtn
+          v-once
+          icon="draggable"
+          style="cursor: grab;touch-action: none;"
+          aria-label="拖動"
+          :ripple="false"
+          @pointerdown="$emit('dragging', $event)"
+        />
+        <TheBtn
+          v-once
+          icon="refresh"
+          aria-label="刷新"
+          :ripple="false"
+          @click="pltState.refreshCard(cardIdx)"
+        />
+        <TheBtn
+          v-once
+          icon="edit"
+          aria-label="調整"
+          aria-haspopup="dialog"
+          :ripple="false"
+          @click="pltState.setEditingIdx(cardIdx)"
+        />
+      </CondWrapper>
+    </div>
     <div
       :class="$style.textDisplay"
     >
@@ -24,6 +80,7 @@
         @click="copyText(card.hex.slice(1))"
       >
         <TheIcon
+          v-once
           type="copy"
         />
         <TheBtn
@@ -33,10 +90,10 @@
       </div>
       <div
         :class="$style.detailText"
-
         @click="copyText(detail)"
       >
         <TheIcon
+          v-once
           type="copy"
         />
         <TheBtn
@@ -44,42 +101,108 @@
         />
       </div>
     </div>
-    <EditingDialog
-      :cardIdx="cardIdx"
-      :card="card"
-      :detail="detail"
-      :colorSpace="pltState.colorSpace"
-      :roundedColor="roundedColor"
-      :pos="editingDialogPos"
-      v-model="roundedColor"
-      v-model:show="showEditor"
-      @tabOffDialog="hexTextRef?.$el.focus();"
-    />
+    <!-- Editor -->
+    <OverlayContainer
+      :transparent="true"
+      role="dialog"
+      :aria-modal="true"
+      :contentClass="$style.editor"
+      :contentStyle="containerStyle"
+      :eager="false"
+      v-model="showEditor"
+    >
+      <label
+        :for="`card${cardIdx}-hex`"
+        :style="{backgroundColor: card.hex}"
+      >
+        {{ card.hex }}
+      </label>
+      <input
+        v-memo="[card.hex]"
+        ref="hexInputRef"
+        :id="`card${cardIdx}-hex`"
+        :class="$style.hexInput"
+        type="text"
+        maxlength="7"
+        :value="card.hex"
+        @input="hexTextEdited($event)"
+        @change="handleHexEditingFinished($event)"
+      >
+      <SelectMenu
+        v-if="pltState.colorSpace === 'name'"
+        :class="$style.nameSelect"
+        aria-label="CSS named-color選單"
+        :options="unzipedNameList"
+        :contentClass="$style.nameSelectContent"
+        :model-value="detail"
+      >
+        <template #items>
+          <!-- v-once cause vscode vue extension crashed -->
+          <button
+            v-memo="[]"
+            v-for="(name, i) in unzipedNameList"
+            :key="`Option${name}`"
+            :style="{
+              backgroundColor: name.replace(/\s/g, ''),
+            }"
+            :title="name"
+            type="button"
+            @click="selectName(unzipedNameList[i]);"
+          />
+        </template>
+      </SelectMenu>
+      <div
+        :class="$style.sliders"
+      >
+        <template
+          v-for="([min, max], i) in space.range"
+          :key="`card${cardIdx}-label${i}`"
+        >
+          <div>
+            {{ `${space.labels[i]}: ${roundedColor[i]}` }}
+          </div>
+          <TheSlider
+            :label="space.labels[i]"
+            :showRange="false"
+            :showVal="false"
+            :trackerBackground="gradientGen(roundedColor, i, pltState.colorSpace)"
+            :thumbBackground="card.hex"
+            :min="min"
+            :max="max"
+            :model-value="roundedColor[i]"
+            @update:model-value="handleSliderChange($event, i)"
+            @keydown="i === roundedColor.length - 1 && handleLeaveFocusing($event)"
+          />
+        </template>
+      </div>
+    </OverlayContainer>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { computed, reactive, ref, watch } from 'vue';
+import { computed, nextTick, reactive, ref, shallowReactive, watch } from 'vue';
 import { asyncComputed, toValue } from '@vueuse/core';
 import $style from './TheCard.module.scss';
 // Components
 import TheBtn from '@/components/Custom/TheBtn.vue';
 import TheIcon from '../Custom/TheIcon.vue';
-import ToolBar from './ToolBar.vue';
-import EditingDialog from './EditingDialog.vue';
+import SelectMenu from '../Custom/SelectMenu.vue';
+import TheSlider from '../Custom/TheSlider.vue';
+import OverlayContainer from '../Custom/OverlayContainer.vue';
+import CondWrapper from '../Custom/CondWrapper.vue';
 // Utils
-import { round } from '@/utils/numeric';
-import { rgb2gray, getClosestNamed, hex2rgb, unzipCssNamed } from '@/utils/colors';
-import { copyText } from '@/utils/browser';
-import { useElementBounding } from '@/composables/useElementBounding';
+import { round, toPercent } from '@/utils/numeric';
+import { rgb2gray, getClosestNamed, hex2rgb, unzipCssNamed, unzipedNameList, gradientGen, getNamedColorRgb, isValidHex } from '@/utils/colors';
+import { copyText, hexTextEdited, isTabKey } from '@/utils/browser';
 // Stores
 import usePltStore from '@/features/stores/usePltStore';
+import useFavStore from '@/features/stores/useFavStore';
 import media from '@/composables/useMedia';
 // Types
 import type { CSSProperties } from 'vue';
 import type { CardType } from '@/features/types/pltStore';
 
-const container = ref<HTMLElement>();
+const cardContainerRef = ref<HTMLElement>();
 const hexTextRef = ref<InstanceType<typeof TheBtn>>();
 
 type Props = {
@@ -100,6 +223,17 @@ defineEmits<{
 }>();
 
 const pltState = usePltStore();
+const space = computed(() => {
+  const infos = pltState.spaceInfos;
+  return {
+    ...infos,
+    range: infos.range.map((vals) =>
+      Array.isArray(vals) ?
+        [...vals] :
+        [0, vals]
+    )
+  };
+});
 
 const isLight = computed(() => rgb2gray(hex2rgb(props.card.hex)) > 127);
 
@@ -111,6 +245,37 @@ const roundedColor = computed({
     pltState.editCard(props.cardIdx, newColorArr);
   }
 });
+
+// Toolbar
+// States / Consts
+const favState = useFavStore();
+const isFav = computed(() => {
+  return favState.colors.includes(props.card.hex);
+});
+const showToolbar = computed(() => {
+  return {
+    opacity: pltState.isPending ? '0' : undefined
+  };
+});
+
+const closeIconStyle = computed<CSSProperties | undefined>(() => {
+  return pltState.numOfCards === 2 ?
+    {
+      opacity: '0',
+      cursor: 'default',
+    } : undefined;
+});
+const isLock = computed(() => (
+  props.card.isLock ?
+    { icon: 'lock', label: '解鎖刷新' } as const :
+    { icon: 'unlock', label: '鎖定刷新' } as const
+));
+const isFavIcon = computed(() => (
+  toValue(isFav) ?
+    { icon: 'fav', label: '移出書籤' } as const :
+    { icon: 'unfav', label: '加入書籤' } as const
+));
+
 
 const showEditor = computed({
   get() {
@@ -134,17 +299,17 @@ const detail = computed(() => {
 });
 
 // states for dealing transition.
-const cardStyle = reactive<{
+const cardPosNSize = reactive<{
   size: string,
   position: string,
 }>({ ...props.cardDisplay });
-function setSize(newVal: string) { Object.assign(cardStyle, { size: newVal }); }
-function setPos(newVal: string) { Object.assign(cardStyle, { position: newVal }); }
+const setSize = (newVal: string) => cardPosNSize.size = newVal;
+const setPos = (newVal: string) => cardPosNSize.position = newVal;
 
 const transProperty = ref<'none' | ''>('');
 function setTransProperty(newVal: 'none' | 'reset') {
   if (newVal === 'none') {
-    transProperty.value = 'none';
+    transProperty.value = newVal;
   } else {
     transProperty.value = '';
   }
@@ -157,22 +322,78 @@ defineExpose({
 });
 
 watch(() => pltState.numOfCards, () =>
-  Object.assign(cardStyle, props.cardDisplay)
+  Object.assign(cardPosNSize, props.cardDisplay)
 );
 
-const style = computed<CSSProperties>(function() {
+const cardStyle = computed<CSSProperties>(() => {
   return {
     ...props.styleInSettings,
-    color: toValue(isLight) ? '#000' : '#fff',
+    color: isLight.value ? '#000' : '#fff',
     backgroundColor: props.card.hex,
-    [media.isSmall ? 'height' : 'width']: cardStyle.size,
-    [media.pos]: cardStyle.position,
-    transitionProperty: toValue(transProperty),
+    [media.isSmall ? 'height' : 'width']: cardPosNSize.size,
+    [media.pos]: cardPosNSize.position,
+    transitionProperty: transProperty.value,
   };
 });
 
-const { rect } = useElementBounding(container, { filter: ['left', 'width'] });
-const editingDialogPos = computed<InstanceType<typeof EditingDialog>['pos']>(
-  () => `${round(rect.left + rect.width / 2, 2)}px`
+// Editor position
+const hexInputRef = ref<HTMLInputElement>();
+const containerStyle = shallowReactive<Pick<CSSProperties, 'left' | 'right'>>({});
+watch(showEditor, async (newShow) => {
+  if (newShow) {
+    // Dialog position
+    let left: string | undefined, right: string | undefined;
+    if (!media.isSmall) {
+      const cardWidth = 1 / pltState.numOfCards;
+      // dialogWidth = 150px, 75 = 150 / 2
+      const dialogWidth =  75 / media.windowSize[1]; // to percent
+      const center = (props.cardIdx + 0.5) / pltState.numOfCards;
+      if (cardWidth < dialogWidth) { // fitst and last dialog are out of viewport
+        // isZero ? last : first;
+        left = props.cardIdx ? 'auto' : '0';
+        right = props.cardIdx ? '0' : undefined;
+      } else {
+        left = `${toPercent(center - dialogWidth / 2)}%`;
+      }
+    }
+    Object.assign(containerStyle, { left, right });
+    // Focus on input after opening dialog
+    await nextTick();
+    hexInputRef.value?.focus();
+  } else {
+    hexTextRef.value?.$el.focus();
+  }
+});
+
+const handleLeaveFocusing = (e: KeyboardEvent) => {
+  if (isTabKey(e)) {
+    e.preventDefault();
+    showEditor.value = false;
+  }
+};
+// Editor value
+/**
+ * Finish Hex editing when input is blurred or press 'Enter'
+ */
+const handleHexEditingFinished = function(e: Event) {
+  const text = (e.currentTarget as HTMLInputElement).value;
+  if (text !== props.card.hex && isValidHex(text)) {
+    const newColor = space.value.converter(hex2rgb(text));
+    roundedColor.value = newColor;
+  }
+};
+
+const selectName = (name: string) => pltState.editCard(
+  props.cardIdx,
+  getNamedColorRgb(name.replaceAll(' ', ''))
 );
+
+/**
+ * Slider changed event.
+ */
+const handleSliderChange = function(newVal: number, idx: number) {
+  const newColor = [...props.card.color];
+  newColor[idx] = newVal;
+  roundedColor.value = newColor;
+};
 </script>

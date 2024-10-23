@@ -11,7 +11,7 @@
       :cardIdx="i"
       :card="card"
       :cardDisplay="{
-        size: cardAttrs.size.percent,
+        size: cardAttrs.size,
         position: cardAttrs.positions[i]
       }"
       :styleInSettings="styleInSettings"
@@ -42,7 +42,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, reactive, toValue, watch, nextTick } from 'vue';
+import { ref, computed, reactive, toValue, watch } from 'vue';
 import $style from './ThePalette.module.scss';
 import TheBtn from '../Custom/TheBtn.vue';
 import TheCard from './TheCard.vue';
@@ -79,15 +79,11 @@ const styleInSettings = computed<CSSProperties>(() => ({
 }));
 
 function calcCardAttrs() {
-  const totalSpace = media.windowSize[media.isSmall ? 0 : 1] - media.bound[0];
   return {
     /**
      * Card width or height (depend on window width).
      */
-    size: {
-      px: totalSpace / pltState.numOfCards,
-      percent: equallyLength(pltState.numOfCards)
-    },
+    size: equallyLength(pltState.numOfCards),
     /**
      * Card left or top (depend on window width).
      */
@@ -97,9 +93,9 @@ function calcCardAttrs() {
   };
 }
 const cardAttrs = reactive(calcCardAttrs());
-watch(() => pltState.numOfCards, () => {
-  Object.assign(cardAttrs, calcCardAttrs());
-});
+watch(() => pltState.numOfCards, () =>
+  Object.assign(cardAttrs, calcCardAttrs())
+);
 
 // Set style to all cards.
 /**
@@ -144,9 +140,9 @@ function setIsInTrans(idx: number, newVal: boolean) {
  * card, or remove card.
  */
 const eventInfo = ref<{
-  event: 'mouseup' | 'add' | 'remove';
-  idx?: number;
-  rgb?: number[];
+  event_: 'mouseup' | 'add' | 'remove';
+  idx_?: number;
+  rgb_?: number[];
 } | null
 >(null);
 
@@ -173,11 +169,11 @@ const handleAddCard = (idx: number) => {
   if (!settingsState.transition.pos) { // no transition.
     pltState.addCard(idx, rgb);
     removeTransition();
-    setTimeout(() => resetTransition(), 50);
+    setTimeout(resetTransition, 50);
     return;
   }
   document.body.style.backgroundColor = rgb2hex(rgb);
-  eventInfo.value = { event: 'add', idx, rgb };
+  eventInfo.value = { event_: 'add', idx_: idx, rgb_: rgb };
   // Transition: shrink and move card. The enpty space is new card
   const length = equallyLength(pltState.numOfCards + 1);
   for (let i = 0; i < pltState.numOfCards; i++) {
@@ -199,7 +195,7 @@ const handleRemoveCard = (idx: number) => {
   if (!settingsState.transition.pos) { // no transition.
     pltState.delCard(idx);
     removeTransition();
-    setTimeout(() => resetTransition(pltState.numOfCards - 1), 50);
+    setTimeout(resetTransition, 50, pltState.numOfCards - 1);
     return;
   }
   const newSize = equallyLength(pltState.numOfCards - 1);
@@ -209,7 +205,7 @@ const handleRemoveCard = (idx: number) => {
     const bias = i > idx ? 1 : 0;
     toValue(cardRefs)[i].setPos(evalPosition(i - bias, pltState.numOfCards - 1));
   }
-  eventInfo.value = { event: 'remove', idx };
+  eventInfo.value = { event_: 'remove', idx_: idx };
   isInTrans.arr = Array.from({ length: pltState.numOfCards }, () => true);
   pltState.setIsPending(true);
 };
@@ -218,7 +214,7 @@ const handleRemoveCard = (idx: number) => {
 const draggingIdx = ref<number | null>(null);
 const { start: startDragging } = (() => {
   let card: CardInstance | null;
-  const halfCardLength = computed(() => 100 / (2 * pltState.numOfCards));
+  const halfCardLength = computed(() => 50 / pltState.numOfCards);
   /** Get mouse position along specific axis. */
   const getCoordinate = (pos: Position) => media.isSmall ? pos.y : pos.x;
   /** Get index of card that cursor on  */
@@ -240,12 +236,13 @@ const { start: startDragging } = (() => {
   };
 
   const onStart = (pos: Position) => {
-    draggingIdx.value = getIdx(pos);
+    const currentIdx = getIdx(pos);
+    draggingIdx.value = currentIdx;
     if (settingsState.transition.pos) {
-      setIsInTrans(draggingIdx.value, true);
+      setIsInTrans(currentIdx, true);
     }
     pltState.setIsPending(true);
-    card = toValue(cardRefs)[draggingIdx.value];
+    card = toValue(cardRefs)[currentIdx];
     setNewPosition(pos);
     card.setTransProperty('none');
   };
@@ -257,7 +254,7 @@ const { start: startDragging } = (() => {
   };
   const onEnd = () => {
     if (!card) return;
-    eventInfo.value = { event: 'mouseup' };
+    eventInfo.value = { event_: 'mouseup' };
     if (!settingsState.transition.pos) {
       removeTransition();
       pltState.resetOrder();
@@ -286,11 +283,11 @@ watch(() => isInTrans.arr.some((val) => val),
     const info = toValue(eventInfo) as NonNullable<typeof eventInfo.value>;
     // This LayoutEffect occurs only when transition is over.
     removeTransition();
-    const start = info?.idx ? info.idx : 0;
-    switch (info.event) {
+    const start = info?.idx_ ? info.idx_ : 0;
+    switch (info.event_) {
     case 'add':
       document.body.style.backgroundColor = '';
-      pltState.addCard(start, info.rgb as number[]);
+      pltState.addCard(start, info.rgb_ as number[]);
       break;
     case 'remove':
       pltState.delCard(start);
@@ -301,9 +298,8 @@ watch(() => isInTrans.arr.some((val) => val),
       break;
     }
     eventInfo.value = null;
-    await nextTick();
-    resetTransition();
     pltState.setIsPending(false);
+    setTimeout(resetTransition, 50);
   }
 );
 

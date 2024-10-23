@@ -197,7 +197,7 @@ const increment = (num: number = 1) => {
 
 watch(model, (newVal) => {
   thumbPos.value = `${rangeMapping(newVal, min_.value, max_.value, 0, 100)}%`;
-});
+}, { immediate: true });
 
 // onChange event => Drag or key down.
 const { isDragging } = (() => {
