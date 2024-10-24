@@ -180,7 +180,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, nextTick, reactive, ref, shallowReactive, watch } from 'vue';
+import { computed, nextTick, ref, shallowReactive, watch } from 'vue';
 import { asyncComputed, toValue } from '@vueuse/core';
 import $style from './TheCard.module.scss';
 // Components
@@ -208,11 +208,6 @@ const hexTextRef = ref<InstanceType<typeof TheBtn>>();
 type Props = {
   cardIdx: number;
   card: CardType;
-  cardDisplay: {
-    size: string
-    position: string;
-  }
-  styleInSettings: CSSProperties
 };
 const props = defineProps<Props>();
 
@@ -298,41 +293,10 @@ const detail = computed(() => {
     `${pltState.colorSpace}(${toValue(roundedColor).toString()})`;
 });
 
-// states for dealing transition.
-const cardPosNSize = reactive<{
-  size: string,
-  position: string,
-}>({ ...props.cardDisplay });
-const setSize = (newVal: string) => cardPosNSize.size = newVal;
-const setPos = (newVal: string) => cardPosNSize.position = newVal;
-
-const transProperty = ref<'none' | ''>('');
-function setTransProperty(newVal: 'none' | 'reset') {
-  if (newVal === 'none') {
-    transProperty.value = newVal;
-  } else {
-    transProperty.value = '';
-  }
-}
-
-defineExpose({
-  setSize,
-  setPos,
-  setTransProperty,
-});
-
-watch(() => pltState.numOfCards, () =>
-  Object.assign(cardPosNSize, props.cardDisplay)
-);
-
 const cardStyle = computed<CSSProperties>(() => {
   return {
-    ...props.styleInSettings,
     color: isLight.value ? '#000' : '#fff',
     backgroundColor: props.card.hex,
-    [media.isSmall ? 'height' : 'width']: cardPosNSize.size,
-    [media.pos]: cardPosNSize.position,
-    transitionProperty: transProperty.value,
   };
 });
 

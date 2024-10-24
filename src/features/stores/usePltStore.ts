@@ -12,6 +12,7 @@ import type { CardType } from '@/features/types/pltStore';
 import type { OrderStateType, SortActionType, ColorSpacesType } from 'types/colors';
 import type { MixingType } from 'types/mixing';
 import type { ColorSpaceInfos } from '@/types/colors';
+import { mixers } from '@/utils/mixing';
 
 
 /**
@@ -90,6 +91,28 @@ const usePltStore = defineStore('plt', {
     }
   },
   actions: {
+    mixCard(left: number, right?: number) {
+      right ??= left + 1;
+      // Evaluate new color.
+      let rgb;
+      if (this.mixMode === 'random') rgb = randRgbGen();
+      else {
+        const { inverter } = this.spaceInfos;
+        // Pick cards.
+        let leftRgbColor;
+        let rightRgbColor;
+        // -Add to thequallyLengthsition. Blending the first card and black.
+        if (left < 0) leftRgbColor = [0, 0, 0];
+        else leftRgbColor = inverter(this.cards[left].color);
+        // -Add to the last position. Blending the last card and white.
+        if (right >= this.numOfCards) rightRgbColor = [255, 255, 255];
+        else rightRgbColor = inverter(this.cards[right].color);
+        rgb = mixers[this.mixMode](
+          leftRgbColor, rightRgbColor, this.colorSpace,
+        );
+      }
+      return rgb;
+    },
     addCard(idx: number, rgb: number[]) {
       if (this.numOfCards == MAX_NUM_OF_CARDS) return;
       const cards = this.cards;

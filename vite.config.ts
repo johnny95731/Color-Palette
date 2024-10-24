@@ -17,7 +17,6 @@ export default defineConfig({
     cssMinify: 'lightningcss',
     terserOptions: {
       compress: {
-        booleans_as_integers: true,
         drop_console: ['log', 'time', 'timeEnd']
       },
       mangle: {
