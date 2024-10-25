@@ -115,7 +115,8 @@ const isActive = ref(false);
 
 // Events when dom show/hide.
 const handleAfterEnter = () => {
-  addEventListener('click', clickOutside);
+  if (props.type !== 'menu')
+    addEventListener('click', clickOutside);
   if (props.escEvent)
     addEventListener('keydown', handleKeydown);
   emit('transitionEnd');

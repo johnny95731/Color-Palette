@@ -22,7 +22,6 @@
         {{ text }}
       </template>
       <OverlayContainer
-        ref="contentRef"
         :id="idForMenu"
         class="menu"
         type="menu"
@@ -40,6 +39,7 @@
         @resize="nestedClosing"
       >
         <div
+          ref="contentRef"
           :tabindex="-1"
           @keydown="handleKeyDown"
         >
@@ -140,8 +140,7 @@ const props = withDefaults(defineProps<Props>(), {
   currentStyle: CURRENT_OPTION_WEIGHT,
 });
 const activatorRef = ref<InstanceType<typeof TheBtn>>();
-const contentRef = ref<InstanceType<typeof OverlayContainer>>();
-const contentDom = computed(() => contentRef.value?.contentRef);
+const contentRef = ref<HTMLDivElement>();
 
 const activator = computed<HTMLButtonElement>(() => toValue(activatorRef)?.$el);
 
@@ -151,7 +150,7 @@ const activator = computed<HTMLButtonElement>(() => toValue(activatorRef)?.$el);
 const isContaining = (target?: Element | EventTarget | null): boolean =>
   !!(
     toValue(activator).contains(target as Node | null) ||
-    toValue(contentDom)?.contains(target as Node | null)
+    toValue(contentRef)?.contains(target as Node | null)
   );
 
 /**
@@ -160,12 +159,12 @@ const isContaining = (target?: Element | EventTarget | null): boolean =>
  */
 const getDirectChildren = (target?: Element | EventTarget | null) => {
   if (
-    !toValue(contentDom) ||
-    !toValue(contentDom)!.contains(target as Element) ||
-    toValue(contentDom) === target
+    !toValue(contentRef) ||
+    !toValue(contentRef)!.contains(target as Element) ||
+    toValue(contentRef) === target
   ) return null;
   let children = target as Element;
-  while (children.parentElement !== toValue(contentDom))
+  while (children.parentElement !== toValue(contentRef))
     children = children.parentElement as HTMLElement;
   return children;
 };
@@ -236,7 +235,7 @@ provide<MenuProvided>(MenuSymbol, {
   },
   topNonLastActivator,
   isLast(target: Element | null) {
-    const menu = toValue(contentDom) as NonNullable<typeof contentDom.value>;
+    const menu = toValue(contentRef)!;
     return menu.children[menu.children.length-1] === target;
   },
   register() {
@@ -267,8 +266,8 @@ async function nestedClosing (target?: Element | EventTarget | null) {
   if (
     !target ||
     (
-      toValue(contentDom) &&
-      !toValue(contentDom)!.contains(target as Element)
+      toValue(contentRef) &&
+      !toValue(contentRef)!.contains(target as Element)
     )
   ) {
     invertBoolean(isOpened, false);
@@ -276,7 +275,7 @@ async function nestedClosing (target?: Element | EventTarget | null) {
     await nextTick();
     parent?.nestedClosing(target);
   }
-
+  console.log('nesting', !!parent);
 }
 
 const { rect: activatorRect } = useElementBounding(activator);
@@ -293,6 +292,7 @@ const menuContainerStyle = computed<CSSProperties>(() => {
 
 const resizeCallback =  () => nestedClosing();
 watch(isOpened, (newVal) => {
+  console.log('watch', !!parent, newVal);
   if (!newVal) {
     parent?.unregister();
     removeEventListener('click', handleClickWindow, true);
@@ -305,11 +305,12 @@ watch(isOpened, (newVal) => {
 });
 
 const handleClickWindow = (e: MouseEvent) => {
+  console.log('handleClickWindow', !!parent, getDirectChildren(e.target), !hasPopup(getDirectChildren(e.target)));
   // Click outside
   if (!isContaining(e.target)) nestedClosing(e.target);
   // Click content that is not a activator of submenu.
   else if (
-    toValue(contentDom)?.contains(e.target as Node | null) &&
+    toValue(contentRef)?.contains(e.target as Node | null) &&
     !hasPopup(getDirectChildren(e.target))
   ) {
     nestedClosing();
@@ -318,7 +319,10 @@ const handleClickWindow = (e: MouseEvent) => {
 };
 
 // When menu is nested, the parent should not close before submenu is closing.
-const handleClickBtn = () => !toValue(openedChild) && invertBoolean(isOpened);
+const handleClickBtn = () => {
+  console.log('handleClickBtn', !!parent);
+  !toValue(openedChild) && invertBoolean(isOpened);
+};
 
 
 const handleKeyDown = async (e: KeyboardEvent) => {
@@ -334,12 +338,12 @@ const handleKeyDown = async (e: KeyboardEvent) => {
       handleClickBtn();
       await nextTick();
       // Cant get ref before updated (`menu` is undefined).
-      target = toValue(contentDom)?.children[0]!;
+      target = toValue(contentRef)?.children[0]!;
     }
     else return;
   }
   // `undefined` is handled.
-  const menu = toValue(contentDom)!;
+  const menu = toValue(contentRef)!;
   // @ts-expect-error null still work (index -1)
   const nthChildFocused = [...menu.children].indexOf(document.activeElement);
   const focusingActivator = nthChildFocused === -1; // event triggered from activator.
