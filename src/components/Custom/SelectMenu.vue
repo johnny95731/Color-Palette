@@ -2,8 +2,8 @@
   <div
     v-bind="labelState"
     :class="[
-      'select-menu activator',
-      isOpened && 'active'
+      'select',
+      isOpened && 'select--active'
     ]"
     data-haspopup="true"
     :aria-controls="eager || isOpened ? idForMenu : undefined"
@@ -13,6 +13,7 @@
     <TheBtn
       ref="activatorRef"
       :class="[
+        'select__activator',
         titleClass
       ]"
       :text="valueLabel"
@@ -45,21 +46,24 @@
     </div>
     <OverlayContainer
       :id="idForMenu"
+      class="menu"
+      type="menu"
+      :content-class="[
+        'select__content',
+        isMobile && 'select__content--mobile',
+        contentClass
+      ]"
+      :content-style="menuStyle"
       hideScrim
       :eager="eager"
-      type="menu"
       :esc-event="false"
       v-model="isOpened"
     >
       <div
         ref="containerRef"
         :class="[
-          'select-menu menu-container',
-          isMobile && 'is-mobile',
-          isOpened && 'active',
           contentClass
         ]"
-        :style="menuStyle"
         aria-live="polite"
         :tabindex="-1"
         @click="handleClickBtn"
@@ -70,10 +74,12 @@
           name="items"
           :select="handleSelect"
           :liStyle="liStyle"
+          :props="optionProps"
         >
           <button
             v-for="(val, i) in options"
             :key="`Option ${val}`"
+            class="select__option"
             :style="liStyle(i)"
             type="button"
             @click="handleSelect(i);"
@@ -355,6 +361,13 @@ const handleKeyDown = async (e: KeyboardEvent) => {
   // @ts-expect-error Check is instanceof HTMLElement
   target?.focus && target.focus();
 };
+
+// Option props
+const optionProps = computed(() => {
+  return {
+    class: 'select__option',
+  };
+});
 </script>
 
 <style src="./Menus.scss" />

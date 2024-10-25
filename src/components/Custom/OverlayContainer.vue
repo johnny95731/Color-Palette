@@ -5,7 +5,8 @@
       v-show="model || isActive"
       :class="[
         'overlay',
-        type
+        `overlay--${type}`,
+        model && 'overlay--active'
       ]"
       v-bind="$attrs"
       :role="role"
@@ -145,4 +146,39 @@ defineExpose({
 });
 </script>
 
-<style src="./OverlayContainer.scss" />
+<style lang="scss">
+@use '@/assets/commons.module.scss' as *;
+
+.overlay {
+  $root: &;
+  @include overlay(fixed);
+  display: flex;
+  z-index: 999;
+  pointer-events: none;
+  > .overlay__content {
+    pointer-events: auto;
+    z-index: 1;
+  }
+
+  &__scrim {
+    @include overlay(fixed);
+    background-color: #0007;
+    pointer-events: auto;
+  }
+
+  &--dialog {
+    align-items: center;
+    justify-content: center;
+  }
+
+  &--offcanvas {
+    align-items: stretch;
+    justify-content: right;
+  }
+
+  &--tooltip > &__content{
+    position: fixed;
+    pointer-events: none;
+  }
+}
+</style>

@@ -136,12 +136,13 @@
         :contentClass="$style.nameSelectContent"
         :model-value="detail"
       >
-        <template #items>
+        <template #items="{props: optionProps}">
           <!-- v-once cause vscode vue extension crashed -->
           <button
             v-memo="[]"
             v-for="(name, i) in unzipedNameList"
             :key="`Option${name}`"
+            v-bind="optionProps"
             :style="{
               backgroundColor: name.replace(/\s/g, ''),
             }"
@@ -308,16 +309,17 @@ watch(showEditor, async (newShow) => {
     // Dialog position
     let left: string | undefined, right: string | undefined;
     if (!media.isSmall) {
-      const cardWidth = 1 / pltState.numOfCards;
       // dialogWidth = 150px, 75 = 150 / 2
-      const dialogWidth =  75 / media.windowSize[1]; // to percent
+      const halfDialogWidth =  75 / media.windowSize[1]; // to percent
       const center = (props.cardIdx + 0.5) / pltState.numOfCards;
-      if (cardWidth < dialogWidth) { // fitst and last dialog are out of viewport
-        // isZero ? last : first;
-        left = props.cardIdx ? 'auto' : '0';
-        right = props.cardIdx ? '0' : undefined;
+      if (center - halfDialogWidth < 0) { // left pos of dialog is out of viewport
+        left = '0';
+      } else if (center + halfDialogWidth > 1) {
+        // right pos of dialog is out of viewport
+        left = 'auto';
+        right = '0';
       } else {
-        left = `${toPercent(center - dialogWidth / 2)}%`;
+        left = `${toPercent(center - halfDialogWidth)}%`;
       }
     }
     Object.assign(containerStyle, { left, right });

@@ -1,8 +1,9 @@
 <template>
   <div
-    class="switch-wrapper"
+    class="switch"
   >
     <input
+      class="field"
       ref="inputRef"
       v-bind="labelState"
       :id="idForInput"
@@ -15,7 +16,7 @@
     <div
       ref="switchRef"
       v-bind="labelState"
-      class="switch-slider"
+      class="switch__slider"
       tabindex="0"
       role="switch"
       :aria-checked="model"
@@ -25,9 +26,7 @@
     />
     <label
       v-if="labelState['aria-label']"
-      :class="{
-        'hide-label': hideLabel
-      }"
+      :class="[hideLabel && 'field']"
       :for="idForInput"
       @click.prevent="handleClick();switchRef?.focus()"
     >{{ labelState['aria-label'] }}</label>
@@ -120,4 +119,67 @@ function handleKeyDown(e: KeyboardEvent) {
 
 </script>
 
-<style src="./TheSwitch.scss" />
+<style lang="scss">
+@use "sass:map";
+@use "@/assets/commons.module.scss" as *;
+
+
+$switch-md: ("h": 20px, "w": 35px);
+.switch {
+  $root: &;
+  display: flex;
+  align-items: center;
+  label {
+    display: inline-block;
+    margin-left: 4px;
+    color: $color5;
+    cursor: pointer;
+  }
+
+  $slider-margin: 4px;
+  &__slider {
+    display: inline-block;
+    position: relative;
+    height: map.get($switch-md, "h");
+    width: map.get($switch-md, "w");
+    border-radius: $radius-lg;
+    background-color: #ccc;
+    transition: .4s;
+    cursor: pointer;
+
+    &::before { // thumb
+      content: "";
+      position: absolute;
+      top: $slider-margin;
+      bottom: $slider-margin;
+      left: $slider-margin;
+      aspect-ratio: 1 / 1;
+      border-radius: 100%;
+      background-color: white;
+      transition: transform .4s;
+    }
+
+    &:focus-visible::before,
+    &:hover::before {
+      box-shadow: 0px 0px 4px 8px #0002;
+    }
+    @supports not selector(:focus-visible) {
+      &:focus::before {
+        box-shadow: 0px 0px 4px 8px #0002;
+      }
+    }
+
+    @at-root #{$root}:has(input:checked) & {
+      background-color: rgb(0, 200, 0);
+      &::before {
+        // distance betewwn left: $slider-margin; and right: $slider-margin; is
+        //   dist = map.get($switch-md, "w") - 2 * $slider-margin
+        // thumb diameter, diam = map.get($switch-md, "h") - 2 * $slider-margin
+        // translate = dist - diam = map.get($switch-md, "w") - map.get($switch-md, "h")
+        transform: translate(map.get($switch-md, "w") - map.get($switch-md, "h"))
+      }
+    }
+  }
+}
+
+</style>

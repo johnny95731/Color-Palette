@@ -5,19 +5,19 @@
     :props="activatorProps"
   />
   <OverlayContainer
+    ref="tooltipRef"
     :id="idForContainer"
+    class="tooltip"
     :transition="transition"
     role="tooltip"
     type="tooltip"
     :eager="eager"
     hide-scrim
+    :content-style="tooltipStyle"
     v-model="isShow"
   >
     <div
-      :style="tooltipStyle"
-      :class="['tooltip-wrapper', location, props.class]"
-      @mouseenter="handleShow"
-      @mouseleave="handleHide"
+      :v-bind="$attrs"
     >
       <slot name="text">
         {{ text }}
@@ -34,12 +34,10 @@ import { useElementBounding } from '@/composables/useElementBounding';
 import { isNullish, invertBoolean } from '@/utils/helpers';
 import { getComponentId } from '@/utils/browser';
 import type { CSSProperties, Component } from 'vue';
-import type { VueClass } from 'types/browser';
 
 type Props = {
   activator?: `#${string}` | 'parent' | HTMLElement | Component,
   id?: string,
-  class?: VueClass,
   eager?: boolean,
   text?: string | number,
   transition?: string,
@@ -56,6 +54,7 @@ const props = withDefaults(defineProps<Props>(), {
   closeDelay: 200,
 });
 
+const tooltipRef = ref<InstanceType<typeof OverlayContainer>>();
 
 const refreshActivatorElKey = ref<boolean>(false);
 const instance = getCurrentInstance();
@@ -110,7 +109,7 @@ const tooltipStyle = computed<CSSProperties>(() => {
   if (location === 'left') {
     return {
       top: `${rect.top + rect.height / 2}px`,
-      right: `${window.innerWidth - (rect.left - 4)}px`,
+      right: `${document.body.clientWidth - (rect.left - 4)}px`,
       transform: 'translateY(-50%)',
     };
   }
@@ -123,7 +122,7 @@ const tooltipStyle = computed<CSSProperties>(() => {
   }
   if (location === 'top') {
     return {
-      bottom: `${window.innerHeight - (rect.top - 4)}px`,
+      bottom: `${document.body.clientHeight - (rect.top - 4)}px`,
       left: `${rect.left + rect.width / 2}px`,
       transform: 'translateX(-50%)',
     };
@@ -147,8 +146,7 @@ const handleShow = (e: MouseEvent) => {
   toValue(openDelay_) ?
     delayTimeoutId = setTimeout(invertBoolean, toValue(openDelay_), isShow, true) as unknown as number :
     invertBoolean(isShow, true);
-  if (e.currentTarget instanceof HTMLElement)
-    currentTarget.value = e.currentTarget;
+  currentTarget.value = e.currentTarget as HTMLElement;
 };
 const handleHide = () => {
   // Clear timeout
@@ -169,4 +167,16 @@ const activatorProps = computed(() => ({
 }));
 </script>
 
-<style src="./TheTooltip.scss" />
+<style lang="scss">
+@use '@/assets/commons.module.scss' as *;
+
+$tooltip-bg-color: #0008;
+.tooltip .overlay__content{
+  border-radius: $radius-md;
+  padding: 8px 12px;
+  color: #fff;
+  background: $tooltip-bg-color;
+  text-wrap: nowrap;
+}
+
+</style>

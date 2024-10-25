@@ -2,14 +2,12 @@
 $transDuration: 120ms;
 
 .dropdown-menu {
-  &.activator {
-    border-radius: $radius-md;
-  }
+  border-radius: $radius-md;
 }
 
-.select-menu.activator {
+.select {
   width: 100%;
-  > button {
+  &__activator.btn {
     text-align: start;
     grid-template-columns: max-content 1fr max-content;
     width: 100%;
@@ -25,18 +23,18 @@ $transDuration: 120ms;
   }
 }
 
-.select-menu,
+.select,
 .dropdown-menu {
-  &.activator .triangle {
+  & .triangle {
     transition: transform $transDuration linear;
     font-size: 0.6rem;
   }
-  &.activator.active .triangle {
+  &--active .triangle {
     transform: rotate(180deg);
   }
 }
 
-%menu-container {
+%menu-content {
   // layout
   position: fixed;
   top: auto;
@@ -51,68 +49,61 @@ $transDuration: 120ms;
 
   background-color: $color1;
   box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-  pointer-events: all;
   // Hide Scrollbars But Keep Functionality
   -ms-overflow-style: none;  /* IE and Edge */
   scrollbar-width: none;  /* Firefox */
   &::-webkit-scrollbar { /* Chrome, Safari and Opera */
     display: none;
   }
-  >* {
-    width: 100%;
-    border-width: 1px 0;
-    border-radius:  0;
-    font-weight: 600;
-    cursor: pointer;
-    content-visibility: auto;
-    .btn__content {
-      display: block;
-      text-overflow: ellipsis; // `text-overflow` only works on block containers;
-      overflow: hidden;
-      white-space: nowrap;
-    }
-  }
-  >*:not(.btn) {
-    padding: 5px 10px;
-    background-color: $color1;
-    text-align: center;
-    text-wrap: nowrap;
-    &:hover,
-    &:focus-visible {
-      background-color: $color3;
-    }
-    @supports not selector(:focus-visible) {
-      &:focus {
-        background-color: $color3;
-      }
-    }
-    >.bi::before {
-      position: absolute;
-      transform: translateX(-100%);
-      z-index: 10;
-    }
-  }
 }
 
-.menu-container {
-  @extend %menu-container;
+.select__content, .dropdown-menu__content {
+  @extend %menu-content;
 }
 
-.dropdown-menu.menu-container {
+.dropdown-menu__content {
   display: flex;
   flex-direction: column;
 }
 
-.select-menu.menu-container > .btn{
-  grid-template-columns: max-content 1fr max-content;
-}
-
-.menu-container.is-mobile {
+.dropdown-menu__content--mobile, .select__content--mobile {
   left: 0;
   right: 0;
   bottom: 0;
   box-shadow: none;
   > button {
     border-radius: 0;
+  }
+}
+
+.dropdown-menu__option, .select__option {
+  display: block;
+  width: 100%;
+  padding: 5px 10px;
+  border-width: 1px 0;
+  border-radius:  0;
+  overflow: hidden;
+
+  background-color: $color1;
+  font-weight: 600;
+  text-overflow: ellipsis; // `text-overflow` only works on block containers;
+  white-space: nowrap;
+  text-align: center;
+  text-wrap: nowrap;
+  cursor: pointer;
+  content-visibility: auto;
+  &:hover,
+  &:focus-visible {
+    background-color: $color3;
+  }
+  @supports not selector(:focus-visible) {
+    &:focus {
+      background-color: $color3;
+    }
+  }
+  >.bi::before {
+    position: absolute;
+    transform: translateX(-100%);
+    z-index: 10;
   }
 }

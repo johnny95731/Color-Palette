@@ -2,8 +2,8 @@
   <TheBtn
     ref="activatorRef"
     :class="[
-      'dropdown-menu activator',
-      isOpened && 'active'
+      'dropdown-menu',
+      isOpened && 'dropdown-menu--active'
     ]"
     :prepend-icon="icon ? undefined : prependIcon"
     :aria-controls="eager || isOpened ? idForMenu : undefined"
@@ -22,37 +22,36 @@
         {{ text }}
       </template>
       <OverlayContainer
+        ref="contentRef"
         :id="idForMenu"
+        class="menu"
+        type="menu"
+        :content-class="[
+          'dropdown-menu__content',
+          isMobile && 'dropdown-menu__content--mobile',
+          contentClass
+        ]"
+        :content-style="menuContainerStyle"
         hide-scrim
         :eager="eager"
-        type="menu"
         transition="slide-y"
         :esc-event="false"
         v-model="isOpened"
         @resize="nestedClosing"
       >
         <div
-          ref="containerRef"
-          :class="[
-            'dropdown-menu menu-container',
-            isMobile && 'is-mobile',
-            isOpened && 'active',
-            contentClass
-          ]"
           :tabindex="-1"
-          :style="menuContainerStyle"
           @keydown="handleKeyDown"
         >
           <slot
             name="items"
-            items="menuItems"
           >
             <button
               v-for="item in menuItems"
               :key="item.val"
+              class="dropdown-menu__option"
               :style="item.val === props.currentVal ? currentStyle : undefined"
               type="button"
-              role="menuitem"
               @click="$emit('click-item', item.val)"
             >
               <slot
@@ -141,7 +140,8 @@ const props = withDefaults(defineProps<Props>(), {
   currentStyle: CURRENT_OPTION_WEIGHT,
 });
 const activatorRef = ref<InstanceType<typeof TheBtn>>();
-const containerRef = ref<HTMLDivElement>();
+const contentRef = ref<InstanceType<typeof OverlayContainer>>();
+const contentDom = computed(() => contentRef.value?.contentRef);
 
 const activator = computed<HTMLButtonElement>(() => toValue(activatorRef)?.$el);
 
@@ -151,7 +151,7 @@ const activator = computed<HTMLButtonElement>(() => toValue(activatorRef)?.$el);
 const isContaining = (target?: Element | EventTarget | null): boolean =>
   !!(
     toValue(activator).contains(target as Node | null) ||
-    toValue(containerRef)?.contains(target as Node | null)
+    toValue(contentDom)?.contains(target as Node | null)
   );
 
 /**
@@ -160,12 +160,12 @@ const isContaining = (target?: Element | EventTarget | null): boolean =>
  */
 const getDirectChildren = (target?: Element | EventTarget | null) => {
   if (
-    !toValue(containerRef) ||
-    !toValue(containerRef)!.contains(target as Element) ||
-    toValue(containerRef) === target
+    !toValue(contentDom) ||
+    !toValue(contentDom)!.contains(target as Element) ||
+    toValue(contentDom) === target
   ) return null;
   let children = target as Element;
-  while (children.parentElement !== toValue(containerRef))
+  while (children.parentElement !== toValue(contentDom))
     children = children.parentElement as HTMLElement;
   return children;
 };
@@ -236,7 +236,7 @@ provide<MenuProvided>(MenuSymbol, {
   },
   topNonLastActivator,
   isLast(target: Element | null) {
-    const menu = toValue(containerRef) as NonNullable<typeof containerRef.value>;
+    const menu = toValue(contentDom) as NonNullable<typeof contentDom.value>;
     return menu.children[menu.children.length-1] === target;
   },
   register() {
@@ -267,8 +267,8 @@ async function nestedClosing (target?: Element | EventTarget | null) {
   if (
     !target ||
     (
-      toValue(containerRef) &&
-      !toValue(containerRef)!.contains(target as Element)
+      toValue(contentDom) &&
+      !toValue(contentDom)!.contains(target as Element)
     )
   ) {
     invertBoolean(isOpened, false);
@@ -309,7 +309,7 @@ const handleClickWindow = (e: MouseEvent) => {
   if (!isContaining(e.target)) nestedClosing(e.target);
   // Click content that is not a activator of submenu.
   else if (
-    toValue(containerRef)?.contains(e.target as Node | null) &&
+    toValue(contentDom)?.contains(e.target as Node | null) &&
     !hasPopup(getDirectChildren(e.target))
   ) {
     nestedClosing();
@@ -334,12 +334,12 @@ const handleKeyDown = async (e: KeyboardEvent) => {
       handleClickBtn();
       await nextTick();
       // Cant get ref before updated (`menu` is undefined).
-      target = toValue(containerRef)?.children[0]!;
+      target = toValue(contentDom)?.children[0]!;
     }
     else return;
   }
   // `undefined` is handled.
-  const menu = toValue(containerRef)!;
+  const menu = toValue(contentDom)!;
   // @ts-expect-error null still work (index -1)
   const nthChildFocused = [...menu.children].indexOf(document.activeElement);
   const focusingActivator = nthChildFocused === -1; // event triggered from activator.
