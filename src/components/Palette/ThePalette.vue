@@ -170,6 +170,7 @@ const handleAddCard = (idx: number) => {
  * @param idx
  */
 const handleRemoveCard = (idx: number) => {
+  if (pltState.numOfCards === 2) return;
   if (!settingsState.transition.pos) { // no transition.
     pltState.delCard(idx);
   } else {

@@ -21,7 +21,6 @@
         :is-wrap="media.isSmall"
       >
         <TheBtn
-          v-once
           icon="close"
           :style="closeIconStyle"
           aria-label="移除"
@@ -31,7 +30,6 @@
         <TheBtn
           v-memo="[card.isLock]"
           :icon="isLock.icon"
-          :style="closeIconStyle"
           :aria-label="isLock.label"
           :ripple="false"
           @click="pltState.setIsLock(cardIdx)"
