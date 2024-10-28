@@ -142,7 +142,7 @@ const props = withDefaults(defineProps<Props>(), {
 const activatorRef = ref<InstanceType<typeof TheBtn>>();
 const contentRef = ref<HTMLDivElement>();
 
-const activator = computed<HTMLButtonElement>(() => toValue(activatorRef)?.$el);
+const activator = computed(() => toValue(activatorRef)?.$el!);
 
 /**
  * Target is containing in this instance.
