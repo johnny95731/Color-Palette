@@ -71,7 +71,11 @@ $transDuration: 120ms;
   right: 0;
   bottom: 0;
   box-shadow: none;
-  > button {
+  > div {
+    height: 100%;
+  }
+  .dropdown-menu__option {
+    display: flex;
     border-radius: 0;
   }
 }

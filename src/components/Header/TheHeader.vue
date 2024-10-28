@@ -1,5 +1,5 @@
 <template>
-  <DefineHeaderBtns>
+  <DefineHeaderBtns v-slot="{ css }">
     <!-- Left side -->
     <TheTooltip
       text="刷新"
@@ -7,9 +7,13 @@
       <template #activator="{props}">
         <TheBtn
           v-bind="props"
-          :class="$style.btn"
+          :class="[
+            css,
+            $style.btn
+          ]"
           prepend-icon="refresh"
           aria-label="刷新調色盤"
+          :text="isSmall ? '刷新' : undefined"
           @click="pltState.refreshCard(-1)"
         />
       </template>
@@ -20,10 +24,13 @@
       <template #activator="{props}">
         <TheBtn
           v-bind="props"
-          :class="$style.btn"
+          :class="[
+            css,
+            $style.btn
+          ]"
           :prepend-icon="isRunning ? 'pause' : 'play'"
           :aria-label="isRunning ? '暫停' : '播放'"
-          :text="isSmall ? 'Slides' : undefined"
+          :text="isSmall ? isRunning ? '暫停' : '播放' : undefined"
           @click="haldleClickSlides"
         />
       </template>
@@ -31,8 +38,12 @@
     <DropdownMenu
       ref="sortingRef"
       prepend-icon="sort"
-      :class="$style.btn"
+      :class="[
+        css,
+        $style.btn
+      ]"
       aria-label="排序"
+      :text="isSmall ? '排序' : undefined"
       :contents="sortingMenuItems"
       :current-val="pltState.sortBy"
       @click-item="pltState.sortCards($event as SortActionType)"
@@ -44,8 +55,12 @@
     <DropdownMenu
       ref="mixingRef"
       prepend-icon="mix"
-      :class="$style.btn"
+      :class="[
+        css,
+        $style.btn
+      ]"
       aria-label="混色"
+      :text="isSmall ? '混色' : undefined"
       :contents="MIXING_MODES"
       :current-val="pltState.mixMode"
       @click-item="pltState.setBlendMode($event as MixingType)"
@@ -57,8 +72,12 @@
     <DropdownMenu
       ref="spacegRef"
       prepend-icon="edit"
-      :class="$style.btn"
+      :class="[
+        css,
+        $style.btn
+      ]"
       aria-label="色彩空間"
+      :text="isSmall ? '色彩空間' : undefined"
       letterCase="all-caps"
       :contents="COLOR_SPACES"
       :current-val="pltState.colorSpace"
@@ -75,8 +94,13 @@
     <!-- Right side -->
     <TheBtn
       ref="harmonyGenRef"
-      :class="$style.btn"
+      :class="[
+        css,
+        $style.btn
+      ]"
       prepend-icon="palette"
+      aria-label="調和調色盤"
+      :text="isSmall ? '調和調色盤' : undefined"
       @click="$emit('show-gen')"
     />
     <TheTooltip
@@ -85,9 +109,13 @@
     />
     <TheBtn
       ref="bookmarksRef"
-      :class="$style.btn"
+      :class="[
+        css,
+        $style.btn
+      ]"
       prepend-icon="bookmarks"
       aria-label="書籤"
+      :text="isSmall ? '書籤' : undefined"
       aria-haspopup="dialog"
       @click="$emit('show-fav')"
     />
@@ -97,9 +125,13 @@
     />
     <TheBtn
       ref="settingsRef"
-      :class="$style.btn"
+      :class="[
+        css,
+        $style.btn
+      ]"
       prepend-icon="setting"
       aria-label="設定"
+      :text="isSmall ? '設定' : undefined"
       aria-haspopup="dialog"
       @click="$emit('show-settings')"
     />
@@ -186,7 +218,7 @@
     </div>
     <DropdownMenu
       v-else
-      :titleClass="$style.menubarTitle"
+      :class="$style.menubarTitle"
       :contentClass="$style.menubar"
       icon="list"
       :isMobile="true"
@@ -194,7 +226,7 @@
       aria-label="選單"
     >
       <template #items>
-        <HeaderBtns />
+        <HeaderBtns css="dropdown-menu__option" />
       </template>
     </DropdownMenu>
   </header>
@@ -222,7 +254,7 @@ import type { ColorSpacesType, SortActionType } from 'types/colors';
 import type { MixingType } from 'types/mixing';
 
 // const btnsRef = ref<InstanceType<typeof HeaderBtns>>();
-const [DefineHeaderBtns, HeaderBtns] = createReusableTemplate();
+const [DefineHeaderBtns, HeaderBtns] = createReusableTemplate<{css?: string}>();
 
 defineEmits<{
   (e: 'show-gen'): void,

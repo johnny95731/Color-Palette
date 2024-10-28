@@ -31,17 +31,17 @@
 
 .menubarTitle:not(#id) {
   margin: 0;
+  gap: 0;
   padding: 4px;
-  font-size: $font-x-lg;
+  :global(.bi) {
+    font-size: $font-x-lg;
+  }
 }
 
 .menubar {
   flex: 1 0 auto;
   display: flex;
   gap: 4px;
-  @include small {
-    flex-direction: column;
-  }
 }
 
 .btn {

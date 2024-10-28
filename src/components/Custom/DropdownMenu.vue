@@ -275,7 +275,6 @@ async function nestedClosing (target?: Element | EventTarget | null) {
     await nextTick();
     parent?.nestedClosing(target);
   }
-  console.log('nesting', !!parent);
 }
 
 const { rect: activatorRect } = useElementBounding(activator);
@@ -290,9 +289,8 @@ const menuContainerStyle = computed<CSSProperties>(() => {
   };
 });
 
-const resizeCallback =  () => nestedClosing();
+const resizeCallback = () => nestedClosing();
 watch(isOpened, (newVal) => {
-  console.log('watch', !!parent, newVal);
   if (!newVal) {
     parent?.unregister();
     removeEventListener('click', handleClickWindow, true);
@@ -305,11 +303,11 @@ watch(isOpened, (newVal) => {
 });
 
 const handleClickWindow = (e: MouseEvent) => {
-  console.log('handleClickWindow', !!parent, getDirectChildren(e.target), !hasPopup(getDirectChildren(e.target)));
   // Click outside
   if (!isContaining(e.target)) nestedClosing(e.target);
   // Click content that is not a activator of submenu.
   else if (
+    toValue(contentRef) !== e.target && // not content itself
     toValue(contentRef)?.contains(e.target as Node | null) &&
     !hasPopup(getDirectChildren(e.target))
   ) {
@@ -320,7 +318,6 @@ const handleClickWindow = (e: MouseEvent) => {
 
 // When menu is nested, the parent should not close before submenu is closing.
 const handleClickBtn = () => {
-  console.log('handleClickBtn', !!parent);
   !toValue(openedChild) && invertBoolean(isOpened);
 };
 
