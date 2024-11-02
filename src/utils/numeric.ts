@@ -112,6 +112,41 @@ export const rangeMapping = (
   return isNullish(digit) ? newVal : round(newVal, digit);
 };
 
+/** Degree to radian. */
+export const deg2rad = (deg: number) => {
+  return deg / 180 * Math.PI;
+};
+/** Radian to degree. */
+export const rad2deg = (deg: number) => {
+  return deg / Math.PI * 180;
+};
+
+/** A variant of Math.atan2 function. Return degree instead of radian. */
+export const atan2Deg = (y: number, x: number) =>
+  mod(rad2deg(Math.atan2(y,x)), 360);
+
+/** Polar coordinate to Cartesian coordinate */
+export const cartesian2polar = (y: number, x: number, digit?: number) => {
+  let deg = atan2Deg(y, x),
+    radius = Math.sqrt(x**2 + y**2);
+  if (!isNullish(digit)) {
+    deg = round(deg, digit);
+    radius = round(radius, digit);
+  }
+  return { deg, radius };
+};
+
+/** Polar coordinate to Cartesian coordinate */
+export const polar2cartesian = (r: number, deg: number, digit?: number) => {
+  let x = r * Math.cos(deg2rad(deg)),
+    y = r * Math.sin(deg2rad(deg));
+  if (!isNullish(digit)) {
+    x = round(x, digit);
+    y = round(y, digit);
+  }
+  return { x, y };
+};
+
 /**
  * Dot product of two arrays.
  */

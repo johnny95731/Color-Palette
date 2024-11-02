@@ -1,7 +1,7 @@
-import { computed, ref, toValue, watch } from 'vue';
+import { computed, ref, toValue, unref, watch } from 'vue';
 import { useEventListener } from '@vueuse/core';
 import { clip, rangeMapping } from '@/utils/numeric';
-import type { MaybeRefOrGetter } from 'vue';
+import type { MaybeRef, MaybeRefOrGetter } from 'vue';
 import type { Position } from '@vueuse/core';
 
 // A Modified of vueuse/useDraggable
@@ -53,17 +53,17 @@ export interface UseDraggableOptions {
   /**
    * Callback when the dragging starts. Return `false` to prevent dragging.
    */
-  onStart?: (position: Position, event: PointerEvent) => void | false
+  onStart?: MaybeRef<(position: Position, event: PointerEvent) => void | false>
 
   /**
    * Callback during dragging.
    */
-  onMove?: (position: Position, event: PointerEvent) => void
+  onMove?: MaybeRef<(position: Position, event: PointerEvent) => void>
 
   /**
    * Callback when dragging end.
    */
-  onEnd?: (position: Position, event: PointerEvent) => void
+  onEnd?: MaybeRef<(position: Position, event: PointerEvent) => void>
 
   /**
    * Axis to drag on.
@@ -155,7 +155,7 @@ export const useDragableElement = (
   function start(e: PointerEvent) {
     if (e.button !== 0) return;
     const pos = calcPos(e);
-    if (onStart?.(pos, e) === false)
+    if (unref(onStart)?.(pos, e) === false)
       return;
     isDragging_.value = true;
     cleanups.push(
@@ -171,13 +171,13 @@ export const useDragableElement = (
 
     const pos = calcPos(e);
     position.value = pos;
-    onMove?.(pos, e);
+    unref(onMove)?.(pos, e);
     handleEvent(e);
   }
   function end(e: PointerEvent) {
     isDragging_.value = false;
     cleanups.forEach(fn => fn());
-    onEnd?.(position.value, e);
+    unref(onEnd)?.(position.value, e);
     handleEvent(e);
   }
 

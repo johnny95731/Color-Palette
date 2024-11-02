@@ -21,14 +21,21 @@
     <div :class="$style.content">
       <div :class="$style.palette">
         <div
-          v-for="(hex) in palette"
-          :key="hex"
+          v-for="(hex, i) in palette"
+          :key="i"
           :style="{
             background: hex
           }"
         />
       </div>
-      <ColorPicker v-model:hsb="currentColor" />
+      <ColorPicker
+        :variant="colorPickerVariant"
+        v-model="currentColor"
+      />
+      <SelectMenu
+        :options="['rect', 'rounded', 'wheel']"
+        v-model="colorPickerVariant"
+      />
       <SelectMenu
         :options="HARMONY_METHODS"
         v-model:index="harmonyArgs.method"
@@ -50,20 +57,20 @@
         >
       </div>
       <div class="spacer" />
-      <div
-        :class="$style.buttons"
+    </div>
+    <div
+      :class="$style.buttons"
+    >
+      <TheBtn
+        @click="preview"
       >
-        <TheBtn
-          @click="preview"
-        >
-          預覽
-        </TheBtn>
-        <TheBtn
-          @click="comfirm"
-        >
-          確定
-        </TheBtn>
-      </div>
+        預覽
+      </TheBtn>
+      <TheBtn
+        @click="comfirm"
+      >
+        確定
+      </TheBtn>
     </div>
   </OverlayContainer>
 </template>
@@ -104,7 +111,7 @@ watch(isShowing, () => {
     pltState.setPlt(toValue(originalPalette)); // restore palette from `originalPalette`
 }, { immediate: true });
 
-const currentColor = ref<number[]>([0, HSB_MAX[1]*0.85, HSB_MAX[2]*0.85]); // hsb color
+const currentColor = ref<number[]>([0, HSB_MAX[1], HSB_MAX[2]]); // hsb color
 const harmonyArgs = reactive<{
   method: number,
   num: number,
@@ -118,6 +125,8 @@ const palette = computed<string[]>(() => {
   return generator([...toValue(currentColor)], harmonyArgs.num)
     .map(hsb => rgb2hex(hsb2rgb(hsb)));
 });
+
+const colorPickerVariant = ref<InstanceType<typeof ColorPicker>['$props']['variant']>('wheel');
 
 /**
  * Preview the palette (will restore when dialog is closed).
@@ -142,19 +151,21 @@ const comfirm = () => {
   // shape
   height: 450px;
   max-height: 100dvh;
-  width: 100%;
-  max-width: 320px;
+  width: fit-content;
   border-radius: $radius-lg;
-  background-color: $color5;
+  background-color: $color1;
   overflow: hidden;
 }
 
 .header {
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
   justify-content: space-between;
   height: 34px;
   width: 100%;
+  overflow: auto;
+  background-color: $color5;
   >h2 {
     // shape
     padding: 0px 10px 0px;
@@ -176,9 +187,9 @@ const comfirm = () => {
   flex: 1 1;
   display: flex;
   flex-direction: column;
+  gap: 4px;
   align-items: center;
-  padding: 8px 16px 16px;
-  background-color: $color1;
+  padding: 8px 16px 0;
 }
 
 .palette {
@@ -191,7 +202,7 @@ const comfirm = () => {
     aspect-ratio: 1;
     border-radius: 50%;
   }
-  div + div {
+  * + * {
     margin-left: 4px;
   }
 }
@@ -208,9 +219,11 @@ const comfirm = () => {
 }
 
 .buttons {
-  align-self: flex-end;
+  flex: 0 0 auto;
   display: flex;
+  justify-content: end;
   gap: 8px;
-  margin-right: 4px;
+  width: 100%;
+  padding: 8px 16px 12px;
 }
 </style>

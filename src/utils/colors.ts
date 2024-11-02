@@ -44,7 +44,7 @@ export const getNamedColorRgb = (name: string): number[] => {
   return hex2rgb(NamedColor[name as keyof typeof NamedColor] ?? 'fff');
 };
 
-// #Transformations
+// # Transformations
 // ## Helpers
 /**
  * Convert sRGB to linear RGB.
@@ -407,6 +407,14 @@ export const hex2rgb = (hex: string): number[] => {
     hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
   const num = parseInt(hex, 16);
   return [num >> 16, (num >> 8) & 255, num & 255];
+};
+
+export const hsb2hex = (hsb: number[]) => {
+  return rgb2hex(hsb2rgb(hsb));
+};
+
+export const hex2hsb = (hex: string) => {
+  return rgb2hsb(hex2rgb(hex));
 };
 
 /**

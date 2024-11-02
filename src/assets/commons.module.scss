@@ -1,3 +1,5 @@
+@use 'sass:math';
+
 // Small vieport
 $view-sm: 900px;
 
@@ -53,6 +55,11 @@ $view-sm: 900px;
   @media only screen and (max-width: 451px) {
     @content;
   }
+}
+
+@function round($num, $digit: 0) {
+  $multipler: math.pow(10, $digit);
+  @return math.div(math.round($num * $multipler), $multipler)
 }
 
 // Font weighht

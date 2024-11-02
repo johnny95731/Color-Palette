@@ -3,19 +3,20 @@ import { randomCharacter } from './helpers';
 import type { EventHandler } from '@/types/browser';
 
 
-export function getPropertyValue(el: HTMLElement, property: string): number;
-export function getPropertyValue(el: string): number;
+export function getPropertyValue(el: HTMLElement | null | undefined, property: string): number;
+export function getPropertyValue(property: string): number;
 export function getPropertyValue(
-  el: HTMLElement | string,
+  el: HTMLElement | string | null | undefined,
   property?: string
 ) {
   if (typeof el === 'string') {
     property = el;
     el = document.documentElement;
   }
-  const num = +getComputedStyle(el)
+  if (!el) el = document.documentElement;
+  const num = +getComputedStyle(el!)
     .getPropertyValue(property ?? 'width' as string)
-    .replace(/(px)|%|(rem)/g, '');
+    .replace(/[^0-9]/g, '');
   return Number.isNaN(num) ? 0 : num;
 
 }
