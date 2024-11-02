@@ -94,18 +94,26 @@ const handleKeydown = (e: KeyboardEvent) => {
   }
 };
 
-const clickOutside = (e: MouseEvent) => {
-  if (
-    // toValue(contentRef) && !toValue(contentRef)!.contains(e.target)
-    // .contains() can not avoid closing when clicking tooltips
+const { mousedown_, clickOutside_ } = (() => {
+  const isClickOutside = (e: PointerEvent | MouseEvent) => (
     !(
       rect.top <= e.clientY && e.clientY <= rect.bottom &&
-      rect.left <= e.clientX && e.clientX <= rect.right
+    rect.left <= e.clientX && e.clientX <= rect.right
     )
-  ) {
-    model.value = false;
-  }
-};
+  );
+  let pointerdownOutside: boolean = false;
+  return {
+    mousedown_: (e: PointerEvent) => {
+      pointerdownOutside = isClickOutside(e);
+    },
+    clickOutside_: (e: MouseEvent) => {
+      if (pointerdownOutside && isClickOutside(e)) {
+        model.value = false;
+      }
+      pointerdownOutside = false;
+    },
+  };
+})();
 
 // Control show and hide
 const model = defineModel<boolean>() as ModelRef<boolean>;
@@ -115,16 +123,19 @@ const isActive = ref(false);
 
 // Events when dom show/hide.
 const handleAfterEnter = () => {
-  if (props.type !== 'menu')
-    addEventListener('click', clickOutside);
+  if (props.type !== 'menu') {
+    addEventListener('pointerdown', mousedown_, true);
+    addEventListener('click', clickOutside_, true);
+  }
   if (props.escEvent)
     addEventListener('keydown', handleKeydown);
   emit('transitionEnd');
 };
 const handleAfterLeave = () => {
   isActive.value = false;
-  removeEventListener('click', clickOutside);
-  removeEventListener('keydown', handleKeydown);
+  removeEventListener('pointerdown', mousedown_, true);
+  removeEventListener('click', clickOutside_, true);
+  removeEventListener('keydown', handleKeydown, true);
   emit('transitionEnd');
 };
 
