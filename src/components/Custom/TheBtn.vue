@@ -53,15 +53,13 @@
 
 <script setup lang="ts">
 import TheIcon from '@/components/Custom/TheIcon.vue';
-// Types
-import type { IconType } from '@/utils/icons';
 
 type Props = {
   text?: string,
   variant?: 'std' | 'flat',
-  icon?: IconType,
-  prependIcon?: IconType,
-  appendIcon?: IconType,
+  icon?: string,
+  prependIcon?: string,
+  appendIcon?: string,
   ripple?: boolean
 }
 withDefaults(defineProps<Props>(), {

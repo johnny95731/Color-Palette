@@ -91,7 +91,7 @@ import { mod } from '@/utils/numeric';
 import { noModifierKey, shiftOnly, hasPopup } from '@/utils/browser';
 import { useElementBounding } from '@/composables/useElementBounding';
 // constants
-import { CURRENT_OPTION_WEIGHT, MenuSymbol } from '@/constants/browser';
+import { CURRENT_OPTION_WEIGHT, menuSymbol } from '@/constants/browser';
 // Types
 import type { CSSProperties, ModelRef } from 'vue';
 import type { IconType } from '@/utils/icons';
@@ -228,8 +228,8 @@ type MenuProvided = {
   unregister: () => void,
   nestedClosing: (target?: Element | EventTarget | null) => void,
 }
-const parent = inject<MenuProvided | null>(MenuSymbol, null);
-provide<MenuProvided>(MenuSymbol, {
+const parent = inject<MenuProvided | null>(menuSymbol, null);
+provide<MenuProvided>(menuSymbol, {
   topActivator() {
     return parent?.topActivator() ?? toValue(activator) as HTMLButtonElement;
   },

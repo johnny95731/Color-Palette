@@ -46,12 +46,12 @@
 </template>
 
 <script setup lang="ts">
-import { ModelRef, onMounted, ref, watch } from 'vue';
-import { toValue } from '@vueuse/core';
+import { inject, ModelRef, onMounted, provide, ref, unref, watch } from 'vue';
 import { invertBoolean } from '@/utils/helpers';
 import type { CSSProperties } from 'vue';
 import type { VueClass } from 'types/browser';
 import { useElementBounding } from '@/composables/useElementBounding';
+import { overlaySymbol } from '@/constants/browser';
 
 type Props = {
   /**
@@ -89,7 +89,7 @@ const emit = defineEmits<{
 }>();
 
 const handleKeydown = (e: KeyboardEvent) => {
-  if (toValue(model) && e.key === 'Escape') {
+  if (unref(model) && e.key === 'Escape') {
     invertBoolean(model, false);
   }
 };
@@ -107,7 +107,7 @@ const { mousedown_, clickOutside_ } = (() => {
       pointerdownOutside = isClickOutside(e);
     },
     clickOutside_: (e: MouseEvent) => {
-      if (pointerdownOutside && isClickOutside(e)) {
+      if (pointerdownOutside && isClickOutside(e) && !unref(openedChild)) {
         model.value = false;
       }
       pointerdownOutside = false;
@@ -120,6 +120,30 @@ const model = defineModel<boolean>() as ModelRef<boolean>;
 // Container can not be closed before content transition end.
 // Need another state to delay closing container.
 const isActive = ref(false);
+/** Has opened child. */
+const openedChild = ref(0);
+
+type OverlayProvided = {
+  /**
+   * A submenu is opened.
+   */
+  register: () => void,
+  /**
+   * A submenu is closed.
+   */
+  unregister: () => void,
+};
+
+provide<OverlayProvided>(overlaySymbol, {
+  register() {
+    openedChild.value++;
+  },
+  unregister() {
+    openedChild.value--;
+  },
+});
+const parent = inject<OverlayProvided | null>(overlaySymbol, null);
+
 
 // Events when dom show/hide.
 const handleAfterEnter = () => {
@@ -140,14 +164,19 @@ const handleAfterLeave = () => {
 };
 
 watch(model, (newVal) => {
-  if (newVal) { // Open dialog when model is true
+  if (newVal) {
     isActive.value = true;
+    parent?.register();
+  } else {
+    parent?.unregister();
   }
 }, { flush: 'post' });
-onMounted(() => {
-  if (model.value) isActive.value = true;
-});
 // flush: 'post' to maker container updated first when eager is false
+onMounted(() => {
+  // Trigger transition is dialog is open
+  isActive.value = model.value;
+});
+
 
 defineOptions({
   inheritAttrs: false
@@ -167,7 +196,8 @@ defineExpose({
   display: flex;
   z-index: 999;
   pointer-events: none;
-  > .overlay__content {
+  &__content {
+    box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.35);
     pointer-events: auto;
     z-index: 1;
   }

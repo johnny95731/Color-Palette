@@ -26,4 +26,6 @@ const iconMap = {
 } as const;
 
 export type IconType = keyof typeof iconMap;
-export const getIcon = (icon: IconType) => `bi bi-${iconMap[icon]}`;
+export const getIcon = (icon: string) =>
+  // @ts-expect-error
+  `bi bi-${iconMap[icon] ? iconMap[icon] : icon}`;

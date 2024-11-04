@@ -1,10 +1,15 @@
 <template>
-  <div
+  <OverlayContainer
     ref="containerRef"
-    :class="[
+    role="dialog"
+    :eager="true"
+    transition="slide-y"
+    transparent
+    :content-class="[
       'color-picker',
       `color-picker--${variant}`
     ]"
+    v-model="modelShow"
   >
     <div
       class="color-picker__pickers"
@@ -55,25 +60,49 @@
       </div>
     </div>
     <div class="color-picker__edits">
+      <div
+        class="color-picker__preview"
+        :style="{background: hexColor}"
+      />
       <label
-        v-for="([key, label], i) in [
-          ['hue', '色調'], ['sat', '彩度'], ['bri', '亮度']]"
-        :key="key"
-        v-memo="[currentColor[i]]"
+        class="color-picker__hex-input"
       >
-        {{ label }}
+        Hex
         <input
-          :name="`color-piker-${key}`"
-          type="number"
-          inputmode="decimal"
-          min="0"
-          :max="HSB_MAX[i]"
-          step="any"
-          v-model.lazy="currentColor[i]"
+          :name="`color-piker-hex`"
+          maxlength="7"
+          size="7"
+          v-model.lazy="hexColor"
         >
       </label>
+      <div class="color-picker__hsb-inputs">
+        <label
+          v-for="([key, label], i) in [
+            ['hue', '色調'], ['sat', '彩度'], ['bri', '亮度']]"
+          :key="key"
+          v-memo="[currentColor[i]]"
+        >
+          {{ label }}
+          <input
+            :name="`color-piker-${key}`"
+            type="number"
+            inputmode="decimal"
+            min="0"
+            :max="HSB_MAX[i]"
+            step="any"
+            v-model.lazy="currentColor[i]"
+          >
+        </label>
+      </div>
+      <div class="color-picker__variants">
+        樣式
+        <SelectMenu
+          :options="['rect', 'rounded', 'wheel']"
+          v-model="variant"
+        />
+      </div>
     </div>
-  </div>
+  </OverlayContainer>
 </template>
 
 <script setup lang="ts">
@@ -89,16 +118,16 @@ import { COLOR_PICKER_CANVAS_SIZE } from '@/constants/browser';
 // Types
 import type { MaybeRef, ModelRef } from 'vue';
 import type { Position } from '@vueuse/core';
+import OverlayContainer from './OverlayContainer.vue';
+import SelectMenu from './SelectMenu.vue';
 
-type Props = {
-  variant?: 'rect' | 'rounded' | 'wheel'
-}
-const props = withDefaults(defineProps<Props>(), {
-  variant: 'wheel'
-});
+
+const modelShow = defineModel<boolean>('show', { default: false });
+
+const variant = ref<'rect' | 'rounded' | 'wheel'>('wheel');
 
 // DOM refs
-const containerRef = ref<HTMLDivElement>();
+const containerRef = ref<InstanceType<typeof OverlayContainer>>();
 const canvasPickerRef = ref<HTMLCanvasElement>();
 const secondPickerRef = ref<HTMLDivElement>();
 
@@ -106,18 +135,18 @@ const secondPickerRef = ref<HTMLDivElement>();
 /** wheel width/2 in percentage */
 const wheelHalfWidth = ref(0);
 const updateWheelHalfWidth = () => {
-  if (props.variant === 'wheel' && canvasPickerRef.value) {
+  if (unref(variant) === 'wheel' && canvasPickerRef.value) {
     wheelHalfWidth.value = toPercent(
-      getPropertyValue(containerRef.value, '--wheel-width') / (COLOR_PICKER_CANVAS_SIZE * 2),
+      getPropertyValue(containerRef.value?.contentRef, '--wheel-width') / (COLOR_PICKER_CANVAS_SIZE * 2),
       2
     );
   } else
     wheelHalfWidth.value = 0;
 };
 
-watch(() => props.variant, () => updateWheelHalfWidth(), { flush: 'post' });
+watch(variant, () => updateWheelHalfWidth(), { flush: 'post' });
 onMounted(() => {
-  containerRef.value!.style
+  containerRef.value!.contentRef!.style
     .setProperty('--canvas-size', `${COLOR_PICKER_CANVAS_SIZE}px`);
   updateWheelHalfWidth();
 });
@@ -171,7 +200,7 @@ const secondPickerStyle = computed(() => ({
 const secondThumbStyle = ref<Partial<ColorThumbStyle>>({});
 
 const updaters = computed(() => {
-  if (props.variant === 'rect')
+  if (unref(variant) === 'rect')
     return {
       canvas_: (pos: Position) => {
         currentColor[1] = rangeMapping(pos.x, 0, 100, 0, HSB_MAX[1], 2);
@@ -190,7 +219,7 @@ const updaters = computed(() => {
         background: pureColor.value,
       })
     };
-  else if (props.variant === 'rounded')
+  else if (unref(variant) === 'rounded')
     return {
       canvas_: (pos: Position) => {
         const { deg, radius } = cartesian2polar(
@@ -294,7 +323,7 @@ const fillStyle = (
 
 const repainCanvas = computed(() => {
   const ctx = canvasPickerRef.value?.getContext('2d')!;
-  if (props.variant === 'rect')
+  if (unref(variant) === 'rect')
     return () => {
       clearCanvas();
       // fill base color
@@ -305,7 +334,7 @@ const repainCanvas = computed(() => {
       // -brightness
       fillStyle(canvasGrads.black_!);
     };
-  else if (props.variant === 'rounded')
+  else if (unref(variant) === 'rounded')
     return () => {
       clearCanvas();
       // Hue gradient
@@ -338,7 +367,7 @@ const updateColorPicker = () => {
   repainCanvas.value?.();
 };
 watch(
-  () => [props.variant, currentColor],
+  () => [unref(variant), currentColor],
   updateColorPicker,
   { deep: true, flush: 'post' }
 );
@@ -406,10 +435,11 @@ $wheel-width: $thumb-diam + 4px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
-  width: calc(var(--canvas-size) + #{$extra-width});
-  padding: 12px 16px;
-  border-radius: 10px;
+  width: calc(var(--canvas-size) + 32px);
+  border-radius: $radius-lg;
+  padding: 8px 16px 20px;
+  background: $color1;
+  overflow: hidden;
   &__pickers {
     position: relative;
   }
@@ -430,6 +460,7 @@ $wheel-width: $thumb-diam + 4px;
     position: relative;
     user-select: none;
     touch-action: none;
+    line-height: 0;
     cursor: pointer;
     canvas {
       border-radius: 8px;
@@ -443,18 +474,49 @@ $wheel-width: $thumb-diam + 4px;
   }
   $input-bg: #ddd;
   &__edits {
-    display: flex;
-    gap: 8px;
+    display: grid;
+    grid-template-rows: 30px;
+    grid-template-columns: 40px 1fr;
+    row-gap: 8px;
+    align-items: center;
     width: 100%;
     padding: 0 8px;
     input {
-      width: 100%;
       padding: 2px 0 2px 8px;
       margin-top: 4px;
       border-radius: 6px;
       background: $input-bg;
     }
   }
+  &__preview {
+    grid-row: 1;
+    grid-column: 1;
+    height: 30px;
+    aspect-ratio: 1;
+    border-radius: $radius-sm;
+  }
+  &__hex-input {
+    grid-row: 1;
+    grid-column: 2;
+    display: inline-block;
+    width: 100%;
+    input {
+      margin-left: 4px;
+    }
+  }
+  &__hsb-inputs {
+    grid-column: 1 / 3;
+    display: flex;
+    gap: 8px;
+    input {
+      width: 100%;
+      margin-top: 4px;
+    }
+  }
+  &__variants {
+    grid-column: 1 / 3;
+  }
+
 
   &--rounded, &--wheel {
     #{$root}__canvas {
@@ -466,6 +528,7 @@ $wheel-width: $thumb-diam + 4px;
 
   &--wheel {
     --wheel-width: #{$wheel-width};
+    gap: 31px;
     #{$root}__mask {
       inset: $wheel-width;
       border-radius: 50%;

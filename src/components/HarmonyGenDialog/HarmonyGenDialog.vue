@@ -14,32 +14,48 @@
       <h2>調和調色盤</h2>
       <TheBtn
         icon="close"
-        aria-label="close"
+        aria-label="關閉"
         @click="isShowing = false"
       />
     </header>
-    <div :class="$style.content">
-      <div :class="$style.palette">
-        <div
+    <div
+      :class="$style.content"
+    >
+      <div
+        v-memo="palette"
+        :class="$style.palette"
+      >
+        <TheBtn
           v-for="(hex, i) in palette"
           :key="i"
           :style="{
             background: hex
           }"
+          :ripple="false"
+          @click="copyHex(i)"
         />
       </div>
+      <TheBtn
+        v-memo="[palette[0]]"
+        :style="{
+          color: rgb2gray(hex2rgb(palette[0])) > 127 ? '#000' : '#FFF',
+          background: palette[0],
+        }"
+        prepend-icon="eyedropper"
+        text="開啟color picker"
+        @click="showColorPicker = !showColorPicker"
+      />
       <ColorPicker
-        :variant="colorPickerVariant"
         v-model="currentColor"
+        v-model:show="showColorPicker"
       />
-      <SelectMenu
-        :options="['rect', 'rounded', 'wheel']"
-        v-model="colorPickerVariant"
-      />
-      <SelectMenu
-        :options="HARMONY_METHODS"
-        v-model:index="harmonyArgs.method"
-      />
+      <div>
+        調和方法
+        <SelectMenu
+          :options="HARMONY_METHODS"
+          v-model:index="harmonyArgs.method"
+        />
+      </div>
       <!-- shades, tints, and tones. -->
       <div
         v-if="1 <= harmonyArgs.method && harmonyArgs.method <= 3"
@@ -56,28 +72,33 @@
           v-model.lazy.number="harmonyArgs.num"
         >
       </div>
-      <div class="spacer" />
-    </div>
-    <div
-      :class="$style.buttons"
-    >
-      <TheBtn
-        @click="preview"
+      <div
+        v-once
+        class="spacer"
+      />
+      <div
+        :class="$style.buttons"
       >
-        預覽
-      </TheBtn>
-      <TheBtn
-        @click="comfirm"
-      >
-        確定
-      </TheBtn>
+        <label>
+          <input
+            type="checkbox"
+            name="preview"
+            v-model="isPreview"
+          >
+          預覽
+        </label>
+        <TheBtn
+          v-once
+          @click="comfirm"
+          text="確定"
+        />
+      </div>
     </div>
   </OverlayContainer>
 </template>
 
 <script setup lang="ts">
-import { computed, reactive, ref, watch } from 'vue';
-import { toValue } from '@vueuse/core';
+import { computed, reactive, ref, watch, unref, watchEffect } from 'vue';
 // components
 import SelectMenu from '../Custom/SelectMenu.vue';
 import ColorPicker from '../Custom/ColorPicker.vue';
@@ -85,16 +106,20 @@ import OverlayContainer from '../Custom/OverlayContainer.vue';
 import TheBtn from '../Custom/TheBtn.vue';
 // utils and constants
 import { HARMONY_METHODS, HSB_MAX } from '@/constants/colors';
-import { getHarmonize, hsb2rgb, rgb2hex } from '@/utils/colors';
+import { getHarmonize, hex2rgb, hsb2rgb, rgb2gray, rgb2hex } from '@/utils/colors';
 import { invertBoolean } from '@/utils/helpers';
 import { MAX_NUM_OF_CARDS, MIN_NUM_OF_CARDS } from '@/constants/pltStore';
 // stores
 import usePltStore from '@/features/stores/usePltStore';
 // types
 import type{ ModelRef } from 'vue';
+import { copyText } from '@/utils/browser';
 
 const isShowing = defineModel<boolean>() as ModelRef<boolean>;
 
+const showColorPicker = ref(false);
+
+// palette and color picker
 const pltState = usePltStore();
 const originalPalette = ref<number[][]>([[]]);
 /**
@@ -105,10 +130,10 @@ const saveOrininal = () => {
   originalPalette.value = pltState.cards.map(card => card.color);
 };
 watch(isShowing, () => {
-  if (toValue(isShowing))
+  if (unref(isShowing))
     saveOrininal();
   else
-    pltState.setPlt(toValue(originalPalette)); // restore palette from `originalPalette`
+    pltState.setPlt(unref(originalPalette)); // restore palette from `originalPalette`
 }, { immediate: true });
 
 const currentColor = ref<number[]>([0, HSB_MAX[1], HSB_MAX[2]]); // hsb color
@@ -122,16 +147,24 @@ const harmonyArgs = reactive<{
 
 const palette = computed<string[]>(() => {
   const generator = getHarmonize(HARMONY_METHODS[harmonyArgs.method]);
-  return generator([...toValue(currentColor)], harmonyArgs.num)
+  return generator([...unref(currentColor)], harmonyArgs.num)
     .map(hsb => rgb2hex(hsb2rgb(hsb)));
 });
 
-const colorPickerVariant = ref<InstanceType<typeof ColorPicker>['$props']['variant']>('wheel');
+const copyHex = (idx: number) => {
+  copyText(unref(palette)[idx]);
+};
 
+const isPreview = ref(true);
 /**
  * Preview the palette (will restore when dialog is closed).
  */
-const preview = () => pltState.setPlt(toValue(palette));
+const preview = () => {
+  pltState.setPlt(
+    unref(isPreview) ? unref(palette) : unref(originalPalette)
+  );
+};
+watchEffect(preview);
 /** Overwrite current palette and close. (will not restore when dialog is closed) */
 const comfirm = () => {
   preview();
@@ -149,9 +182,8 @@ const comfirm = () => {
   display: flex;
   flex-direction: column;
   // shape
-  height: 450px;
+  height: 340px;
   max-height: 100dvh;
-  width: fit-content;
   border-radius: $radius-lg;
   background-color: $color1;
   overflow: hidden;
@@ -184,23 +216,29 @@ const comfirm = () => {
 }
 
 .content {
-  flex: 1 1;
+  flex: 1 1 0;
+  height: 0;
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  align-items: center;
-  padding: 8px 16px 0;
+  padding: 8px 12px;
+  > *:not([class]) > * {
+    margin-top: 8px;
+  }
+  > * + * {
+    margin-top: 16px;
+  }
 }
 
 .palette {
   height: 30px;
-  width: max-content;
-  overflow: hidden;
-  div {
+  min-width: 228px; // 25px (width) * 8 + 4px (margin) * 7 = 200+28
+  text-align: center;
+  :global(.btn) {
     display: inline-block;
-    height: 100%;
+    height: 25px;
     aspect-ratio: 1;
     border-radius: 50%;
+    cursor: pointer;
   }
   * + * {
     margin-left: 4px;
@@ -209,10 +247,9 @@ const comfirm = () => {
 
 .numbers {
   width: 100%;
-  padding: 8px 8px;
   input {
-    margin-left: 4px;
-    padding: 2px 8px;
+    width: 100%;
+    padding: 2px 0 2px 8px;
     border-radius: $radius-md;
     background-color: #ddd;
   }
@@ -222,8 +259,10 @@ const comfirm = () => {
   flex: 0 0 auto;
   display: flex;
   justify-content: end;
+  align-items: center;
   gap: 8px;
   width: 100%;
-  padding: 8px 16px 12px;
+  padding: 8px 4px 12px;
+  font-size: $font-md;
 }
 </style>
