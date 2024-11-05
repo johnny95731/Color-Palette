@@ -98,7 +98,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, reactive, ref, watch, unref, watchEffect } from 'vue';
+import { computed, reactive, ref, watch, unref } from 'vue';
 // components
 import SelectMenu from '../Custom/SelectMenu.vue';
 import ColorPicker from '../Custom/ColorPicker.vue';
@@ -121,20 +121,6 @@ const showColorPicker = ref(false);
 
 // palette and color picker
 const pltState = usePltStore();
-const originalPalette = ref<number[][]>([[]]);
-/**
- * Save original palette.
- * To restore palette when close dialog.
- */
-const saveOrininal = () => {
-  originalPalette.value = pltState.cards.map(card => card.color);
-};
-watch(isShowing, () => {
-  if (unref(isShowing))
-    saveOrininal();
-  else
-    pltState.setPlt(unref(originalPalette)); // restore palette from `originalPalette`
-}, { immediate: true });
 
 const currentColor = ref<number[]>([0, HSB_MAX[1], HSB_MAX[2]]); // hsb color
 const harmonyArgs = reactive<{
@@ -164,15 +150,33 @@ const preview = () => {
     unref(isPreview) ? unref(palette) : unref(originalPalette)
   );
 };
-watchEffect(preview);
+watch(() => [unref(isPreview), unref(palette)],
+  preview
+);
 /** Overwrite current palette and close. (will not restore when dialog is closed) */
 const comfirm = () => {
-  preview();
+  pltState.setPlt(unref(palette));
   // Overwrite `originalPalette`. Because close dialog will restore palette from
   // `originalPalette`.
   saveOrininal();
   invertBoolean(isShowing);
 };
+
+const originalPalette = ref<number[][]>([[]]);
+/**
+ * Save original palette.
+ * To restore palette when close dialog.
+ */
+const saveOrininal = () => {
+  originalPalette.value = pltState.cards.map(card => card.color);
+};
+watch(isShowing, (newVal) => {
+  if (newVal) {
+    saveOrininal();
+    preview();
+  } else
+    pltState.setPlt(unref(originalPalette)); // restore palette from `originalPalette`
+}, { immediate: true });
 </script>
 
 <style lang="scss" module>
