@@ -127,12 +127,12 @@ type Props = {
   currentVal?: string,
   hideTriangle?: boolean,
   /**
-   * Letter case for menu items (display name). Default to be title case.
+   * Letter case for menu items (display name). Default to be start case.
    */
-  letterCase?: 'origin' | 'title' | 'all-caps';
+  letterCase?: 'origin' | 'start' | 'all-caps';
 }
 const props = withDefaults(defineProps<Props>(), {
-  letterCase: 'title',
+  letterCase: 'start',
 });
 const activatorRef = ref<InstanceType<typeof TheBtn>>();
 const contentRef = ref<HTMLDivElement>();

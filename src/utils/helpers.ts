@@ -141,29 +141,22 @@ export const randomCharacter = (noDigit: boolean = false) =>
   }`.charAt(randInt(noDigit ? 51 : 61)); // randInt is inclusive
 
 /**
- * Capitalize a text.
+ * Convert a text to start case.
  */
-export const toTitleCase = (str: string) =>
-  str.replace(
-    /\w\S*/g,
-    text => text[0].toUpperCase() + text.slice(1).toLowerCase()
-  );
-
-export const getLetterCaseConverter = (letterCase: 'title' | 'all-caps' | string) => {
-  if (letterCase === 'all-caps')
-    return (str: string) => str.toUpperCase();
-  else if (letterCase === 'title') return toTitleCase;
-  else return (x: string) => x;
+const toStartCase = (text: string) => {
+  const words = text.split(' ');
+  words.forEach((str, i, arr) => {
+    arr[i] = `${str[0].toUpperCase()}${str.slice(1)}`;
+  });
+  return words.join(' ');
 };
 
-// About twice faster, but this function will not be called frequently.
-// export const capitalize = (text: string) => {
-//   const words = text.split(' ');
-//   words.forEach((str, i, arr) => {
-//     arr[i] = `${str[0].toUpperCase()}${str.slice(1)}`;
-//   });
-//   return words.join(' ');
-// };
+export const getLetterCaseConverter = (letterCase: 'start' | 'all-caps' | string) => {
+  if (letterCase === 'all-caps')
+    return (str: string) => str.toUpperCase();
+  else if (letterCase === 'start') return toStartCase;
+  else return (x: string) => x;
+};
 
 // export const kebabize = (text: string) =>
 //   text.replace(/[A-Z]+(?![a-z])|[A-Z]/g, ($, ofs) => (ofs ? '-' : '') + $.toLowerCase());

@@ -126,15 +126,15 @@ type Props = {
   titleClass?: VueClass,
   contentClass?: VueClass,
   /**
-   * Letter case for menu items (display name). Default to be title case.
+   * Letter case for menu items (display name). Default to be start case.
    */
-  letterCase?: 'origin' | 'title' | 'all-caps';
+  letterCase?: 'origin' | 'start' | 'all-caps';
 }
 
 const props = withDefaults(defineProps<Props>(), {
   showValue: true,
   eager: false,
-  letterCase: 'title',
+  letterCase: 'start',
 });
 
 const activatorRef = ref<InstanceType<typeof TheBtn>>();
