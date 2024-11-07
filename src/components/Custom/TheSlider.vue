@@ -1,5 +1,6 @@
 <template>
   <div
+    v-bind="labelState"
     class="slider"
     :style="{
       background: trackerBackground,
@@ -31,7 +32,6 @@
       <span class="slider__bound-label">{{ max }}</span>
     </template>
     <div
-      v-bind="labelState"
       ref="trackerRef"
       class="slider__tracker"
     >
@@ -243,7 +243,7 @@ defineExpose({
 
 <style lang="scss">
 @use "sass:math";
-@use "@/assets/commons.module.scss" as *;
+@use "@/assets/variables.scss" as *;
 
 $thumb-size: 14px;
 $thumb-radius: math.div($thumb-size, 2);
@@ -280,7 +280,8 @@ $thumb-radius: math.div($thumb-size, 2);
   }
 
   &__thumb {
-    @extend %center;
+    position: absolute;
+    @include position(center);
     height: $thumb-size;
     aspect-ratio: 1 / 1;
     border: solid 3px white;

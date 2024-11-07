@@ -168,7 +168,7 @@ const activatorProps = computed(() => ({
 </script>
 
 <style lang="scss">
-@use '@/assets/commons.module.scss' as *;
+@use '@/assets/variables.scss' as *;
 
 $tooltip-bg-color: #0008;
 .tooltip .overlay__content{

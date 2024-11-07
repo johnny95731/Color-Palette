@@ -2,7 +2,7 @@ import { createPinia } from 'pinia';
 
 import 'normalize.css';
 import './assets/main.scss';
-import '@/assets/globalClass.scss';
+import '@/assets/global-class.scss';
 import '@/assets/transition.scss';
 
 import { createApp } from 'vue';

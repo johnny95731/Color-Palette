@@ -1,4 +1,4 @@
-@use "@/assets/commons.module.scss" as *;
+@use "@/assets/variables.scss" as *;
 
 .container {
   position: relative;
@@ -24,7 +24,7 @@
   height: 40%;
   padding: 0 12px;
   button {
-    border-radius: 50%;
+    border-radius: $radius-rounded;
     padding: 8px;
     font-size: $font-x-lg;
     background-color: #fff;

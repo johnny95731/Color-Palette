@@ -3,23 +3,6 @@
 // Small vieport
 $view-sm: 900px;
 
-%verticalCenter {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-}
-%horizontalCenter {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-}
-%center {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-}
-
 @mixin position ($align: expand) {
   @if ($align == expand) {
     inset: 0;
@@ -62,11 +45,14 @@ $view-sm: 900px;
   @return math.div(math.round($num * $multipler), $multipler)
 }
 
-// Font weighht
-$normal-weight: 600;
-$bold-weight: 800;
+// font-weighht
+$font-weight-light: 400;
+$font-weight-medium: 500;
+$font-weight-bold: 700;
+$font-weight-black: 900;
 
 // Border-radius
+$radius-rounded: 50%;
 $radius-xl: 15px;
 $radius-lg: 10px;
 $radius-md: 7px;
@@ -84,11 +70,3 @@ $color2: #EAEAEA;
 $color3: #C0C0C0;
 $color4: #707070;
 $color5: #1D1D57;
-
-:export {
-  color1: $color1;
-  color2: $color2;
-  color3: $color3;
-  color4: $color4;
-  color5: $color5;
-}

@@ -1,4 +1,4 @@
-@use './commons.module.scss' as *;
+@use './variables.scss' as *;
 @use './transition.scss' as *;
 
 #app {
@@ -16,6 +16,11 @@
   display: contents;
   contain: layout;
   @include overlay(fixed);
+}
+
+.preload * {
+  animation-duration: 0s !important;
+  transition: all 0s !important;
 }
 
 .spacer {

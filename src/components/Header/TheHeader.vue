@@ -44,7 +44,7 @@
       ]"
       aria-label="排序"
       :text="isSmall ? '排序' : undefined"
-      :contents="sortingMenuItems"
+      :items="sortingMenuItems"
       :current-val="pltState.sortBy"
       @click-item="pltState.sortCards($event as SortActionType)"
     />
@@ -61,7 +61,7 @@
       ]"
       aria-label="混色"
       :text="isSmall ? '混色' : undefined"
-      :contents="MIXING_MODES"
+      :items="MIXING_MODES"
       :current-val="pltState.mixMode"
       @click-item="pltState.setBlendMode($event as MixingType)"
     />
@@ -79,7 +79,7 @@
       aria-label="色彩空間"
       :text="isSmall ? '色彩空間' : undefined"
       letterCase="all-caps"
-      :contents="COLOR_SPACES"
+      :items="COLOR_SPACES"
       :current-val="pltState.colorSpace"
       @click-item="pltState.setColorSpace($event as ColorSpacesType)"
     />

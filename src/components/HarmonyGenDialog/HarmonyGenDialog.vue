@@ -52,7 +52,7 @@
       <div>
         調和方法
         <SelectMenu
-          :options="HARMONY_METHODS"
+          :items="HARMONY_METHODS"
           v-model:index="harmonyArgs.method"
         />
       </div>
@@ -180,14 +180,13 @@ watch(isShowing, (newVal) => {
 </script>
 
 <style lang="scss" module>
-@use "@/assets/commons.module.scss" as *;
+@use "@/assets/variables.scss" as *;
 
 .genDialog {
   display: flex;
   flex-direction: column;
   // shape
   height: 340px;
-  max-height: 100dvh;
   border-radius: $radius-lg;
   background-color: $color1;
   overflow: hidden;
@@ -210,7 +209,7 @@ watch(isShowing, (newVal) => {
     color: $color2;
     text-align: center;
     font-size: $font-lg;
-    font-weight: $bold-weight;
+    font-weight: $font-weight-bold;
     user-select: none;
   }
   :global(.btn) {
@@ -224,28 +223,29 @@ watch(isShowing, (newVal) => {
   height: 0;
   display: flex;
   flex-direction: column;
-  padding: 8px 12px;
+  padding: 12px 12px 8px;
   > *:not([class]) > * {
     margin-top: 8px;
   }
   > * + * {
-    margin-top: 16px;
+    margin-top: 12px;
   }
 }
 
+$color-div-size: 25px;
+$color-div-margin: 4px;
 .palette {
   height: 30px;
-  min-width: 228px; // 25px (width) * 8 + 4px (margin) * 7 = 200+28
+  min-width: #{$color-div-size * 8 + $color-div-margin * 7}; // 8 = maximum card num
   text-align: center;
   :global(.btn) {
     display: inline-block;
-    height: 25px;
+    height: $color-div-size;
     aspect-ratio: 1;
-    border-radius: 50%;
-    cursor: pointer;
+    border-radius: $radius-rounded;
   }
   * + * {
-    margin-left: 4px;
+    margin-left: $color-div-margin;
   }
 }
 
@@ -266,7 +266,7 @@ watch(isShowing, (newVal) => {
   align-items: center;
   gap: 8px;
   width: 100%;
-  padding: 8px 4px 12px;
+  padding: 8px 4px;
   font-size: $font-md;
 }
 </style>

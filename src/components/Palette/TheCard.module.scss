@@ -1,4 +1,4 @@
-@use "@/assets/commons.module.scss" as *;
+@use "@/assets/variables.scss" as *;
 
 .cardContainer {
   //layout
@@ -220,14 +220,6 @@
   font-size: $font-lg;
   user-select: text;
   cursor: text;
-  &:focus-visible {
-    outline: 1px solid black;
-  }
-  @supports not selector(:focus-visible) {
-    &:focus {
-      outline: 1px solid black;
-    }
-  }
 
   @include small {
     margin: 0 auto 7px;

@@ -1,4 +1,4 @@
-@use "@/assets/commons.module.scss" as *;
+@use "@/assets/variables.scss" as *;
 $transDuration: 120ms;
 
 .dropdown-menu {
@@ -89,7 +89,7 @@ $transDuration: 120ms;
   overflow: hidden;
 
   background-color: $color1;
-  font-weight: 600;
+  font-weight: $font-weight-medium;
   text-overflow: ellipsis; // `text-overflow` only works on block containers;
   white-space: nowrap;
   text-align: center;
@@ -109,5 +109,8 @@ $transDuration: 120ms;
     position: absolute;
     transform: translateX(-100%);
     z-index: 10;
+  }
+  &--selected {
+    font-weight: $font-weight-bold;
   }
 }

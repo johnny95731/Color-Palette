@@ -121,7 +121,7 @@ function handleKeyDown(e: KeyboardEvent) {
 
 <style lang="scss">
 @use "sass:map";
-@use "@/assets/commons.module.scss" as *;
+@use "@/assets/variables.scss" as *;
 
 
 $switch-md: ("h": 20px, "w": 35px);

@@ -1,4 +1,4 @@
-@use "@/assets/commons.module.scss" as *;
+@use "@/assets/variables.scss" as *;
 
 // Containers
 .container {
@@ -28,7 +28,7 @@
     color: $color2;
     text-align: center;
     font-size: $font-lg;
-    font-weight: $bold-weight;
+    font-weight: $font-weight-bold;
     user-select: none;
   }
   :global(.btn) {
@@ -105,11 +105,13 @@ $appendPltHeight: 30px;
   position: relative;
   height: 40px;
   >:global(.btn) {
-    @extend %verticalCenter;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
     left: 8px;
     width: auto;
     font-size: $font-md;
-    font-weight: 500;
+    font-weight: $font-weight-light;
     background-color: transparent;
     :global(.bi) {
       font-size: $font-x-sm;

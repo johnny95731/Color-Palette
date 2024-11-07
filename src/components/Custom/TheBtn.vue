@@ -69,7 +69,7 @@ withDefaults(defineProps<Props>(), {
 </script>
 
 <style lang="scss">
-@use "@/assets/commons.module.scss" as *;
+@use "@/assets/variables.scss" as *;
 
 $transDuration: 120ms;
 .btn {
@@ -91,7 +91,7 @@ $transDuration: 120ms;
   background-color: inherit;
   color: inherit;
   font-size: $font-md;
-  font-weight: 600;
+  font-weight: $font-weight-medium;
   line-height: normal;
   vertical-align: middle;
 

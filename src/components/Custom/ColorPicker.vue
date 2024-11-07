@@ -97,7 +97,7 @@
       <div class="color-picker__variants">
         樣式
         <SelectMenu
-          :options="['rect', 'rounded', 'wheel']"
+          :items="['rect', 'rounded', 'wheel']"
           v-model="variant"
         />
       </div>
@@ -418,7 +418,7 @@ watch(modelColor, (newVal) =>
 
 <style lang="scss">
 @use "sass:math";
-@use "@/assets/commons.module.scss" as *;
+@use "@/assets/variables.scss" as *;
 
 $extra-width: 60px;
 $padding-x: 16px;
@@ -453,8 +453,8 @@ $wheel-width: $thumb-diam + 4px;
     aspect-ratio: 1 / 1;
 
     border: $thumb-border solid #fff;
-    border-radius: 50%;
-    outline: 1px solid #000;
+    border-radius: $radius-rounded;
+    outline: 1px solid $color5;
   }
   &__canvas {
     position: relative;
@@ -472,7 +472,6 @@ $wheel-width: $thumb-diam + 4px;
     inset: 0;
     background: $color1;
   }
-  $input-bg: #ddd;
   &__edits {
     display: grid;
     grid-template-rows: 30px;
@@ -485,7 +484,6 @@ $wheel-width: $thumb-diam + 4px;
       padding: 2px 0 2px 8px;
       margin-top: 4px;
       border-radius: 6px;
-      background: $input-bg;
     }
   }
   &__preview {
@@ -493,7 +491,7 @@ $wheel-width: $thumb-diam + 4px;
     grid-column: 1;
     height: 30px;
     aspect-ratio: 1;
-    border-radius: $radius-sm;
+    border-radius: $radius-rounded;
   }
   &__hex-input {
     grid-row: 1;
@@ -521,7 +519,7 @@ $wheel-width: $thumb-diam + 4px;
   &--rounded, &--wheel {
     #{$root}__canvas {
       canvas {
-        border-radius: 50%;
+        border-radius: $radius-rounded;
       }
     }
   }
@@ -531,7 +529,7 @@ $wheel-width: $thumb-diam + 4px;
     gap: 31px;
     #{$root}__mask {
       inset: $wheel-width;
-      border-radius: 50%;
+      border-radius: $radius-rounded;
       cursor: default;
     }
     #{$root}__rect-picker {

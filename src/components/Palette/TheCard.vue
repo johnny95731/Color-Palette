@@ -130,7 +130,7 @@
         v-if="pltState.colorSpace === 'name'"
         :class="$style.nameSelect"
         aria-label="CSS named-color選單"
-        :options="unzipedNameList"
+        :items="unzipedNameList"
         :contentClass="$style.nameSelectContent"
         :model-value="detail"
       >

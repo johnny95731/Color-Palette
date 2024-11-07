@@ -1,4 +1,4 @@
-@use './commons.module.scss' as *;
+@use './variables.scss' as *;
 
 body {
   margin: 0;
@@ -8,7 +8,7 @@ body {
   overflow: hidden;
   font-size: 14px;
   line-height: 1.25;
-  font-weight: $normal-weight;
+  font-weight: $font-weight-medium;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto',
     'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans',
     'Helvetica Neue', sans-serif;
@@ -27,11 +27,7 @@ body {
 }
 
 
-.preload * {
-  animation-duration: 0s !important;
-  transition: all 0s !important;
-}
-
+// Reset
 * {
   box-sizing: border-box;
 }
@@ -42,13 +38,24 @@ body {
 
 button {
   border: 0;
-  padding: 0;
-  font-weight: $normal-weight;
+  font-weight: $font-weight-medium;
   background-color: transparent;
   cursor: pointer;
+  &:focus {
+    outline: none;
+  }
 }
 
-input{
+input {
   padding: 0;
   border: 0;
+  outline: 1px solid #0004;
+  &:focus-visible {
+    outline: 1px solid $color5;
+  }
+  @supports not selector(:focus-visible) {
+    &:focus {
+      outline: 1px solid $color5;
+    }
+  }
 }

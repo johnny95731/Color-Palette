@@ -8,7 +8,7 @@
     data-haspopup="true"
     :aria-controls="eager || isOpened ? idForMenu : undefined"
     :aria-expanded="isOpened"
-    :title="valueLabel"
+    :title="btnLabel"
   >
     <TheBtn
       ref="activatorRef"
@@ -16,7 +16,7 @@
         'select__activator',
         titleClass
       ]"
-      :text="valueLabel"
+      :text="btnLabel"
       @click="handleClickBtn"
       @focusout="handleClickBtn($event, false)"
       @keydown="handleKeyDown"
@@ -72,21 +72,16 @@
       >
         <slot
           name="items"
-          :select="handleSelect"
-          :liStyle="liStyle"
           :props="optionProps"
         >
           <button
-            v-for="(val, i) in options"
-            :key="`Option ${val}`"
-            class="select__option"
-            :style="liStyle(i)"
+            v-memo="[modelIndex === i]"
+            v-for="(item, i) in selectItems"
+            :key="`Option ${item.val}`"
+            v-bind="optionProps[i]"
             type="button"
-            @click="handleSelect(i);"
           >
-            {{
-              val
-            }}
+            {{ item.name }}
           </button>
         </slot>
       </div>
@@ -96,14 +91,12 @@
 </template>
 
 <script setup lang="ts">
-import { watch, ref, onMounted, computed, nextTick, shallowRef } from 'vue';
-import { toValue } from '@vueuse/core';
+import { watch, ref, onMounted, computed, nextTick, shallowRef, unref } from 'vue';
 import OverlayContainer from './OverlayContainer.vue';
 import TheBtn from './TheBtn.vue';
 import TheIcon from './TheIcon.vue';
 // utils
-import { CURRENT_OPTION_WEIGHT } from '@/constants/browser';
-import { isNullish, invertBoolean } from '@/utils/helpers';
+import { isNullish, invertBoolean, getLetterCaseConverter } from '@/utils/helpers';
 import { getComponentId } from '@/utils/browser';
 import { mod } from '@/utils/numeric';
 import { noModifierKey, shiftOnly } from '@/utils/browser';
@@ -111,10 +104,19 @@ import { noModifierKey, shiftOnly } from '@/utils/browser';
 import type { CSSProperties, MaybeRefOrGetter, ModelRef } from 'vue';
 import type { VueClass } from 'types/browser';
 
+type SelectItem = {
+  val: string,
+  name?: string,
+}
+
 type Props = {
   isMobile?: boolean,
   eager?: boolean
-  options: readonly string[],
+  items?: readonly (string | {
+    name: string,
+    val: string,
+    hotkey?: string
+  })[];
   inputId?: string,
   listboxId?:string,
   label?: string,
@@ -131,18 +133,14 @@ type Props = {
 
 const props = withDefaults(defineProps<Props>(), {
   showValue: true,
-  eager: true
+  eager: false,
+  letterCase: 'title',
 });
 
 const activatorRef = ref<InstanceType<typeof TheBtn>>();
 const containerRef = ref<HTMLDivElement>();
 
-const activator = computed(() => toValue(activatorRef)?.$el!);
-
-/**
- * Index not exceed range of options.
- */
-const idxInRange = (idx: number): boolean => idx >= 0 && idx < props.options.length;
+const activator = computed(() => unref(activatorRef)?.$el!);
 
 
 // Handle form element
@@ -169,10 +167,10 @@ const labelState = computed(() => {
 onMounted(() => {
   if (!props.label?.startsWith('#')) return;
   const element = document.getElementById(props.label.slice(1)) as HTMLLabelElement | null;
-  if (element) element.htmlFor = toValue(idForInput);
+  if (element) element.htmlFor = unref(idForInput);
 });
 // Update label HTMLFor if it is an ID.
-watch(() => [props.label, toValue(idForInput)], (newVal, oldVal) => {
+watch(() => [props.label, unref(idForInput)], (newVal, oldVal) => {
   const isLabelSame = newVal[0] === oldVal[0];
   const isIdSame = newVal[1] === oldVal[1];
   if (!isLabelSame) {
@@ -194,6 +192,24 @@ watch(() => [props.label, toValue(idForInput)], (newVal, oldVal) => {
   }
 });
 
+
+const selectItems = computed(() => {
+  const letterConverter = getLetterCaseConverter(props.letterCase);
+  return props.items?.map((item) => {
+    const { val, name }: SelectItem = typeof item === 'object' ? item : { val: item };
+    return {
+      val,
+      name: letterConverter(name ?? val),
+    };
+  }) ?? [];
+});
+
+/**
+ * Index not exceed range of options.
+ */
+const idxInRange = (idx: number): boolean =>
+  idx >= 0 && idx < unref(selectItems).length;
+
 // Values events
 const model = defineModel<string>(); // Higher priority than modelIndex.
 const modelIndex = defineModel<number>('index');
@@ -208,47 +224,67 @@ const handleNullishModel = (
   index?: MaybeRefOrGetter<number>
 ) => {
   if (isNullish(value) && isNullish(index)) {
-    model.value = props.options[0];
+    model.value = unref(selectItems)[0].val;
     modelIndex.value = 0;
   } else if (isNullish(value)) {
-    model.value = props.options[toValue(index) as number];
+    model.value = unref(selectItems)[unref(index) as number].val;
   } else if (isNullish(index)) {
-    modelIndex.value = props.options.indexOf(toValue(value) as string);
+    modelIndex.value = unref(selectItems).findIndex(
+      ({ val }) => val === unref(value) as string
+    );
   } else return false;
   return true;
 };
 
+const handleSelect = (idx: number) => modelIndex.value = idx;
+const btnLabel = computed<string>(() =>
+  props.showValue ?
+    unref(selectItems)[unref(modelIndex)!].name :
+    (props.title ?? 'select')
+);
+
 watch(
-  () => [toValue(model), toValue(modelIndex)],
+  () => [unref(model), unref(modelIndex)],
   (newVal, oldVal) => {
     // @ts-expect-error Initialize or injected models are removed.
     if (handleNullishModel(...newVal)) return;
     else if (newVal[0] !== oldVal![0]) { // model changed
-      const idxOfModel = props.options.indexOf(toValue(model) as string);
+      const idxOfModel = unref(selectItems).findIndex(
+        ({ val }) => val === unref(newVal[0]) as string
+      );
       modelIndex.value = idxOfModel;
     } else if (idxInRange(newVal[1] as number)) { // modelIndex changed
-      model.value = props.options[toValue(modelIndex) as number];
+      model.value = unref(selectItems)[unref(modelIndex) as number].val;
     } else {
       handleNullishModel(newVal[0] as string | undefined);
     }
   }, { immediate: true }
 );
 
-const valueLabel = computed(() =>
-  props.showValue ? toValue(model) : (props.title ?? 'menu')
-);
-
-const handleSelect = (idx: number) => modelIndex.value = idx;
-
-const liStyle = (idx: number) =>
-  idx === toValue(modelIndex) ? CURRENT_OPTION_WEIGHT : undefined;
+// Option props
+const optionProps = ref<{
+  class: (string | false)[],
+  onClick: () => number,
+    }[]>([]);
+watch(() => unref(selectItems).length, () => {
+  optionProps.value = unref(selectItems).map((_, i) => {
+    return {
+      class: ['select__option', i === unref(modelIndex) && 'select__option--selected'],
+      onClick: () => handleSelect(i)
+    };
+  });
+}, { immediate: true });
+watch(modelIndex, (newIdx, oldIdx) => {
+  optionProps.value[oldIdx!].class = ['select__option'];
+  optionProps.value[newIdx!].class = ['select__option', 'select__option--selected'];
+});
 
 // Open/Closing events
 const isOpened = defineModel<boolean>('show') as ModelRef<boolean>;
 
 const menuStyle = shallowRef<CSSProperties>({});
 const updateMenuStyle = () => {
-  const rect = (toValue(activatorRef)?.$el as HTMLElement).getBoundingClientRect();
+  const rect = (unref(activatorRef)?.$el as HTMLElement).getBoundingClientRect();
   menuStyle.value = {
     width: `${rect.width}px`,
     maxHeight: `${
@@ -269,13 +305,13 @@ watch(isOpened, async (newVal) => {
   if (!newVal) return;
   updateMenuStyle();
   await nextTick(); // Waiting DOM updated.
-  const target = toValue(containerRef)!.children[toValue(modelIndex)!];
+  const target = unref(containerRef)!.children[unref(modelIndex)!];
   target.scrollIntoView(true);
 });
 
 const handleClickBtn = (e: MouseEvent | FocusEvent, newVal?: boolean) => {
-  const activator = toValue(activatorRef) as NonNullable<typeof activatorRef.value>;
-  const menu = toValue(containerRef) as NonNullable<typeof containerRef.value>;
+  const activator = unref(activatorRef) as NonNullable<typeof activatorRef.value>;
+  const menu = unref(containerRef) as NonNullable<typeof containerRef.value>;
   if (// Avoid changing `isOpened` twice
     e.type === 'focusout' &&
     ( // Focusout activator when click menu content
@@ -290,7 +326,7 @@ const handleClickBtn = (e: MouseEvent | FocusEvent, newVal?: boolean) => {
 const handleKeyDown = async (e: KeyboardEvent) => {
   const key = e.key;
   let target: Element | null = null;
-  if (!toValue(isOpened)) {
+  if (!unref(isOpened)) {
     // Only some keys works when menu is not openned.
     if (key.startsWith('Arrow') || key === 'Enter' || key === ' ') {
       e.stopPropagation();
@@ -298,12 +334,12 @@ const handleKeyDown = async (e: KeyboardEvent) => {
       invertBoolean(isOpened);
       await nextTick();
       // Cant get ref before updated (`menu` is undefined).
-      target = toValue(containerRef)?.children[0]!;
+      target = unref(containerRef)?.children[0]!;
     }
     else return;
   }
   // `undefined` is handled.
-  const menu = toValue(containerRef)!;
+  const menu = unref(containerRef)!;
   // @ts-expect-error null still work (index -1)
   const nthChildFocused = [...menu.children].indexOf(document.activeElement);
   const focusingActivator = nthChildFocused === -1; // event triggered from activator.
@@ -323,14 +359,14 @@ const handleKeyDown = async (e: KeyboardEvent) => {
       ) {
         // Set focus to activator and default Tab-event =>
         // focus next focusable element of activator.
-        target = toValue(activator);
+        target = unref(activator);
       }
       // (Shift+Tab)-event
       else if (shiftOnly_ && focusingActivator) {
         invertBoolean(isOpened);
       } else if (shiftOnly_ && !nthChildFocused) { // Focussing first option
         invertBoolean(isOpened);
-        target = toValue(activator);
+        target = unref(activator);
         e.preventDefault();
       }
     }
@@ -355,19 +391,12 @@ const handleKeyDown = async (e: KeyboardEvent) => {
     break;
   case 'Escape':
     invertBoolean(isOpened, false);
-    target = toValue(activator);
+    target = unref(activator);
     break;
   }
   // @ts-expect-error Check is instanceof HTMLElement
   target?.focus && target.focus();
 };
-
-// Option props
-const optionProps = computed(() => {
-  return {
-    class: 'select__option',
-  };
-});
 </script>
 
 <style src="./Menus.scss" />

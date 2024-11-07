@@ -21,10 +21,10 @@
       <button
         type="button"
         aria-label="刪除書籤"
+        @click="delFavColor"
       >
         <TheIcon
           type="delete"
-          @click="delFavColor"
         />
       </button>
     </span>

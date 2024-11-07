@@ -188,7 +188,7 @@ defineExpose({
 </script>
 
 <style lang="scss">
-@use '@/assets/commons.module.scss' as *;
+@use '@/assets/variables.scss' as *;
 
 .overlay {
   $root: &;

@@ -49,8 +49,10 @@
             <button
               v-for="item in menuItems"
               :key="item.val"
-              class="dropdown-menu__option"
-              :style="item.val === props.currentVal ? currentStyle : undefined"
+              :class="[
+                'dropdown-menu__option',
+                item.val === props.currentVal && 'dropdown-menu__option--selected'
+              ]"
               type="button"
               @click="$emit('click-item', item.val)"
             >
@@ -79,29 +81,28 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref, watch, provide, inject, nextTick } from 'vue';
-import { toValue } from '@vueuse/core';
+import { computed, ref, watch, provide, inject, nextTick, unref } from 'vue';
 import OverlayContainer from './OverlayContainer.vue';
 import TheBtn from './TheBtn.vue';
 import TheIcon from './TheIcon.vue';
 // utils
-import { toTitleCase, sleep, invertBoolean } from '@/utils/helpers';
+import { sleep, invertBoolean, getLetterCaseConverter } from '@/utils/helpers';
 import { getComponentId } from '@/utils/browser';
 import { mod } from '@/utils/numeric';
 import { noModifierKey, shiftOnly, hasPopup } from '@/utils/browser';
 import { useElementBounding } from '@/composables/useElementBounding';
 // constants
-import { CURRENT_OPTION_WEIGHT, menuSymbol } from '@/constants/browser';
+import { menuSymbol } from '@/constants/browser';
 // Types
 import type { CSSProperties, ModelRef } from 'vue';
 import type { IconType } from '@/utils/icons';
 import type { VueClass } from 'types/browser';
 
-type Item = {
-    val: string,
-    name?: string,
-    hotkey?: string
-  }
+type MenuItem = {
+  val: string,
+  name?: string,
+  hotkey?: string
+}
 
 type Props = {
   isMobile?: boolean,
@@ -115,7 +116,7 @@ type Props = {
    * Icon only activator
    */
   icon?: IconType;
-  contents?: readonly (string | {
+  items?: readonly (string | {
     name: string,
     val: string,
     hotkey?: string
@@ -124,10 +125,6 @@ type Props = {
   menuId?:string,
   contentClass?: VueClass,
   currentVal?: string,
-  /**
-   * Style of currently selected element.
-   */
-  currentStyle?: CSSProperties,
   hideTriangle?: boolean,
   /**
    * Letter case for menu items (display name). Default to be title case.
@@ -136,21 +133,19 @@ type Props = {
 }
 const props = withDefaults(defineProps<Props>(), {
   letterCase: 'title',
-  // @ts-expect-error
-  currentStyle: CURRENT_OPTION_WEIGHT,
 });
 const activatorRef = ref<InstanceType<typeof TheBtn>>();
 const contentRef = ref<HTMLDivElement>();
 
-const activator = computed(() => toValue(activatorRef)?.$el!);
+const activator = computed(() => unref(activatorRef)?.$el!);
 
 /**
  * Target is containing in this instance.
  */
 const isContaining = (target?: Element | EventTarget | null): boolean =>
   !!(
-    toValue(activator).contains(target as Node | null) ||
-    toValue(contentRef)?.contains(target as Node | null)
+    unref(activator).contains(target as Node | null) ||
+    unref(contentRef)?.contains(target as Node | null)
   );
 
 /**
@@ -159,12 +154,12 @@ const isContaining = (target?: Element | EventTarget | null): boolean =>
  */
 const getDirectChildren = (target?: Element | EventTarget | null) => {
   if (
-    !toValue(contentRef) ||
-    !toValue(contentRef)!.contains(target as Element) ||
-    toValue(contentRef) === target
+    !unref(contentRef) ||
+    !unref(contentRef)!.contains(target as Element) ||
+    unref(contentRef) === target
   ) return null;
   let children = target as Element;
-  while (children.parentElement !== toValue(contentRef))
+  while (children.parentElement !== unref(contentRef))
     children = children.parentElement as HTMLElement;
   return children;
 };
@@ -180,26 +175,16 @@ defineEmits<{
   'click-item': [val: string]
 }>();
 
-const letterConverter = computed(() => {
-  /**
-   * Convert letter case.
-   */
-  let converter = (x: string) => x; // origin
-  if (props.letterCase === 'all-caps') {
-    converter = (str: string) => str.toUpperCase();
-  } else if (props.letterCase === 'title') converter = toTitleCase;
-  return converter;
-});
-
-const menuItems = computed(() =>
-  props.contents.map((item) => {
-    const { val, name, hotkey }: Item = typeof item === 'object' ? item : { val: item };
+const menuItems = computed(() => {
+  const letterConverter = getLetterCaseConverter(props.letterCase);
+  return props.items?.map((item) => {
+    const { val, name, hotkey }: MenuItem = typeof item === 'object' ? item : { val: item };
     return {
       val,
-      name: toValue(letterConverter)(name ?? val) + (hotkey ? ` (${hotkey})` : ''),
+      name: letterConverter(name ?? val) + (hotkey ? ` (${hotkey})` : ''),
     };
-  })
-);
+  }) ?? [];
+});
 
 // Open/Closing events
 const isOpened = defineModel<boolean>('show') as ModelRef<boolean>;
@@ -231,11 +216,11 @@ type MenuProvided = {
 const parent = inject<MenuProvided | null>(menuSymbol, null);
 provide<MenuProvided>(menuSymbol, {
   topActivator() {
-    return parent?.topActivator() ?? toValue(activator) as HTMLButtonElement;
+    return parent?.topActivator() ?? unref(activator) as HTMLButtonElement;
   },
   topNonLastActivator,
   isLast(target: Element | null) {
-    const menu = toValue(contentRef)!;
+    const menu = unref(contentRef)!;
     return menu.children[menu.children.length-1] === target;
   },
   register() {
@@ -251,8 +236,8 @@ provide<MenuProvided>(menuSymbol, {
  * The topmost layer activator that is not the last element of a menu.
  */
 function topNonLastActivator() {
-  return !parent || !parent.isLast(toValue(activator)) ?
-    toValue(activator) :
+  return !parent || !parent.isLast(unref(activator)) ?
+    unref(activator) :
     parent.topNonLastActivator();
 }
 
@@ -261,13 +246,15 @@ function topNonLastActivator() {
  */
 async function nestedClosing (target?: Element | EventTarget | null) {
   // `handleClick` may be trigger from multi-layers. Make sure that
-  // menu is closing from bottommost layer.
-  if (toValue(openedChild)) return;
+  // menu is closing from innermost layer.
   if (
-    !target ||
+    !unref(openedChild) &&
     (
-      toValue(contentRef) &&
-      !toValue(contentRef)!.contains(target as Element)
+      !target ||
+      (
+        unref(contentRef) &&
+        !unref(contentRef)!.contains(target as Element)
+      )
     )
   ) {
     invertBoolean(isOpened, false);
@@ -307,8 +294,8 @@ const handleClickWindow = (e: MouseEvent) => {
   if (!isContaining(e.target)) nestedClosing(e.target);
   // Click content that is not a activator of submenu.
   else if (
-    toValue(contentRef) !== e.target && // not content itself
-    toValue(contentRef)?.contains(e.target as Node | null) &&
+    unref(contentRef) !== e.target && // not content itself
+    unref(contentRef)?.contains(e.target as Node | null) &&
     !hasPopup(getDirectChildren(e.target))
   ) {
     nestedClosing();
@@ -318,16 +305,16 @@ const handleClickWindow = (e: MouseEvent) => {
 
 // When menu is nested, the parent should not close before submenu is closing.
 const handleClickBtn = () => {
-  !toValue(openedChild) && invertBoolean(isOpened);
+  !unref(openedChild) && invertBoolean(isOpened);
 };
 
 
 const handleKeyDown = async (e: KeyboardEvent) => {
   // Ignore supermenu keydown event when submenu is opening.
-  if (toValue(openedChild)) return;
+  if (unref(openedChild)) return;
   const key = e.key;
   let target: Element | null = null;
-  if (!toValue(isOpened)) {
+  if (!unref(isOpened)) {
     // Only some keys works when menu is not openned.
     if (key.startsWith('Arrow') || key === 'Enter' || key === ' ') {
       e.stopPropagation();
@@ -335,12 +322,12 @@ const handleKeyDown = async (e: KeyboardEvent) => {
       handleClickBtn();
       await nextTick();
       // Cant get ref before updated (`menu` is undefined).
-      target = toValue(contentRef)?.children[0]!;
+      target = unref(contentRef)?.children[0]!;
     }
     else return;
   }
   // `undefined` is handled.
-  const menu = toValue(contentRef)!;
+  const menu = unref(contentRef)!;
   // @ts-expect-error null still work (index -1)
   const nthChildFocused = [...menu.children].indexOf(document.activeElement);
   const focusingActivator = nthChildFocused === -1; // event triggered from activator.
@@ -349,7 +336,7 @@ const handleKeyDown = async (e: KeyboardEvent) => {
 
   switch(key) {
   case 'Tab':
-    // const focusingActivator = toValue(activator).contains(document.activeElement);
+    // const focusingActivator = unref(activator).contains(document.activeElement);
     // Tab-event
     if (noModifiers && focusingActivator) {
       target = menu.children[0];
@@ -368,7 +355,7 @@ const handleKeyDown = async (e: KeyboardEvent) => {
       handleClickBtn();
     } else if (shiftOnly_ && !nthChildFocused) { // Focussing first option
       handleClickBtn();
-      target = toValue(activator);
+      target = unref(activator);
       e.preventDefault();
     }
     break;
@@ -391,7 +378,7 @@ const handleKeyDown = async (e: KeyboardEvent) => {
     }
     break;
   case 'Escape':
-    target = toValue(activator);
+    target = unref(activator);
     nestedClosing(target);
     e.stopPropagation();
     break;

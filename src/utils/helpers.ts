@@ -149,6 +149,13 @@ export const toTitleCase = (str: string) =>
     text => text[0].toUpperCase() + text.slice(1).toLowerCase()
   );
 
+export const getLetterCaseConverter = (letterCase: 'title' | 'all-caps' | string) => {
+  if (letterCase === 'all-caps')
+    return (str: string) => str.toUpperCase();
+  else if (letterCase === 'title') return toTitleCase;
+  else return (x: string) => x;
+};
+
 // About twice faster, but this function will not be called frequently.
 // export const capitalize = (text: string) => {
 //   const words = text.split(' ');

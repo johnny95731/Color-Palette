@@ -25,8 +25,10 @@
         v-for="(opt, i) in tabLabels"
         :key="`setting-${opt}`"
         :ref="el => tabRefs[i] = el as InstanceType<typeof TheBtn>"
-        :class="$style.tab"
-        :style="tabStyleState[i]"
+        :class="[
+          $style.tab,
+          i === tabIdx && $style.selected
+        ]"
         :text="opt"
         @click="switchTab(i)"
       />
@@ -65,8 +67,9 @@
             <SelectMenu
               :class="$style.subOption"
               label="#border-color"
-              :options="BORDER_COLOR"
+              :items="BORDER_COLOR"
               :model-value="settingsState.border.color"
+              letter-case="title"
               @update:model-value="settingsState.setBorder('color', $event)"
             />
           </template>
@@ -105,7 +108,7 @@
           >Method</label>
           <SelectMenu
             label="#contrast-method"
-            :options="CONTRAST_METHODS"
+            :items="CONTRAST_METHODS"
             :index="contrastArgs.method"
             @update:index="handleMethodChanged($event)"
           />
@@ -147,7 +150,7 @@
 </template>
 
 <script setup lang="ts" scoped>
-import { computed, ref, reactive, watch, nextTick } from 'vue';
+import { computed, ref, reactive, watch, nextTick, unref } from 'vue';
 import $style from './SettingDialog.module.scss';
 import OverlayContainer from '@/components/Custom/OverlayContainer.vue';
 import TheBtn from './../Custom/TheBtn.vue';
@@ -157,7 +160,6 @@ import TheSlider from '../Custom/TheSlider.vue';
 import { isTabKey } from '@/utils/browser';
 // constants
 import { CONTRAST_METHODS, GAMMA_MAX, MULTIPLICATION_MAX } from '@/constants/colors';
-import { CURRENT_OPTION_WEIGHT } from '@/constants/browser';
 import {
   BORDER_MAX_WIDTH, TRANSITION_MAX_COLOR, TRANSITION_MAX_POS, BORDER_COLOR,
 } from '@/constants/settingStore';
@@ -165,9 +167,7 @@ import {
 import usePltStore from 'stores/usePltStore';
 import useSettingStore from 'stores/useSettingStore';
 // Types
-import type { CSSProperties } from 'vue';
 import type { TransitionType } from '@/features/types/settingStore';
-import { toValue } from '@vueuse/core';
 
 const emit = defineEmits<{
   (e: 'focusoutDialog'): void
@@ -199,22 +199,8 @@ watch(model, async (newVal) => {
     updateContrastDisplay();
   } else if (!newVal && pltState.isAdjustingPlt)
     pltState.setIsAdjustingPlt('cancel');
-  toValue(tabRefs)[toValue(tabIdx)]?.$el.focus();
+  unref(tabRefs)[unref(tabIdx)]?.$el.focus();
 });
-
-/**
- * When tab be selected
- */
-const tabSelectedStyle = {
-  ...CURRENT_OPTION_WEIGHT,
-  color: $style.color5,
-  backgroundColor: $style.color1
-} as CSSProperties;
-const tabStyleState = computed<(CSSProperties | undefined)[]>(() =>
-  tabLabels.map((_, i) => (
-    i === tabIdx.value ? tabSelectedStyle : undefined
-  ))
-);
 
 const switchTab = (idx: number) => {
   if (idx === 1) { // Switch to tab-1
