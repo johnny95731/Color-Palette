@@ -124,7 +124,7 @@ export const invertBoolean = (
  * @param num Total number.
  */
 export const equallyLength = (num: number): string => {
-  return `${toPercent(1 / num, 2)}%`;
+  return toPercent(1 / num, 2) + '%';
 };
 
 /**
@@ -132,13 +132,14 @@ export const equallyLength = (num: number): string => {
  * @param num Total number.
  */
 export const evalPosition = (idx: number, num: number): string => {
-  return `${toPercent(idx / num, 2)}%`;
+  return toPercent(idx / num, 2) + '%';
 };
 
 export const randomCharacter = (noDigit: boolean = false) =>
-  `ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz${ // 52 letters
-    noDigit ? '' : '0123456789' // 10 letters
-  }`.charAt(randInt(noDigit ? 51 : 61)); // randInt is inclusive
+  (
+    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz' + // 52letters
+    (noDigit ? '' : '0123456789')
+  ).charAt(randInt(noDigit ? 51 : 61)); // randInt is inclusive
 
 /**
  * Convert a text to start case.
@@ -146,7 +147,7 @@ export const randomCharacter = (noDigit: boolean = false) =>
 const toStartCase = (text: string) => {
   const words = text.split(' ');
   words.forEach((str, i, arr) => {
-    arr[i] = `${str[0].toUpperCase()}${str.slice(1)}`;
+    arr[i] = str[0].toUpperCase() + str.slice(1);
   });
   return words.join(' ');
 };

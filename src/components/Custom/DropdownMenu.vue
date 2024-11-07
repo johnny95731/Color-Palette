@@ -267,11 +267,11 @@ async function nestedClosing (target?: Element | EventTarget | null) {
 const { rect: activatorRect } = useElementBounding(activator);
 const menuContainerStyle = computed<CSSProperties>(() => {
   return {
-    minWidth: `${activatorRect.width}px`,
+    minWidth: activatorRect.width + 'px',
     ...(
       props.isMobile ?
         { top: 'var(--header-height)' } :
-        { top: `${activatorRect.bottom}px`, left: `${activatorRect.left}px` }
+        { top: activatorRect.bottom + 'px', left: activatorRect.left + 'px' }
     ),
   };
 });

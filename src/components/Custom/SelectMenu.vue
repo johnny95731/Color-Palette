@@ -286,15 +286,15 @@ const menuStyle = shallowRef<CSSProperties>({});
 const updateMenuStyle = () => {
   const rect = (unref(activatorRef)?.$el as HTMLElement).getBoundingClientRect();
   menuStyle.value = {
-    width: `${rect.width}px`,
+    width: rect.width + 'px',
     maxHeight: `${
       Math.min(
         document.documentElement.clientHeight - rect.bottom,
         120
       )
     }px`,
-    top: props.isMobile ? 'var(--header-height)' : `${rect.bottom}px`,
-    ...(props.isMobile ? {} : { left:`${rect.left}px` }),
+    top: props.isMobile ? 'var(--header-height)' : rect.bottom + 'px',
+    ...(props.isMobile ? {} : { left: rect.left + 'px' }),
   };
 };
 onMounted(() => {

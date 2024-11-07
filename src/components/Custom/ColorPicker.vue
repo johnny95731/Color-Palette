@@ -69,7 +69,7 @@
       >
         Hex
         <input
-          :name="`color-piker-hex`"
+          name="color-piker-hex"
           maxlength="7"
           size="7"
           v-model.lazy="hexColor"
@@ -208,8 +208,8 @@ const updaters = computed(() => {
         currentColor[2] = rangeMapping(pos.y, 0, 100, HSB_MAX[2], 0, 2);
       },
       canvasThumbStyle_: () => ({
-        top: `${HSB_MAX[2] - currentColor[2]}%`,
-        left: `${currentColor[1]}%`,
+        top: (HSB_MAX[2] - currentColor[2]) + '%',
+        left: currentColor[1] + '%',
         background: hsb2hex(currentColor),
       }),
       slider_: (newVal: number) => {
@@ -232,8 +232,8 @@ const updaters = computed(() => {
       canvasThumbStyle_: () => {
         const { x, y } = polar2cartesian(currentColor[1], currentColor[0] - 90, 2); // 0deg at top
         return {
-          top: `${rangeMapping(y, -HSB_MAX[1], HSB_MAX[1], 0, 100, 1)}%`,
-          left: `${rangeMapping(x, -HSB_MAX[1], HSB_MAX[1], 0, 100, 1)}%`,
+          top: rangeMapping(y, -HSB_MAX[1], HSB_MAX[1], 0, 100, 1) + '%',
+          left: rangeMapping(x, -HSB_MAX[1], HSB_MAX[1], 0, 100, 1) + '%',
           background: hsb2hex(currentColor),
         };
       },
@@ -257,8 +257,8 @@ const updaters = computed(() => {
       canvasThumbStyle_: () => {
         const { x, y } = polar2cartesian(50 - wheelHalfWidth.value, currentColor[0] - 90); // 0deg at top
         return {
-          top: `${y + 50}%`,
-          left: `${x + 50}%`,
+          top: (y + 50) + '%',
+          left: (x + 50) + '%',
           background: pureColor.value
         };
       },
@@ -268,8 +268,8 @@ const updaters = computed(() => {
         currentColor[2] = rangeMapping(pos.y, 0, 100, HSB_MAX[2], 0, 2);
       },
       secondThumbStyle_: () => ({
-        left: `${round(rangeMapping(currentColor[1], 0, HSB_MAX[1], 0, 100), 2)}%`,
-        top: `${round(rangeMapping(currentColor[2], 0, HSB_MAX[2], 100, 0), 2)}%`,
+        left: rangeMapping(currentColor[1], 0, HSB_MAX[1], 0, 100, 2) + '%',
+        top: rangeMapping(currentColor[2], 0, HSB_MAX[2], 100, 0, 2) + '%',
         background: hexColor.value
       }),
     };
