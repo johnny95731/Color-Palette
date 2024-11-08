@@ -51,7 +51,7 @@ export const YUV_MAX = RGB_MAX;
 /**
  * Actions for sorting palette colors.
  */
-export const SORTING_ACTIONS = ['gray', 'random', 'inversion'] as const;
+export const SORTING_ACTIONS = ['luminance', 'random', 'inversion'] as const;
 
 // #Contrast
 /**

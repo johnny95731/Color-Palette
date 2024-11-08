@@ -34,11 +34,11 @@ export type ColorSpaceInfos = {
 };
 
 
+export type SortActionType = typeof SORTING_ACTIONS[number];
 /**
  * The current order of cards.
  */
-export type OrderStateType = 'gray' | 'random';
-export type SortActionType = typeof SORTING_ACTIONS[number];
+export type OrderStateType = Exclude<SortActionType, 'inversion'>;
 
 /**
  * Support contrast adjusting methods.

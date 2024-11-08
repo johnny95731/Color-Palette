@@ -149,10 +149,10 @@ const usePltStore = defineStore('plt', {
     },
     sortCards(sortBy: SortActionType) {
       switch (sortBy) {
-      case 'gray':
-        if (this.sortBy === 'gray') this.cards.reverse();
+      case 'luminance':
+        if (this.sortBy === 'luminance') this.cards.reverse();
         else this.cards = sortingByGray(this.cards);
-        this.sortBy = 'gray';
+        this.sortBy = 'luminance';
         break;
       case 'inversion':
         /**
