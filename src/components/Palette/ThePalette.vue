@@ -145,7 +145,7 @@ const eventInfo = ref<{
 
 // Insert Regions
 const handleAddCard = (idx: number) => {
-  const newRgb = pltState.mixCard(idx);
+  const newRgb = pltState.mixCard(idx - 1);
   if (!settingsState.transition.pos) { // no transition.
     pltState.addCard(idx, newRgb);
   } else {
