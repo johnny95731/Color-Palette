@@ -7,8 +7,22 @@ export default mergeConfig(
   defineConfig({
     test: {
       environment: 'jsdom',
-      exclude: [...configDefaults.exclude, 'e2e/*'],
+      exclude: [
+        ...configDefaults.exclude,
+        'e2e/*',
+      ],
       root: fileURLToPath(new URL('./', import.meta.url)),
+      coverage: {
+        include: ['**/*.[jt]s?(x)','**/*.vue'],
+        exclude: [
+          ...configDefaults.exclude,
+          'e2e/*',
+          '**/*.vue',
+          '**/test/**',
+          '**/types/*',
+          '*.*',
+        ]
+      }
     },
   }),
 );

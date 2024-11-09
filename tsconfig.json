@@ -1,6 +1,6 @@
 {
   "include": ["**/*.ts", "**/*.d.ts", "**/*.tsx", "**/*.vue"],
-  "exclude": ["src/**/__tests__/*", "node_modules"],
+  "exclude": ["node_modules"],
   "compilerOptions": {
     "baseUrl": "./",
     "target": "ES2022",

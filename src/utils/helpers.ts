@@ -89,21 +89,6 @@ export function shuffle <T>(arr: T[]): T[] {
 //   return arr;
 // }
 
-/**
- * Evaluate elementwise mean of two arrays.
- * @param arr1 Numeric of a color.
- * @param arr2 Numeric of a color.
- * @returns The mean value of color1 and color2.
- */
-export const elementwiseMean = (arr1: number[], arr2: number[]): number[] => {
-  const newColor = [];
-  for (let i = 0; i < arr1.length; i++) {
-    newColor[i] = 0.5 * (arr1[i] + arr2[i]);
-  }
-  return newColor;
-};
-
-
 
 // ### Value helpers
 /**

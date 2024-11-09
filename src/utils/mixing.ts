@@ -1,5 +1,5 @@
 import { getSpaceInfos } from './colors.ts';
-import { elementwiseMean } from './helpers.ts';
+import { elementwiseMean } from './numeric.ts';
 import { HSL_MAX } from '@/constants/colors.ts';
 import type { Mixer, MixingType } from '@/types/mixing.ts';
 import type { ColorSpacesType } from '@/types/colors.ts';

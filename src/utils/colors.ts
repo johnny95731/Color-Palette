@@ -50,7 +50,7 @@ export const getNamedColorRgb = (name: string): number[] => {
  * Convert sRGB to linear RGB.
  * Maps [0, RGB_MAX] into [0, RGB_MAX]
  */
-const srgb2linearRgb = (srgb: number[]) => {
+export const srgb2linearRgb = (srgb: number[]) => {
   return srgb.map(val =>
     val/RGB_MAX < 0.04045 ?
       val / 12.92 :
@@ -58,11 +58,11 @@ const srgb2linearRgb = (srgb: number[]) => {
   );
 };
 
-const linearRgb2srgb = (srgb: number[]) => {
-  return srgb.map(val =>
+export const linearRgb2srgb = (linearRgb: number[]) => {
+  return linearRgb.map(val =>
     val < 0.798 ?
       val * 12.92 :
-      ((val/RGB_MAX)**0.42 * 1.055 - 0.055) * RGB_MAX
+      ((val/RGB_MAX)**0.416667 * 1.055 - 0.055) * RGB_MAX // 1/2.4 ~= 0.41666...
   );
 };
 
@@ -89,7 +89,7 @@ export const rgb2hue = (rgb: number[]): number[] => {
   return [60 * hue, min, max];
 };
 
-const [labFunc, labFuncInv] = (() => {
+export const [labFunc, labFuncInv] = (() => {
   const thresh = (6/29) ** 3; // threshold
   const scaling = 7.787; // = 1 / (3 * LAB_DELTA**2)
   const bias = 4 / 29; // = 16 / 116
@@ -608,6 +608,10 @@ export const getContrastAdjuster = (method: ContrastMethodType) => {
 
 
 // # Sorting
+/**
+ * Sorting an array of object with `hex` property by luminance in ascending
+ * order.
+ */
 export const sortingByLuminance = <T extends {hex: string}>(arr: T[]) => {
   const copied = JSON.parse(JSON.stringify(arr)) as T[];
   return copied.sort((a, b) => rgb2gray(hex2rgb(a.hex)) - rgb2gray(hex2rgb(b.hex)));
@@ -616,7 +620,7 @@ export const sortingByLuminance = <T extends {hex: string}>(arr: T[]) => {
 
 // # Harmony
 // ## Hue harmony
-const hueRotation = ([h, s, b]: number[], deg: number) => (
+export const hueRotation = ([h, s, b]: number[], deg: number) => (
   [mod(h + deg, 360), s, b]
 );
 

@@ -58,23 +58,25 @@ export const countDecimals = (num: number)  => { // Twice faster
 // };
 
 /**
- * Rounding a number to specifit digit (after decimal point).
+ * Rounding a number to specifit place value.
  * @param num A number.
- * @param digits Digit after decimal point.
+ * @param place Rounding to specific place value. Positive means decimal places
+ * and negative means whole number places.
  * @default 0
  * @return Percentage number.
  */
-export const round = (num: number, digits: number = 0): number =>
-  Math.round(10**(digits) * num) / 10**(digits);
+export const round = (num: number, place: number = 0): number =>
+  Math.round(10**(place) * num) / 10**(place);
 
 /**
  * Convert a number `num` to percentage form, that is, `num * 100%`.
  * @param num A number.
- * @param digits Digit of output number.
+ * @param place Rounding to specific place value. Positive means decimal places
+ * and negative means whole number places.
  * @return Percentage number.
  */
-export const toPercent = (num: number, digits: number = 0): number => {
-  return round(100 * num, digits);
+export const toPercent = (num: number, place: number = 0): number => {
+  return round(100 * num, place);
 };
 
 /**
@@ -98,6 +100,8 @@ export const clip = (num: number, min?: number, max?: number): number => {
  * @param max Maximum of original range.
  * @param newMin Minimum of new range.
  * @param newMax Maximum of new range.
+ * @param place Rounding to specific place value. Positive means decimal places
+ * and negative means whole number places.
  */
 export const rangeMapping = (
   val: number,
@@ -105,11 +109,11 @@ export const rangeMapping = (
   max: number,
   newMin: number,
   newMax: number,
-  digit?: number,
+  place?: number,
 ) => {
   const ratio = clip((val - min) / (max - min), 0, 1); // avoid floating problem.
   const newVal = newMin + ratio * (newMax - newMin);
-  return isNullish(digit) ? newVal : round(newVal, digit);
+  return isNullish(place) ? newVal : round(newVal, place);
 };
 
 /** Degree to radian. */
@@ -126,23 +130,23 @@ export const atan2Deg = (y: number, x: number) =>
   mod(rad2deg(Math.atan2(y,x)), 360);
 
 /** Polar coordinate to Cartesian coordinate */
-export const cartesian2polar = (y: number, x: number, digit?: number) => {
+export const cartesian2polar = (y: number, x: number, place?: number) => {
   let deg = atan2Deg(y, x),
     radius = Math.sqrt(x**2 + y**2);
-  if (!isNullish(digit)) {
-    deg = round(deg, digit);
-    radius = round(radius, digit);
+  if (!isNullish(place)) {
+    deg = round(deg, place);
+    radius = round(radius, place);
   }
   return { deg, radius };
 };
 
 /** Polar coordinate to Cartesian coordinate */
-export const polar2cartesian = (r: number, deg: number, digit?: number) => {
+export const polar2cartesian = (r: number, deg: number, place?: number) => {
   let x = r * Math.cos(deg2rad(deg)),
     y = r * Math.sin(deg2rad(deg));
-  if (!isNullish(digit)) {
-    x = round(x, digit);
-    y = round(y, digit);
+  if (!isNullish(place)) {
+    x = round(x, place);
+    y = round(y, place);
   }
   return { x, y };
 };
@@ -166,3 +170,18 @@ export const sum = (arr: readonly number[]) =>
 export const l2Dist = (arr1: number[], arr2: number[]) => {
   return arr1.reduce((prev, val, i) => prev + (val - arr2[i])**2, 0);
 };
+
+/**
+ * Evaluate elementwise mean of two arrays.
+ * @param arr1 Numeric of a color.
+ * @param arr2 Numeric of a color.
+ * @returns The mean value of color1 and color2.
+ */
+export const elementwiseMean = (arr1: number[], arr2: number[]): number[] => {
+  const newColor = [];
+  for (let i = 0; i < arr1.length; i++) {
+    newColor[i] = 0.5 * (arr1[i] + arr2[i]);
+  }
+  return newColor;
+};
+

@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 // Utils
 import {
-  rgb2hex, randRgbGen, hex2rgb, getSpaceInfos, sortingByGray,
+  rgb2hex, randRgbGen, hex2rgb, getSpaceInfos, sortingByLuminance,
   getContrastAdjuster,
 } from '@/utils/colors.ts';
 import { shuffle } from '@/utils/helpers.ts';
@@ -151,7 +151,7 @@ const usePltStore = defineStore('plt', {
       switch (sortBy) {
       case 'luminance':
         if (this.sortBy === 'luminance') this.cards.reverse();
-        else this.cards = sortingByGray(this.cards);
+        else this.cards = sortingByLuminance(this.cards);
         this.sortBy = 'luminance';
         break;
       case 'inversion':
