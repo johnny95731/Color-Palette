@@ -307,7 +307,8 @@ export const hsb2rgb = (hsb: number[]): number[] => {
 const hwb2hsb = (hwb: number[]) => {
   return [
     hwb[0],
-    HSB_MAX[1] * (1 - hwb[1] / (HWB_MAX[1] - hwb[2])),
+    hwb[2] === HWB_MAX[2] ? 0 :
+      HSB_MAX[1] * (1 - hwb[1] / (HWB_MAX[2] - hwb[2])),
     HSB_MAX[2] * (1 - hwb[2] / HWB_MAX[2])
   ];
 };
@@ -605,11 +606,13 @@ export const getContrastAdjuster = (method: ContrastMethodType) => {
   return brightnessScaling;
 };
 
+
 // # Sorting
-export const sortingByGray = <T extends {hex: string}>(arr: T[]) => {
+export const sortingByLuminance = <T extends {hex: string}>(arr: T[]) => {
   const copied = JSON.parse(JSON.stringify(arr)) as T[];
   return copied.sort((a, b) => rgb2gray(hex2rgb(a.hex)) - rgb2gray(hex2rgb(b.hex)));
 };
+
 
 // # Harmony
 // ## Hue harmony
