@@ -50,11 +50,11 @@ const SettingDialog = defineAsyncComponent(
       return component;
     })
 );
-import { OverlayDiv } from '@/constants/browser';
-import { HOT_KEYS, refreshKey, sortingKey } from './utils/hotkeys';
+import { HOT_KEYS } from './constants/hotkeys';
 import { invertBoolean } from './utils/helpers';
 // Store and Context
 import usePltStore from './features/stores/usePltStore';
+import { SORTING_ACTIONS } from './constants/colors';
 
 const headerRef = ref<InstanceType<typeof TheHeader>>();
 // Show/Hide dialogs
@@ -86,28 +86,22 @@ const isCardPending = computed(() => pltState.isEditing || pltState.isPending);
 
 // Connect hotkey.
 (() => {
-  const { [sortingKey]: sortingHotkey, [refreshKey]: refreshHotkey } = HOT_KEYS;
+  const { sorting_: sortingHotkey, refresh_: refreshHotkey } = HOT_KEYS;
   const keyDownEvent = (e: KeyboardEvent) => {
     const key = e.key.toLowerCase();
     if (
       // Prevent trigger hotkey when editing or add/remove/move (transition) card.
-      toValue(isCardPending) || toValue(isShowingOverlay) ||
-      // Opening some popup element or focusing their activator.
-      OverlayDiv.contains(document.activeElement)
+      toValue(isCardPending) || toValue(isShowingOverlay)
     ) return;
-    switch (key) {
-    case refreshHotkey:
+    if (key === refreshHotkey) {
       pltState.refreshCard(-1);
-      break;
-    case sortingHotkey.gray:
-      pltState.sortCards('gray');
-      break;
-    case sortingHotkey.random:
-      pltState.sortCards('random');
-      break;
-    case sortingHotkey.inversion:
-      pltState.sortCards('inversion');
-      break;
+      return;
+    }
+    for (const sortBy of SORTING_ACTIONS) {
+      if (key === sortingHotkey[sortBy]) {
+        pltState.sortCards(sortBy);
+        return;
+      }
     }
   };
 

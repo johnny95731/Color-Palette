@@ -240,7 +240,7 @@ import DropdownMenu from '../Custom/DropdownMenu.vue';
 import TheTooltip from '../Custom/TheTooltip.vue';
 import TheBtn from '@/components/Custom/TheBtn.vue';
 // Utils
-import { HOT_KEYS, sortingKey } from '@/utils/hotkeys';
+import { HOT_KEYS } from '@/constants/hotkeys';
 import { invertBoolean } from '@/utils/helpers';
 // Constants
 import { MIXING_MODES } from '@/constants/mixing';
@@ -318,6 +318,6 @@ watch(
 const sortingMenuItems = SORTING_ACTIONS.map(val => ({
   val,
   name: val,
-  hotkey: HOT_KEYS[sortingKey][val],
+  hotkey: HOT_KEYS.sorting_[val],
 }));
 </script>
