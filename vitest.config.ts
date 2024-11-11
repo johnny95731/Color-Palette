@@ -17,7 +17,6 @@ export default mergeConfig(
         exclude: [
           ...configDefaults.exclude,
           'e2e/*',
-          '**/*.vue',
           '**/test/**',
           '**/types/*',
           '*.*',

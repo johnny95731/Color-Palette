@@ -6,16 +6,22 @@
   >
     <slot />
   </component>
-  <slot v-else />
+  <slot
+    v-else
+    v-bind="$attrs"
+  />
 </template>
 
 <script setup lang="ts">
 import type { Component } from 'vue';
 
 interface Props {
-  tag: string | Component;
-  isWrap: boolean;
+  tag?: string | Component;
+  isWrap?: boolean;
 }
 
-defineProps<Props>();
+withDefaults(defineProps<Props>(), {
+  tag: 'div',
+  isWrap: true,
+});
 </script>
