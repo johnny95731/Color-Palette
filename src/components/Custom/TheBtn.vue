@@ -1,6 +1,6 @@
 <template>
   <button
-    type="button"
+    :type="type"
     :class="[
       'btn',
       icon && 'btn--icon',
@@ -55,6 +55,7 @@
 import TheIcon from '@/components/Custom/TheIcon.vue';
 
 type Props = {
+  type?: 'button' | 'submit' | 'reset',
   text?: string,
   variant?: 'std' | 'flat',
   icon?: string,
@@ -63,6 +64,7 @@ type Props = {
   ripple?: boolean
 }
 withDefaults(defineProps<Props>(), {
+  type: 'button',
   variant: 'std',
   ripple: true,
 });
