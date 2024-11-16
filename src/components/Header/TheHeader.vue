@@ -11,7 +11,7 @@
             css,
             $style.btn
           ]"
-          prepend-icon="refresh"
+          prepend-icon="arrow-clockwise"
           aria-label="刷新調色盤"
           :text="isSmall ? '刷新' : undefined"
           @click="pltState.refreshCard(-1)"
@@ -28,7 +28,7 @@
             css,
             $style.btn
           ]"
-          :prepend-icon="isRunning ? 'pause' : 'play'"
+          :prepend-icon="isRunning ? 'pause-fill' : 'play'"
           :aria-label="isRunning ? '暫停' : '播放'"
           :text="isSmall ? isRunning ? '暫停' : '播放' : undefined"
           @click="haldleClickSlides"
@@ -37,7 +37,7 @@
     </TheTooltip>
     <DropdownMenu
       ref="sortingRef"
-      prepend-icon="sort"
+      prepend-icon="sort-down"
       :class="[
         css,
         $style.btn
@@ -54,7 +54,7 @@
     />
     <DropdownMenu
       ref="mixingRef"
-      prepend-icon="mix"
+      prepend-icon="file-earmark-plus"
       :class="[
         css,
         $style.btn
@@ -71,14 +71,14 @@
     />
     <DropdownMenu
       ref="spacegRef"
-      prepend-icon="edit"
+      prepend-icon="sliders"
       :class="[
         css,
         $style.btn
       ]"
       aria-label="色彩空間"
       :text="isSmall ? '色彩空間' : undefined"
-      letterCase="all-caps"
+      letter-case="all-caps"
       :items="COLOR_SPACES"
       :current-val="pltState.colorSpace"
       @click-item="pltState.setColorSpace($event as ColorSpacesType)"
@@ -129,7 +129,7 @@
         css,
         $style.btn
       ]"
-      prepend-icon="setting"
+      prepend-icon="gear"
       aria-label="設定"
       :text="isSmall ? '設定' : undefined"
       aria-haspopup="dialog"
@@ -141,7 +141,7 @@
     />
     <!-- <TheBtn
       :class="$style.btn"
-      prepend-icon="info"
+      prepend-icon="info-circle"
       text="Settings"
       aria-label="額外資訊"
       aria-haspopup="dialog"

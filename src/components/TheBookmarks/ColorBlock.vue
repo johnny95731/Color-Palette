@@ -24,7 +24,7 @@
         @click="delFavColor"
       >
         <TheIcon
-          type="delete"
+          type="trash3-fill"
         />
       </button>
     </span>

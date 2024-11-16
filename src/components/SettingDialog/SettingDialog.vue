@@ -13,7 +13,7 @@
     >
       <h2>設定</h2>
       <TheBtn
-        icon="close"
+        icon="x-lg"
         aria-label="close"
         @click="model = false"
       />
@@ -69,7 +69,7 @@
               label="#border-color"
               :items="BORDER_COLOR"
               :model-value="settingsState.border.color"
-              letter-case="title"
+              letter-case="start"
               @update:model-value="settingsState.setBorder('color', $event)"
             />
           </template>

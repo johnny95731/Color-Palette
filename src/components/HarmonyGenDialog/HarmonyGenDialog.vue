@@ -13,7 +13,7 @@
     >
       <h2>調和調色盤</h2>
       <TheBtn
-        icon="close"
+        icon="x-lg"
         aria-label="關閉"
         @click="isShowing = false"
       />

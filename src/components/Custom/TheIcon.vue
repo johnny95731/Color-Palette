@@ -3,6 +3,7 @@
     :class="[
       getIcon(type)
     ]"
+    :aria-hidden="ariaHidden"
   />
 </template>
 
@@ -11,7 +12,10 @@ import { getIcon } from '@/utils/icons';
 
 type Prop = {
   type: string;
+  ariaHidden?: boolean | `${boolean}`
 }
 
-defineProps<Prop>();
+withDefaults(defineProps<Prop>(), {
+  ariaHidden: true
+});
 </script>

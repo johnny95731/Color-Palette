@@ -12,7 +12,7 @@
     >
       <h2>書籤</h2>
       <TheBtn
-        icon="close"
+        icon="x-lg"
         aria-label="關閉"
         @click="model = false"
       />
@@ -74,8 +74,6 @@ import { isTabKey } from '@/utils/browser';
 // Store
 import usePltStore from 'stores/usePltStore';
 import useFavStore from 'stores/useFavStore';
-// Types
-import type { IconType } from '@/utils/icons';
 
 
 const emit = defineEmits<{
@@ -112,18 +110,18 @@ const pltStrings = computed(() => (
   pltState.cards.map((state) => state.hex.slice(1)).join('-')
 ));
 const state = computed<{
-  icon: IconType,
+  icon: string,
   text: string,
 }>(() => {
   const isFavPlt = favState.plts.includes(toValue(pltStrings));
   if (isFavPlt) {
     return {
-      icon: 'unfavPallete',
+      icon: 'bookmark-dash',
       text: 'Remove Pallete',
     } as const;
   } else {
     return {
-      icon: 'favPallete',
+      icon: 'bookmark-plus',
       text: 'Append Pallete',
     } as const;
   }

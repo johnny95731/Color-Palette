@@ -21,7 +21,7 @@
         :is-wrap="media.isSmall"
       >
         <TheBtn
-          icon="close"
+          icon="x-lg"
           :style="closeIconStyle"
           aria-label="移除"
           :ripple="false"
@@ -47,7 +47,7 @@
       >
         <TheBtn
           v-once
-          icon="draggable"
+          icon="arrows"
           style="cursor: grab;touch-action: none;"
           aria-label="拖動"
           :ripple="false"
@@ -55,14 +55,14 @@
         />
         <TheBtn
           v-once
-          icon="refresh"
+          icon="arrow-clockwise"
           aria-label="刷新"
           :ripple="false"
           @click="pltState.refreshCard(cardIdx)"
         />
         <TheBtn
           v-once
-          icon="edit"
+          icon="sliders"
           aria-label="調整"
           aria-haspopup="dialog"
           :ripple="false"
@@ -261,13 +261,13 @@ const closeIconStyle = computed<CSSProperties | undefined>(() => {
 });
 const isLock = computed(() => (
   props.card.isLock ?
-    { icon: 'lock', label: '解鎖刷新' } as const :
-    { icon: 'unlock', label: '鎖定刷新' } as const
+    { icon: 'lock-fill', label: '解鎖刷新' } as const :
+    { icon: 'unlock-fill', label: '鎖定刷新' } as const
 ));
 const isFavIcon = computed(() => (
   toValue(isFav) ?
-    { icon: 'fav', label: '移出書籤' } as const :
-    { icon: 'unfav', label: '加入書籤' } as const
+    { icon: 'star-fill', label: '移出書籤' } as const :
+    { icon: 'star', label: '加入書籤' } as const
 ));
 
 

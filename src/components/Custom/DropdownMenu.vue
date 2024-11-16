@@ -72,9 +72,8 @@
       #append
     >
       <TheIcon
-        type="caretDown"
+        type="caret-down-fill"
         class="triangle"
-        aria-hidden="true"
       />
     </template>
   </TheBtn>
@@ -95,7 +94,6 @@ import { useElementBounding } from '@/composables/useElementBounding';
 import { menuSymbol } from '@/constants/browser';
 // Types
 import type { CSSProperties, ModelRef } from 'vue';
-import type { IconType } from '@/utils/icons';
 import type { VueClass } from 'types/browser';
 
 type MenuItem = {
@@ -111,11 +109,11 @@ type Props = {
   /**
    * prepend icon
    */
-  prependIcon?: IconType;
+  prependIcon?: string;
   /**
    * Icon only activator
    */
-  icon?: IconType;
+  icon?: string;
   items?: readonly (string | {
     name: string,
     val: string,

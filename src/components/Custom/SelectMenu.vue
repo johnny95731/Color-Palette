@@ -23,9 +23,8 @@
     >
       <template #append>
         <TheIcon
-          type="caretDown"
+          type="caret-down-fill"
           class="triangle"
-          aria-hidden="true"
         />
       </template>
     </TheBtn>

@@ -28,7 +28,7 @@
       >
         <TheBtn
           variant="flat"
-          icon="insert"
+          icon="arrows-expand-vertical"
           @click="handleAddCard(i)"
           :aria-label="`新增於位置${i}`"
         />
