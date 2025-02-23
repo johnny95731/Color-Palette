@@ -30,6 +30,7 @@
         <div
           class="color-picker__thumb"
           :style="canvasThumbStyle"
+          @pointerdown="canvasDraggingStart"
         />
       </div>
       <TheSlider
@@ -56,6 +57,7 @@
           class="color-picker__thumb"
           rectPickerThumeStyle
           :style="secondThumbStyle"
+          @pointerdown="sliderDraggingStart"
         />
       </div>
     </div>
@@ -106,7 +108,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref, unref, watch } from 'vue';
+import { computed, onMounted, reactive, ref, toValue, unref, watch } from 'vue';
 import { useDragableElement } from '@/composables/useDragableElement';
 import TheSlider from './TheSlider.vue';
 import { cartesian2polar, mod, polar2cartesian, rangeMapping, round, toPercent } from '@/utils/numeric';
@@ -374,28 +376,30 @@ watch(
 onMounted(updateColorPicker);
 
 // Canvas event
-(() => {
+const canvasDraggingStart = toValue(() => {
   const update = (pos: Position) => {
     updaters.value.canvas_(pos);
   };
-  useDragableElement(canvasPickerRef, {
+  const { start } = useDragableElement(canvasPickerRef, {
     containerElement: canvasPickerRef,
     onStart: update,
     onMove: update,
   });
-})();
+  return start;
+});
 
 // Slider events
-(() => {
+const sliderDraggingStart = toValue(() => {
   const update = (pos: Position) => {
     updaters.value.secondPicker_!(pos);
   };
-  useDragableElement(secondPickerRef, {
+  const { start } = useDragableElement(secondPickerRef, {
     containerElement: secondPickerRef,
     onStart: update,
     onMove: update,
   });
-})();
+  return start;
+});
 
 
 // models
