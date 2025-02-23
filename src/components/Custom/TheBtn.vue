@@ -1,12 +1,16 @@
 <template>
-  <button
-    :type="type"
+  <component
+    :is="href ? 'a' : 'button'"
+    :type="href ? undefined : type"
     :class="[
       'btn',
       icon && 'btn--icon',
       ripple && 'ripple'
     ]"
     :aria-label="text"
+    :href="href"
+    :target="href ? '_blank' : undefined"
+    :rel="href ? 'noopener noreferrer' : undefined"
   >
     <div
       v-if="variant !== 'flat'"
@@ -48,7 +52,7 @@
         />
       </slot>
     </div>
-  </button>
+  </component>
 </template>
 
 <script setup lang="ts">
@@ -60,6 +64,7 @@ type Props = {
   variant?: 'std' | 'flat',
   icon?: string,
   prependIcon?: string,
+  href?: string,
   appendIcon?: string,
   ripple?: boolean
 }

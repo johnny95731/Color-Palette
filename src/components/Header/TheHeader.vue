@@ -139,6 +139,21 @@
       :activator="settingsRef"
       text="設定欄"
     />
+    <TheBtn
+      ref="githubRef"
+      :class="[
+        css,
+        $style.btn
+      ]"
+      href="https://github.com/johnny95731/Color-Palette"
+      prepend-icon="github"
+      aria-label="GitHub連結"
+      :text="isSmall ? '設定' : undefined"
+    />
+    <TheTooltip
+      :activator="githubRef"
+      text="GitHub連結"
+    />
     <!-- <TheBtn
       :class="$style.btn"
       prepend-icon="info-circle"
@@ -269,6 +284,7 @@ const spacegRef = ref<InstanceType<typeof DropdownMenu>>();
 const harmonyGenRef = ref<InstanceType<typeof TheBtn>>();
 const bookmarksRef = ref<InstanceType<typeof TheBtn>>();
 const settingsRef = ref<InstanceType<typeof TheBtn>>();
+const githubRef = ref<InstanceType<typeof TheBtn>>();
 defineExpose({
   focusBookmarks() {
     toValue(bookmarksRef)?.$el.focus();
