@@ -25,15 +25,25 @@
         v-memo="palette"
         :class="$style.palette"
       >
-        <TheBtn
-          v-for="(hex, i) in palette"
-          :key="i"
-          :style="{
-            background: hex
-          }"
-          :ripple="false"
-          @click="copyHex(i)"
-        />
+        <TheTooltip
+          location="top"
+          text="Copied"
+          :openOnHover="false"
+          openOnClick
+          :eager="false"
+        >
+          <template #activator="{handleClick}">
+            <TheBtn
+              v-for="(hex, i) in palette"
+              :key="i"
+              :style="{
+                background: hex
+              }"
+              :ripple="false"
+              @click="copyHex(i);handleClick($event)"
+            />
+          </template>
+        </TheTooltip>
       </div>
       <TheBtn
         v-memo="[palette[0]]"
@@ -114,6 +124,7 @@ import usePltStore from '@/features/stores/usePltStore';
 // types
 import type{ ModelRef } from 'vue';
 import { copyText } from '@/utils/browser';
+import TheTooltip from '../Custom/TheTooltip.vue';
 
 const isShowing = defineModel<boolean>() as ModelRef<boolean>;
 

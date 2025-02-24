@@ -3,12 +3,15 @@
     <div
       v-if="eager || model || isActive"
       v-show="model || isActive"
+      v-bind="$attrs"
       :class="[
         'overlay',
         `overlay--${type}`,
         model && 'overlay--active'
       ]"
-      v-bind="$attrs"
+      :style="{
+        zIndex
+      }"
       :role="role"
       :aria-modal="ariaModal || undefined"
     >
@@ -48,12 +51,13 @@
 <script setup lang="ts">
 import { inject, ModelRef, onMounted, provide, ref, unref, watch } from 'vue';
 import { invertBoolean } from '@/utils/helpers';
+import { useElementBounding } from '@/composables/useElementBounding';
+import { OVERLAY_SYMBOL } from '@/constants/browser';
 import type { CSSProperties } from 'vue';
 import type { VueClass } from 'types/browser';
-import { useElementBounding } from '@/composables/useElementBounding';
-import { overlaySymbol } from '@/constants/browser';
+import { calcOverlayZIndex } from '@/utils/browser';
 
-type Props = {
+export type Props = {
   /**
    * Forces the component’s content to render when it mounts.
    */
@@ -124,6 +128,7 @@ const isActive = ref(false);
 const openedChild = ref(0);
 
 type OverlayProvided = {
+  zIndex?: number,
   /**
    * A submenu is opened.
    */
@@ -134,7 +139,10 @@ type OverlayProvided = {
   unregister: () => void,
 };
 
-provide<OverlayProvided>(overlaySymbol, {
+const parent = inject<OverlayProvided | null>(OVERLAY_SYMBOL, null);
+let zIndex = calcOverlayZIndex(props.type, parent?.zIndex);
+provide<OverlayProvided>(OVERLAY_SYMBOL, {
+  zIndex,
   register() {
     openedChild.value++;
   },
@@ -142,12 +150,11 @@ provide<OverlayProvided>(overlaySymbol, {
     openedChild.value--;
   },
 });
-const parent = inject<OverlayProvided | null>(overlaySymbol, null);
 
 
 // Events when dom show/hide.
 const handleAfterEnter = () => {
-  if (props.type !== 'menu') {
+  if (props.type !== 'menu' && props.type !== 'tooltip') {
     addEventListener('pointerdown', mousedown_, true);
     addEventListener('click', clickOutside_, true);
   }

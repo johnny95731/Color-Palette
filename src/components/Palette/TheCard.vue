@@ -73,31 +73,49 @@
     <div
       :class="$style.textDisplay"
     >
-      <div
-        :class="$style.hexText"
-        @click="copyText(card.hex.slice(1))"
+      <TheTooltip
+        location="top"
+        text="Copied"
+        :openOnHover="false"
+        openOnClick
+        :eager="false"
       >
-        <TheIcon
-          v-once
-          type="copy"
-        />
-        <TheBtn
-          ref="hexTextRef"
-          :text="card.hex"
-        />
-      </div>
-      <div
-        :class="$style.detailText"
-        @click="copyText(detail)"
-      >
-        <TheIcon
-          v-once
-          type="copy"
-        />
-        <TheBtn
-          :text="detail"
-        />
-      </div>
+        <template #activator="{handleClick}">
+          <div
+            :class="$style.hexText"
+            @click="
+              copyText(card.hex.slice(1));
+              handleClick($event)
+            "
+          >
+            <TheIcon
+              v-once
+              type="copy"
+            />
+            <TheBtn
+              ref="hexTextRef"
+              :ripple="false"
+              :text="card.hex"
+            />
+          </div>
+          <div
+            :class="$style.detailText"
+            @click="
+              copyText(detail);
+              handleClick($event)
+            "
+          >
+            <TheIcon
+              v-once
+              type="copy"
+            />
+            <TheBtn
+              :ripple="false"
+              :text="detail"
+            />
+          </div>
+        </template>
+      </TheTooltip>
     </div>
     <!-- Editor -->
     <OverlayContainer
@@ -200,6 +218,7 @@ import media from '@/composables/useMedia';
 // Types
 import type { CSSProperties } from 'vue';
 import type { CardType } from '@/features/types/pltStore';
+import TheTooltip from '../Custom/TheTooltip.vue';
 
 const cardContainerRef = ref<HTMLElement>();
 const hexTextRef = ref<InstanceType<typeof TheBtn>>();
@@ -298,6 +317,7 @@ const cardStyle = computed<CSSProperties>(() => {
     backgroundColor: props.card.hex,
   };
 });
+
 
 // Editor position
 const hexInputRef = ref<HTMLInputElement>();

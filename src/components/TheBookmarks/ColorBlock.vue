@@ -6,15 +6,25 @@
       backgroundColor: props.hex,
     }"
   >
-    <TheBtn
-      class="ripple"
-      :style="iconFilterStyle"
-      prepend-icon="copy"
-      :text="props.hex"
-      :aria-label="`複製HEX碼${props.hex}`"
-      variant="flat"
-      @click="copyText(props.hex)"
-    />
+    <TheTooltip
+      location="top"
+      text="Copied"
+      :openOnHover="false"
+      openOnClick
+      :eager="false"
+    >
+      <template #activator="{handleClick}">
+        <TheBtn
+          class="ripple"
+          :style="iconFilterStyle"
+          prepend-icon="copy"
+          :text="props.hex"
+          :aria-label="`複製HEX碼${props.hex}`"
+          variant="flat"
+          @click="copyText(props.hex);handleClick($event)"
+        />
+      </template>
+    </TheTooltip>
     <span
       :class="$style.delWrapper"
     >
@@ -41,6 +51,7 @@ import { copyText } from '@/utils/browser';
 import useFavStore from '@/features/stores/useFavStore';
 import type { CSSProperties } from 'vue';
 import TheBtn from '../Custom/TheBtn.vue';
+import TheTooltip from '../Custom/TheTooltip.vue';
 
 type Props = {
   hex: string;

@@ -3,6 +3,7 @@
     name="activator"
     :isShow="isShow"
     :props="activatorProps"
+    :handleClick="handleClick"
   />
   <OverlayContainer
     ref="tooltipRef"
@@ -17,7 +18,7 @@
     v-model="isShow"
   >
     <div
-      :v-bind="$attrs"
+      v-bind="$attrs"
     >
       <slot name="text">
         {{ text }}
@@ -36,13 +37,16 @@ import { getComponentId } from '@/utils/browser';
 import type { CSSProperties, Component } from 'vue';
 
 type Props = {
-  activator?: `#${string}` | 'parent' | HTMLElement | Component,
+  activator?: string | 'parent' | 'DomParent' | HTMLElement | Component,
   id?: string,
   eager?: boolean,
   text?: string | number,
   transition?: string,
+  openOnHover?: boolean,
   closeDelay?: string | number,
   openDelay?: string | number,
+  openOnClick?: boolean,
+  clickOpenDuration?: string | number,
   location?: 'top' | 'bottom' | 'left' | 'right',
 }
 
@@ -50,8 +54,11 @@ const props = withDefaults(defineProps<Props>(), {
   location: 'bottom',
   eager: true,
   transition: 'fade-out',
-  openDelay: 100,
+  openOnHover: true,
+  openDelay: 300,
   closeDelay: 200,
+  openOnClick: false,
+  clickOpenDuration: 700
 });
 
 const tooltipRef = ref<InstanceType<typeof OverlayContainer>>();
@@ -63,6 +70,9 @@ const activatorEl = computed<HTMLElement | null>(() => {
   refreshActivatorElKey.value;
   if (props.activator === 'parent')
     return instance?.parent?.proxy?.$el;
+  if (props.activator === 'DomParent') {
+    return instance?.proxy?.$el.previousElementSibling;
+  }
   if (typeof props.activator === 'string')
     return document.querySelector(props.activator);
   if (props.activator instanceof HTMLElement) return props.activator;
@@ -93,10 +103,13 @@ watch(
 
 
 const openDelay_ = computed<number>(() =>
-  Number.isNaN(+props.openDelay) ? 0 : +props.openDelay
+  Number.isNaN(+props.openDelay) ? 100 : +props.openDelay
 );
 const closeDelay_ = computed<number>(() =>
-  Number.isNaN(+props.closeDelay) ? 0 : +props.closeDelay
+  Number.isNaN(+props.closeDelay) ? 200 : +props.closeDelay
+);
+const clickOpenDuration_ = computed<number>(() =>
+  isNaN(+props.clickOpenDuration) ? 700 : +props.clickOpenDuration
 );
 
 // Tooltip position
@@ -113,56 +126,82 @@ const tooltipStyle = computed<CSSProperties>(() => {
       transform: 'translateY(-50%)',
     };
   }
-  if (location === 'right') {
+  else if (location === 'right') {
     return {
       top: `${rect.top + rect.height / 2}px`,
       left: `${rect.right + 4}px`,
       transform: 'translateY(-50%)',
     };
   }
-  if (location === 'top') {
+  else if (location === 'top') {
     return {
       bottom: `${document.body.clientHeight - (rect.top - 4)}px`,
       left: `${rect.left + rect.width / 2}px`,
       transform: 'translateX(-50%)',
     };
   }
-  else { // 'bottom'
+  else if (location === 'bottom') {
     return {
       top: `${rect.bottom + 4}px`,
       left: `${rect.left + rect.width / 2}px`,
       transform: 'translateX(-50%)',
     };
   }
+  else return {};
 });
 
 // Show/Hide events
 const isShow = defineModel<boolean>();
 let delayTimeoutId: number | void;
 const handleShow = (e: MouseEvent) => {
+  if (!props.openOnHover && e.type === 'mouseenter') return;
   // Clear timeout
   delayTimeoutId = clearTimeout(delayTimeoutId as number | undefined);
-  // Set isShow
-  toValue(openDelay_) ?
-    delayTimeoutId = setTimeout(invertBoolean, toValue(openDelay_), isShow, true) as unknown as number :
+  // Set `isShow`
+  if (toValue(openDelay_))
+    delayTimeoutId = window.setTimeout(
+      invertBoolean, toValue(openDelay_), isShow, true
+    );
+  else
     invertBoolean(isShow, true);
+  // To get activator position.
   currentTarget.value = e.currentTarget as HTMLElement;
 };
-const handleHide = () => {
+const handleHide = (e: MouseEvent) => {
+  if (!props.openOnHover && e?.type === 'mouseleave') return;
   // Clear timeout
-  isNullish(delayTimeoutId) || (delayTimeoutId = clearTimeout(delayTimeoutId!));
-  // Set isShow
-  toValue(closeDelay_) ?
-    delayTimeoutId = setTimeout(invertBoolean, toValue(closeDelay_), isShow, false) as unknown as number :
+  if (!isNullish(delayTimeoutId))
+    (delayTimeoutId = clearTimeout(delayTimeoutId!));
+  // Set `isShow`
+  if (toValue(closeDelay_))
+    delayTimeoutId = window.setTimeout(
+      invertBoolean, toValue(closeDelay_), isShow, false
+    );
+  else
     invertBoolean(isShow, false);
+};
+
+let clickTimeout: number | void;
+const handleClick = (e: MouseEvent) => {
+  if (!props.openOnClick) return;
+  if (clickTimeout)
+    clickTimeout = window.clearTimeout(clickTimeout as number | undefined);
+  invertBoolean(isShow, true);
+  // To get activator position.
+  currentTarget.value = e.currentTarget as HTMLElement;
+  clickTimeout = window.setTimeout(
+    invertBoolean, toValue(clickOpenDuration_) + toValue(closeDelay_), isShow, false
+  );
 };
 
 // Binding events
 useEventListener(activatorEl, 'mouseenter', handleShow);
 useEventListener(activatorEl, 'mouseleave', handleHide);
+useEventListener(activatorEl, 'click', handleClick);
 const activatorProps = computed(() => ({
   onMouseenter: handleShow,
   onMouseleave: handleHide,
+  onClick: handleClick,
   'aria-describedby': idForContainer.value,
 }));
 </script>

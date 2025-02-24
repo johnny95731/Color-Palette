@@ -1,6 +1,7 @@
 import { getCurrentInstance } from 'vue';
 import { randomCharacter } from './helpers';
 import type { EventHandler } from '@/types/browser';
+import type { Props as OverlayProps } from '@/components/Custom/OverlayContainer.vue';
 
 
 export function getPropertyValue(el: HTMLElement | null | undefined, property: string): number;
@@ -80,15 +81,15 @@ export const copyText = (text: string): void => {
   }
 };
 
-/**
- * Copy Hex innerText to clipboard (excludes "#").
- */
-export const copyInnerHex: EventHandler = (e: Event) => {
-  const target = e!.currentTarget as HTMLElement;
-  if (target) {
-    const text = target.innerText.replace('#', '');
-    copyText(text.trim());
-  }
+
+export const calcOverlayZIndex = (type: OverlayProps['type'], parent?: number) => {
+  let zIndex: number;
+  if (parent) // not outermost node.
+    zIndex = parent + 1;
+  else if (type === 'tooltip')
+    zIndex = 50;
+  else zIndex = 100;
+  return zIndex;
 };
 
 

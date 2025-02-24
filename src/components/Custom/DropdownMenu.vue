@@ -91,7 +91,7 @@ import { mod } from '@/utils/numeric';
 import { noModifierKey, shiftOnly, hasPopup } from '@/utils/browser';
 import { useElementBounding } from '@/composables/useElementBounding';
 // constants
-import { menuSymbol } from '@/constants/browser';
+import { MENU_SYMBOL } from '@/constants/browser';
 // Types
 import type { CSSProperties, ModelRef } from 'vue';
 import type { VueClass } from 'types/browser';
@@ -211,8 +211,8 @@ type MenuProvided = {
   unregister: () => void,
   nestedClosing: (target?: Element | EventTarget | null) => void,
 }
-const parent = inject<MenuProvided | null>(menuSymbol, null);
-provide<MenuProvided>(menuSymbol, {
+const parent = inject<MenuProvided | null>(MENU_SYMBOL, null);
+provide<MenuProvided>(MENU_SYMBOL, {
   topActivator() {
     return parent?.topActivator() ?? unref(activator) as HTMLButtonElement;
   },

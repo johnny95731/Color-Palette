@@ -24,14 +24,25 @@
         </button>
       </span>
     </div>
-    <button
-      type="button"
-      class="ripple"
-      aria-label="複製調色盤HEX碼"
-      @click="copyInnerHex"
+
+    <TheTooltip
+      location="top"
+      text="Copied"
+      :openOnHover="false"
+      openOnClick
+      :eager="false"
     >
-      {{ plt }}
-    </button>
+      <template #activator="{handleClick}">
+        <button
+          type="button"
+          class="ripple"
+          aria-label="複製調色盤HEX碼"
+          @click="copyText(plt);handleClick($event)"
+        >
+          {{ plt }}
+        </button>
+      </template>
+    </TheTooltip>
   </li>
 </template>
 
@@ -41,9 +52,10 @@ import { toValue } from '@vueuse/core';
 import $style from './TheBookmarks.module.scss';
 import TheIcon from '../Custom/TheIcon.vue';
 import { isValidHex } from '@/utils/colors';
-import { copyInnerHex } from '@/utils/browser';
+import { copyText } from '@/utils/browser';
 import useFavStore from '@/features/stores/useFavStore';
 import usePltStore from '@/features/stores/usePltStore';
+import TheTooltip from '../Custom/TheTooltip.vue';
 
 type Props = {
   plt: string;
