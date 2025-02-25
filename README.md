@@ -13,7 +13,7 @@
   定時刷新調色盤，由顏色的過渡時間(transition-duration)決定，最少為1000毫秒。
 
 - ### <img style="background:white;padding:1px" src="./src/assets/icons/sort-down.svg" alt="sort"/> 排序 Card Sorting
-  排序卡片。提供「依照亮度(Gray, 快捷鍵: `g`)」、「隨機排序(Random, 快捷鍵: `n`)」、「左右反轉(Inversion, 快捷鍵: `j`)」。
+  排序卡片。提供「依照亮度(Gray, 快捷鍵: `g`)」、「隨機排序(Random, 快捷鍵: `n`)」、「左右反轉(Inversion, 快捷鍵: `j`)」、「CIE76」、「CIE94」、「CIEDE2000」。
 
 - ### <img style="background:white;padding:1px" src="./src/assets/icons/file-earmark-plus.svg" alt="mix"/> 混色方法 Color Mixing
   新增卡片時的混色方法，提供平均值（Mean，預設）、更亮(brighter)、更暗(deeper)、soft light、隨機(Random)。<br/>
