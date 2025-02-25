@@ -1,6 +1,6 @@
 import { calc } from '../calc';
 import NamedColor from '@/assets/NamedColor.json';
-import { isSameFloat, l2Dist, mod, rangeMapping, round } from '@/utils/numeric';
+import { isSameFloat, l2DistSq, mod, rangeMapping, round } from '@/utils/numeric';
 import { getClosestNamed, getSpaceInfos, hex2rgb, randRgbGen, rgb2hex, rgb2hue } from '@/utils/colors';
 import { COLOR_SPACES, RGB_MAX } from '@/constants/colors';
 
@@ -15,7 +15,7 @@ const namedColorMinDist = () => {
   let minDist = Infinity;
   for (let i = 0; i < keys.length; i++) {
     for (let j = i+1; j < keys.length; j++) {
-      const dist = l2Dist(rgbs[i], rgbs[j]);
+      const dist = l2DistSq(rgbs[i], rgbs[j]);
       if (!dist) // two named-color are same
         console.log(keys[i], rgbs[i], keys[j], rgbs[j]);
       if (dist < minDist) {

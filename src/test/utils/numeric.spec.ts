@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest';
-import { cartesian2polar, clip, countDecimals, deg2rad, dot, elementwiseMean, isSameFloat, l2Dist, mod, polar2cartesian, rad2deg, randInt, rangeMapping, round, sum, toPercent } from '@/utils/numeric';
+import { cartesian2polar, clip, countDecimals, deg2rad, dot, elementwiseMean, isSameFloat, l2DistSq, mod, polar2cartesian, rad2deg, randInt, rangeMapping, round, sum, toPercent } from '@/utils/numeric';
 import { describe } from 'node:test';
 
 test('mod', () => {
@@ -346,7 +346,7 @@ test('l2Dist', () => {
   ] as const;
   for (const [arr1, arr2, expect_] of cases) {
     // @ts-expect-error
-    const result = l2Dist(arr1, arr2);
+    const result = l2DistSq(arr1, arr2);
     expect(
       result,
       `l2Dist([${arr1.join(',')}], [${arr2.join(',')}]) should be ${expect_}, not ${result}.`

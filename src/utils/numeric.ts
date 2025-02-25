@@ -165,10 +165,26 @@ export const sum = (arr: readonly number[]) =>
   arr.reduce((prev, val) => prev + val, 0);
 
 /**
- * L2-distance (not take square root yet) of two array.
+ * L2-Norm (not take square root yet) of two array.
  */
-export const l2Dist = (arr1: number[], arr2: number[]) => {
-  return arr1.reduce((prev, val, i) => prev + (val - arr2[i])**2, 0);
+export const l2Norm = (arr: number[]) => {
+  let s = 0;
+  for (const val of arr) {
+    s += val**2;
+  }
+  return Math.sqrt(s);
+};
+
+/**
+ * Square of L2-distance (not take square root yet) of two array.
+ */
+export const l2DistSq = (arr1: number[], arr2: number[]): number => {
+  const len = Math.min(arr1.length, arr2.length);
+  let s = 0;
+  for (let i = 0; i < len; i++) {
+    s += (arr1[i] - arr2[i])**2;
+  }
+  return s;
 };
 
 /**

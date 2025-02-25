@@ -54,7 +54,7 @@ export const objPick = <T extends {}, K extends (string | number | symbol)>(
  * Shuffle an array by Fisher-Yates shuffle. The process will change the input
  * array.
  */
-export function shuffle <T>(arr: T[]): T[] {
+export function shuffle<T>(arr: T[]): T[] {
   for (let i = arr.length - 1; i > 0; i--) {
     const j = randInt(i);
     [arr[i], arr[j]] = [arr[j], arr[i]];

@@ -1,12 +1,11 @@
 import { defineStore } from 'pinia';
 // Utils
 import {
-  rgb2hex, randRgbGen, hex2rgb, getSpaceInfos, sortingByLuminance,
-  getContrastAdjuster,
+  rgb2hex, randRgbGen, hex2rgb, getSpaceInfos, getContrastAdjuster, getDistOp,
 } from '@/utils/colors.ts';
 import { shuffle } from '@/utils/helpers.ts';
 import { INIT_COLOR_SPACE, INIT_NUM_OF_CARDS, MAX_NUM_OF_CARDS } from '@/constants/pltStore';
-import { CONTRAST_METHODS } from '@/constants/colors';
+import { CONTRAST_METHODS, SORTING_ACTIONS } from '@/constants/colors';
 // Types
 import type { CardType } from '@/features/types/pltStore';
 import type { OrderStateType, SortActionType, ColorSpacesType } from 'types/colors';
@@ -121,6 +120,7 @@ const usePltStore = defineStore('plt', {
         if (card.order >= idx) card.order++;
       });
       cards.splice(idx, 0, cardState);
+      this.sortBy = 'random';
     },
     delCard(idx: number) {
       if (this.numOfCards === 2) return;
@@ -148,24 +148,30 @@ const usePltStore = defineStore('plt', {
       this.sortBy = 'random';
     },
     sortCards(sortBy: SortActionType) {
-      switch (sortBy) {
-      case 'luminance':
-        if (this.sortBy === 'luminance') this.cards.reverse();
-        else this.cards = sortingByLuminance(this.cards);
-        this.sortBy = 'luminance';
-        break;
-      case 'inversion':
-        /**
-         * Inversion will not change sortBy. For example, if cards are sorted
-         * by gray, inversion just change the most lightest card on left side
-         * or on right side.
-         */
-        this.cards.reverse();
-        break;
-      case 'random':
+      const opIdx = SORTING_ACTIONS.indexOf(sortBy);
+      if (opIdx === 1) { // random
         shuffle(this.cards);
-        this.sortBy = 'random';
+      } else if (
+        opIdx === 2 || // inversion
+        this.sortBy === SORTING_ACTIONS[opIdx]
+      ) this.cards.reverse();
+      else  {
+        const op = getDistOp(sortBy);
+        const distToBlack = this.cards.map(({ hex }) => {
+          return op(hex, '#000');
+        });
+        this.cards.sort((a, b) => {
+          return distToBlack[a.order] - distToBlack[b.order];
+        });
       }
+      /**
+       * Inversion will not change sortBy. For example, if cards are sorted
+       * by gray, inversion just change the most lightest card on left side
+       * or on right side.
+       */
+      if (opIdx !== 2)
+        // @ts-expect-error
+        this.sortBy = SORTING_ACTIONS[opIdx];
       this.cards.forEach((card, i) => card.order = i);
     },
     setIsLock(idx: number) {
