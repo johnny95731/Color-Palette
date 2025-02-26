@@ -237,6 +237,7 @@ type ContrastArgsType = {
 }
 const contrastArgs = reactive<ContrastArgsType>(
   CONTRAST_METHODS.reduce(
+    // eslint-disable-next-line
     (prev, _, i) => (prev[i] = 1) && prev,
     { method: 0 } as ContrastArgsType
   ));

@@ -288,7 +288,8 @@ const canvasGrads: {
   hue_?: CanvasGradient,
 } = {};
 onMounted(() => {
-  const ctx = canvasPickerRef.value?.getContext('2d')!;
+  const ctx = canvasPickerRef.value?.getContext('2d');
+  if (!ctx) return;
   //
   const grdWhite = ctx.createLinearGradient(0, 0, COLOR_PICKER_CANVAS_SIZE, 0);
   grdWhite.addColorStop(0, '#fff');
@@ -324,7 +325,8 @@ const fillStyle = (
 };
 
 const repainCanvas = computed(() => {
-  const ctx = canvasPickerRef.value?.getContext('2d')!;
+  const ctx = canvasPickerRef.value?.getContext('2d');
+  if (!ctx) return;
   if (unref(variant) === 'rect')
     return () => {
       clearCanvas();

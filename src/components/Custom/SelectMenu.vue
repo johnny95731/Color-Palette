@@ -139,7 +139,7 @@ const props = withDefaults(defineProps<Props>(), {
 const activatorRef = ref<InstanceType<typeof TheBtn>>();
 const containerRef = ref<HTMLDivElement>();
 
-const activator = computed(() => unref(activatorRef)?.$el!);
+const activator = computed<Element>(() => unref(activatorRef)?.$el);
 
 
 // Handle form element
@@ -169,7 +169,7 @@ onMounted(() => {
   if (element) element.htmlFor = unref(idForInput);
 });
 // Update label HTMLFor if it is an ID.
-watch(() => [props.label, unref(idForInput)], (newVal, oldVal) => {
+watch(() => [props.label, unref(idForInput)] as const, (newVal, oldVal) => {
   const isLabelSame = newVal[0] === oldVal[0];
   const isIdSame = newVal[1] === oldVal[1];
   if (!isLabelSame) {
@@ -179,7 +179,12 @@ watch(() => [props.label, unref(idForInput)], (newVal, oldVal) => {
         // New props.label refer to an element. Add HTMLFor attribute.
         const element = document.getElementById(label.slice(1)) as HTMLLabelElement | null;
         if (element) {
-          i === 0 ? element.removeAttribute('for') : element.htmlFor = newVal[1] as string;
+          if (element) {
+            if (i === 0)
+              element.removeAttribute('for');
+            else
+              element.setAttribute('for', newVal[1]);
+          }
         }
       }
     });
@@ -324,7 +329,7 @@ const handleClickBtn = (e: MouseEvent | FocusEvent, newVal?: boolean) => {
 
 const handleKeyDown = async (e: KeyboardEvent) => {
   const key = e.key;
-  let target: Element | null = null;
+  let target: Element | null | undefined = null;
   if (!unref(isOpened)) {
     // Only some keys works when menu is not openned.
     if (key.startsWith('Arrow') || key === 'Enter' || key === ' ') {
@@ -333,7 +338,7 @@ const handleKeyDown = async (e: KeyboardEvent) => {
       invertBoolean(isOpened);
       await nextTick();
       // Cant get ref before updated (`menu` is undefined).
-      target = unref(containerRef)?.children[0]!;
+      target = unref(containerRef)?.children[0];
     }
     else return;
   }
@@ -393,8 +398,8 @@ const handleKeyDown = async (e: KeyboardEvent) => {
     target = unref(activator);
     break;
   }
-  // @ts-expect-error Check is instanceof HTMLElement
-  target?.focus && target.focus();
+  if (target instanceof HTMLElement)
+    target.focus();
 };
 </script>
 

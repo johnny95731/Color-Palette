@@ -171,7 +171,7 @@ const usePltStore = defineStore('plt', {
        */
       if (opIdx !== 2)
         // @ts-expect-error
-        this.sortBy = SORTING_ACTIONS[opIdx];
+        this.sortBy = sortBy;
       this.cards.forEach((card, i) => card.order = i);
     },
     setIsLock(idx: number) {
@@ -185,12 +185,12 @@ const usePltStore = defineStore('plt', {
       const initOrder = this.cards[cardIdx].order;
       if (initOrder <= to) {
         this.cards.forEach((card) => {
-          card.order > initOrder && card.order <= to && // if (cond)
+          if (initOrder < card.order && card.order <= to)
             card.order--;
         });
       } else {
         this.cards.forEach((card) => {
-          card.order >= to && card.order < initOrder && // if (cond)
+          if (to <= card.order && card.order < initOrder)
             card.order++;
         });
       }

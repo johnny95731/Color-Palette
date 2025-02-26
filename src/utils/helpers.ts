@@ -24,15 +24,7 @@ import type { Ref, WritableComputedRef } from 'vue';
 //   return true;
 // };
 
-// export const pick = <T extends {}, K extends keyof T>(obj: T, ...keys: K[]) => (
-//   Object.fromEntries(
-//     keys
-//       .filter(key => key in obj)
-//       .map(key => [key, obj[key]])
-//   ) as Pick<T, K>
-// );
-
-export const objPick = <T extends {}, K extends (string | number | symbol)>(
+export const objPick = <T extends object, K extends (string | number | symbol)>(
   obj: T, keys: K[]
 ) => (
   Object.fromEntries(
@@ -40,15 +32,6 @@ export const objPick = <T extends {}, K extends (string | number | symbol)>(
       .map(key => [key, obj[key as unknown as keyof T]])
   ) as {[key in K]: key extends keyof T ? T[key] : undefined}
   );
-
-// export const omit = <T extends {}, K extends keyof T>(
-//   obj: T, ...keys: K[]
-// ) =>(
-//   Object.fromEntries(
-//     Object.entries(obj)
-//       .filter(([key]) => !keys.includes(key as K))
-//   ) as Omit<T, K>
-//   );
 
 /**
  * Shuffle an array by Fisher-Yates shuffle. The process will change the input
@@ -94,7 +77,8 @@ export function shuffle<T>(arr: T[]): T[] {
 /**
  * Check whether a value/ref is 'null' or 'undefined'.
  */
-export const isNullish = (val: unknown | Ref<unknown>) => toValue(val) == null;
+export const isNullish = (val: unknown | Ref<unknown>): val is null | undefined =>
+  toValue(val) == null;
 
 /**
  * Invert the boolean value of a ref. If `newVal` is given, assign newVal to ref.

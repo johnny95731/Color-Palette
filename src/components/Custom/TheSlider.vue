@@ -114,7 +114,7 @@ onMounted(() => {
   if (element) element.htmlFor = idForInput.value;
 });
 // Update label HTMLFor if it is an ID.
-watch(() => [props.label, idForInput.value], (newVal, oldVal) => {
+watch(() => [props.label, idForInput.value] as const, (newVal, oldVal) => {
   const isLabelSame = newVal[0] === oldVal[0];
   const isIdSame = newVal[1] === oldVal[1];
   if (!isLabelSame) {
@@ -122,9 +122,12 @@ watch(() => [props.label, idForInput.value], (newVal, oldVal) => {
       if (label && label.startsWith('#')) {
         // Old props.label refer to an element. Remove HTMLFor attribute.
         // New props.label refer to an element. Add HTMLFor attribute.
-        const element = document.getElementById(label.slice(1)) as HTMLLabelElement | null;
+        const element = document.getElementById(label.slice(1));
         if (element) {
-          i === 0 ? element.removeAttribute('for') : element.htmlFor = newVal[1] as string;
+          if (i === 0)
+            element.removeAttribute('for');
+          else
+            element.setAttribute('for', newVal[1]);
         }
       }
     });

@@ -259,7 +259,7 @@ import { HOT_KEYS } from '@/constants/hotkeys';
 import { invertBoolean } from '@/utils/helpers';
 // Constants
 import { MIXING_MODES } from '@/constants/mixing';
-import { COLOR_SPACES, SORTING_ACTIONS } from '@/constants/colors';
+import { COLOR_SPACES } from '@/constants/colors';
 // Stores / Contexts
 import media from '@/composables/useMedia';
 import usePltStore from '@/features/stores/usePltStore';
@@ -331,9 +331,9 @@ watch(
   },
 );
 
-const sortingMenuItems = SORTING_ACTIONS.map(val => ({
-  val,
-  name: val,
-  hotkey: HOT_KEYS.sorting_[val],
+const sortingMenuItems = HOT_KEYS.sorting_.map(([name, hotkey]) => ({
+  name,
+  val: name,
+  hotkey,
 }));
 </script>

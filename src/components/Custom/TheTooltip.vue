@@ -67,6 +67,7 @@ const refreshActivatorElKey = ref<boolean>(false);
 const instance = getCurrentInstance();
 /** Activators that is not in slots. */
 const activatorEl = computed<HTMLElement | null>(() => {
+  // eslint-disable-next-line
   refreshActivatorElKey.value;
   if (props.activator === 'parent')
     return instance?.parent?.proxy?.$el;

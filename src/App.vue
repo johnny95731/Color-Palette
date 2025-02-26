@@ -54,7 +54,6 @@ import { HOT_KEYS } from './constants/hotkeys';
 import { invertBoolean } from './utils/helpers';
 // Store and Context
 import usePltStore from './features/stores/usePltStore';
-import { SORTING_ACTIONS } from './constants/colors';
 
 const headerRef = ref<InstanceType<typeof TheHeader>>();
 // Show/Hide dialogs
@@ -97,8 +96,8 @@ const isCardPending = computed(() => pltState.isEditing || pltState.isPending);
       pltState.refreshCard(-1);
       return;
     }
-    for (const sortBy of SORTING_ACTIONS) {
-      if (key === sortingHotkey[sortBy]) {
+    for (const [sortBy, hotkey] of sortingHotkey) {
+      if (key === hotkey) {
         pltState.sortCards(sortBy);
         return;
       }

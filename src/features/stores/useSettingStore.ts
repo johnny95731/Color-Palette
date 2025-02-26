@@ -13,7 +13,6 @@ const initialState: StateType = {
   },
 };
 // Initialize Settings
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 type stateKey = keyof typeof initialState;
 for (const key of Object.keys(initialState)) {
   const storageItem = localStorage.getItem(key); // object in storage.

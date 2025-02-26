@@ -7,7 +7,7 @@ const STORE_FAV_COLORS = 'Colors';
 // -Key: Favorite Palettes
 const STORE_FAV_PLTS = 'Plts';
 
-const updateFavStore = <T extends unknown>(
+const updateFavStore = <T>(
   key: typeof STORE_FAV_COLORS | typeof STORE_FAV_PLTS,
   callback: (prev: T | undefined) => T
 ) => {

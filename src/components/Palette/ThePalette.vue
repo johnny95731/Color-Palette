@@ -205,9 +205,8 @@ const { start: startDragging } = (() => {
   };
 
   const setNewPosition = (pos?: Position) => {
-    pos && (
-      setPosition(cardIdx!, `${round(getCoordinate(pos) - halfCardLength, 2)}%`)
-    );
+    if (pos)
+      setPosition(cardIdx!, `${round(getCoordinate(pos) - halfCardLength, 2)}%`);
     resetPosition(cardIdx!);
   };
 

@@ -135,7 +135,7 @@ const props = withDefaults(defineProps<Props>(), {
 const activatorRef = ref<InstanceType<typeof TheBtn>>();
 const contentRef = ref<HTMLDivElement>();
 
-const activator = computed(() => unref(activatorRef)?.$el!);
+const activator = computed<HTMLElement>(() => unref(activatorRef)?.$el);
 
 /**
  * Target is containing in this instance.
@@ -303,7 +303,7 @@ const handleClickWindow = (e: MouseEvent) => {
 
 // When menu is nested, the parent should not close before submenu is closing.
 const handleClickBtn = () => {
-  !unref(openedChild) && invertBoolean(isOpened);
+  if(!unref(openedChild)) invertBoolean(isOpened);
 };
 
 
@@ -311,16 +311,16 @@ const handleKeyDown = async (e: KeyboardEvent) => {
   // Ignore supermenu keydown event when submenu is opening.
   if (unref(openedChild)) return;
   const key = e.key;
-  let target: Element | null = null;
+  let target: Element | null | undefined = null;
   if (!unref(isOpened)) {
     // Only some keys works when menu is not openned.
     if (key.startsWith('Arrow') || key === 'Enter' || key === ' ') {
       e.stopPropagation();
       e.preventDefault();
       handleClickBtn();
-      await nextTick();
       // Cant get ref before updated (`menu` is undefined).
-      target = unref(contentRef)?.children[0]!;
+      await nextTick();
+      target = unref(contentRef)?.children[0];
     }
     else return;
   }
@@ -381,8 +381,8 @@ const handleKeyDown = async (e: KeyboardEvent) => {
     e.stopPropagation();
     break;
   }
-  // @ts-expect-error Check is instanceof HTMLElement
-  target?.focus && target.focus();
+  if (target instanceof HTMLElement)
+    target.focus();
 };
 </script>
 
