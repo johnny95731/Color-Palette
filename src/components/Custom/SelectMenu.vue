@@ -314,15 +314,11 @@ watch(isOpened, async (newVal) => {
 });
 
 const handleClickBtn = (e: MouseEvent | FocusEvent, newVal?: boolean) => {
-  const activator = unref(activatorRef) as NonNullable<typeof activatorRef.value>;
   const menu = unref(containerRef) as NonNullable<typeof containerRef.value>;
-  if (// Avoid changing `isOpened` twice
+  if (// Avoid closing menu before triggering click event of options.
     e.type === 'focusout' &&
-    ( // Focusout activator when click menu content
-      menu.contains(e.relatedTarget as Element | null) ||
-      // Foucusout menu content when click activator.
-      e.relatedTarget === activator.$el
-    )
+    // Focusout activator when click menu content
+    menu?.contains(e.relatedTarget as Element | null)
   ) return;
   invertBoolean(isOpened, newVal);
 };
