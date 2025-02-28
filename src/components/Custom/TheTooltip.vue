@@ -211,12 +211,15 @@ const activatorProps = computed(() => ({
 @use '@/assets/variables.scss' as *;
 
 $tooltip-bg-color: #0008;
+
 .tooltip .overlay__content{
-  border-radius: $radius-md;
   padding: 8px 12px;
+  border-radius: $radius-md;
+
   color: #fff;
-  background: $tooltip-bg-color;
   text-wrap: nowrap;
+
+  background: $tooltip-bg-color;
 }
 
 </style>

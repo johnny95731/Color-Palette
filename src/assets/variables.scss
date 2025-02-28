@@ -1,12 +1,9 @@
 @use 'sass:math';
 
-// Small vieport
-$view-sm: 900px;
-
-@mixin position ($align: expand) {
-  @if ($align == expand) {
+@mixin position($align: expand) {
+  @if $align == expand {
     inset: 0;
-  } @else if ($align == center) {
+  } @else if $align == center {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
@@ -14,34 +11,42 @@ $view-sm: 900px;
 }
 
 @mixin overlay($position: absolute, $align: expand) {
-  position: $position;
   @include position($align);
+
+  position: $position;
 }
+
+// Small vieport
+$view-sm: 900px;
 
 // media
 @mixin desktop {
-  @media only screen and (min-width: 1960px) {
+  @media only screen and (width >= 1960px) {
     @content;
   }
 }
+
 @mixin laptop {
-  @media only screen and (max-width: 1440px) {
+  @media only screen and (width >= 1440px) {
     @content;
   }
 }
+
 @mixin small {
-  @media only screen and (max-width: $view-sm) {
+  @media only screen and (width <= #{$view-sm}) {
     @content;
   }
 }
+
 @mixin mobile {
-  @media only screen and (max-width: 451px) {
+  @media only screen and (width <= 450px) {
     @content;
   }
 }
 
 @function round($num, $digit: 0) {
   $multipler: math.pow(10, $digit);
+
   @return math.div(math.round($num * $multipler), $multipler)
 }
 
@@ -58,6 +63,7 @@ $radius-lg: 10px;
 $radius-md: 7px;
 $radius-sm: 5px;
 
+// Text
 $font-x-sm: 0.75rem;
 $font-sm: 0.825rem;
 $font-md: 1rem;

@@ -78,55 +78,60 @@ withDefaults(defineProps<Props>(), {
 <style lang="scss">
 @use "@/assets/variables.scss" as *;
 
-$transDuration: 120ms;
+$trans-duration: 120ms;
+
 .btn {
-  // layout
+  user-select: none;
+
   position: relative;
+
+  overflow: hidden;
   display: grid;
-  align-items: center;
-  justify-content: center;
   grid-template-areas: "prepend content append";
   grid-template-columns: max-content auto max-content;
   gap: 4px;
-  text-align: center;
-  // shape;
+  align-items: center;
+  justify-content: center;
+
+  padding: 4px 8px;
   border: none;
   border-radius: $radius-lg;
-  padding: 4px 8px;
-  overflow: hidden;
-  // style
-  background-color: inherit;
-  color: inherit;
+
   font-size: $font-md;
   font-weight: $font-weight-medium;
   line-height: normal;
+  color: inherit;
+  text-align: center;
   vertical-align: middle;
 
-  user-select: none;
+  background-color: inherit;
+
 
   &:hover,
   &:focus-visible {
-    > .btn__overlay {
+    > &__overlay {
       opacity: var(--overlay-hover-opacity);
     }
   }
+
   @supports not selector(:focus-visible) {
     &:focus {
-      & > .btn__overlay{
+      & > &__overlay{
         opacity: var(--overlay-hover-opacity);
       }
     }
   }
 }
 
-.btn.btn--icon {
+.btn--icon {
   aspect-ratio: 1 / 1;
 }
 
 .btn__overlay {
   @include overlay;
-  background-color: currentColor;
+
   opacity: 0;
+  background-color: currentcolor;
 }
 
 .btn__content,

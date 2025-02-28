@@ -198,21 +198,25 @@ defineExpose({
 @use '@/assets/variables.scss' as *;
 
 .overlay {
-  $root: &;
   @include overlay(fixed);
-  display: flex;
-  z-index: 999;
+
+  $root: &;
+
   pointer-events: none;
+  z-index: 999;
+  display: flex;
+
   &__content {
-    box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.35);
     pointer-events: auto;
     z-index: 1;
+    box-shadow: 0 5px 15px rgba(0 0 0 / 35%);
   }
 
   &__scrim {
     @include overlay(fixed);
-    background-color: #0007;
+
     pointer-events: auto;
+    background-color: #0007;
   }
 
   &--dialog {
@@ -226,8 +230,8 @@ defineExpose({
   }
 
   &--tooltip > &__content{
-    position: fixed;
     pointer-events: none;
+    position: fixed;
   }
 }
 </style>

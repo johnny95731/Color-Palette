@@ -250,51 +250,64 @@ defineExpose({
 
 $thumb-size: 14px;
 $thumb-radius: math.div($thumb-size, 2);
+
 .slider {
   $root: &;
-  // Layout
+
+  touch-action: none;
+
   position: relative;
-  margin: #{$thumb-radius + 4px} 0px #{$thumb-radius + 8px};
-  // Shape
-  height: 5px;
+
   width: 100%;
-  padding: 0px $thumb-radius;
+  height: 5px;
+  margin: #{$thumb-radius + 4px} 0 #{$thumb-radius + 8px};
+  padding: 0 $thumb-radius;
   border-radius: $radius-lg;
 
   font-size: $font-sm;
+
   background-color: $color5;
-  touch-action: none;
+
   >input,
   >label {
+    pointer-events: none;
+
     display: block;
-    opacity: 0;
+
     width: 0;
     height: 0;
-    pointer-events: none;
-  }
-  &__tracker {
-    position: relative;
-    // shape
-    height: 100%;
-    width: 100%;
 
+    opacity: 0;
+  }
+
+  &__tracker {
     cursor: pointer;
     user-select: none;
+
+    position: relative;
+
+    width: 100%;
+    height: 100%;
   }
 
   &__thumb {
-    position: absolute;
     @include position(center);
-    height: $thumb-size;
+
+    position: absolute;
+
     aspect-ratio: 1 / 1;
+    height: $thumb-size;
     border: solid 3px white;
-    outline: solid 1px $color5;
     border-radius: 100%;
+
     background-color: $color5;
+    outline: solid 1px $color5;
+
     @at-root {
       #{$root}:focus-visible #{$root}__thumb {
         outline-width: 2px;
       }
+
       @supports not selector(:focus-visible) {
         #{$root}:focus #{$root}__thumb {
             outline-width: 2px;
@@ -304,16 +317,18 @@ $thumb-radius: math.div($thumb-size, 2);
   }
 
   &__bound-label {
-    display: inline-block;
     position: absolute;
     bottom: 100%;
+    display: inline-block;
     font-size: $font-sm;
+
     &:first-of-type{
       left: 0;
     }
+
     &:last-of-type {
-      left: auto;
       right: 0;
+      left: auto;
     }
   }
 }

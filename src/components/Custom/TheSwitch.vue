@@ -126,54 +126,67 @@ function handleKeyDown(e: KeyboardEvent) {
 @use "sass:map";
 @use "@/assets/variables.scss" as *;
 
-
 $switch-md: ("h": 20px, "w": 35px);
+
 .switch {
   $root: &;
+  $slider-margin: 4px;
+
   display: flex;
   align-items: center;
+
   label {
+    cursor: pointer;
     display: inline-block;
     margin-left: 4px;
     color: $color5;
-    cursor: pointer;
   }
 
-  $slider-margin: 4px;
   &__slider {
-    display: inline-block;
-    position: relative;
-    height: map.get($switch-md, "h");
-    width: map.get($switch-md, "w");
-    border-radius: $radius-lg;
-    background-color: #ccc;
-    transition: .4s;
     cursor: pointer;
+
+    position: relative;
+
+    display: inline-block;
+
+    width: map.get($switch-md, "w");
+    height: map.get($switch-md, "h");
+    border-radius: $radius-lg;
+
+    background-color: #ccc;
+
+    transition: .4s;
 
     &::before { // thumb
       content: "";
+
       position: absolute;
       top: $slider-margin;
       bottom: $slider-margin;
       left: $slider-margin;
+
       aspect-ratio: 1 / 1;
       border-radius: 100%;
+
       background-color: white;
+
       transition: transform .4s;
     }
 
     &:focus-visible::before,
     &:hover::before {
-      box-shadow: 0px 0px 4px 8px #0002;
+      box-shadow: 0 0 4px 8px #0002;
     }
+
     @supports not selector(:focus-visible) {
       &:focus::before {
-        box-shadow: 0px 0px 4px 8px #0002;
+        box-shadow: 0 0 4px 8px #0002;
       }
     }
 
     @at-root #{$root}:has(input:checked) & {
-      background-color: rgb(0, 200, 0);
+      background-color: rgb(0 200 0);
+
       &::before {
         // distance betewwn left: $slider-margin; and right: $slider-margin; is
         //   dist = map.get($switch-md, "w") - 2 * $slider-margin

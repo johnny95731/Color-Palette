@@ -426,10 +426,11 @@ watch(modelColor, (newVal) =>
 @use "sass:math";
 @use "@/assets/variables.scss" as *;
 
-$extra-width: 60px;
+// shape vars
 $padding-x: 16px;
 $padding-y: 12px;
 
+// picker vars
 $thumb-border: 2px;
 $tracker-width: 10px;
 $thumb-diam: 14px;
@@ -437,86 +438,106 @@ $wheel-width: $thumb-diam + 4px;
 
 .color-picker {
   $root: &;
+
   --canvas-size: 170px;
+
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   align-items: center;
+
   width: calc(var(--canvas-size) + 32px);
-  border-radius: $radius-lg;
   padding: 8px 16px 20px;
+  border-radius: $radius-lg;
+
   background: $color1;
-  overflow: hidden;
+
   &__pickers {
     position: relative;
   }
+
   &__thumb {
-    // position
     position: absolute;
     top: 0;
     transform: translate(-50%, -50%);
-    // size
-    height: $thumb-diam;
-    aspect-ratio: 1 / 1;
 
+    width: $thumb-diam;
+    height: $thumb-diam;
     border: $thumb-border solid #fff;
     border-radius: $radius-rounded;
+
     outline: 1px solid $color5;
   }
+
   &__canvas {
-    position: relative;
-    user-select: none;
     touch-action: none;
-    line-height: 0;
     cursor: pointer;
+    user-select: none;
+
+    position: relative;
+
+    line-height: 0;
+
     canvas {
-      border-radius: 8px;
       overflow: hidden;
+      border-radius: 8px;
     }
   }
+
   &__mask {
     position: absolute;
     inset: 0;
     background: $color1;
   }
+
   &__edits {
     display: grid;
-    grid-template-rows: 30px;
     grid-template-columns: 40px 1fr;
+    grid-template-rows: 30px;
     row-gap: 8px;
     align-items: center;
+
     width: 100%;
     padding: 0 8px;
+
     input {
-      padding: 2px 0 2px 8px;
       margin-top: 4px;
+      padding: 2px 0 2px 8px;
       border-radius: 6px;
     }
   }
+
   &__preview {
-    grid-row: 1;
     grid-column: 1;
-    height: 30px;
+    grid-row: 1;
+
     aspect-ratio: 1;
+    height: 30px;
     border-radius: $radius-rounded;
   }
+
   &__hex-input {
-    grid-row: 1;
-    grid-column: 2;
     display: inline-block;
+    grid-column: 2;
+    grid-row: 1;
     width: 100%;
+
     input {
       margin-left: 4px;
     }
   }
+
   &__hsb-inputs {
-    grid-column: 1 / 3;
     display: flex;
+    grid-column: 1 / 3;
     gap: 8px;
+
     input {
       width: 100%;
       margin-top: 4px;
     }
   }
+
   &__variants {
     grid-column: 1 / 3;
   }
@@ -532,27 +553,42 @@ $wheel-width: $thumb-diam + 4px;
 
   &--wheel {
     --wheel-width: #{$wheel-width};
+
     gap: 31px;
+
     #{$root}__mask {
+      cursor: default;
       inset: $wheel-width;
       border-radius: $radius-rounded;
-      cursor: default;
     }
+
     #{$root}__rect-picker {
-      position: absolute;
-      // r = --canvas-size / 2, w = $wheel-width
-      // r - cos(45deg) * (r-w) + $thumb-diam * 0.5 + extra space
-      // = (1 - cos(45deg)) * r + cos(45deg) * w + $thumb-diam * 0.5 + extra space
-      $c1: round(math.div(1 - math.cos(45deg), 2), 3); // (1 - cos(45deg)) / 2
-      $c2: round(math.cos(45deg), 3);
-      inset: calc(
-        $c1 * var(--canvas-size) +
-        #{round($c2 * $wheel-width + $thumb-diam * 0.5 + 2px)}
-      );
-      border-radius: 6px;
+      // Find `inset` property of inner rect:
+      //   inset = (--canvas-size - rect width) / 2
+      // Let r = --canvas-size / 2, w = $wheel-width. Then,
+      //    rect width = cos(45deg) * (r - 2 * w - $thumb-diam - 2 *empty space)
+      // By simple calculation,
+      //  (r - cos(45deg) * (r - 2 * w)) / 2
+      //     = (1 - cos(45deg)) / 2 * r + cos(45deg) * w
+      // Multiplying `cos(45deg)` since the vertices are the coloset points
+      // between bore of wheel and rect (square).
+      $one-cos45: round(math.div(1 - math.cos(45deg), 2), 3);
+      $cos45: round(math.cos(45deg), 3);
+      $thumb-radius: $thumb-diam * 0.5;
+      $space: 4px;
+
+      touch-action: none;
       cursor: pointer;
       user-select: none;
-      touch-action: none;
+
+      position: absolute;
+      inset: calc(
+        $one-cos45 * var(--canvas-size) + #{
+          $cos45 * ($wheel-width + $thumb-radius + $space)
+        }
+      );
+
+      border-radius: 6px;
     }
   }
 }

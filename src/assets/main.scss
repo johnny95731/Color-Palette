@@ -1,19 +1,21 @@
 @use './variables.scss' as *;
 
 body {
+  overflow: hidden;
+
+  width: 100vw;
+  height: 100vh;
   margin: 0;
   padding: 0;
-  height: 100vh;
-  width: 100vw;
-  overflow: hidden;
-  font-size: 14px;
-  line-height: 1.25;
-  font-weight: $font-weight-medium;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto',
-    'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans',
+
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    Oxygen, Ubuntu, Cantarell, 'Fira Sans', 'Droid Sans',
     'Helvetica Neue', sans-serif;
+  font-size: 14px;
+  font-weight: $font-weight-medium;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  line-height: 1.25;
   text-size-adjust: 100%;
 }
 
@@ -21,6 +23,7 @@ body {
   --app-height: 100%;
   --small-view: #{$view-sm};
   --header-height: 60px;
+
   @include small {
     --header-height: 45px;
   }
@@ -37,10 +40,11 @@ body {
 }
 
 button {
+  cursor: pointer;
   border: 0;
   font-weight: $font-weight-medium;
   background-color: transparent;
-  cursor: pointer;
+
   &:focus {
     outline: none;
   }
@@ -50,9 +54,11 @@ input {
   padding: 0;
   border: 0;
   outline: 1px solid #0004;
+
   &:focus-visible {
     outline: 1px solid $color5;
   }
+
   @supports not selector(:focus-visible) {
     &:focus {
       outline: 1px solid $color5;

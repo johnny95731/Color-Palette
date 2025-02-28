@@ -1,5 +1,6 @@
 @use "@/assets/variables.scss" as *;
-$transDuration: 120ms;
+
+$trans-duration: 120ms;
 
 .dropdown-menu {
   border-radius: $radius-md;
@@ -7,17 +8,22 @@ $transDuration: 120ms;
 
 .select {
   width: 100%;
+
   &__activator.btn {
-    text-align: start;
     grid-template-columns: max-content 1fr max-content;
+
     width: 100%;
     padding: 4px 8px 4px 4px;
+
     color: $color5;
+    text-align: start;
+
     background-color: $color1;
+
     .btn__content {
+      overflow: hidden;
       display: block; // `text-overflow` only works on block containers;
       text-overflow: ellipsis;
-      overflow: hidden;
       white-space: nowrap;
     }
   }
@@ -26,33 +32,32 @@ $transDuration: 120ms;
 .select,
 .dropdown-menu {
   & .triangle {
-    transition: transform $transDuration linear;
     font-size: 0.6rem;
+    transition: transform $trans-duration linear;
   }
+
   &--active .triangle {
     transform: rotate(180deg);
   }
 }
 
 %menu-content {
-  // layout
+  scrollbar-width: none;  /* Hide scrollbar for Firefox */
+
   position: fixed;
-  top: auto;
-  bottom: auto;
-  left: auto;
-  right: auto;
-  transform-origin: top;
   z-index: 999;
-  // shape
-  border-radius: 0 0 $radius-md $radius-md;
+  inset: 0;
+  transform-origin: top;
+
   overflow: auto;
 
+  border-radius: 0 0 $radius-md $radius-md;
+
   background-color: $color1;
-  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-  // Hide Scrollbars But Keep Functionality
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
-  &::-webkit-scrollbar { /* Chrome, Safari and Opera */
+  box-shadow: 0 8px 16px 0 rgba(0 0 0 / 20%);
+
+  -ms-overflow-style: none;  /* Hide scrollbar for IE and Edge */
+  &::-webkit-scrollbar { /* Hide scrollbar for Chrome, Safari and Opera */
     display: none;
   }
 }
@@ -67,13 +72,15 @@ $transDuration: 120ms;
 }
 
 .dropdown-menu__content--mobile, .select__content--mobile {
-  left: 0;
   right: 0;
   bottom: 0;
+  left: 0;
   box-shadow: none;
+
   > div {
     height: 100%;
   }
+
   .dropdown-menu__option {
     display: flex;
     border-radius: 0;
@@ -81,35 +88,42 @@ $transDuration: 120ms;
 }
 
 .dropdown-menu__option, .select__option {
+  cursor: pointer;
+  content-visibility: auto;
+
+  overflow: hidden;
   display: block;
+
   width: 100%;
   padding: 5px 10px;
   border-width: 1px 0;
   border-radius:  0;
-  overflow: hidden;
+
+  font-weight: $font-weight-medium;
+  text-align: center;
+  text-overflow: ellipsis; // `text-overflow` only works on block containers;
+  text-wrap: nowrap;
+  white-space: nowrap;
 
   background-color: $color1;
-  font-weight: $font-weight-medium;
-  text-overflow: ellipsis; // `text-overflow` only works on block containers;
-  white-space: nowrap;
-  text-align: center;
-  text-wrap: nowrap;
-  cursor: pointer;
-  content-visibility: auto;
+
   &:hover,
   &:focus-visible {
     background-color: $color3;
   }
+
   @supports not selector(:focus-visible) {
     &:focus {
       background-color: $color3;
     }
   }
+
   >.bi::before {
     position: absolute;
-    transform: translateX(-100%);
     z-index: 10;
+    transform: translateX(-100%);
   }
+
   &--selected {
     font-weight: $font-weight-bold;
   }

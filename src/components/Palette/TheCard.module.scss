@@ -1,42 +1,49 @@
 @use "@/assets/variables.scss" as *;
 
 .cardContainer {
-  //layout
   position: absolute;
+
+  overflow: hidden;
   display: flex;
   flex-direction: column;
+  gap: 20px;
   align-items: center;
   justify-content: flex-end;
-  gap: 20px;
-  // shape
-  padding-bottom: 120px;
-  height: 100%;
+
   width: 100%;
-  border-style: none solid; // horizontal derrection
+  height: 100%;
+  padding-bottom: 120px;
   border-color: transparent;
-  //
-  transition-property: left, width, background-color;
+  border-style: none solid; // horizontal derrection
+
   transition-duration: 0s;
-  overflow: hidden;
+  transition-property: left, width, background-color;
+
   &:hover .toolContainer,
   &:focus-within .toolContainer {
     transform: scaleX(1);
   }
+
   &.first {
     border-top: none !important;
     border-left: none !important;
   }
+
   &.last {
     border-right: none !important;
     border-bottom: none !important;
   }
+
   @include small {
     flex-direction: row;
-    align-items: center;
     gap: 0;
+    align-items: center;
+
     padding-bottom: 0;
     border-style: solid none; // vertical derrection
+
     transition-property: top, height, background-color;
+
     &:hover .toolContainer {
       transform: none;
     }
@@ -44,48 +51,51 @@
 }
 
 .toolContainer {
-  // layout
+  position: relative;
+  transform: scaleX(0);
+
   display: flex;
   flex-direction: column;
   gap: 12px;
-  // position
-  position: relative;
-  transform: scaleX(0);
-  //
+
   width: min-content;
 
   :global(.btn) {
     padding: 8px;
-    font-size: $font-x-lg;
     border-radius: 100%;
+    font-size: $font-x-lg;
   }
+
   @include desktop {
     bottom: 38%;
   }
-  @include laptop {
-  }
+
   @include small {
-    // layout
-    flex: 1;
-    flex-direction: row;
-    gap: 0;
-    flex-wrap: wrap;
-    // position
     position: static;
     transform: none;
+
+    flex: 1;
+    flex-flow: row wrap;
+    gap: 0;
+
     margin: auto;
+
+
     >div {
-      flex: 1 1 0;
       display: flex;
+      flex: 1 1 0;
       justify-content: space-around;
+
       :global(.btn) {
         padding: 4px;
         font-size: $font-md;
       }
     }
   }
+
   @include mobile {
     flex: 1 0 20%;
+
     >div {
       flex: 1 1 100%;
     }
@@ -94,28 +104,32 @@
 
 .textDisplay {
   @include small {
-    flex: 0 0 30%;
     position: relative;
+    flex: 0 0 30%;
   }
+
   @include mobile {
     flex: 0 0 40%;
   }
 }
 
-%textPosition {
+%text-position {
   position: relative;
   width: fit-content;
   margin: auto;
+
   button {
     padding: 0;
     text-wrap: nowrap;
   }
+
   :global(.bi)::before {
+    cursor: pointer;
     position: absolute;
     top: 50%;
     opacity: 0;
-    cursor: pointer;
   }
+
   &:hover,
   &:focus-within {
     :global(.bi)::before {
@@ -123,10 +137,12 @@
     }
   }
 }
-@mixin textSize($font-size, $icon-size, $icon-margin) {
+
+@mixin text-size($font-size, $icon-size, $icon-margin) {
   >button {
     font-size: $font-size !important;
   }
+
   :global(.bi)::before {
     transform: translate(calc(-100% - #{$icon-margin}), -50%);
     font-size: $icon-size;
@@ -134,59 +150,73 @@
 }
 
 .hexText {
-  @extend %textPosition;
-  @include textSize($font-x-lg, $font-sm, 5px);
+  @extend %text-position;
+
+  @include text-size($font-x-lg, $font-sm, 5px);
+
   margin-bottom: 6px;
 }
 
 .detailText {
-  @extend %textPosition;
-  @include textSize($font-sm, $font-x-sm, 4px);
+  @extend %text-position;
+
+  @include text-size($font-sm, $font-x-sm, 4px);
 }
+
 @include small {
   .hexText {
-    @include textSize($font-lg, $font-sm, 4px);
+    @include text-size($font-lg, $font-sm, 4px);
   }
+
   .detailText {
-    @include textSize($font-sm, $font-x-sm, 3px);
+    @include text-size($font-sm, $font-x-sm, 3px);
+
     margin-top: 4px;
   }
 }
+
 @include mobile {
   .hexText {
-    @include textSize($font-md, $font-sm, 4px);
+    @include text-size($font-md, $font-sm, 4px);
   }
+
   .detailText {
-    @include textSize($font-x-sm, $font-x-sm, 3px);
+    @include text-size($font-x-sm, $font-x-sm, 3px);
+
     margin-top: 4px;
   }
 }
 
 .editor {
-  // position
   position: absolute;
   bottom: 10px;
-  // shape
+
   width: 150px;
   padding: 4px 12px;
   border-radius: $radius-lg;
 
   background-color: $color1;
+
   >* {
     width: 100%;
   }
+
   >label:first-of-type {
     display: block;
-    height: 0;
+
     width: 100%;
-    border-radius: $radius-lg;
+    height: 0;
     margin-bottom: 7px;
+    border-radius: $radius-lg;
+
     text-indent: -200vw; // hide text
   }
+
   @include small {
     bottom: 0;
     width: 100%;
     max-width: 500px;
+
     >label:first-of-type {
       height: 30px;
       margin-bottom: 10px;
@@ -202,34 +232,40 @@
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
+
   button {
-    height: 16px;
     width: 16px;
-    padding: 0 !important;
+    height: 16px;
     margin: 4px;
+    padding: 0 !important;
+
     outline: 1px solid #999;
   }
 }
 
 .hexInput {
-  display: inline;
-  border-radius: $radius-md;
-  border-width: 1px;
-  padding: 0px 8px;
-  margin: 0 auto 6px;
-  font-size: $font-lg;
-  user-select: text;
   cursor: text;
+  user-select: text;
+
+  display: inline;
+
+  margin: 0 auto 6px;
+  padding: 0 8px;
+  border-width: 1px;
+  border-radius: $radius-md;
+
+  font-size: $font-lg;
 
   @include small {
-    margin: 0 auto 7px;
     bottom: auto;
+    margin: 0 auto 7px;
   }
 }
 
 .sliderContainer {
   display: inline-block;
   font-size: $font-sm;
+
   >div {
     width: 100%;
     margin-bottom: 5px;

@@ -6,13 +6,16 @@ $duration: 250ms;
   0% {
     transform: translateX(0);
   }
+
   100% {
     transform: translateX(100%);
   }
 }
+
 .slide-x-enter-active {
   animation: slide-x $duration reverse;
 }
+
 .slide-x-leave-active {
   animation: slide-x $duration;
 }
@@ -20,26 +23,31 @@ $duration: 250ms;
 
 @keyframes slide-y {
   0% {
-    opacity: 0;
     transform: translateY(-50px);
+    opacity: 0;
   }
+
   100% {
-    opacity: 1;
     transform: translateY(0);
+    opacity: 1;
   }
 }
+
 .slide-y-enter-active {
   animation: slide-y $duration;
 }
+
 .slide-y-leave-active {
   animation: slide-y $duration reverse;
 }
+
 
 @keyframes ripple {
   0% {
     opacity: .5;
     background: radial-gradient(circle, #fff 1%, transparent 1%) center/100%;
   }
+
   100% {
     opacity: 0;
     background: radial-gradient(circle, #fff 1%, transparent 1%) center/15000%;
@@ -50,6 +58,7 @@ $duration: 250ms;
   from {
     opacity: 1;
   }
+
   to {
     opacity: 0;
   }
@@ -58,6 +67,7 @@ $duration: 250ms;
 .fade-out-enter-active {
   animation: fade $duration reverse;
 }
+
 .fade-out-leave-active {
   animation: fade $duration;
 }

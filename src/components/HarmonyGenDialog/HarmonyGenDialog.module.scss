@@ -1,0 +1,104 @@
+
+@use "@/assets/variables.scss" as *;
+
+.genDialog {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+
+  height: 340px;
+  border-radius: $radius-lg;
+
+  background-color: $color1;
+}
+
+.header {
+  overflow: auto;
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: space-between;
+
+  width: 100%;
+  height: 34px;
+
+  background-color: $color5;
+
+  >h2 {
+    user-select: none;
+
+    margin: 0;
+    padding: 0 10px;
+
+    font-size: $font-lg;
+    font-weight: $font-weight-bold;
+    color: $color2;
+    text-align: center;
+  }
+
+  :global(.btn) {
+    padding: 4px;
+    color: #fff;
+  }
+}
+
+.content {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+
+  height: 0;
+  padding: 12px 12px 8px;
+
+  > *:not([class]) > * {
+    margin-top: 8px;
+  }
+
+  > * + * {
+    margin-top: 12px;
+  }
+}
+
+$color-div-size: 25px;
+$color-div-margin: 4px;
+
+.palette {
+  min-width: #{$color-div-size * 8 + $color-div-margin * 7}; // 8 = maximum card num
+  height: 30px;
+  text-align: center;
+
+  :global(.btn) {
+    display: inline-block;
+    aspect-ratio: 1;
+    height: $color-div-size;
+    border-radius: $radius-rounded;
+  }
+
+  * + * {
+    margin-left: $color-div-margin;
+  }
+}
+
+.numbers {
+  width: 100%;
+
+  input {
+    width: 100%;
+    padding: 2px 0 2px 8px;
+    border-radius: $radius-md;
+    background-color: #ddd;
+  }
+}
+
+.buttons {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 8px;
+  align-items: center;
+  justify-content: end;
+
+  width: 100%;
+  padding: 8px 4px;
+
+  font-size: $font-md;
+}

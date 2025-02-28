@@ -109,6 +109,7 @@
 
 <script setup lang="ts">
 import { computed, reactive, ref, watch, unref } from 'vue';
+import $style from './HarmonyGenDialog.module.scss';
 // components
 import SelectMenu from '../Custom/SelectMenu.vue';
 import ColorPicker from '../Custom/ColorPicker.vue';
@@ -189,95 +190,3 @@ watch(isShowing, (newVal) => {
     pltState.setPlt(unref(originalPalette)); // restore palette from `originalPalette`
 }, { immediate: true });
 </script>
-
-<style lang="scss" module>
-@use "@/assets/variables.scss" as *;
-
-.genDialog {
-  display: flex;
-  flex-direction: column;
-  // shape
-  height: 340px;
-  border-radius: $radius-lg;
-  background-color: $color1;
-  overflow: hidden;
-}
-
-.header {
-  flex: 0 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 34px;
-  width: 100%;
-  overflow: auto;
-  background-color: $color5;
-  >h2 {
-    // shape
-    padding: 0px 10px 0px;
-    margin: 0;
-    // color and text
-    color: $color2;
-    text-align: center;
-    font-size: $font-lg;
-    font-weight: $font-weight-bold;
-    user-select: none;
-  }
-  :global(.btn) {
-    padding: 4px;
-    color: #fff;
-  }
-}
-
-.content {
-  flex: 1 1 0;
-  height: 0;
-  display: flex;
-  flex-direction: column;
-  padding: 12px 12px 8px;
-  > *:not([class]) > * {
-    margin-top: 8px;
-  }
-  > * + * {
-    margin-top: 12px;
-  }
-}
-
-$color-div-size: 25px;
-$color-div-margin: 4px;
-.palette {
-  height: 30px;
-  min-width: #{$color-div-size * 8 + $color-div-margin * 7}; // 8 = maximum card num
-  text-align: center;
-  :global(.btn) {
-    display: inline-block;
-    height: $color-div-size;
-    aspect-ratio: 1;
-    border-radius: $radius-rounded;
-  }
-  * + * {
-    margin-left: $color-div-margin;
-  }
-}
-
-.numbers {
-  width: 100%;
-  input {
-    width: 100%;
-    padding: 2px 0 2px 8px;
-    border-radius: $radius-md;
-    background-color: #ddd;
-  }
-}
-
-.buttons {
-  flex: 0 0 auto;
-  display: flex;
-  justify-content: end;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
-  padding: 8px 4px;
-  font-size: $font-md;
-}
-</style>

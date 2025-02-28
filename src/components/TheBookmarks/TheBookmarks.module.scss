@@ -1,36 +1,42 @@
 @use "@/assets/variables.scss" as *;
 
-// Containers
 .container {
-  display: flex;
-  flex-direction: column;
-  margin-left: auto;
-  height: 100%;
-  width: 300px;
-  color: #fff;
-  background-color: $color5;
   @include mobile {
     width: 100vw;
   }
+
+  display: flex;
+  flex-direction: column;
+
+  width: 300px;
+  height: 100%;
+  margin-left: auto;
+
+  color: #fff;
+
+  background-color: $color5;
 }
 
 .header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 34px;
+
   width: 100%;
+  height: 34px;
+
   > h2 {
+    user-select: none;
+
     margin: 0;
-    // shape
-    padding: 0px 10px 0px;
-    // color and text
-    color: $color2;
-    text-align: center;
+    padding: 0 10px;
+
     font-size: $font-lg;
     font-weight: $font-weight-bold;
-    user-select: none;
+    color: $color2;
+    text-align: center;
   }
+
   :global(.btn) {
     padding: 4px;
     color: #fff;
@@ -38,13 +44,15 @@
 }
 
 // Side
-$menubarHeight: 30px;
-$appendPltHeight: 30px;
+$menubar-height: 30px;
+$append-plt-height: 30px;
+
 .menuBar {
+  user-select: none;
   position: relative;
   display: flex;
-  height: $menubarHeight;
-  user-select: none;
+  height: $menubar-height;
+
   > button {
     border-radius: $radius-sm $radius-sm 0 0;
     color: #fff;
@@ -56,97 +64,114 @@ $appendPltHeight: 30px;
     background-color: $color1 !important;
   }
 }
+
 // Main bookmarks content.
+
 .pageContent {
-  flex: 1;
   overflow-y: auto;
-  list-style-type: none;
-  margin-block-start: 0;
-  margin-block-end: 0;
+  flex: 1;
+
+  margin-block: 0;
   padding-inline-start: 0;
+
+  list-style-type: none;
+
   background-color: $color1;
 }
 
 .delWrapper { // Remove favorite button
   position: absolute;
-  height: 100%;
-  width: 30px;
   top: 0;
-  left: auto;
   right: 0;
+  left: auto;
+
+  width: 30px;
+  height: 100%;
+
   opacity: 0;
   background-color: #0007;
+
   button {
-    position: absolute;
     @include position(center);
-    color: #fff;
+
+    position: absolute;
     font-size: $font-md;
+    color: #fff;
   }
+
   &:focus-within {
     opacity: 1;
   }
 }
 
-%favBlock {
-  border-radius: 10px;
+%fav-block {
   overflow: hidden;
   margin: 5px;
+  border-radius: 10px;
   list-style-type: none;
 
-  &:hover {
-    .delWrapper {
-      opacity: 1;
-    }
+  &:hover .delWrapper {
+    opacity: 1;
   }
 }
 
 .colorBlock {
-  @extend %favBlock;
+  @extend %fav-block;
+
   position: relative;
   height: 40px;
+
   >:global(.btn) {
     position: absolute;
     top: 50%;
-    transform: translateY(-50%);
     left: 8px;
+    transform: translateY(-50%);
+
     width: auto;
+
     font-size: $font-md;
     font-weight: $font-weight-light;
+
     background-color: transparent;
+
     :global(.bi) {
       font-size: $font-x-sm;
       opacity: 0;
     }
+
     &:hover, &:focus-visible {
       :global(.bi) {
         opacity: 1;
       }
     }
+
     @supports not selector(:focus-visible) {
-      &:focus {
-        :global(.bi) {
+      &:focus :global(.bi) {
           opacity: 1;
-        }
       }
     }
   }
 }
 
 .paletteBlock {
-  @extend %favBlock;
+  @extend %fav-block;
+
   display: flex;
   flex-direction: column;
+
   >div {
     position: relative;
-    height: 40px;
     width: 100%;
+    height: 40px;
   }
+
   >button {
+    overflow: hidden;
     display: block;
     text-overflow: ellipsis;
-    overflow: hidden;
     white-space: nowrap;
   }
+
   &:hover {
     .caretWrapper {
       opacity: 1;
@@ -156,34 +181,43 @@ $appendPltHeight: 30px;
 
 .caretWrapper {
   position: absolute;
+
   display: table-cell;
+
   height: 100%;
-  background-color: #0007;
+
   opacity: 0;
+  background-color: #0007;
+
   button {
-    position: relative;
     @include position(center);
-    color: #fff;
+
+    position: relative;
     font-size: $font-md;
+    color: #fff;
   }
+
   &:focus-within {
     opacity: 1;
   }
 }
 
 .appendPlt {
-  // layout
+  user-select: none;
+
   display: flex;
   align-items: center;
   justify-content: center;
-  height: $appendPltHeight;
-  width: 100%;
 
+  width: 100%;
+  height: $append-plt-height;
   border-top: 1px solid black;
   border-radius: 0;
+
   color: #000;
+
   background-color: $color2;
-  user-select: none;
+
   :global(.bi) {
     margin-right: 3px;
     font-size: $font-md;
