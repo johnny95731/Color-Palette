@@ -81,6 +81,8 @@ withDefaults(defineProps<Props>(), {
 $trans-duration: 120ms;
 
 .btn {
+  $root: &;
+
   user-select: none;
 
   position: relative;
@@ -109,14 +111,14 @@ $trans-duration: 120ms;
 
   &:hover,
   &:focus-visible {
-    > &__overlay {
+    > #{$root}__overlay {
       opacity: var(--overlay-hover-opacity);
     }
   }
 
   @supports not selector(:focus-visible) {
     &:focus {
-      & > &__overlay{
+      #{$root} > #{$root}__overlay{
         opacity: var(--overlay-hover-opacity);
       }
     }
