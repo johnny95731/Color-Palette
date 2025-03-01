@@ -50,10 +50,11 @@ const SettingDialog = defineAsyncComponent(
       return component;
     })
 );
-import { HOT_KEYS } from './constants/hotkeys';
+import { HOTKEYS } from './constants/hotkeys';
 import { invertBoolean } from './utils/helpers';
 // Store and Context
 import usePltStore from './features/stores/usePltStore';
+import { SortActionType } from './types/colors';
 
 const headerRef = ref<InstanceType<typeof TheHeader>>();
 // Show/Hide dialogs
@@ -85,7 +86,7 @@ const isCardPending = computed(() => pltState.isEditing || pltState.isPending);
 
 // Connect hotkey.
 (() => {
-  const { sorting_: sortingHotkey, refresh_: refreshHotkey } = HOT_KEYS;
+  const { sorting_: sortingHotkey, refresh_: refreshHotkey } = HOTKEYS;
   const keyDownEvent = (e: KeyboardEvent) => {
     const key = e.key.toLowerCase();
     if (
@@ -96,9 +97,9 @@ const isCardPending = computed(() => pltState.isEditing || pltState.isPending);
       pltState.refreshCard(-1);
       return;
     }
-    for (const [sortBy, hotkey] of sortingHotkey) {
+    for (const [sortBy, hotkey] of Object.entries(sortingHotkey)) {
       if (key === hotkey) {
-        pltState.sortCards(sortBy);
+        pltState.sortCards(sortBy as SortActionType);
         return;
       }
     }

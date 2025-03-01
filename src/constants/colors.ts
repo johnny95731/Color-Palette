@@ -52,7 +52,7 @@ export const YUV_MAX = RGB_MAX;
  * Actions for sorting palette colors.
  */
 export const SORTING_ACTIONS = [
-  'luminance', 'random', 'inversion', 'CIE76', 'CIE94', 'CIE2000'
+  'luminance', 'random', 'inversion', 'CIE76', 'CIE94', 'CIEDE2000'
 ] as const;
 
 // #Contrast

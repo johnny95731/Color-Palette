@@ -1,13 +1,11 @@
 import NamedColor from '@/assets/NamedColor.json';
-import { clip, dot, mod, randInt, rangeMapping, round, toPercent, l2DistSq, polar2cartesian, cartesian2polar, l2Norm, atan2Deg, deg2rad } from './numeric';
+import { clip, dot, mod, randInt, rangeMapping, round, toPercent, l2DistSq, cartesian2polar } from './numeric';
 import {
   RGB_MAX, HSL_MAX, HWB_MAX, HSB_MAX, CMY_MAX, CMYK_MAX, XYZ_MAX, LAB_MAX,
   RGB2XYZ_COEFF_ROW_SUM, XYZ2RGB_COEFF, RGB2XYZ_COEFF, XYZ_MAX_SCALING,
-  YUV_MAX, CONTRAST_METHODS,
-  HARMONY_METHODS,
-  SORTING_ACTIONS,
+  YUV_MAX, CONTRAST_METHODS, HARMONY_METHODS
 } from '@/constants/colors.ts';
-import type { ColorSpacesType, ColorSpaceInfos, ContrastMethodType, HarmonyMethodType, SortActionType } from '@/types/colors';
+import type { ColorSpacesType, ColorSpaceInfos, ContrastMethodType, HarmonyMethodType } from '@/types/colors';
 
 // # CSS named-color
 export const unzipCssNamed = (name: string) => name.replace(/([A-Z])/g, ' $1').trim();
@@ -150,13 +148,9 @@ const lab2xyz = (lab: number[]): number[] => {
 };
 
 // ## CIE LAB <-> CIE LCH
-const lab2lch = ([l, a, b]: number[]): number[] => {
+export const lab2lch = ([l, a, b]: number[]): number[] => {
   const { radius: c, deg: h } = cartesian2polar(b, a);
   return [l, c, h];
-};
-const lch2lab = ([l, c, h]: number[]): number[] => {
-  const { y: b, x: a } = polar2cartesian(c, h);
-  return [l, a, b];
 };
 
 
@@ -242,7 +236,7 @@ const rgb2xyz = (rgb: number[]): number[] => {
  * @param rgb RGB color array.
  * @return CIE LAB color array.
  */
-const rgb2lab = (rgb: number[]): number[] => {
+export const rgb2lab = (rgb: number[]): number[] => {
   return xyz2lab(rgb2xyz(rgb));
 };
 
@@ -429,8 +423,8 @@ export const hex2hsb = (hex: string) => {
   return rgb2hsb(hex2rgb(hex));
 };
 
-const hex2lch = (hex: string) => {
-  return lab2lch(rgb2lab(hex2rgb(hex)));
+export const hex2lab = (hex: string) => {
+  return rgb2lab(hex2rgb(hex));
 };
 
 /**
@@ -619,120 +613,6 @@ export const getContrastAdjuster = (method: ContrastMethodType) => {
   if (method === CONTRAST_METHODS[1]) return gammaCorrection;
   if (method === CONTRAST_METHODS[2]) return brightnessScaling;
   return brightnessScaling;
-};
-
-
-// # Sorting
-
-const distLuminance = (hex1: string, hex2: string) => {
-  return Math.abs(rgb2gray(hex2rgb(hex1)) - rgb2gray(hex2rgb(hex2)));
-};
-
-/**
- * Color difference of two hex colors with CIE 1976 formula.
- */
-const distE76 = (hex1: string, hex2: string) => {
-  const lab1 = rgb2lab(hex2rgb(hex1));
-  const lab2 = rgb2lab(hex2rgb(hex2));
-  return l2DistSq(lab1, lab2);
-};
-
-/**
- * Color difference of two hex colors with CIE 1994 formula.
- * Note that CIE 1976 formula is "not" symmetry, that is, `diffE94(hex1, hex2)`
- * and `diffE94(hex2, hex1)` may not different.
- * @param hex1 Hex color 1
- * @param hex2 Hex color 2
- * @returns
- */
-const distE94 = (hex1: string, hex2: string) => {
-  const lab1 = rgb2lab(hex2rgb(hex1));
-  const lab2 = rgb2lab(hex2rgb(hex2));
-  const c1Star = Math.sqrt(lab1[1]**2 + lab1[2]**2);
-  const c2Star = Math.sqrt(lab2[1]**2 + lab2[2]**2);
-  const deltaA = lab1[1] - lab2[1];
-  const deltaB = lab1[2] - lab2[2];
-
-  const deltaL = lab1[0] - lab2[0];
-  const deltaC = c1Star - c2Star;
-  const deltaH = Math.sqrt(deltaA**2 + deltaB**2 + deltaC**2);
-
-  return Math.sqrt(
-    deltaL**2 +
-    (deltaC / (1 + 0.045 * c1Star))**2 +
-    (deltaH / (1 + 0.015 * c1Star))**2
-  );
-};
-
-/**
- * Color difference of two hex colors with CIEDE2000 formula.
- * @param hex1 Hex color 1
- * @param hex2 Hex color 2
- */
-const distE00 = (hex1: string, hex2: string) => {
-  const [l1, c1, h1] = hex2lch(hex1);
-  const [l2, c2, h2] = hex2lch(hex2);
-  const [, a1, b1] = lch2lab([l1, c1, h1]);
-  const [, a2, b2] = lch2lab([l2, c2, h2]);
-
-  // # Delta L
-  const lMean = (l1 + l2) / 2;
-  const deltaL = l2 - l1;
-  // # Delta C
-  const cMean = (c1 + c2) / 2;
-  // 'P' for prime.
-  const a1P = a1 + a1 / 2 * (1 - Math.sqrt(cMean**7 / (cMean**7 + 25**7)));
-  const a2P = a2 + a2 / 2 * (1 - Math.sqrt(cMean**7 / (cMean**7 + 25**7)));
-  const c1P = l2Norm([a1P, b1]);
-  const c2P = l2Norm([a2P, b2]);
-  const cMeanP = (c1P + c2P) / 2;
-  const hasBlack = !c1P || !c2P;
-  const deltaC = c2P - c1P;
-  // # Delta H
-  const h1P = atan2Deg(b1, a1P);
-  const h2P = atan2Deg(b2, a2P);
-  const hDist = Math.abs(h1P - h2P);
-
-  let hP = mod(h2P - h1P, 360);
-  if (hasBlack) hP = 0;
-  else if (hDist > 180 && h2P <= h1P) hP += 360;
-  else if (hDist > 180) hP -= 360;
-
-  let hMeanP = (h1P + h2P) / 2;
-  if (hasBlack) hMeanP = h1P + h2P;
-  else if (hDist > 180 && hMeanP < 180) hMeanP += 180;
-  else if (hDist > 180) hMeanP -= 180;
-  const deltaH = 2 * Math.sqrt(c1P*c2P) * Math.sin(hP / 2);
-  // # Coefficients
-  const T = 1 -
-    0.17 * Math.cos(deg2rad(hMeanP - 30)) +
-    0.24 * Math.cos(deg2rad(2 * hMeanP)) +
-    0.32 * Math.cos(deg2rad(3 * hMeanP + 6)) -
-    0.2  * Math.cos(deg2rad(4 * hMeanP - 63));
-  const SL = 1 - 0.015 * (lMean - 50)**2 / Math.sqrt(20 + (lMean - 50)**2);
-  const SC = 1 + 0.045 * cMeanP;
-  const SH = 1 + 0.015 * cMeanP * T;
-  const RT = -2 *
-    Math.sqrt(cMeanP**7 / (cMeanP**7 + 25**7)) *
-    Math.sin(deg2rad(60 * Math.exp(-1 * (hMeanP/25 - 11)**2)));
-
-  return Math.sqrt(
-    (deltaL / SL)**2 +
-    (deltaC / SC)**2 +
-    (deltaH / SH)**2 +
-    RT * deltaC / SC * deltaH / SH
-  );
-};
-
-
-export const getDistOp = (
-  method: SortActionType
-): ((hex1: string, hex2: string) => number) => {
-  if (method === SORTING_ACTIONS[0]) return distLuminance;
-  if (method === SORTING_ACTIONS[3]) return distE76;
-  if (method === SORTING_ACTIONS[4]) return distE94;
-  if (method === SORTING_ACTIONS[5]) return distE00;
-  return distE00;
 };
 
 

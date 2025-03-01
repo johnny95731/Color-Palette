@@ -48,7 +48,7 @@
         <TheBtn
           v-once
           icon="arrows"
-          style="cursor: grab;touch-action: none;"
+          style="touch-action: none;cursor: grab;"
           aria-label="拖動"
           :ripple="false"
           @pointerdown="$emit('dragging', $event)"
@@ -300,15 +300,17 @@ const showEditor = computed({
 });
 
 const closestNamed = asyncComputed<string | undefined>(
-  () => pltState.colorSpace === 'name' ?
-    getClosestNamed(props.card.color) :
-    undefined,
+  async () => {
+    return pltState.colorSpace === 'name' ?
+      getClosestNamed(props.card.color) :
+      undefined;
+  },
   'white'
 );
 const detail = computed(() => {
   return pltState.colorSpace === 'name' ?
-    unzipCssNamed(closestNamed.value as string) :
-    `${pltState.colorSpace}(${toValue(roundedColor).toString()})`;
+    unzipCssNamed(toValue(closestNamed) ?? '') :
+    `${pltState.colorSpace}(${toValue(roundedColor).join()})`;
 });
 
 const cardStyle = computed<CSSProperties>(() => {

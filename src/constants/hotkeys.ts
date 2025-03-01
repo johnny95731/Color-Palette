@@ -1,10 +1,10 @@
 import { SortActionType } from '@/types/colors';
 
-export const HOT_KEYS = {
+export const HOTKEYS = {
   refresh_: 'r',
-  sorting_: [
-    ['luminance', 'g'],
-    ['random', 'n'],
-    ['inversion', 'j'],
-  ] satisfies [SortActionType, string][]
+  sorting_: {
+    'luminance': 'g',
+    'random': 'n',
+    'inversion': 'j',
+  } satisfies Partial<Record<SortActionType, string>>
 } as const;

@@ -1,9 +1,11 @@
 import { defineStore } from 'pinia';
 // Utils
-import {
-  rgb2hex, randRgbGen, hex2rgb, getSpaceInfos, getContrastAdjuster, getDistOp,
-} from '@/utils/colors.ts';
 import { shuffle } from '@/utils/helpers.ts';
+import {
+  rgb2hex, randRgbGen, hex2rgb, getSpaceInfos, getContrastAdjuster,
+} from '@/utils/colors.ts';
+import { mixers } from '@/utils/mixing';
+import { getDistOp, tspGreedy } from '@/utils/sorting';
 import { INIT_COLOR_SPACE, INIT_NUM_OF_CARDS, MAX_NUM_OF_CARDS } from '@/constants/pltStore';
 import { CONTRAST_METHODS, SORTING_ACTIONS } from '@/constants/colors';
 // Types
@@ -11,7 +13,6 @@ import type { CardType } from '@/features/types/pltStore';
 import type { OrderStateType, SortActionType, ColorSpacesType } from 'types/colors';
 import type { MixingType } from 'types/mixing';
 import type { ColorSpaceInfos } from '@/types/colors';
-import { mixers } from '@/utils/mixing';
 
 
 /**
@@ -149,20 +150,28 @@ const usePltStore = defineStore('plt', {
     },
     sortCards(sortBy: SortActionType) {
       const opIdx = SORTING_ACTIONS.indexOf(sortBy);
-      if (opIdx === 1) { // random
-        shuffle(this.cards);
-      } else if (
+      const op = getDistOp(sortBy);
+      if (
         opIdx === 2 || // inversion
         this.sortBy === SORTING_ACTIONS[opIdx]
-      ) this.cards.reverse();
-      else  {
-        const op = getDistOp(sortBy);
+      ) {
+        this.cards.reverse();
+      } else if (opIdx === 1) { // random
+        shuffle(this.cards);
+      } else if (opIdx === 0) {
         const distToBlack = this.cards.map(({ hex }) => {
           return op(hex, '#000');
         });
         this.cards.sort((a, b) => {
           return distToBlack[a.order] - distToBlack[b.order];
         });
+      }
+      else {
+        const op = getDistOp(sortBy);
+        const dist = (a: Pick<CardType, 'hex'>, b: Pick<CardType, 'hex'>) => {
+          return op(a.hex, b.hex);
+        };
+        this.cards = tspGreedy(this.cards, dist, { hex: '#000' });
       }
       /**
        * Inversion will not change sortBy. For example, if cards are sorted

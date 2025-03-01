@@ -45,33 +45,6 @@ export function shuffle<T>(arr: T[]): T[] {
   return arr;
 }
 
-/**
- * Quick sort an array in ascending order.
- */
-// export function quicksort<T>(
-//   arr: T[],
-//   left?: number,
-//   right?: number,
-//   copy: boolean = true,
-// ): T[] {
-//   if (copy) arr = [...arr];
-//   left ??= 0;
-//   right ??= arr.length && arr.length - 1; // 0 if lenth = 0, length - 1 elsewise.
-//   if (left === right) return arr;
-//   const pivotValue = arr[right];
-//   let storeIndex = left;
-//   for (let i = left; i < right; i++) {
-//     if (arr[i] < pivotValue) {
-//       [arr[storeIndex], arr[i]] = [arr[i], arr[storeIndex]];
-//       storeIndex++;
-//     }
-//   }
-//   [arr[storeIndex], arr[right]] = [arr[right], arr[storeIndex]];
-//   quicksort(arr, storeIndex + 1, right, false); // 排序右方
-//   quicksort(arr, left, storeIndex - 1, false); // 排序左方
-//   return arr;
-// }
-
 
 // ### Value helpers
 /**
