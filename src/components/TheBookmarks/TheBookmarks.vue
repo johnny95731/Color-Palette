@@ -37,14 +37,14 @@
         v-if="tabIdx === 0"
       >
         <ColorBlock
-          v-for="(hex) in favState.colors"
+          v-for="(hex) in favState.colors_"
           :key="`favColor ${hex}`"
           :hex="hex"
         />
       </template>
       <template v-else-if="tabIdx === 1">
         <PaletteBlock
-          v-for="(plt) in favState.plts"
+          v-for="(plt) in favState.plts_"
           :key="`favPlt ${plt}`"
           :plt="plt"
         />
@@ -62,8 +62,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, watch, nextTick } from 'vue';
-import { toValue } from '@vueuse/core';
+import { ref, computed, watch, nextTick, toValue } from 'vue';
 import $style from './TheBookmarks.module.scss';
 import TheBtn from '../Custom/TheBtn.vue';
 import OverlayContainer from '@/components/Custom/OverlayContainer.vue';
@@ -74,6 +73,7 @@ import { isTabKey } from '@/utils/browser';
 // Store
 import usePltStore from 'stores/usePltStore';
 import useFavStore from 'stores/useFavStore';
+import { map } from '@/utils/helpers';
 
 
 const emit = defineEmits<{
@@ -89,7 +89,7 @@ const tabRefs = ref<InstanceType<typeof TheBtn>[]>([]);
 watch(model, async (newVal) => { // focus dialog when open it.
   await nextTick();
   if (newVal) toValue(tabRefs)[toValue(tabIdx)]?.$el.focus();
-  else pltState.setEditingIdx();
+  else pltState.setEditingIdx_();
 });
 
 function handleFocusoutDialog(e: KeyboardEvent) {
@@ -107,13 +107,13 @@ function handleFocusoutDialog(e: KeyboardEvent) {
 const pltState = usePltStore();
 const favState = useFavStore();
 const pltStrings = computed(() => (
-  pltState.cards.map((state) => state.hex.slice(1)).join('-')
+  map(pltState.cards_, ({ hex_ }) => hex_.slice(1)).join('-')
 ));
 const state = computed<{
   icon: string,
   text: string,
 }>(() => {
-  const isFavPlt = favState.plts.includes(toValue(pltStrings));
+  const isFavPlt = favState.plts_.includes(toValue(pltStrings));
   if (isFavPlt) {
     return {
       icon: 'bookmark-dash',
@@ -128,7 +128,7 @@ const state = computed<{
 });
 
 function favPltChanged() {
-  favState.favPltsChanged(toValue(pltStrings));
+  favState.favPltsChanged_(toValue(pltStrings));
   tabIdx.value = 1;
 }
 </script>

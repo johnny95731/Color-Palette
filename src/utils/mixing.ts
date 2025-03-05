@@ -1,8 +1,9 @@
+import { map } from './helpers.ts';
 import { getSpaceInfos } from './colors.ts';
 import { elementwiseMean } from './numeric.ts';
 import { HSL_MAX } from '@/constants/colors.ts';
-import type { Mixer, MixingType } from '@/types/mixing.ts';
-import type { ColorSpacesType } from '@/types/colors.ts';
+import type { Mixer, Mixing } from '@/types/mixing.ts';
+import type { ColorSpaces } from '@/types/colors.ts';
 
 /**
  * Mixing two colors by evaluate their average.
@@ -12,7 +13,7 @@ import type { ColorSpacesType } from '@/types/colors.ts';
  * @returns The mean value of color1 and color2.
  */
 const meanMixing = (
-  color1: number[], color2: number[], colorSpace: ColorSpacesType,
+  color1: number[], color2: number[], colorSpace: ColorSpaces,
 ): number[] => {
   const { converter, inverter } = getSpaceInfos(colorSpace);
   const newColor = elementwiseMean(
@@ -29,7 +30,7 @@ const meanMixing = (
  * @returns The mean value of color1 and color2.
  */
 const additive = (
-  color1: number[], color2: number[], colorSpace: ColorSpacesType,
+  color1: number[], color2: number[], colorSpace: ColorSpaces,
 ): number[] => {
   const { converter, inverter } = getSpaceInfos(colorSpace);
   const newColor = elementwiseMean(
@@ -70,13 +71,15 @@ const mixingNGamma = (
   /**
    * Scaling coefficients of saturation and luminance.
    */
-  const sacleCoeff = HSL_MAX.slice(1).map(
-    (val) => Math.pow(val, (1 - gamma)));
+  const sacleCoeff = map(
+    HSL_MAX,
+    (val) => Math.pow(val, (1 - gamma))
+  );
   const mean = elementwiseMean(color1, color2);
   const { converter, inverter } = getSpaceInfos('hsl');
   const [hue, sat, lum] = converter(mean);
-  const newSat = Math.pow(sat, gamma) * sacleCoeff[0];
-  const newLum = Math.pow(lum, gamma) * sacleCoeff[1];
+  const newSat = Math.pow(sat, gamma) * sacleCoeff[1];
+  const newLum = Math.pow(lum, gamma) * sacleCoeff[2];
   return inverter([hue, newSat, newLum]);
 };
 
@@ -85,7 +88,7 @@ const brighter: Mixer = (color1: number[], color2: number[]) =>
 const deeperBlend: Mixer = (color1: number[], color2: number[]) =>
   mixingNGamma(color1, color2, 1.5);
 
-export const mixers = Object.freeze<Record<Exclude<MixingType, 'random'>, Mixer>>({
+export const mixers = Object.freeze<Record<Exclude<Mixing, 'random'>, Mixer>>({
   'mean': meanMixing,
   'brighter': brighter,
   'deeper': deeperBlend,

@@ -115,17 +115,17 @@ import SelectMenu from '../Custom/SelectMenu.vue';
 import ColorPicker from '../Custom/ColorPicker.vue';
 import OverlayContainer from '../Custom/OverlayContainer.vue';
 import TheBtn from '../Custom/TheBtn.vue';
+import TheTooltip from '../Custom/TheTooltip.vue';
 // utils and constants
 import { HARMONY_METHODS, HSB_MAX } from '@/constants/colors';
 import { getHarmonize, hex2rgb, hsb2rgb, rgb2gray, rgb2hex } from '@/utils/colors';
-import { invertBoolean } from '@/utils/helpers';
+import { invertBoolean, map } from '@/utils/helpers';
+import { copyText } from '@/utils/browser';
 import { MAX_NUM_OF_CARDS, MIN_NUM_OF_CARDS } from '@/constants/pltStore';
 // stores
 import usePltStore from '@/features/stores/usePltStore';
 // types
 import type{ ModelRef } from 'vue';
-import { copyText } from '@/utils/browser';
-import TheTooltip from '../Custom/TheTooltip.vue';
 
 const isShowing = defineModel<boolean>() as ModelRef<boolean>;
 
@@ -145,8 +145,10 @@ const harmonyArgs = reactive<{
 
 const palette = computed<string[]>(() => {
   const generator = getHarmonize(HARMONY_METHODS[harmonyArgs.method]);
-  return generator([...unref(currentColor)], harmonyArgs.num)
-    .map(hsb => rgb2hex(hsb2rgb(hsb)));
+  return map(
+    generator([...unref(currentColor)], harmonyArgs.num),
+    hsb => rgb2hex(hsb2rgb(hsb))
+  );
 });
 
 const copyHex = (idx: number) => {
@@ -158,7 +160,7 @@ const isPreview = ref(true);
  * Preview the palette (will restore when dialog is closed).
  */
 const preview = () => {
-  pltState.setPlt(
+  pltState.setPlt_(
     unref(isPreview) ? unref(palette) : unref(originalPalette)
   );
 };
@@ -167,7 +169,7 @@ watch(() => [unref(isPreview), unref(palette)],
 );
 /** Overwrite current palette and close. (will not restore when dialog is closed) */
 const comfirm = () => {
-  pltState.setPlt(unref(palette));
+  pltState.setPlt_(unref(palette));
   // Overwrite `originalPalette`. Because close dialog will restore palette from
   // `originalPalette`.
   saveOrininal();
@@ -180,13 +182,13 @@ const originalPalette = ref<number[][]>([[]]);
  * To restore palette when close dialog.
  */
 const saveOrininal = () => {
-  originalPalette.value = pltState.cards.map(card => card.color);
+  originalPalette.value = map(pltState.cards_, card => card.color_);
 };
 watch(isShowing, (newVal) => {
   if (newVal) {
     saveOrininal();
     preview();
   } else
-    pltState.setPlt(unref(originalPalette)); // restore palette from `originalPalette`
+    pltState.setPlt_(unref(originalPalette)); // restore palette from `originalPalette`
 }, { immediate: true });
 </script>

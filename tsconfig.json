@@ -19,7 +19,7 @@
     "lib": ["DOM", "DOM.Iterable", "ES2022"],
     "paths": {
       "@/*": ["./src/*"],
-      "types/*": ["./src/features/types/*", "./src/types/*"],
+      "types/*": ["./src/types/*"],
       "stores/*": ["./src/features/stores/*"]
     }
   }

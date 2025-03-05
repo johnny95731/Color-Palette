@@ -25,11 +25,18 @@ import type { Ref, WritableComputedRef } from 'vue';
 // };
 
 export const objPick = <T extends object, K extends (string | number | symbol)>(
-  obj: T, keys: K[]
+  obj: T,
+  keys: K[]
 ) => (
   Object.fromEntries(
-    keys
-      .map(key => [key, obj[key as unknown as keyof T]])
+    reduce(
+      keys,
+      (prev, key) => {
+        prev.push([key, obj[key as unknown as keyof T]]);
+        return prev;
+      },
+      [] as [K, T[keyof T]][]
+    ),
   ) as {[key in K]: key extends keyof T ? T[key] : undefined}
   );
 
@@ -38,12 +45,105 @@ export const objPick = <T extends object, K extends (string | number | symbol)>(
  * array.
  */
 export function shuffle<T>(arr: T[]): T[] {
+  let j: number;
   for (let i = arr.length - 1; i > 0; i--) {
-    const j = randInt(i);
+    j = randInt(i);
     [arr[i], arr[j]] = [arr[j], arr[i]];
   }
   return arr;
 }
+
+
+/**
+ * Generate an array with specific length.
+ *
+ * Faster than Array.prototype.map about 10%-22% on Edge and 7%-15% on Firefox.
+ */
+export function map<R>(
+  len: number,
+  callback: (val: undefined, i: number) => R
+): R[]
+/**
+ * Similar to Array.prototype.map but more generalize.
+ * But with an argument to restrict the length of returned array.
+ *
+ * Faster than Array.prototype.map about 10%-22% on Edge and 7%-15% on Firefox.
+ */
+export function map<R, T>(
+  arr: readonly T[],
+  callback: (val: T, i: number) => R,
+  len?: number,
+): R[]
+export function map<R, T>(
+  arr: readonly T[] | number,
+  callback: (val: T, i: number) => R,
+  len?: number,
+): R[] {
+  return reduce(
+    // @ts-expect-error
+  	arr,
+  	(prev, val, i) => {
+  	  prev.push(callback(val, i));
+  	  return prev;
+  	},
+  	[] as R[],
+  	len
+  );
+}
+
+export function reduce<R>(
+  len: number,
+  callback: (prev: R, val: undefined, i: number) => R,
+  init?: R,
+  _?: number
+): R
+
+export function reduce<R, T extends string>(
+  arr: T,
+  callback: (prev: R, val: T, i: number) => R,
+  init: R,
+  len?: number,
+): R
+
+export function reduce<R, T>(
+  arr: readonly T[],
+  callback: (prev: R, val: T, i: number) => R,
+  init: R,
+  len?: number,
+): R
+
+/**
+ * Same as Array.prototype.reduce but with for-loop.
+ * Default to have same length as arr.
+ *
+ * The performance (ops/sec) is slightly better than prototype method (less
+ * than 5%). But this function can specify the length of returned array.
+ * @param arr Array
+ * @param callback Callback function.
+ * @param init Initial value
+ * @param len Length of returened
+ * @returns
+ */
+export function reduce<R, T>(
+  arr: readonly T[] | string | number,
+  callback: (prev: R, val: T, i: number) => R,
+  init?: R,
+  len?: number,
+): R {
+  if (typeof arr === 'number') {
+    len = arr;
+    arr = Array(arr);
+  }
+  len ??= arr.length;
+  let s = init;
+  for (let i = 0; i < len; i++) {
+    // @ts-expect-error
+    s = callback(s, arr[i], i);
+  }
+  // @ts-expect-error
+  return s;
+};
+
 
 
 // ### Value helpers

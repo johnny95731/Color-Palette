@@ -42,16 +42,15 @@
 </template>
 
 <script lang="ts" setup>
-import { computed } from 'vue';
-import { toValue } from '@vueuse/core';
+import { computed, toValue } from 'vue';
 import $style from './TheBookmarks.module.scss';
+import TheBtn from '../Custom/TheBtn.vue';
+import TheTooltip from '../Custom/TheTooltip.vue';
 import TheIcon from '../Custom/TheIcon.vue';
 import { hex2rgb, rgb2gray } from '@/utils/colors';
 import { copyText } from '@/utils/browser';
 import useFavStore from '@/features/stores/useFavStore';
 import type { CSSProperties } from 'vue';
-import TheBtn from '../Custom/TheBtn.vue';
-import TheTooltip from '../Custom/TheTooltip.vue';
 
 type Props = {
   hex: string;
@@ -67,6 +66,6 @@ const iconFilterStyle = computed<CSSProperties>(() => (
 
 const favState = useFavStore();
 const delFavColor = () => {
-  favState.favColorsChanged(props.hex);
+  favState.favColorsChanged_(props.hex);
 };
 </script>

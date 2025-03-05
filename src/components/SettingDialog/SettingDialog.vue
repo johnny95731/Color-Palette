@@ -157,6 +157,7 @@ import TheBtn from './../Custom/TheBtn.vue';
 import SelectMenu from '../Custom/SelectMenu.vue';
 import TheSwitch from '../Custom/TheSwitch.vue';
 import TheSlider from '../Custom/TheSlider.vue';
+import { reduce } from '@/utils/helpers';
 import { isTabKey } from '@/utils/browser';
 // constants
 import { CONTRAST_METHODS, GAMMA_MAX, MULTIPLICATION_MAX } from '@/constants/colors';
@@ -167,7 +168,7 @@ import {
 import usePltStore from 'stores/usePltStore';
 import useSettingStore from 'stores/useSettingStore';
 // Types
-import type { TransitionType } from '@/features/types/settingStore';
+import type { TransitionStyle } from 'stores/useSettingStore';
 
 const emit = defineEmits<{
   (e: 'focusoutDialog'): void
@@ -195,19 +196,19 @@ watch(model, async (newVal) => {
   await nextTick();
   if (newVal && tabIdx.value === 1) {
     // Start adjusting when open dialog and in 2nd tab
-    pltState.setIsAdjustingPlt('start');
+    pltState.setIsAdjustingPlt_('start');
     updateContrastDisplay();
-  } else if (!newVal && pltState.isAdjustingPlt)
-    pltState.setIsAdjustingPlt('cancel');
+  } else if (!newVal && pltState.isAdjustingPlt_)
+    pltState.setIsAdjustingPlt_('cancel');
   unref(tabRefs)[unref(tabIdx)]?.$el.focus();
 });
 
 const switchTab = (idx: number) => {
   if (idx === 1) { // Switch to tab-1
-    pltState.setIsAdjustingPlt('start');
+    pltState.setIsAdjustingPlt_('start');
     updateContrastDisplay();
   } else if (tabIdx.value === 1) // From tab-1 switch to another tab.
-    pltState.setIsAdjustingPlt('cancel');
+    pltState.setIsAdjustingPlt_('cancel');
   tabIdx.value = idx;
 };
 
@@ -223,23 +224,23 @@ const transition = reactive<{
 });
 
 const handleTransitionChanged = (
-  val: number, attr: keyof TransitionType,
+  val: number, attr: keyof TransitionStyle,
 ) => {
   if (attr === 'pos') transition.pos = val;
   else transition.color = val;
   settingsState.setTransition(attr, val);
 };
 // page 1: Contrast
-type ContrastArgsType = {
+type ContrastArgs = {
   method: number
 } & {
   [key in number]: number;
 }
-const contrastArgs = reactive<ContrastArgsType>(
-  CONTRAST_METHODS.reduce(
-    // eslint-disable-next-line
-    (prev, _, i) => (prev[i] = 1) && prev,
-    { method: 0 } as ContrastArgsType
+const contrastArgs = reactive<ContrastArgs>(
+  reduce(
+    CONTRAST_METHODS,
+    (prev, _, i) => ((prev[i] = 1), prev),
+    { method: 0 } as ContrastArgs
   ));
 const contrastCoeffMax = computed(() => {
   return contrastArgs.method ? GAMMA_MAX : MULTIPLICATION_MAX;
@@ -247,19 +248,19 @@ const contrastCoeffMax = computed(() => {
 
 const handleMethodChanged = (idx: number) => {
   contrastArgs.method = idx!;
-  pltState.setIsAdjustingPlt('reset');
+  pltState.setIsAdjustingPlt_('reset');
   updateContrastDisplay();
 };
 
 function updateContrastDisplay() {
-  pltState.adjustContrast(
+  pltState.adjustContrast_(
     contrastArgs.method,
     contrastArgs[contrastArgs.method]
   );
 }
 
 const contrastBtnEvent = (state: 'start' | 'reset') => {
-  pltState.setIsAdjustingPlt(state);
+  pltState.setIsAdjustingPlt_(state);
   contrastArgs[contrastArgs.method] = 1;
   updateContrastDisplay();
 };

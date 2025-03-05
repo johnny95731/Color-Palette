@@ -1,7 +1,40 @@
 import { defineStore } from 'pinia';
-import type { BorderStyleType, TransitionType, StateType } from 'types/settingStore';
+import { BORDER_COLOR } from '@/constants/settingStore';
 
-const initialState: StateType = {
+
+export type BorderStyle = {
+  /**
+   * Show border or not.
+   */
+  show: boolean;
+  width: number;
+  color: typeof BORDER_COLOR[number];
+};
+
+export type TransitionStyle = {
+  /**
+   * Position transition (happens only when dragging) duration (in `ms`).
+   */
+  pos: number;
+  /**
+   * Background-color transition duration (in `ms`).
+   */
+  color: number
+}
+
+export type State = {
+  /**
+   * Border of cards.
+   */
+  border: BorderStyle;
+  /**
+   * Transition of cards
+   */
+  transition: TransitionStyle;
+};
+
+
+const initialState: State = {
   border: {
     show: false,
     width: 2,
@@ -36,13 +69,13 @@ for (const key of Object.keys(initialState)) {
 const useSettingStore = defineStore('setting', {
   state: () => initialState,
   actions: {
-    setBorder(attr: keyof BorderStyleType, val: number | string | boolean) {
+    setBorder(attr: keyof BorderStyle, val: number | string | boolean) {
       // @ts-expect-error Ignore checking `attr`.
       this.border[attr] = val;
       // Update store
       localStorage.setItem('border', JSON.stringify(this.border));
     },
-    setTransition(attr: keyof TransitionType, val: number) {
+    setTransition(attr: keyof TransitionStyle, val: number) {
       this.transition[attr] = val;
       // Update store
       localStorage.setItem('transition', JSON.stringify(this.transition));

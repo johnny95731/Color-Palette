@@ -1,4 +1,4 @@
-import { isNullish } from './helpers';
+import { map, isNullish, reduce } from './helpers';
 
 /**
  * The modulo function. Equivalent to
@@ -12,21 +12,10 @@ export const mod = (n: number, m: number): number => {
   return ((n % m) + m) % m;
 };
 
-// export function randInt(max: number): number
-// /**
-//  * Generate a random integer between [min, max). If only first argument `min` is
-//  * given, generate a integer between [0, min)
-//  */
-// export function randInt(min: number, max: number): number
 /**
  * Generate a random integer between [0,max].
  */
 export const randInt = (max: number) => {
-  // if (isNullish(max)) {
-  //   max = min;
-  //   min = 0;
-  // }
-  // return Math.floor(Math.random() * (max!-min+1) + min);
   return Math.trunc(Math.random() * (max+1));
 };
 
@@ -40,7 +29,7 @@ export const isSameFloat = (num1: number, num2: number): boolean =>
 /**
  * Count the length of decimals.
  */
-export const countDecimals = (num: number)  => { // Twice faster
+export const countDecimals = (num: number)  => {
   if (Math.floor(num) === num) return 0;
   let str = Math.abs(num).toString();
   let counts = 0;
@@ -50,12 +39,6 @@ export const countDecimals = (num: number)  => { // Twice faster
   }
   return counts + (str.split('.')[1]?.length || 0);
 };
-// export const countDecimals = (num: number)  => { // reduce about 8 character
-//   if (Math.floor(num) === num) return 0;
-//   const str = Math.abs(num).toExponential().split('e');
-//   const counts = (str[1].startsWith('-') ? 1 : -1) * +str[1].slice(1);
-//   return counts + (str[0].split('.')[1]?.length || 0);
-// };
 
 /**
  * Rounding a number to specifit place value.
@@ -151,40 +134,51 @@ export const polar2cartesian = (r: number, deg: number, place?: number) => {
   return { x, y };
 };
 
+
 /**
  * Dot product of two arrays.
  */
 export const dot = (arr1: readonly number[], arr2: readonly number[]): number => {
-  return arr1.reduce((prev, val, i) => prev + val * arr2[i], 0);
+  return reduce(
+    arr1,
+    (prev, val, i) => prev + val * arr2[i],
+    0,
+    Math.min(arr1.length, arr2.length)
+  );
 };
 
 /**
  * Sum of items of an array.
  */
-export const sum = (arr: readonly number[]) =>
-  arr.reduce((prev, val) => prev + val, 0);
+export const sum = (arr: readonly number[]) => {
+  return reduce(
+    arr,
+    (prev, val) => prev + val,
+    0
+  );
+};
 
 /**
  * L2-Norm (not take square root yet) of two array.
  */
-export const l2Norm = (arr: number[]) => {
-  let s = 0;
-  for (const val of arr) {
-    s += val**2;
-  }
-  return Math.sqrt(s);
+export const l2Norm = (arr: readonly number[]) => {
+  return Math.sqrt(reduce(
+    arr,
+    (prev, val) => prev + val * val,
+    0
+  ));
 };
 
 /**
  * Square of L2-distance (not take square root yet) of two array.
  */
 export const l2DistSq = (arr1: number[], arr2: number[]): number => {
-  const len = Math.min(arr1.length, arr2.length);
-  let s = 0;
-  for (let i = 0; i < len; i++) {
-    s += (arr1[i] - arr2[i])**2;
-  }
-  return s;
+  return reduce(
+    arr1,
+    (prev, val, i) => prev + (val - arr2[i])**2,
+    0,
+    Math.min(arr1.length, arr2.length)
+  );
 };
 
 /**
@@ -194,10 +188,9 @@ export const l2DistSq = (arr1: number[], arr2: number[]): number => {
  * @returns The mean value of color1 and color2.
  */
 export const elementwiseMean = (arr1: number[], arr2: number[]): number[] => {
-  const newColor = [];
-  for (let i = 0; i < arr1.length; i++) {
-    newColor[i] = 0.5 * (arr1[i] + arr2[i]);
-  }
-  return newColor;
+  return map(
+    Math.min(arr1.length, arr2.length),
+    (_, i) => 0.5 * (arr1[i] + arr2[i]),
+  );
 };
 

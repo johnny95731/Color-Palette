@@ -1,7 +1,7 @@
 import { shallowReactive } from 'vue';
 import { getPropertyValue } from '@/utils/browser';
 
-type MediaContextType = {
+type MediaContext = {
   /**
    * The device size, [height, width].
    */
@@ -34,7 +34,7 @@ type MediaContextType = {
  */
 const maxSmallSize = getPropertyValue('--small-view');
 
-const initialState: MediaContextType = {
+const initialState: MediaContext = {
   windowSize: [1, 1],
   headerHeight: 0,
   isSmall: true,
@@ -43,7 +43,7 @@ const initialState: MediaContextType = {
   bound: [0, 1],
 };
 
-const media = shallowReactive<MediaContextType>(initialState);
+const media = shallowReactive<MediaContext>(initialState);
 const handleWindowResize = () => {
   const windowSize: [number, number] = [
     document.body.offsetHeight,

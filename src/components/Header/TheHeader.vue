@@ -14,7 +14,7 @@
           prepend-icon="arrow-clockwise"
           aria-label="刷新調色盤"
           :text="isSmall ? '刷新' : undefined"
-          @click="pltState.refreshCard(-1)"
+          @click="pltState.refreshCard_(-1)"
         />
       </template>
     </TheTooltip>
@@ -45,8 +45,8 @@
       aria-label="排序"
       :text="isSmall ? '排序' : undefined"
       :items="sortingMenuItems"
-      :current-val="pltState.sortBy"
-      @click-item="pltState.sortCards($event as SortActionType)"
+      :current-val="pltState.sortBy_"
+      @click-item="pltState.sortCards_($event as SortActions)"
     />
     <TheTooltip
       :activator="sortingRef"
@@ -62,8 +62,8 @@
       aria-label="混色"
       :text="isSmall ? '混色' : undefined"
       :items="MIXING_MODES"
-      :current-val="pltState.mixMode"
-      @click-item="pltState.setBlendMode($event as MixingType)"
+      :current-val="pltState.mixMode_"
+      @click-item="pltState.setBlendMode_($event as Mixing)"
     />
     <TheTooltip
       :activator="mixingRef"
@@ -80,8 +80,8 @@
       :text="isSmall ? '色彩空間' : undefined"
       letter-case="all-caps"
       :items="COLOR_SPACES"
-      :current-val="pltState.colorSpace"
-      @click-item="pltState.setColorSpace($event as ColorSpacesType)"
+      :current-val="pltState.colorSpace_"
+      @click-item="pltState.setColorSpace_($event as ColorSpaces)"
     />
     <TheTooltip
       :activator="spacegRef"
@@ -256,7 +256,7 @@ import TheTooltip from '../Custom/TheTooltip.vue';
 import TheBtn from '@/components/Custom/TheBtn.vue';
 // Utils
 import { HOTKEYS } from '@/constants/hotkeys';
-import { invertBoolean } from '@/utils/helpers';
+import { invertBoolean, map } from '@/utils/helpers';
 // Constants
 import { MIXING_MODES } from '@/constants/mixing';
 import { COLOR_SPACES, SORTING_ACTIONS } from '@/constants/colors';
@@ -265,8 +265,8 @@ import media from '@/composables/useMedia';
 import usePltStore from '@/features/stores/usePltStore';
 import useSettingStore from '@/features/stores/useSettingStore';
 // Types
-import type { ColorSpacesType, SortActionType } from 'types/colors';
-import type { MixingType } from 'types/mixing';
+import type { ColorSpaces, SortActions } from 'types/colors';
+import type { Mixing } from 'types/mixing';
 
 // const btnsRef = ref<InstanceType<typeof HeaderBtns>>();
 const [DefineHeaderBtns, HeaderBtns] = createReusableTemplate<{css?: string}>();
@@ -306,7 +306,7 @@ const intervalId = ref<number | null>(null);
 const delay = computed(() => Math.max(settingState.transition.color, 1000));
 function slidePlay() {
   intervalId.value = window.setInterval(
-    () => toValue(isRunning) && pltState.refreshCard(-1),
+    () => toValue(isRunning) && pltState.refreshCard_(-1),
     toValue(delay)
   );
 }
@@ -316,10 +316,10 @@ function haldleClickSlides() {
     intervalId.value = null;
   } else { // pause -> play
     slidePlay();
-    pltState.refreshCard(-1);
+    pltState.refreshCard_(-1);
   }
   invertBoolean(isRunning);
-  pltState.setIsPending(toValue(isRunning));
+  pltState.setIsPending_(toValue(isRunning));
 }
 watch(
   () => settingState.transition.color,
@@ -331,10 +331,13 @@ watch(
   },
 );
 
-const sortingMenuItems = SORTING_ACTIONS.map((name) => ({
-  name,
-  val: name,
-  // @ts-expect-error
-  hotkey: HOTKEYS.sorting_[name],
-}));
+const sortingMenuItems = map(
+  SORTING_ACTIONS,
+  (name) => ({
+    name,
+    val: name,
+    // @ts-expect-error
+    hotkey: HOTKEYS.sorting_[name],
+  })
+);
 </script>

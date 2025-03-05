@@ -1,9 +1,9 @@
-import { ColorSpacesType } from '@/types/colors';
+import { ColorSpaces } from '@/types/colors';
 
 /**
  * Initial color space in palette.
  */
-export const INIT_COLOR_SPACE: ColorSpacesType = 'name';
+export const INIT_COLOR_SPACE: ColorSpaces = 'name';
 
 /**
  * Initial number of color in palette.

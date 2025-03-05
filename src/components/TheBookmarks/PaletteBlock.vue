@@ -47,30 +47,32 @@
 </template>
 
 <script lang="ts" setup>
-import { computed } from 'vue';
-import { toValue } from '@vueuse/core';
+import { computed, toValue } from 'vue';
 import $style from './TheBookmarks.module.scss';
 import TheIcon from '../Custom/TheIcon.vue';
+import TheTooltip from '../Custom/TheTooltip.vue';
+import { map, reduce } from '@/utils/helpers';
+import { toPercent } from '@/utils/numeric';
 import { isValidHex } from '@/utils/colors';
 import { copyText } from '@/utils/browser';
-import useFavStore from '@/features/stores/useFavStore';
-import usePltStore from '@/features/stores/usePltStore';
-import TheTooltip from '../Custom/TheTooltip.vue';
+import useFavStore from 'stores/useFavStore';
+import usePltStore from 'stores/usePltStore';
 
 type Props = {
   plt: string;
 }
 const props = defineProps<Props>();
-const pltColors = props.plt.split('-').map((hex) => `#${hex}`);
-const diff = computed(() => {
-  // Round to 2nd decimal place. Reprecent in percentage.
-  return Math.round(10000 / pltColors.length) / 100;
-});
+const pltColors = map(props.plt.split('-'), (hex) => `#${hex}`);
+const diff = computed(() => toPercent(1 / pltColors.length, 2));
 const bgGrad = computed(() => {
-  const midPoint = pltColors.reduce((acc, hex, i) => {
-    acc += `${hex} ${i * toValue(diff)}%,${hex} ${(i+1) * toValue(diff)}%,`;
-    return acc;
-  }, '')
+  const midPoint = reduce(
+    pltColors,
+    (acc, hex, i) => {
+      acc += `${hex} ${i * toValue(diff)}%,${hex} ${(i+1) * toValue(diff)}%,`;
+      return acc;
+    },
+    ''
+  )
     .slice(0, -1);
   return `linear-gradient(90deg, ${midPoint})`;
 });
@@ -82,8 +84,8 @@ const handleSetPlt = () => {
   for (const hex of pltColors) {
     if (!isValidHex(hex)) return;
   }
-  pltState.setPlt(pltColors);
+  pltState.setPlt_(pltColors);
 };
 
-const removeFavPlt = () => favState.favPltsChanged(props.plt);
+const removeFavPlt = () => favState.favPltsChanged_(props.plt);
 </script>

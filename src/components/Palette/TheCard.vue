@@ -4,7 +4,7 @@
     :class="[
       $style.cardContainer,
       cardIdx === 0 && $style.first,
-      cardIdx === pltState.numOfCards-1 && $style.last,
+      cardIdx === pltState.numOfCards_-1 && $style.last,
     ]"
     :style="cardStyle"
     @transitionend="$emit('transitionend')"
@@ -28,17 +28,17 @@
           @click="$emit('remove')"
         />
         <TheBtn
-          v-memo="[card.isLock]"
+          v-memo="[card.isLock_]"
           :icon="isLock.icon"
           :aria-label="isLock.label"
           :ripple="false"
-          @click="pltState.setIsLock(cardIdx)"
+          @click="pltState.setIsLock_(cardIdx)"
         />
         <TheBtn
           :icon="isFavIcon.icon"
           :aria-label="isFavIcon.label"
           :ripple="false"
-          @click="favState.favColorsChanged(card.hex);"
+          @click="favState.favColorsChanged_(card.hex_);"
         />
       </CondWrapper>
       <CondWrapper
@@ -58,7 +58,7 @@
           icon="arrow-clockwise"
           aria-label="刷新"
           :ripple="false"
-          @click="pltState.refreshCard(cardIdx)"
+          @click="pltState.refreshCard_(cardIdx)"
         />
         <TheBtn
           v-once
@@ -66,7 +66,7 @@
           aria-label="調整"
           aria-haspopup="dialog"
           :ripple="false"
-          @click="pltState.setEditingIdx(cardIdx)"
+          @click="pltState.setEditingIdx_(cardIdx)"
         />
       </CondWrapper>
     </div>
@@ -84,7 +84,7 @@
           <div
             :class="$style.hexText"
             @click="
-              copyText(card.hex.slice(1));
+              copyText(card.hex_.slice(1));
               handleClick($event)
             "
           >
@@ -95,7 +95,7 @@
             <TheBtn
               ref="hexTextRef"
               :ripple="false"
-              :text="card.hex"
+              :text="card.hex_"
             />
           </div>
           <div
@@ -129,23 +129,23 @@
     >
       <label
         :for="`card${cardIdx}-hex`"
-        :style="{backgroundColor: card.hex}"
+        :style="{backgroundColor: card.hex_}"
       >
-        {{ card.hex }}
+        {{ card.hex_ }}
       </label>
       <input
-        v-memo="[card.hex]"
+        v-memo="[card.hex_]"
         ref="hexInputRef"
         :id="`card${cardIdx}-hex`"
         :class="$style.hexInput"
         type="text"
         maxlength="7"
-        :value="card.hex"
+        :value="card.hex_"
         @input="hexTextEdited($event)"
         @change="handleHexEditingFinished($event)"
       >
       <SelectMenu
-        v-if="pltState.colorSpace === 'name'"
+        v-if="pltState.colorSpace_ === 'name'"
         :class="$style.nameSelect"
         aria-label="CSS named-color選單"
         :items="unzipedNameList"
@@ -182,8 +182,8 @@
             :label="space.labels[i]"
             :showRange="false"
             :showVal="false"
-            :trackerBackground="gradientGen(roundedColor, i, pltState.colorSpace)"
-            :thumbBackground="card.hex"
+            :trackerBackground="gradientGen(roundedColor, i, pltState.colorSpace_)"
+            :thumbBackground="card.hex_"
             :min="min"
             :max="max"
             :model-value="roundedColor[i]"
@@ -201,6 +201,7 @@ import { computed, nextTick, ref, shallowReactive, watch } from 'vue';
 import { asyncComputed, toValue } from '@vueuse/core';
 import $style from './TheCard.module.scss';
 // Components
+import TheTooltip from '../Custom/TheTooltip.vue';
 import TheBtn from '@/components/Custom/TheBtn.vue';
 import TheIcon from '../Custom/TheIcon.vue';
 import SelectMenu from '../Custom/SelectMenu.vue';
@@ -212,20 +213,20 @@ import { round, toPercent } from '@/utils/numeric';
 import { rgb2gray, getClosestNamed, hex2rgb, unzipCssNamed, unzipedNameList, gradientGen, getNamedColorRgb, isValidHex } from '@/utils/colors';
 import { copyText, hexTextEdited, isTabKey } from '@/utils/browser';
 // Stores
-import usePltStore from '@/features/stores/usePltStore';
-import useFavStore from '@/features/stores/useFavStore';
+import usePltStore from 'stores/usePltStore';
+import useFavStore from 'stores/useFavStore';
 import media from '@/composables/useMedia';
 // Types
 import type { CSSProperties } from 'vue';
-import type { CardType } from '@/features/types/pltStore';
-import TheTooltip from '../Custom/TheTooltip.vue';
+import type { Card } from 'stores/usePltStore';
+import { map } from '@/utils/helpers';
 
 const cardContainerRef = ref<HTMLElement>();
 const hexTextRef = ref<InstanceType<typeof TheBtn>>();
 
 type Props = {
   cardIdx: number;
-  card: CardType;
+  card: Card;
 };
 const props = defineProps<Props>();
 
@@ -237,10 +238,10 @@ defineEmits<{
 
 const pltState = usePltStore();
 const space = computed(() => {
-  const infos = pltState.spaceInfos;
+  const infos = pltState.spaceInfos_;
   return {
     ...infos,
-    range: infos.range.map((vals) =>
+    range: map(infos.range, (vals) =>
       Array.isArray(vals) ?
         [...vals] :
         [0, vals]
@@ -248,14 +249,14 @@ const space = computed(() => {
   };
 });
 
-const isLight = computed(() => rgb2gray(hex2rgb(props.card.hex)) > 127);
+const isLight = computed(() => rgb2gray(hex2rgb(props.card.hex_)) > 127);
 
 const roundedColor = computed({
   get() {
-    return props.card.color.map((val) => round(val));
+    return map(props.card.color_, (val) => round(val));
   },
   set(newColorArr: number[]) {
-    pltState.editCard(props.cardIdx, newColorArr);
+    pltState.editCard_(props.cardIdx, newColorArr);
   }
 });
 
@@ -263,23 +264,23 @@ const roundedColor = computed({
 // States / Consts
 const favState = useFavStore();
 const isFav = computed(() => {
-  return favState.colors.includes(props.card.hex);
+  return favState.colors_.includes(props.card.hex_);
 });
 const showToolbar = computed(() => {
   return {
-    opacity: pltState.isPending ? '0' : undefined
+    opacity: pltState.isPending_ ? '0' : undefined
   };
 });
 
 const closeIconStyle = computed<CSSProperties | undefined>(() => {
-  return pltState.numOfCards === 2 ?
+  return pltState.numOfCards_ === 2 ?
     {
       opacity: '0',
       cursor: 'default',
     } : undefined;
 });
 const isLock = computed(() => (
-  props.card.isLock ?
+  props.card.isLock_ ?
     { icon: 'lock-fill', label: '解鎖刷新' } as const :
     { icon: 'unlock-fill', label: '鎖定刷新' } as const
 ));
@@ -292,31 +293,31 @@ const isFavIcon = computed(() => (
 
 const showEditor = computed({
   get() {
-    return pltState.editingIdx === props.cardIdx;
+    return pltState.editingIdx_ === props.cardIdx;
   },
   set() {
-    pltState.setEditingIdx(props.cardIdx);
+    pltState.setEditingIdx_(props.cardIdx);
   }
 });
 
 const closestNamed = asyncComputed<string | undefined>(
-  async () => {
-    return pltState.colorSpace === 'name' ?
-      getClosestNamed(props.card.color) :
+  () => {
+    return pltState.colorSpace_ === 'name' ?
+      getClosestNamed(props.card.color_) :
       undefined;
   },
   'white'
 );
 const detail = computed(() => {
-  return pltState.colorSpace === 'name' ?
+  return pltState.colorSpace_ === 'name' ?
     unzipCssNamed(toValue(closestNamed) ?? '') :
-    `${pltState.colorSpace}(${toValue(roundedColor).join()})`;
+    `${pltState.colorSpace_}(${toValue(roundedColor).join()})`;
 });
 
 const cardStyle = computed<CSSProperties>(() => {
   return {
     color: isLight.value ? '#000' : '#fff',
-    backgroundColor: props.card.hex,
+    backgroundColor: props.card.hex_,
   };
 });
 
@@ -331,7 +332,7 @@ watch(showEditor, async (newShow) => {
     if (!media.isSmall) {
       // dialogWidth = 150px, 75 = 150 / 2
       const halfDialogWidth =  75 / media.windowSize[1]; // to percent
-      const center = (props.cardIdx + 0.5) / pltState.numOfCards;
+      const center = (props.cardIdx + 0.5) / pltState.numOfCards_;
       if (center - halfDialogWidth < 0) { // left pos of dialog is out of viewport
         left = '0';
       } else if (center + halfDialogWidth > 1) {
@@ -363,13 +364,13 @@ const handleLeaveFocusing = (e: KeyboardEvent) => {
  */
 const handleHexEditingFinished = function(e: Event) {
   const text = (e.currentTarget as HTMLInputElement).value;
-  if (text !== props.card.hex && isValidHex(text)) {
+  if (text !== props.card.hex_ && isValidHex(text)) {
     const newColor = space.value.converter(hex2rgb(text));
     roundedColor.value = newColor;
   }
 };
 
-const selectName = (name: string) => pltState.editCard(
+const selectName = (name: string) => pltState.editCard_(
   props.cardIdx,
   getNamedColorRgb(name.replaceAll(' ', ''))
 );
@@ -378,7 +379,7 @@ const selectName = (name: string) => pltState.editCard(
  * Slider changed event.
  */
 const handleSliderChange = function(newVal: number, idx: number) {
-  const newColor = [...props.card.color];
+  const newColor = [...props.card.color_];
   newColor[idx] = newVal;
   roundedColor.value = newColor;
 };

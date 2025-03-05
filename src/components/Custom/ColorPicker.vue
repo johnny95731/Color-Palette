@@ -113,7 +113,7 @@ import { useDragableElement } from '@/composables/useDragableElement';
 import TheSlider from './TheSlider.vue';
 import { cartesian2polar, mod, polar2cartesian, rangeMapping, round, toPercent } from '@/utils/numeric';
 import { hex2hsb, hsb2hex, isValidHex } from '@/utils/colors';
-import { isNullish } from '@/utils/helpers';
+import { isNullish, map } from '@/utils/helpers';
 import { getPropertyValue } from '@/utils/browser';
 import { HSB_MAX } from '@/constants/colors';
 import { COLOR_PICKER_CANVAS_SIZE } from '@/constants/browser';
@@ -160,11 +160,14 @@ const setCurrentColor = (
   rounding: boolean = true
 ) => {
   color = unref(color);
-  let hsb = typeof color === 'string' ?
-    hex2hsb(color) :
-    color;
-  if (rounding)
-    hsb = hsb.map(val => round(val, 2));
+  const hsb =  map(
+    typeof color === 'string' ?
+      hex2hsb(color) :
+      color,
+    rounding ?
+      val => round(val, 2) :
+      x => x
+  );
   Object.assign(currentColor, hsb);
 };
 /** `currentColor` in (rgb) hex code. */

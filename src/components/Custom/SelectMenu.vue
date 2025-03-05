@@ -95,7 +95,7 @@ import OverlayContainer from './OverlayContainer.vue';
 import TheBtn from './TheBtn.vue';
 import TheIcon from './TheIcon.vue';
 // utils
-import { isNullish, invertBoolean, getLetterCaseConverter } from '@/utils/helpers';
+import { isNullish, invertBoolean, getLetterCaseConverter, map } from '@/utils/helpers';
 import { getComponentId } from '@/utils/browser';
 import { mod } from '@/utils/numeric';
 import { noModifierKey, shiftOnly } from '@/utils/browser';
@@ -271,7 +271,7 @@ const optionProps = ref<{
   onClick: () => number,
     }[]>([]);
 watch(() => unref(selectItems).length, () => {
-  optionProps.value = unref(selectItems).map((_, i) => {
+  optionProps.value = map(unref(selectItems), (_, i) => {
     return {
       class: ['select__option', i === unref(modelIndex) && 'select__option--selected'],
       onClick: () => handleSelect(i)

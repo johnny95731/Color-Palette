@@ -1,3 +1,4 @@
+import { map } from '@/utils/helpers';
 import { sum } from '@/utils/numeric';
 
 // #Space
@@ -24,7 +25,7 @@ export const XYZ2RGB_COEFF = [
  * [0.95047, 1, 1.08883]
  * Observer. = 2°, Illuminant = D65
  */
-export const RGB2XYZ_COEFF_ROW_SUM = RGB2XYZ_COEFF.map(row => sum(row));
+export const RGB2XYZ_COEFF_ROW_SUM = map(RGB2XYZ_COEFF, row => sum(row));
 
 /** Scaling XYZ values when convering from rgb. */
 export const XYZ_MAX_SCALING = 100;
@@ -43,8 +44,10 @@ export const HSB_MAX = HSL_MAX;
 export const HWB_MAX = HSL_MAX;
 export const CMY_MAX = 100;
 export const CMYK_MAX = 100;
-export const XYZ_MAX = RGB2XYZ_COEFF_ROW_SUM
-  .map(val => Math.ceil(XYZ_MAX_SCALING * val));
+export const XYZ_MAX = map(
+  RGB2XYZ_COEFF_ROW_SUM,
+  val => Math.ceil(XYZ_MAX_SCALING * val)
+);
 export const LAB_MAX = [100, [-128, 128], [-128, 128]] as const;
 export const YUV_MAX = RGB_MAX;
 

@@ -175,7 +175,7 @@ defineEmits<{
 
 const menuItems = computed(() => {
   const letterConverter = getLetterCaseConverter(props.letterCase);
-  return props.items?.map((item) => {
+  return  props.items?.map((item) => {
     const { val, name, hotkey }: MenuItem = typeof item === 'object' ? item : { val: item };
     return {
       val,

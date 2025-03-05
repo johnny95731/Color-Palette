@@ -1,5 +1,5 @@
 import { SORTING_ACTIONS } from '@/constants/colors';
-import { SortActionType } from '@/types/colors';
+import { SortActions } from '@/types/colors';
 import { hex2lab, hex2rgb, lab2lch, rgb2gray } from './colors';
 import { deg2rad, l2DistSq, mod } from './numeric';
 
@@ -40,7 +40,6 @@ const distE94 = (hex1: string, hex2: string) => {
   const deltaC = c1Star - c2Star;
   // May be NaN. Due to floating problem.
   const deltaH = Math.sqrt(deltaA**2 + deltaB**2 - deltaC**2) || 0;
-  if (isNaN(deltaH)) console.log('e94', [l1, a1, b1], [l2, a2, b2]);
 
   return Math.sqrt(
     deltaL**2 +
@@ -113,7 +112,7 @@ const distE00 = (hex1: string, hex2: string) => {
 
 // # Getters
 export const getDistOp = (
-  method: SortActionType
+  method: SortActions
 ): ((hex1: string, hex2: string) => number) => {
   if (method === SORTING_ACTIONS[0]) return distLuminance;
   if (method === SORTING_ACTIONS[3]) return distE76;
@@ -146,19 +145,16 @@ export function tspGreedy<key extends keyof T, T extends object>(
   let min: number;
   let minIdx: number;
   while (indices.length) {
-    console.log(pivot);
     min = Infinity;
     minIdx = 0;
     for (let k = 0; k < indices.length; k++) {
       temp = dist(pivot, arr[indices[k]]);
-      console.log(temp);
       if (temp < min) {
         min = temp;
         minIdx = k;
       }
     }
     pivot = arr[indices[minIdx]];
-    console.log(indices, minIdx);
     indices.splice(minIdx, 1);
     result.push(pivot);
   }

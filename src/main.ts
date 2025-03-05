@@ -13,8 +13,8 @@ const app = createApp(App);
 app.use(createPinia());
 // Loading databases.
 const favState = useFavStore();
-favState.initializeColors();
-favState.initializePlts();
+favState.initializeColors_();
+favState.initializePlts_();
 
 app.mount('#app');
 

@@ -3,7 +3,7 @@ import { COLOR_SPACES, SORTING_ACTIONS, CONTRAST_METHODS, HARMONY_METHODS } from
 /**
  * Support color spaces.
  */
-export type ColorSpacesType = typeof COLOR_SPACES[number];
+export type ColorSpaces = typeof COLOR_SPACES[number];
 
 /**
  * Infomations about color space.
@@ -34,18 +34,18 @@ export type ColorSpaceInfos = {
 };
 
 
-export type SortActionType = typeof SORTING_ACTIONS[number];
+export type SortActions = typeof SORTING_ACTIONS[number];
 /**
  * The current order of cards.
  */
-export type OrderStateType = Exclude<SortActionType, 'inversion'>;
+export type OrderState = Exclude<SortActions, 'inversion'>;
 
 /**
  * Support contrast adjusting methods.
  */
-export type ContrastMethodType = typeof CONTRAST_METHODS[number];
+export type ContrastMethods = typeof CONTRAST_METHODS[number];
 
 /**
  * Support harmony adjusting methods.
  */
-export type HarmonyMethodType = typeof HARMONY_METHODS[number];
+export type HarmonyMethods = typeof HARMONY_METHODS[number];

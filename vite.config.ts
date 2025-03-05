@@ -1,8 +1,9 @@
-import {fileURLToPath, URL} from 'node:url';
-import {defineConfig} from 'vite';
+import { fileURLToPath, URL } from 'node:url';
+import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import autoprefixer from 'autoprefixer';
 import lightningcss from 'vite-plugin-lightningcss';
+// @ts-expect-error
 import viteJoinMediaQueries from 'vite-join-media-queries';
 
 const metaUrl = import.meta.url;
@@ -44,11 +45,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', metaUrl)),
-      'types': (
-        `${fileURLToPath(new URL('./src/features/types', metaUrl))} ${
-          fileURLToPath(new URL('./src/types', metaUrl))}
-        `
-      ),
+      'types': `${fileURLToPath(new URL('./src/types', metaUrl))}`,
       'stores': fileURLToPath(new URL('./src/features/stores', metaUrl)),
     },
   },

@@ -29,6 +29,13 @@ import { ref, onMounted, computed, defineAsyncComponent, onUnmounted } from 'vue
 import { toValue } from '@vueuse/core';
 import TheHeader from './components/Header/TheHeader.vue';
 import ThePalette from './components/Palette/ThePalette.vue';
+import { HOTKEYS } from './constants/hotkeys';
+import { invertBoolean } from './utils/helpers';
+// Store and Context
+import usePltStore from './features/stores/usePltStore';
+import { SortActions } from './types/colors';
+
+
 const HarmonyGenDialog = defineAsyncComponent(
   () => import('./components/HarmonyGenDialog/HarmonyGenDialog.vue')
     .then(component => {
@@ -50,11 +57,7 @@ const SettingDialog = defineAsyncComponent(
       return component;
     })
 );
-import { HOTKEYS } from './constants/hotkeys';
-import { invertBoolean } from './utils/helpers';
-// Store and Context
-import usePltStore from './features/stores/usePltStore';
-import { SortActionType } from './types/colors';
+
 
 const headerRef = ref<InstanceType<typeof TheHeader>>();
 // Show/Hide dialogs
@@ -80,9 +83,9 @@ const handleShowSettings = () => {
 
 const pltState = usePltStore();
 const isShowingOverlay = computed(() =>
-  pltState.isEditing || toValue(isFavShowing) || toValue(isSettingsShowing)
+  pltState.isEditing_ || toValue(isFavShowing) || toValue(isSettingsShowing)
 );
-const isCardPending = computed(() => pltState.isEditing || pltState.isPending);
+const isCardPending = computed(() => pltState.isEditing_ || pltState.isPending_);
 
 // Connect hotkey.
 (() => {
@@ -94,12 +97,12 @@ const isCardPending = computed(() => pltState.isEditing || pltState.isPending);
       toValue(isCardPending) || toValue(isShowingOverlay)
     ) return;
     if (key === refreshHotkey) {
-      pltState.refreshCard(-1);
+      pltState.refreshCard_(-1);
       return;
     }
     for (const [sortBy, hotkey] of Object.entries(sortingHotkey)) {
       if (key === hotkey) {
-        pltState.sortCards(sortBy as SortActionType);
+        pltState.sortCards_(sortBy as SortActions);
         return;
       }
     }
