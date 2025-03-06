@@ -29,7 +29,7 @@ export const objPick = <T extends object, K extends (string | number | symbol)>(
   keys: K[]
 ) => (
   Object.fromEntries(
-    reduce(
+    forLoop(
       keys,
       (prev, key) => {
         prev.push([key, obj[key as unknown as keyof T]]);
@@ -61,7 +61,7 @@ export function shuffle<T>(arr: T[]): T[] {
  */
 export function map<R>(
   len: number,
-  callback: (val: undefined, i: number) => R
+  callback: (val: null, i: number) => R
 ): R[]
 /**
  * Similar to Array.prototype.map but more generalize.
@@ -75,40 +75,41 @@ export function map<R, T>(
   len?: number,
 ): R[]
 export function map<R, T>(
-  arr: readonly T[] | number,
-  callback: (val: T, i: number) => R,
+  arr: number | readonly T[],
+  callback:
+    typeof arr extends number ?
+      ((val: null, i: number) => R) :
+      ((val: T, i: number) => R),
   len?: number,
 ): R[] {
-  return reduce(
+  return forLoop(
     // @ts-expect-error
   	arr,
-  	(prev, val, i) => {
-  	  prev.push(callback(val, i));
-  	  return prev;
+  	(acc, val, i) => {
+  	  acc.push(callback(val, i));
+  	  return acc;
   	},
   	[] as R[],
   	len
   );
 }
 
-export function reduce<R>(
+export function forLoop<R>(
   len: number,
-  callback: (prev: R, val: undefined, i: number) => R,
+  callback: (acc: R, val: null, i: number) => R,
   init?: R,
   _?: number
 ): R
-
-export function reduce<R, T extends string>(
+export function forLoop<R, T extends string>(
   arr: T,
-  callback: (prev: R, val: T, i: number) => R,
-  init: R,
+  callback: (acc: R, val: T, i: number) => R,
+  init?: R,
   len?: number,
 ): R
-
-export function reduce<R, T>(
+export function forLoop<R, T>(
   arr: readonly T[],
-  callback: (prev: R, val: T, i: number) => R,
-  init: R,
+  callback: (acc: R, val: T, i: number) => R,
+  init?: R,
   len?: number,
 ): R
 
@@ -124,18 +125,21 @@ export function reduce<R, T>(
  * @param len Length of returened
  * @returns
  */
-export function reduce<R, T>(
+export function forLoop<R, T>(
   arr: readonly T[] | string | number,
-  callback: (prev: R, val: T, i: number) => R,
+  callback:
+    typeof arr extends number ?
+      ((acc: R, val: null, i: number) => R) :
+      ((acc: R, val: T, i: number) => R),
   init?: R,
   len?: number,
 ): R {
+  let s = init;
   if (typeof arr === 'number') {
     len = arr;
-    arr = Array(arr);
+    arr = Array(len);
   }
   len ??= arr.length;
-  let s = init;
   for (let i = 0; i < len; i++) {
     // @ts-expect-error
     s = callback(s, arr[i], i);

@@ -43,7 +43,7 @@ import $style from './ThePalette.module.scss';
 import TheBtn from '../Custom/TheBtn.vue';
 import TheCard from './TheCard.vue';
 import { useDragableElement } from '@/composables/useDragableElement';
-import { equallyLength, evalPosition, map } from '@/utils/helpers';
+import { equallyLength, evalPosition, forLoop, map } from '@/utils/helpers';
 import { rangeMapping, round } from '@/utils/numeric';
 import { rgb2hex } from '@/utils/colors';
 import { INIT_NUM_OF_CARDS, MAX_NUM_OF_CARDS } from '@/constants/pltStore';
@@ -109,8 +109,12 @@ const setTransitionProperty = (idx: number, newVal: 'none' | '') => {
 watch(() => [pltState.numOfCards_, media.isSmall], resetCardStyle);
 watch(() => pltState.isPending_, (newVal) => {
   const property = newVal ? '' : 'none';
-  for (let i = 0; i < pltState.numOfCards_; i++)
-    setTransitionProperty(i, property);
+  forLoop(
+    pltState.cards_,
+    (_, __, i) => {
+      setTransitionProperty(i, property);
+    }
+  );
   if (draggingIdx.value)
     setTransitionProperty(draggingIdx.value, newVal ? 'none' : '');
 }, { flush: 'sync' });
@@ -124,9 +128,10 @@ watch(() => pltState.isPending_, (newVal) => {
  * @param total Total number of cards.
  */
 const resetPosition = (pass?: number) => {
-  for (let i = 0; i < pltState.numOfCards_; i++) {
-    if (i !== pass) setPosition(i);
-  }
+  forLoop(
+    pltState.cards_,
+    (_, __, i) => i !== pass && setPosition(i)
+  );
 };
 
 // Add card, remove card, and drag card have transition event.
@@ -158,11 +163,14 @@ const handleAddCard = (idx: number) => {
     eventInfo.value = { event_: 'add', idx_: idx, rgb_: newRgb };
     // Transition: shrink and move card. The enpty space is new card
     const length = equallyLength(pltState.numOfCards_ + 1);
-    for (let i = 0; i < pltState.numOfCards_; i++) {
-      setSize(i, length);
-      const bias = i >= idx ? 1 : 0;
-      setPosition(i, evalPosition(i + bias, pltState.numOfCards_ + 1));
-    }
+    forLoop(
+      pltState.cards_,
+      (_, __, i) => {
+        setSize(i, length);
+        const bias = i >= idx ? 1 : 0;
+        setPosition(i, evalPosition(i + bias, pltState.numOfCards_ + 1));
+      }
+    );
     // Trigger side effect when !isInTrans.some()
     isInTrans.arr = map(INIT_NUM_OF_CARDS, () => true);
   }
@@ -182,11 +190,14 @@ const handleRemoveCard = (idx: number) => {
     isInTrans.arr = map(pltState.cards_, () => true);
     const newSize = equallyLength(pltState.numOfCards_ - 1);
     // Shrink target card and expand other card.
-    for (let i = 0; i < pltState.numOfCards_; i++) {
-      setSize(i, i === idx ? '0' : newSize);
-      const bias = i > idx ? 1 : 0;
-      setPosition(i, evalPosition(i - bias, pltState.numOfCards_ - 1));
-    }
+    forLoop(
+      pltState.cards_,
+      (_, __, i) => {
+        setSize(i, i === idx ? '0' : newSize);
+        const bias = i > idx ? 1 : 0;
+        setPosition(i, evalPosition(i - bias, pltState.numOfCards_ - 1));
+      }
+    );
     eventInfo.value = { event_: 'remove', idx_: idx };
   }
 };

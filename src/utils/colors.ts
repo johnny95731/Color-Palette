@@ -1,6 +1,6 @@
 import NamedColor from '@/assets/NamedColor.json';
 import { clip, dot, mod, randInt, rangeMapping, round, toPercent, l2DistSq, cartesian2polar } from './numeric';
-import { map, reduce } from './helpers';
+import { map, forLoop } from './helpers';
 import {
   RGB_MAX, HSL_MAX, HWB_MAX, HSB_MAX, CMY_MAX, CMYK_MAX, XYZ_MAX, LAB_MAX,
   RGB2XYZ_COEFF_ROW_SUM, XYZ2RGB_COEFF, RGB2XYZ_COEFF, XYZ_MAX_SCALING,
@@ -27,9 +27,9 @@ export const getClosestNamed = async (rgb: number[]): Promise<keyof typeof Named
   let minDist = Infinity;
   let dist: number;
   let closest: keyof typeof NamedColor;
+  // cache this may increase 20%-30% ops/sec
   for (const [key, hex] of Object.entries(NamedColor)) {
     dist = l2DistSq(rgb, hex2rgb(hex));
-    if (dist < 9) return key as keyof typeof NamedColor;
     if (dist < minDist) {
       closest = key as keyof typeof NamedColor;
       minDist = dist;
@@ -444,7 +444,7 @@ const removeNonHex = (str: string) => str.replace(/[^0-9A-F]/ig, '');
  * @return Hex color.
  */
 export const rgb2hex = (rgb: number[]): string => {
-  return reduce(
+  return forLoop(
     rgb,
     (prev, val) => prev + (round(val) < 16 ? 0 : '') + round(val).toString(16),
     '#',
@@ -652,7 +652,7 @@ const brightnessScaling = (rgbs: number[][]): number[][] => {
     rgb => rgb2yuv(rgb),
   );
 
-  const [minY, maxY] = reduce(
+  const [minY, maxY] = forLoop(
     yuvs,
     (prev, [y]) => {
       if (y < prev[0]) prev[0] = y;
@@ -701,7 +701,7 @@ export const hueRotation = ([h, s, b]: number[], deg: number) => (
  */
 function harmonize(primaryHsb: number[], start: number, increment: number, num: number) {
   // start from 1 'cause first color is primary color.
-  return reduce(
+  return forLoop(
     num - 1,
     (prev) => {
       prev.push(hueRotation(primaryHsb, start));

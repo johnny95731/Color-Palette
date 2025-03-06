@@ -2,6 +2,7 @@ import { SORTING_ACTIONS } from '@/constants/colors';
 import { SortActions } from '@/types/colors';
 import { hex2lab, hex2rgb, lab2lch, rgb2gray } from './colors';
 import { deg2rad, l2DistSq, mod } from './numeric';
+import { map } from './helpers';
 
 
 
@@ -136,8 +137,7 @@ export function tspGreedy<key extends keyof T, T extends object>(
 ): T[] {
   const result: T[] = [];
   // remaining indices
-  const indices: number[] = Array(arr.length);
-  for (let i = 0; i < arr.length; i++) indices[i] = i;
+  const indices = map(arr, (_, i) => i);
 
   // @ts-expect-error initPoint will not be add to result array.
   let pivot: T = initPoint;

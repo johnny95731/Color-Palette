@@ -1,4 +1,4 @@
-import { map, isNullish, reduce } from './helpers';
+import { map, isNullish, forLoop } from './helpers';
 
 /**
  * The modulo function. Equivalent to
@@ -139,7 +139,7 @@ export const polar2cartesian = (r: number, deg: number, place?: number) => {
  * Dot product of two arrays.
  */
 export const dot = (arr1: readonly number[], arr2: readonly number[]): number => {
-  return reduce(
+  return forLoop(
     arr1,
     (prev, val, i) => prev + val * arr2[i],
     0,
@@ -151,7 +151,7 @@ export const dot = (arr1: readonly number[], arr2: readonly number[]): number =>
  * Sum of items of an array.
  */
 export const sum = (arr: readonly number[]) => {
-  return reduce(
+  return forLoop(
     arr,
     (prev, val) => prev + val,
     0
@@ -162,7 +162,7 @@ export const sum = (arr: readonly number[]) => {
  * L2-Norm (not take square root yet) of two array.
  */
 export const l2Norm = (arr: readonly number[]) => {
-  return Math.sqrt(reduce(
+  return Math.sqrt(forLoop(
     arr,
     (prev, val) => prev + val * val,
     0
@@ -173,7 +173,7 @@ export const l2Norm = (arr: readonly number[]) => {
  * Square of L2-distance (not take square root yet) of two array.
  */
 export const l2DistSq = (arr1: number[], arr2: number[]): number => {
-  return reduce(
+  return forLoop(
     arr1,
     (prev, val, i) => prev + (val - arr2[i])**2,
     0,

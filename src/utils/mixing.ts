@@ -48,11 +48,9 @@ const additive = (
 const softLightBlend = (() => {
   const GAMMA_CONST = 2**(- 2 / 255);
   return (color1: number[], color2: number[]) => {
-    const newColor = new Array(color1.length);
-    for (let i = 0; i < color1.length; i++) {
-      newColor[i] = 255 * (color1[i] / 255) ** (2 * GAMMA_CONST**color2[i]);
-    }
-    return newColor;
+    return map(color1, (val, i) => {
+      return 255 * (val / 255) ** (2 * GAMMA_CONST**color2[i]);
+    });
   };
 })();
 

@@ -51,7 +51,7 @@ import { computed, toValue } from 'vue';
 import $style from './TheBookmarks.module.scss';
 import TheIcon from '../Custom/TheIcon.vue';
 import TheTooltip from '../Custom/TheTooltip.vue';
-import { map, reduce } from '@/utils/helpers';
+import { map, forLoop } from '@/utils/helpers';
 import { toPercent } from '@/utils/numeric';
 import { isValidHex } from '@/utils/colors';
 import { copyText } from '@/utils/browser';
@@ -65,7 +65,7 @@ const props = defineProps<Props>();
 const pltColors = map(props.plt.split('-'), (hex) => `#${hex}`);
 const diff = computed(() => toPercent(1 / pltColors.length, 2));
 const bgGrad = computed(() => {
-  const midPoint = reduce(
+  const midPoint = forLoop(
     pltColors,
     (acc, hex, i) => {
       acc += `${hex} ${i * toValue(diff)}%,${hex} ${(i+1) * toValue(diff)}%,`;

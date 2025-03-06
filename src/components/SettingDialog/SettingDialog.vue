@@ -157,7 +157,7 @@ import TheBtn from './../Custom/TheBtn.vue';
 import SelectMenu from '../Custom/SelectMenu.vue';
 import TheSwitch from '../Custom/TheSwitch.vue';
 import TheSlider from '../Custom/TheSlider.vue';
-import { reduce } from '@/utils/helpers';
+import { forLoop } from '@/utils/helpers';
 import { isTabKey } from '@/utils/browser';
 // constants
 import { CONTRAST_METHODS, GAMMA_MAX, MULTIPLICATION_MAX } from '@/constants/colors';
@@ -237,7 +237,7 @@ type ContrastArgs = {
   [key in number]: number;
 }
 const contrastArgs = reactive<ContrastArgs>(
-  reduce(
+  forLoop(
     CONTRAST_METHODS,
     (prev, _, i) => ((prev[i] = 1), prev),
     { method: 0 } as ContrastArgs

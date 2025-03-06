@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 // Utils
-import { map, shuffle } from '@/utils/helpers.ts';
+import { map, forLoop, shuffle } from '@/utils/helpers.ts';
 import {
   rgb2hex, randRgbGen, hex2rgb, getSpaceInfos, getContrastAdjuster,
 } from '@/utils/colors.ts';
@@ -278,10 +278,13 @@ const usePltStore = defineStore('plt', {
     setColorSpace_(newColorSpace: ColorSpaces) {
       this.colorSpace_ = newColorSpace;
       const { converter } = this.spaceInfos_;
-      for (let i = 0; i < this.numOfCards_; i++) {
-        const rgb = hex2rgb(this.cards_[i].hex_) as number[];
-        this.cards_[i].color_ = converter(rgb);
-      }
+      forLoop(
+        this.cards_,
+        (_, card) => {
+          const rgb = hex2rgb(card.hex_) as number[];
+          card.color_ = converter(rgb);
+        },
+      );
     },
     setBlendMode_(newBlendMode: Mixing) {
       this.mixMode_ = newBlendMode;
@@ -297,11 +300,10 @@ const usePltStore = defineStore('plt', {
       const adjuster = getContrastAdjuster(CONTRAST_METHODS[method]);
 
       const newRgbs = adjuster(arr, coeff!);
-      for (let i = 0; i < this.numOfCards_; i++) {
-        this.cards_[i].color_ = converter(newRgbs[i]);
-        this.cards_[i].hex_ = rgb2hex(newRgbs[i]);
-        // or, this.editCard(i, converter(newRgbs[i]))
-      }
+      forLoop(this.cards_, (_, card, i) => {
+        card.color_ = converter(newRgbs[i]);
+        card.hex_ = rgb2hex(newRgbs[i]);
+      });
     },
   },
 });
