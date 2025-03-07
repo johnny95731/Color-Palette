@@ -260,7 +260,7 @@ $thumb-radius: math.div($thumb-size, 2);
 
   width: 100%;
   height: 5px;
-  margin: #{$thumb-radius + 4px} 0 #{$thumb-radius + 8px};
+  margin: #{$thumb-radius + 8px} 0 #{$thumb-radius};
   padding: 0 $thumb-radius;
   border-radius: $radius-lg;
 

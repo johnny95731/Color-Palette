@@ -5,3 +5,5 @@ export const BORDER_COLOR = ['white', 'gray', 'black'] as const;
 
 export const TRANSITION_MAX_POS = 1000;
 export const TRANSITION_MAX_COLOR = 3000;
+
+export const COLOR_FUNCTIONS = ['modern', 'legacy'] as const;

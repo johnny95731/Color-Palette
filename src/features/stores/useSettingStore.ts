@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
-import { BORDER_COLOR } from '@/constants/settingStore';
+import { BORDER_COLOR, COLOR_FUNCTIONS } from '@/constants/settingStore';
+import { ColorSpaces } from '@/types/colors';
 
 
 export type BorderStyle = {
@@ -22,6 +23,10 @@ export type TransitionStyle = {
   color: number
 }
 
+type PrimitiveValState = {
+  colorNotation_: typeof COLOR_FUNCTIONS[number]
+}
+
 export type State = {
   /**
    * Border of cards.
@@ -31,7 +36,7 @@ export type State = {
    * Transition of cards
    */
   transition: TransitionStyle;
-};
+} & PrimitiveValState;
 
 
 const initialState: State = {
@@ -44,17 +49,17 @@ const initialState: State = {
     pos: 200,
     color: 200,
   },
+  colorNotation_: 'modern',
 };
 // Initialize Settings
-type stateKey = keyof typeof initialState;
-for (const key of Object.keys(initialState)) {
+for (const key of Object.keys(initialState) as (keyof State)[]) {
   const storageItem = localStorage.getItem(key); // object in storage.
-  const initItem = initialState[key as stateKey];
+  const initItem = initialState[key];
   // First time loading the page
   if (!storageItem) localStorage.setItem(key, JSON.stringify(initItem));
   // Updating versions may cause different keys.
   // Pick and assign the common part.
-  else {
+  else if (typeof initItem === 'object') {
     const storageObj = JSON.parse(storageItem);
     // Assign previous value to current state for common attributes.
     for (const itemKey of Object.keys(storageObj)) {
@@ -62,6 +67,9 @@ for (const key of Object.keys(initialState)) {
       if (typeof initItem[itemKey as attrKey] === typeof storageObj[itemKey])
         initItem[itemKey as attrKey] = storageObj[itemKey];
     }
+  } else {
+    const storageObj = JSON.parse(storageItem);
+    initialState[key] = storageObj;
   }
 }
 
@@ -69,17 +77,25 @@ for (const key of Object.keys(initialState)) {
 const useSettingStore = defineStore('setting', {
   state: () => initialState,
   actions: {
-    setBorder(attr: keyof BorderStyle, val: number | string | boolean) {
-      // @ts-expect-error Ignore checking `attr`.
+    setBorder_(attr: keyof BorderStyle, val: number | string | boolean) {
+      // @ts-expect-error.
       this.border[attr] = val;
       // Update store
       localStorage.setItem('border', JSON.stringify(this.border));
     },
-    setTransition(attr: keyof TransitionStyle, val: number) {
+    setTransition_(attr: keyof TransitionStyle, val: number) {
       this.transition[attr] = val;
       // Update store
       localStorage.setItem('transition', JSON.stringify(this.transition));
     },
+    setColorFunction_(attr: keyof PrimitiveValState, val: string) {
+      // @ts-expect-error.
+      this[attr] = val;
+    },
+    getColorString_(space: ColorSpaces, arr: number[]) {
+      const sep = this.colorNotation_ === 'modern' ? ' ' : ',';
+      return `${space}(${arr.join(sep)})`;
+    }
   },
 });
 export default useSettingStore;

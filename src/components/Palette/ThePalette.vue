@@ -8,7 +8,7 @@
       :key="`card${i}`"
       :ref="(el) => cardRefs[i] = (el as CardInstance)"
       :class="draggingIdx === i && $style.dragging"
-      :style="[styleInSettings, cardStyle[i]]"
+      :style="[styleInSetting, cardStyle[i]]"
       :cardIdx="i"
       :card="card"
       @transitionend="isInTrans.arr[i] = false;"
@@ -54,6 +54,7 @@ import media from '@/composables/useMedia';
 // Types
 import type { CSSProperties } from 'vue';
 import type { Position } from '@vueuse/core';
+import { toRef } from 'vue';
 
 type CardInstance = InstanceType<typeof TheCard>;
 
@@ -63,13 +64,14 @@ const cardRefs = ref<CardInstance[]>([]);
 const pltState = usePltStore();
 const settingsState = useSettingStore();
 
-const styleInSettings = computed<CSSProperties>(() => ({
+const posTime = toRef(() => settingsState.transition.pos);
+const colorTime = toRef(() => settingsState.transition.pos);
+
+const styleInSetting = computed<CSSProperties>(() => ({
   borderWidth: `${settingsState.border.width / 2}px`,
   borderColor: settingsState.border.show ? settingsState.border.color : '',
   transitionDuration: (
-    `${settingsState.transition.pos}ms, ${
-      settingsState.transition.pos}ms, ${
-      settingsState.transition.color}ms`
+    `${posTime.value}ms, ${posTime.value}ms, ${colorTime.value}ms`
   ),
 }));
 

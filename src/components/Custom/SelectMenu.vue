@@ -179,12 +179,10 @@ watch(() => [props.label, unref(idForInput)] as const, (newVal, oldVal) => {
         // New props.label refer to an element. Add HTMLFor attribute.
         const element = document.getElementById(label.slice(1)) as HTMLLabelElement | null;
         if (element) {
-          if (element) {
-            if (i === 0)
-              element.removeAttribute('for');
-            else
-              element.setAttribute('for', newVal[1]);
-          }
+          if (i === 0)
+            element.removeAttribute('for');
+          else
+            element.setAttribute('for', newVal[1]);
         }
       }
     });

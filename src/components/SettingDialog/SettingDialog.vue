@@ -38,9 +38,9 @@
       <template v-if="tabIdx === 0">
         <div
           :class="$style.region"
-          aria-labelledby="title-Border"
+          aria-labelledby="title-border"
         >
-          <h3 id="title-Border">
+          <h3 id="title-border">
             Border
           </h3>
           <span>Show</span>
@@ -48,7 +48,7 @@
             label="show border"
             hide-label
             :model-value="settingsState.border.show"
-            @update:model-value="settingsState.setBorder('show', $event)"
+            @update:model-value="settingsState.setBorder_('show', $event)"
           />
           <template v-if="settingsState.border.show">
             <label
@@ -58,27 +58,30 @@
               label="#border-width"
               :max="BORDER_MAX_WIDTH"
               :model-value="settingsState.border.width"
-              @update:model-value="settingsState.setBorder('width', $event)"
+              @update:model-value="settingsState.setBorder_('width', $event)"
             />
             <label
               id="border-color"
-              :class="$style.subOption"
             >Color</label>
             <SelectMenu
-              :class="$style.subOption"
               label="#border-color"
               :items="BORDER_COLOR"
-              :model-value="settingsState.border.color"
               letter-case="start"
-              @update:model-value="settingsState.setBorder('color', $event)"
+              :model-value="settingsState.border.color"
+              @update:model-value="settingsState.setBorder_('color', $event)"
             />
           </template>
         </div>
-        <div :class="$style.region">
-          <h3>Transition</h3>
+        <div
+          :class="$style.region"
+          aria-labelledby="title-transition"
+        >
+          <h3 id="title-transition">
+            Transition
+          </h3>
           <label
             id="transition-position"
-          >Position1(ms)</label>
+          >Position(ms)</label>
           <TheSlider
             label="#transition-position"
             :max="TRANSITION_MAX_POS"
@@ -96,6 +99,21 @@
             :model-value="transition.color"
             @update:model-value="handleTransitionChanged($event, 'color')"
             @keydown.tab="switchTab(1)"
+          />
+        </div>
+        <div
+          :class="$style.region"
+          aria-labelledby="title-Transition"
+        >
+          <h3 id="title-others">
+            Others
+          </h3>
+          <label id="color-notation">Color Notation</label>
+          <SelectMenu
+            v-model="settingsState.colorNotation_"
+            label="#color-notation"
+            :items="COLOR_FUNCTIONS"
+            letter-case="start"
           />
         </div>
       </template>
@@ -163,6 +181,7 @@ import { isTabKey } from '@/utils/browser';
 import { CONTRAST_METHODS, GAMMA_MAX, MULTIPLICATION_MAX } from '@/constants/colors';
 import {
   BORDER_MAX_WIDTH, TRANSITION_MAX_COLOR, TRANSITION_MAX_POS, BORDER_COLOR,
+  COLOR_FUNCTIONS,
 } from '@/constants/settingStore';
 // Stores / Contexts
 import usePltStore from 'stores/usePltStore';
@@ -179,7 +198,10 @@ const model = defineModel<boolean>(); // Show/Hide
 const pltState = usePltStore();
 const settingsState = useSettingStore();
 
-const tabLabels = ['Card', 'Contrast'] as const;
+const tabLabels = [
+  'Card',
+  'Contrast',
+] as const;
 const tabIdx = ref(0);
 
 const tabRefs = ref<InstanceType<typeof TheBtn>[]>([]);
@@ -228,7 +250,7 @@ const handleTransitionChanged = (
 ) => {
   if (attr === 'pos') transition.pos = val;
   else transition.color = val;
-  settingsState.setTransition(attr, val);
+  settingsState.setTransition_(attr, val);
 };
 // page 1: Contrast
 type ContrastArgs = {

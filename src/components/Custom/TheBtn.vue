@@ -12,6 +12,11 @@
     :target="href ? '_blank' : undefined"
     :rel="href ? 'noopener noreferrer' : undefined"
   >
+    <TheTooltip
+      v-if="tooltip"
+      v-bind="tooltip_"
+      activator="parent"
+    />
     <div
       v-if="variant !== 'flat'"
       class="btn__overlay"
@@ -57,10 +62,15 @@
 
 <script setup lang="ts">
 import TheIcon from '@/components/Custom/TheIcon.vue';
+import TheTooltip from './TheTooltip.vue';
+import type { Props as TooltipProps } from './TheTooltip.vue';
+import { computed } from 'vue';
 
-type Props = {
+export type Props = {
   type?: 'button' | 'submit' | 'reset',
   text?: string,
+  ariaLabel?: string,
+  tooltip?: string | boolean | Exclude<TooltipProps, 'activator'>,
   variant?: 'std' | 'flat',
   icon?: string,
   prependIcon?: string,
@@ -68,10 +78,22 @@ type Props = {
   appendIcon?: string,
   ripple?: boolean
 }
-withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<Props>(), {
   type: 'button',
   variant: 'std',
   ripple: true,
+});
+
+const tooltip_ = computed(() => {
+  if (!props.tooltip) return {};
+  else if (typeof props.tooltip === 'string' || props.tooltip === true) {
+    return {
+      location: 'bottom',
+      text: props.tooltip === true ? props.ariaLabel ?? props.text : props.tooltip
+    } satisfies TooltipProps;
+  } else {
+    return props.tooltip;
+  }
 });
 </script>
 

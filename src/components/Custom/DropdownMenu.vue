@@ -8,6 +8,7 @@
     :prepend-icon="icon ? undefined : prependIcon"
     :aria-controls="eager || isOpened ? idForMenu : undefined"
     :data-haspopup="true"
+    :tooltip="tooltip"
     @click="handleClickBtn"
     @keydown="handleKeyDown"
   >
@@ -95,6 +96,7 @@ import { MENU_SYMBOL } from '@/constants/browser';
 // Types
 import type { CSSProperties, ModelRef } from 'vue';
 import type { VueClass } from 'types/browser';
+import type { Props as TheBtnProps } from './TheBtn.vue';
 
 type MenuItem = {
   val: string,
@@ -128,6 +130,7 @@ type Props = {
    * Letter case for menu items (display name). Default to be start case.
    */
   letterCase?: 'origin' | 'start' | 'all-caps';
+  tooltip?: TheBtnProps['tooltip']
 }
 const props = withDefaults(defineProps<Props>(), {
   letterCase: 'start',

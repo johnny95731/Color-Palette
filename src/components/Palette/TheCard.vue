@@ -155,10 +155,10 @@
         <template #items="{props: optionProps}">
           <!-- v-once cause vscode vue extension crashed -->
           <button
-            v-memo="[]"
+            v-once
             v-for="(name, i) in unzipedNameList"
             :key="`Option${name}`"
-            v-bind="optionProps"
+            v-bind="optionProps[i]"
             :style="{
               backgroundColor: name.replace(/\s/g, ''),
             }"
@@ -215,6 +215,7 @@ import { copyText, hexTextEdited, isTabKey } from '@/utils/browser';
 // Stores
 import usePltStore from 'stores/usePltStore';
 import useFavStore from 'stores/useFavStore';
+import useSettingStore from 'stores/useSettingStore';
 import media from '@/composables/useMedia';
 // Types
 import type { CSSProperties } from 'vue';
@@ -300,19 +301,16 @@ const showEditor = computed({
   }
 });
 
-const closestNamed = asyncComputed<string | undefined>(
+const { getColorString_ } = useSettingStore();
+const detail = asyncComputed<string>(
   () => {
     return pltState.colorSpace_ === 'name' ?
-      getClosestNamed(props.card.color_) :
-      undefined;
+      getClosestNamed(props.card.color_)
+        .then(str => unzipCssNamed(str)) :
+      getColorString_(pltState.colorSpace_, roundedColor.value);
   },
   'white'
 );
-const detail = computed(() => {
-  return pltState.colorSpace_ === 'name' ?
-    unzipCssNamed(toValue(closestNamed) ?? '') :
-    `${pltState.colorSpace_}(${toValue(roundedColor).join()})`;
-});
 
 const cardStyle = computed<CSSProperties>(() => {
   return {

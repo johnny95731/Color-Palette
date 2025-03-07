@@ -1,89 +1,28 @@
 <template>
   <TheHeader
     ref="headerRef"
-    @show-gen="handleShowGen"
-    @show-fav="handleShowFav"
-    @show-settings="handleShowSettings"
   />
   <main id="main">
     <ThePalette />
   </main>
-  <HarmonyGenDialog
-    v-if="isInitGen || isGenShowing"
-    v-model="isGenShowing"
-  />
-  <TheBookmarks
-    v-if="isInitFav || isFavShowing"
-    v-model="isFavShowing"
-    @focusout-dialog="headerRef?.focusBookmarks()"
-  />
-  <SettingDialog
-    v-if="isInitSettings || isSettingsShowing"
-    v-model="isSettingsShowing"
-    @focusout-dialog="headerRef?.focusSettings()"
-  />
 </template>
 
 <script setup lang='ts'>
-import { ref, onMounted, computed, defineAsyncComponent, onUnmounted } from 'vue';
+import { ref, onMounted, computed, onUnmounted } from 'vue';
 import { toValue } from '@vueuse/core';
 import TheHeader from './components/Header/TheHeader.vue';
 import ThePalette from './components/Palette/ThePalette.vue';
 import { HOTKEYS } from './constants/hotkeys';
-import { invertBoolean } from './utils/helpers';
 // Store and Context
 import usePltStore from './features/stores/usePltStore';
 import { SortActions } from './types/colors';
 
 
-const HarmonyGenDialog = defineAsyncComponent(
-  () => import('./components/HarmonyGenDialog/HarmonyGenDialog.vue')
-    .then(component => {
-      invertBoolean(isInitGen, true);
-      return component;
-    })
-);
-const TheBookmarks = defineAsyncComponent(
-  () => import('./components/TheBookmarks/TheBookmarks.vue')
-    .then(component => {
-      invertBoolean(isInitFav, true);
-      return component;
-    })
-);
-const SettingDialog = defineAsyncComponent(
-  () => import('./components/SettingDialog/SettingDialog.vue')
-    .then(component => {
-      invertBoolean(isInitSettings, true);
-      return component;
-    })
-);
-
-
 const headerRef = ref<InstanceType<typeof TheHeader>>();
-// Show/Hide dialogs
-// -start load resource
-const isInitGen = ref(false);
-const isInitFav = ref(false);
-const isInitSettings = ref(false);
-// -open/close state
-const isGenShowing = ref(false);
-const isFavShowing = ref(false);
-const isSettingsShowing = ref(false);
-
-const handleShowGen = () => {
-  invertBoolean(isGenShowing);
-};
-const handleShowFav = () => {
-  invertBoolean(isFavShowing);
-};
-
-const handleShowSettings = () => {
-  invertBoolean(isSettingsShowing);
-};
 
 const pltState = usePltStore();
 const isShowingOverlay = computed(() =>
-  pltState.isEditing_ || toValue(isFavShowing) || toValue(isSettingsShowing)
+  pltState.isEditing_ || headerRef.value?.isShowingDialog
 );
 const isCardPending = computed(() => pltState.isEditing_ || pltState.isPending_);
 

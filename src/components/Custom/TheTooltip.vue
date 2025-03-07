@@ -36,7 +36,7 @@ import { isNullish, invertBoolean } from '@/utils/helpers';
 import { getComponentId } from '@/utils/browser';
 import type { CSSProperties, Component } from 'vue';
 
-type Props = {
+export type Props = {
   activator?: string | 'parent' | 'DomParent' | HTMLElement | Component,
   id?: string,
   eager?: boolean,

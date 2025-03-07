@@ -1,42 +1,32 @@
 <template>
   <DefineHeaderBtns v-slot="{ css }">
     <!-- Left side -->
-    <TheTooltip
-      text="刷新"
-    >
-      <template #activator="{props}">
-        <TheBtn
-          v-bind="props"
-          :class="[
-            css,
-            $style.btn
-          ]"
-          prepend-icon="arrow-clockwise"
-          aria-label="刷新調色盤"
-          :text="isSmall ? '刷新' : undefined"
-          @click="pltState.refreshCard_(-1)"
-        />
-      </template>
-    </TheTooltip>
-    <TheTooltip
-      :text="isRunning ? '暫停' : '播放'"
-    >
-      <template #activator="{props}">
-        <TheBtn
-          v-bind="props"
-          :class="[
-            css,
-            $style.btn
-          ]"
-          :prepend-icon="isRunning ? 'pause-fill' : 'play'"
-          :aria-label="isRunning ? '暫停' : '播放'"
-          :text="isSmall ? isRunning ? '暫停' : '播放' : undefined"
-          @click="haldleClickSlides"
-        />
-      </template>
-    </TheTooltip>
+    <TheBtn
+      v-memo="[isSmall]"
+      :class="[
+        css,
+        $style.btn
+      ]"
+      prepend-icon="arrow-clockwise"
+      aria-label="刷新調色盤"
+      :text="isSmall ? '刷新' : undefined"
+      :tooltip="isSmall ? false : true"
+      @click="pltState.refreshCard_(-1)"
+    />
+    <TheBtn
+      v-memo="[isSmall, isRunning]"
+      :class="[
+        css,
+        $style.btn
+      ]"
+      :prepend-icon="isRunning ? 'pause-fill' : 'play'"
+      :aria-label="isRunning ? '暫停' : '播放'"
+      :text="isSmall ? isRunning ? '暫停' : '播放' : undefined"
+      :tooltip="isSmall ? false : true"
+      @click="haldleClickSlides"
+    />
     <DropdownMenu
-      ref="sortingRef"
+      v-memo="[isSmall, pltState.sortBy_]"
       prepend-icon="sort-down"
       :class="[
         css,
@@ -44,16 +34,13 @@
       ]"
       aria-label="排序"
       :text="isSmall ? '排序' : undefined"
+      :tooltip="true"
       :items="sortingMenuItems"
       :current-val="pltState.sortBy_"
       @click-item="pltState.sortCards_($event as SortActions)"
     />
-    <TheTooltip
-      :activator="sortingRef"
-      text="排序"
-    />
     <DropdownMenu
-      ref="mixingRef"
+      v-memo="[isSmall, pltState.mixMode_]"
       prepend-icon="file-earmark-plus"
       :class="[
         css,
@@ -61,16 +48,13 @@
       ]"
       aria-label="混色"
       :text="isSmall ? '混色' : undefined"
+      :tooltip="isSmall ? false : true"
       :items="MIXING_MODES"
       :current-val="pltState.mixMode_"
       @click-item="pltState.setBlendMode_($event as Mixing)"
     />
-    <TheTooltip
-      :activator="mixingRef"
-      text="混色方法"
-    />
     <DropdownMenu
-      ref="spacegRef"
+      v-memo="[isSmall, pltState.colorSpace_]"
       prepend-icon="sliders"
       :class="[
         css,
@@ -78,14 +62,11 @@
       ]"
       aria-label="色彩空間"
       :text="isSmall ? '色彩空間' : undefined"
+      :tooltip="isSmall ? false : true"
       letter-case="all-caps"
       :items="COLOR_SPACES"
       :current-val="pltState.colorSpace_"
       @click-item="pltState.setColorSpace_($event as ColorSpaces)"
-    />
-    <TheTooltip
-      :activator="spacegRef"
-      text="色彩空間"
     />
     <div
       v-if="!isSmall"
@@ -93,7 +74,19 @@
     />
     <!-- Right side -->
     <TheBtn
-      ref="harmonyGenRef"
+      v-memo="[isSmall]"
+      :class="[
+        css,
+        $style.btn
+      ]"
+      prepend-icon="upload"
+      aria-label=""
+      :text="isSmall ? '調和調色盤' : undefined"
+      :tooltip="isSmall ? false : true"
+    />
+
+    <TheBtn
+      v-memo="[isSmall]"
       :class="[
         css,
         $style.btn
@@ -101,14 +94,16 @@
       prepend-icon="palette"
       aria-label="調和調色盤"
       :text="isSmall ? '調和調色盤' : undefined"
-      @click="$emit('show-gen')"
+      :tooltip="isSmall ? false : true"
+      @click="handleShowGen"
     />
-    <TheTooltip
-      :activator="harmonyGenRef"
-      text="調和調色盤"
+    <HarmonyGenDialog
+      v-if="isInitGen || isGenShowing"
+      v-model="isGenShowing"
     />
+
     <TheBtn
-      ref="bookmarksRef"
+      v-memo="[isSmall]"
       :class="[
         css,
         $style.btn
@@ -116,15 +111,15 @@
       prepend-icon="bookmarks"
       aria-label="書籤"
       :text="isSmall ? '書籤' : undefined"
-      aria-haspopup="dialog"
-      @click="$emit('show-fav')"
+      :tooltip="isSmall ? false : true"
+      @click="handleShowFav"
     />
-    <TheTooltip
-      :activator="bookmarksRef"
-      text="書籤頁"
+    <TheBookmarks
+      v-if="isInitFav || isFavShowing"
+      v-model="isFavShowing"
     />
+
     <TheBtn
-      ref="settingsRef"
       :class="[
         css,
         $style.btn
@@ -132,13 +127,14 @@
       prepend-icon="gear"
       aria-label="設定"
       :text="isSmall ? '設定' : undefined"
-      aria-haspopup="dialog"
-      @click="$emit('show-settings')"
+      :tooltip="isSmall ? false : true"
+      @click="handleShowSetting"
     />
-    <TheTooltip
-      :activator="settingsRef"
-      text="設定欄"
+    <SettingDialog
+      v-if="isInitSetting || isSettingShowing"
+      v-model="isSettingShowing"
     />
+
     <TheBtn
       ref="githubRef"
       :class="[
@@ -148,11 +144,8 @@
       href="https://github.com/johnny95731/Color-Palette"
       prepend-icon="github"
       aria-label="GitHub連結"
-      :text="isSmall ? '設定' : undefined"
-    />
-    <TheTooltip
-      :activator="githubRef"
-      text="GitHub連結"
+      :text="isSmall ? 'GitHub連結' : undefined"
+      :tooltip="isSmall ? false : true"
     />
     <!-- <TheBtn
       :class="$style.btn"
@@ -248,11 +241,10 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, defineAsyncComponent } from 'vue';
 import { createReusableTemplate, toValue } from '@vueuse/core';
 import $style from './TheHeader.module.scss';
 import DropdownMenu from '../Custom/DropdownMenu.vue';
-import TheTooltip from '../Custom/TheTooltip.vue';
 import TheBtn from '@/components/Custom/TheBtn.vue';
 // Utils
 import { HOTKEYS } from '@/constants/hotkeys';
@@ -268,31 +260,60 @@ import useSettingStore from '@/features/stores/useSettingStore';
 import type { ColorSpaces, SortActions } from 'types/colors';
 import type { Mixing } from 'types/mixing';
 
-// const btnsRef = ref<InstanceType<typeof HeaderBtns>>();
+
+const HarmonyGenDialog = defineAsyncComponent(
+  () => import('@/components/HarmonyGenDialog/HarmonyGenDialog.vue')
+    .then(component => {
+      invertBoolean(isInitGen, true);
+      return component;
+    })
+);
+const TheBookmarks = defineAsyncComponent(
+  () => import('@/components/TheBookmarks/TheBookmarks.vue')
+    .then(component => {
+      invertBoolean(isInitFav, true);
+      return component;
+    })
+);
+const SettingDialog = defineAsyncComponent(
+  () => import('@/components/SettingDialog/SettingDialog.vue')
+    .then(component => {
+      invertBoolean(isInitSetting, true);
+      return component;
+    })
+);
+
 const [DefineHeaderBtns, HeaderBtns] = createReusableTemplate<{css?: string}>();
 
-defineEmits<{
-  (e: 'show-gen'): void,
-  (e: 'show-fav'): void,
-  (e: 'show-settings'): void
-}>();
 
-// Refs of btns and menus
-const sortingRef = ref<InstanceType<typeof DropdownMenu>>();
-const mixingRef = ref<InstanceType<typeof DropdownMenu>>();
-const spacegRef = ref<InstanceType<typeof DropdownMenu>>();
-const harmonyGenRef = ref<InstanceType<typeof TheBtn>>();
-const bookmarksRef = ref<InstanceType<typeof TheBtn>>();
-const settingsRef = ref<InstanceType<typeof TheBtn>>();
-const githubRef = ref<InstanceType<typeof TheBtn>>();
-defineExpose({
-  focusBookmarks() {
-    toValue(bookmarksRef)?.$el.focus();
-  },
-  focusSettings() {
-    toValue(settingsRef)?.$el.focus();
-  }
+// Show/Hide dialogs
+// -start load resource
+const isInitGen = ref(false);
+const isInitFav = ref(false);
+const isInitSetting = ref(false);
+// -open/close state
+const isGenShowing = ref(false);
+const isFavShowing = ref(false);
+const isSettingShowing = ref(false);
+
+const handleShowGen = () => {
+  invertBoolean(isGenShowing);
+};
+const handleShowFav = () => {
+  invertBoolean(isFavShowing);
+};
+const handleShowSetting = () => {
+  invertBoolean(isSettingShowing);
+};
+
+const isShowingDialog = computed(() => {
+  return isGenShowing.value || isFavShowing.value || isSettingShowing.value;
 });
+
+defineExpose({
+  isShowingDialog
+});
+
 
 const isSmall = computed(() => media.isSmall);
 

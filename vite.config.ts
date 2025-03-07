@@ -5,6 +5,8 @@ import autoprefixer from 'autoprefixer';
 import lightningcss from 'vite-plugin-lightningcss';
 // @ts-expect-error
 import viteJoinMediaQueries from 'vite-join-media-queries';
+// @ts-expect-error
+import { patchCssModules } from 'vite-css-modules';
 
 const metaUrl = import.meta.url;
 // https://vitejs.dev/config/
@@ -38,9 +40,8 @@ export default defineConfig({
     viteJoinMediaQueries({
       paths2css: ['./dist']
     }),
-    lightningcss({
-      // browserslist: '>= 0.25%',
-    })
+    lightningcss(),
+    patchCssModules(),
   ],
   resolve: {
     alias: {
