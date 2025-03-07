@@ -73,7 +73,7 @@
       class="spacer"
     />
     <!-- Right side -->
-    <TheBtn
+    <!-- <TheBtn
       v-memo="[isSmall]"
       :class="[
         css,
@@ -83,7 +83,7 @@
       aria-label=""
       :text="isSmall ? '調和調色盤' : undefined"
       :tooltip="isSmall ? false : true"
-    />
+    /> -->
 
     <TheBtn
       v-memo="[isSmall]"
