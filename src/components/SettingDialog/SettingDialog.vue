@@ -167,7 +167,7 @@
   </OverlayContainer>
 </template>
 
-<script setup lang="ts" scoped>
+<script setup lang="ts">
 import { computed, ref, reactive, watch, nextTick, unref } from 'vue';
 import $style from './SettingDialog.module.scss';
 import OverlayContainer from '@/components/Custom/OverlayContainer.vue';

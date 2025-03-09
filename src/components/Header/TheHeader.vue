@@ -73,17 +73,22 @@
       class="spacer"
     />
     <!-- Right side -->
-    <!-- <TheBtn
+    <TheBtn
       v-memo="[isSmall]"
       :class="[
         css,
         $style.btn
       ]"
       prepend-icon="upload"
-      aria-label=""
-      :text="isSmall ? '調和調色盤' : undefined"
+      aria-label="輸入調色盤"
+      :text="isSmall ? '輸入調色盤' : undefined"
       :tooltip="isSmall ? false : true"
-    /> -->
+      @click="isOpening.input_ = !isOpening.input_"
+    />
+    <InputPaletteDialog
+      v-if="inInit.input_ || isOpening.input_"
+      v-model="isOpening.input_"
+    />
 
     <TheBtn
       v-memo="[isSmall]"
@@ -92,14 +97,14 @@
         $style.btn
       ]"
       prepend-icon="palette"
-      aria-label="調和調色盤"
+      ariaLabel="調和調色盤"
       :text="isSmall ? '調和調色盤' : undefined"
       :tooltip="isSmall ? false : true"
-      @click="handleShowGen"
+      @click="isOpening.harmony_ = !isOpening.harmony_"
     />
     <HarmonyGenDialog
-      v-if="isInitGen || isGenShowing"
-      v-model="isGenShowing"
+      v-if="inInit.harmony_ || isOpening.harmony_"
+      v-model="isOpening.harmony_"
     />
 
     <TheBtn
@@ -112,11 +117,11 @@
       aria-label="書籤"
       :text="isSmall ? '書籤' : undefined"
       :tooltip="isSmall ? false : true"
-      @click="handleShowFav"
+      @click="isOpening.fav_ = !isOpening.fav_"
     />
     <TheBookmarks
-      v-if="isInitFav || isFavShowing"
-      v-model="isFavShowing"
+      v-if="inInit.fav_ || isOpening.fav_"
+      v-model="isOpening.fav_"
     />
 
     <TheBtn
@@ -128,11 +133,11 @@
       aria-label="設定"
       :text="isSmall ? '設定' : undefined"
       :tooltip="isSmall ? false : true"
-      @click="handleShowSetting"
+      @click="isOpening.setting_ = !isOpening.setting_"
     />
     <SettingDialog
-      v-if="isInitSetting || isSettingShowing"
-      v-model="isSettingShowing"
+      v-if="inInit.setting_ || isOpening.setting_"
+      v-model="isOpening.setting_"
     />
 
     <TheBtn
@@ -241,7 +246,7 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, computed, watch, defineAsyncComponent } from 'vue';
+import { ref, computed, watch, defineAsyncComponent, reactive } from 'vue';
 import { createReusableTemplate, toValue } from '@vueuse/core';
 import $style from './TheHeader.module.scss';
 import DropdownMenu from '../Custom/DropdownMenu.vue';
@@ -261,24 +266,31 @@ import type { ColorSpaces, SortActions } from 'types/colors';
 import type { Mixing } from 'types/mixing';
 
 
+const InputPaletteDialog = defineAsyncComponent(
+  () => import('@/components/InputPaletteDialog/InputPaletteDialog.vue')
+    .then(component => {
+      inInit.input_ = true;
+      return component;
+    })
+);
 const HarmonyGenDialog = defineAsyncComponent(
   () => import('@/components/HarmonyGenDialog/HarmonyGenDialog.vue')
     .then(component => {
-      invertBoolean(isInitGen, true);
+      inInit.harmony_ = true;
       return component;
     })
 );
 const TheBookmarks = defineAsyncComponent(
   () => import('@/components/TheBookmarks/TheBookmarks.vue')
     .then(component => {
-      invertBoolean(isInitFav, true);
+      inInit.fav_ = true;
       return component;
     })
 );
 const SettingDialog = defineAsyncComponent(
   () => import('@/components/SettingDialog/SettingDialog.vue')
     .then(component => {
-      invertBoolean(isInitSetting, true);
+      inInit.setting_ = true;
       return component;
     })
 );
@@ -287,27 +299,24 @@ const [DefineHeaderBtns, HeaderBtns] = createReusableTemplate<{css?: string}>();
 
 
 // Show/Hide dialogs
-// -start load resource
-const isInitGen = ref(false);
-const isInitFav = ref(false);
-const isInitSetting = ref(false);
+// -Is resource loaded
+const inInit = reactive({
+  input_: false,
+  harmony_: false,
+  fav_: false,
+  setting_: false
+});
 // -open/close state
-const isGenShowing = ref(false);
-const isFavShowing = ref(false);
-const isSettingShowing = ref(false);
+const isOpening = reactive({
+  input_: false,
+  harmony_: false,
+  fav_: false,
+  setting_: false
+});
 
-const handleShowGen = () => {
-  invertBoolean(isGenShowing);
-};
-const handleShowFav = () => {
-  invertBoolean(isFavShowing);
-};
-const handleShowSetting = () => {
-  invertBoolean(isSettingShowing);
-};
 
 const isShowingDialog = computed(() => {
-  return isGenShowing.value || isFavShowing.value || isSettingShowing.value;
+  return Object.values(isOpening).some((val) => val);
 });
 
 defineExpose({

@@ -5,12 +5,14 @@
     :class="[
       'btn',
       icon && 'btn--icon',
-      ripple && 'ripple'
+      ripple && 'ripple',
+      disabled && 'btn--disabled',
     ]"
-    :aria-label="text"
+    :aria-label="ariaLabel"
     :href="href"
     :target="href ? '_blank' : undefined"
     :rel="href ? 'noopener noreferrer' : undefined"
+    :disabled="href ? undefined : disabled"
   >
     <TheTooltip
       v-if="tooltip"
@@ -76,7 +78,8 @@ export type Props = {
   prependIcon?: string,
   href?: string,
   appendIcon?: string,
-  ripple?: boolean
+  ripple?: boolean,
+  disabled?: boolean
 }
 const props = withDefaults(defineProps<Props>(), {
   type: 'button',
@@ -145,10 +148,19 @@ $trans-duration: 120ms;
       }
     }
   }
+
+  &--disabled {
+    cursor: not-allowed;
+
+    > #{$root}__overlay {
+      opacity: var(--overlay-hover-opacity);
+    }
+  }
 }
 
 .btn--icon {
   aspect-ratio: 1 / 1;
+  border-radius: $radius-rounded;
 }
 
 .btn__overlay {

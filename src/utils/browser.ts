@@ -81,6 +81,17 @@ export const copyText = (text: string): void => {
   }
 };
 
+/**
+ * Paste text from clipboard.
+ */
+export const pasteText = async () => {
+  try {
+    return await clipboard.readText();
+  } catch (err) {
+    console.error('Failed to copy:', err);
+  }
+};
+
 
 export const calcOverlayZIndex = (type: OverlayProps['type'], parent?: number) => {
   let zIndex: number;
@@ -100,6 +111,10 @@ export const noModifierKey = (e: KeyboardEvent): boolean => {
 
 export const shiftOnly = (e: KeyboardEvent): boolean => {
   return e.shiftKey && !e.altKey && !e.ctrlKey && !e.metaKey;
+};
+
+export const ctrlOnly = (e: KeyboardEvent): boolean => {
+  return e.ctrlKey && !e.altKey && !e.shiftKey && !e.metaKey;
 };
 
 export const isTabKey = (e: KeyboardEvent) =>

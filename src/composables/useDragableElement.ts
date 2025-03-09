@@ -75,9 +75,9 @@ export interface UseDraggableOptions {
   /**
    * Whether map the possition to percentage (0~100).
    *
-   * @default false
+   * @default true
    */
-  toRatio?: true
+  toRatio?: boolean
 }
 
 /**
