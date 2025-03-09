@@ -123,7 +123,7 @@ import { invertBoolean, map } from '@/utils/helpers';
 import { copyText } from '@/utils/browser';
 import { MAX_NUM_OF_CARDS, MIN_NUM_OF_CARDS } from '@/constants/pltStore';
 // stores
-import usePltStore from '@/features/stores/usePltStore';
+import usePltStore from '@/features/usePltStore';
 // types
 import type{ ModelRef } from 'vue';
 

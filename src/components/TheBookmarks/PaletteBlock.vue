@@ -55,8 +55,8 @@ import { map, forLoop } from '@/utils/helpers';
 import { toPercent } from '@/utils/numeric';
 import { isValidHex } from '@/utils/colors';
 import { copyText } from '@/utils/browser';
-import useFavStore from 'stores/useFavStore';
-import usePltStore from 'stores/usePltStore';
+import useFavStore from '@/features/useFavStore';
+import usePltStore from '@/features/usePltStore';
 
 type Props = {
   plt: string;

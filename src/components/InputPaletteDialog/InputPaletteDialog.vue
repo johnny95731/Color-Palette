@@ -110,7 +110,7 @@ import { ctrlOnly, hexTextEdited, pasteText } from '@/utils/browser';
 import { useDragableElement } from '@/composables/useDragableElement';
 import { MAX_NUM_OF_CARDS } from '@/constants/pltStore';
 // store
-import usePltStore from 'stores/usePltStore';
+import usePltStore from '@/features/usePltStore';
 import { isValidHex, randRgbGen, rgb2hex } from '@/utils/colors';
 // type
 import type { CSSProperties } from 'vue';

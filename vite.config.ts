@@ -5,7 +5,6 @@ import autoprefixer from 'autoprefixer';
 import lightningcss from 'vite-plugin-lightningcss';
 // @ts-expect-error
 import viteJoinMediaQueries from 'vite-join-media-queries';
-// @ts-expect-error
 import { patchCssModules } from 'vite-css-modules';
 
 const metaUrl = import.meta.url;
@@ -47,7 +46,7 @@ export default defineConfig({
     alias: {
       '@': fileURLToPath(new URL('./src', metaUrl)),
       'types': `${fileURLToPath(new URL('./src/types', metaUrl))}`,
-      'stores': fileURLToPath(new URL('./src/features/stores', metaUrl)),
+      'stores': fileURLToPath(new URL('./src/features', metaUrl)),
     },
   },
   css: {

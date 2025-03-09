@@ -49,7 +49,7 @@ import VTooltip from '../Custom/VTooltip.vue';
 import VIcon from '../Custom/VIcon.vue';
 import { hex2rgb, rgb2gray } from '@/utils/colors';
 import { copyText } from '@/utils/browser';
-import useFavStore from '@/features/stores/useFavStore';
+import useFavStore from '@/features/useFavStore';
 import type { CSSProperties } from 'vue';
 
 type Props = {

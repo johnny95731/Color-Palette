@@ -184,10 +184,10 @@ import {
   COLOR_FUNCTIONS,
 } from '@/constants/settingStore';
 // Stores / Contexts
-import usePltStore from 'stores/usePltStore';
-import useSettingStore from 'stores/useSettingStore';
+import usePltStore from '@/features/usePltStore';
+import useSettingStore from '@/features/useSettingStore';
 // Types
-import type { TransitionStyle } from 'stores/useSettingStore';
+import type { TransitionStyle } from '@/features/useSettingStore';
 
 const emit = defineEmits<{
   (e: 'focusoutDialog'): void

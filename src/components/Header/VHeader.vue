@@ -259,8 +259,8 @@ import { MIXING_MODES } from '@/constants/mixing';
 import { COLOR_SPACES, SORTING_ACTIONS } from '@/constants/colors';
 // Stores / Contexts
 import media from '@/composables/useMedia';
-import usePltStore from '@/features/stores/usePltStore';
-import useSettingStore from '@/features/stores/useSettingStore';
+import usePltStore from '@/features/usePltStore';
+import useSettingStore from '@/features/useSettingStore';
 // Types
 import type { ColorSpaces, SortActions } from 'types/colors';
 import type { Mixing } from 'types/mixing';

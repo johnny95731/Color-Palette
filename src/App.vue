@@ -14,7 +14,7 @@ import VHeader from './components/Header/VHeader.vue';
 import VPalette from './components/Palette/VPalette.vue';
 import { HOTKEYS } from './constants/hotkeys';
 // Store and Context
-import usePltStore from './features/stores/usePltStore';
+import usePltStore from './features/usePltStore';
 // types
 import type { SortActions } from './types/colors';
 
