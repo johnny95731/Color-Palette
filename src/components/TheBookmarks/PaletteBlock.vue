@@ -7,7 +7,7 @@
           aria-label="開啟書籤"
           @click="handleSetPlt"
         >
-          <TheIcon
+          <VIcon
             type="caret-left-fill"
           />
         </button>
@@ -18,14 +18,14 @@
           aria-label="刪除書籤"
           @click="removeFavPlt"
         >
-          <TheIcon
+          <VIcon
             type="trash3-fill"
           />
         </button>
       </span>
     </div>
 
-    <TheTooltip
+    <VTooltip
       location="top"
       text="Copied"
       :openOnHover="false"
@@ -42,15 +42,15 @@
           {{ plt }}
         </button>
       </template>
-    </TheTooltip>
+    </VTooltip>
   </li>
 </template>
 
 <script lang="ts" setup>
 import { computed, toValue } from 'vue';
-import $style from './TheBookmarks.module.scss';
-import TheIcon from '../Custom/TheIcon.vue';
-import TheTooltip from '../Custom/TheTooltip.vue';
+import $style from './VBookmarks.module.scss';
+import VIcon from '../Custom/VIcon.vue';
+import VTooltip from '../Custom/VTooltip.vue';
 import { map, forLoop } from '@/utils/helpers';
 import { toPercent } from '@/utils/numeric';
 import { isValidHex } from '@/utils/colors';

@@ -20,21 +20,21 @@
         tag="div"
         :is-wrap="media.isSmall"
       >
-        <TheBtn
+        <VBtn
           icon="x-lg"
           :style="closeIconStyle"
           aria-label="移除"
           :ripple="false"
           @click="$emit('remove')"
         />
-        <TheBtn
+        <VBtn
           v-memo="[card.isLock_]"
           :icon="isLock.icon"
           :aria-label="isLock.label"
           :ripple="false"
           @click="pltState.setIsLock_(cardIdx)"
         />
-        <TheBtn
+        <VBtn
           :icon="isFavIcon.icon"
           :aria-label="isFavIcon.label"
           :ripple="false"
@@ -45,7 +45,7 @@
         tag="div"
         :is-wrap="media.isSmall"
       >
-        <TheBtn
+        <VBtn
           v-once
           icon="arrows"
           style="touch-action: none;cursor: grab;"
@@ -53,14 +53,14 @@
           :ripple="false"
           @pointerdown="$emit('dragging', $event)"
         />
-        <TheBtn
+        <VBtn
           v-once
           icon="arrow-clockwise"
           aria-label="刷新"
           :ripple="false"
           @click="pltState.refreshCard_(cardIdx)"
         />
-        <TheBtn
+        <VBtn
           v-once
           icon="sliders"
           aria-label="調整"
@@ -73,7 +73,7 @@
     <div
       :class="$style.textDisplay"
     >
-      <TheTooltip
+      <VTooltip
         location="top"
         text="Copied"
         :openOnHover="false"
@@ -88,11 +88,11 @@
               handleClick($event)
             "
           >
-            <TheIcon
+            <VIcon
               v-once
               type="copy"
             />
-            <TheBtn
+            <VBtn
               ref="hexTextRef"
               :ripple="false"
               :text="card.hex_"
@@ -105,17 +105,17 @@
               handleClick($event)
             "
           >
-            <TheIcon
+            <VIcon
               v-once
               type="copy"
             />
-            <TheBtn
+            <VBtn
               :ripple="false"
               :text="detail"
             />
           </div>
         </template>
-      </TheTooltip>
+      </VTooltip>
     </div>
     <!-- Editor -->
     <OverlayContainer
@@ -178,7 +178,7 @@
           <div>
             {{ `${space.labels[i]}: ${roundedColor[i]}` }}
           </div>
-          <TheSlider
+          <VSlider
             :label="space.labels[i]"
             :showRange="false"
             :showVal="false"
@@ -199,13 +199,13 @@
 <script lang="ts" setup>
 import { computed, nextTick, ref, shallowReactive, watch } from 'vue';
 import { asyncComputed, toValue } from '@vueuse/core';
-import $style from './TheCard.module.scss';
+import $style from './VCard.module.scss';
 // Components
-import TheTooltip from '../Custom/TheTooltip.vue';
-import TheBtn from '@/components/Custom/TheBtn.vue';
-import TheIcon from '../Custom/TheIcon.vue';
+import VTooltip from '../Custom/VTooltip.vue';
+import VBtn from '@/components/Custom/VBtn.vue';
+import VIcon from '../Custom/VIcon.vue';
 import SelectMenu from '../Custom/SelectMenu.vue';
-import TheSlider from '../Custom/TheSlider.vue';
+import VSlider from '../Custom/VSlider.vue';
 import OverlayContainer from '../Custom/OverlayContainer.vue';
 import CondWrapper from '../Custom/CondWrapper.vue';
 // Utils
@@ -223,7 +223,7 @@ import type { Card } from 'stores/usePltStore';
 import { map } from '@/utils/helpers';
 
 const cardContainerRef = ref<HTMLElement>();
-const hexTextRef = ref<InstanceType<typeof TheBtn>>();
+const hexTextRef = ref<InstanceType<typeof VBtn>>();
 
 type Props = {
   cardIdx: number;

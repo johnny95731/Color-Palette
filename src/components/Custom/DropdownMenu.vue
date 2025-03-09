@@ -1,5 +1,5 @@
 <template>
-  <TheBtn
+  <VBtn
     ref="activatorRef"
     :class="[
       'dropdown-menu',
@@ -13,7 +13,7 @@
     @keydown="handleKeyDown"
   >
     <template #default>
-      <TheIcon
+      <VIcon
         v-if="icon"
         :type="icon"
         class="triangle"
@@ -72,19 +72,19 @@
       v-if="!hideTriangle"
       #append
     >
-      <TheIcon
+      <VIcon
         type="caret-down-fill"
         class="triangle"
       />
     </template>
-  </TheBtn>
+  </VBtn>
 </template>
 
 <script lang="ts" setup>
 import { computed, ref, watch, provide, inject, nextTick, unref } from 'vue';
 import OverlayContainer from './OverlayContainer.vue';
-import TheBtn from './TheBtn.vue';
-import TheIcon from './TheIcon.vue';
+import VBtn from './VBtn.vue';
+import VIcon from './VIcon.vue';
 // utils
 import { sleep, invertBoolean, getLetterCaseConverter } from '@/utils/helpers';
 import { getComponentId } from '@/utils/browser';
@@ -96,7 +96,7 @@ import { MENU_SYMBOL } from '@/constants/browser';
 // Types
 import type { CSSProperties, ModelRef } from 'vue';
 import type { VueClass } from 'types/browser';
-import type { Props as TheBtnProps } from './TheBtn.vue';
+import type { Props as VBtnProps } from './VBtn.vue';
 
 type MenuItem = {
   val: string,
@@ -130,12 +130,12 @@ type Props = {
    * Letter case for menu items (display name). Default to be start case.
    */
   letterCase?: 'origin' | 'start' | 'all-caps';
-  tooltip?: TheBtnProps['tooltip']
+  tooltip?: VBtnProps['tooltip']
 }
 const props = withDefaults(defineProps<Props>(), {
   letterCase: 'start',
 });
-const activatorRef = ref<InstanceType<typeof TheBtn>>();
+const activatorRef = ref<InstanceType<typeof VBtn>>();
 const contentRef = ref<HTMLDivElement>();
 
 const activator = computed<HTMLElement>(() => unref(activatorRef)?.$el);

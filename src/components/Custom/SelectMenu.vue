@@ -10,7 +10,7 @@
     :aria-expanded="isOpened"
     :title="btnLabel"
   >
-    <TheBtn
+    <VBtn
       ref="activatorRef"
       :class="[
         'select__activator',
@@ -22,12 +22,12 @@
       @keydown="handleKeyDown"
     >
       <template #append>
-        <TheIcon
+        <VIcon
           type="caret-down-fill"
           class="triangle"
         />
       </template>
-    </TheBtn>
+    </VBtn>
     <div class="field">
       <label
         v-if="labelState['aria-label']"
@@ -92,8 +92,8 @@
 <script setup lang="ts">
 import { watch, ref, onMounted, computed, nextTick, shallowRef, unref } from 'vue';
 import OverlayContainer from './OverlayContainer.vue';
-import TheBtn from './TheBtn.vue';
-import TheIcon from './TheIcon.vue';
+import VBtn from './VBtn.vue';
+import VIcon from './VIcon.vue';
 // utils
 import { isNullish, invertBoolean, getLetterCaseConverter, map } from '@/utils/helpers';
 import { getComponentId } from '@/utils/browser';
@@ -136,7 +136,7 @@ const props = withDefaults(defineProps<Props>(), {
   letterCase: 'start',
 });
 
-const activatorRef = ref<InstanceType<typeof TheBtn>>();
+const activatorRef = ref<InstanceType<typeof VBtn>>();
 const containerRef = ref<HTMLDivElement>();
 
 const activator = computed<Element>(() => unref(activatorRef)?.$el);

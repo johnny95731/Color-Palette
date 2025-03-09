@@ -1,24 +1,25 @@
 <template>
-  <TheHeader
+  <VHeader
     ref="headerRef"
   />
   <main id="main">
-    <ThePalette />
+    <VPalette />
   </main>
 </template>
 
 <script setup lang='ts'>
 import { ref, onMounted, computed, onUnmounted } from 'vue';
 import { toValue } from '@vueuse/core';
-import TheHeader from './components/Header/TheHeader.vue';
-import ThePalette from './components/Palette/ThePalette.vue';
+import VHeader from './components/Header/VHeader.vue';
+import VPalette from './components/Palette/VPalette.vue';
 import { HOTKEYS } from './constants/hotkeys';
 // Store and Context
 import usePltStore from './features/stores/usePltStore';
-import { SortActions } from './types/colors';
+// types
+import type { SortActions } from './types/colors';
 
 
-const headerRef = ref<InstanceType<typeof TheHeader>>();
+const headerRef = ref<InstanceType<typeof VHeader>>();
 
 const pltState = usePltStore();
 const isShowingOverlay = computed(() =>

@@ -43,7 +43,7 @@
           background: thumbBackground,
         }"
       />
-      <TheTooltip
+      <VTooltip
         v-if="props.showVal"
         location="top"
         :activator="thumbRef"
@@ -56,7 +56,7 @@
 
 <script setup lang="ts">
 import { onMounted, watch, ref, computed } from 'vue';
-import TheTooltip from './TheTooltip.vue';
+import VTooltip from './VTooltip.vue';
 import { useDragableElement } from '@/composables/useDragableElement';
 import { getComponentId } from '@/utils/browser';
 import { clip, countDecimals, round, rangeMapping, isSameFloat } from '@/utils/numeric';

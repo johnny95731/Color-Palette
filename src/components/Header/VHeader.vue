@@ -1,7 +1,7 @@
 <template>
   <DefineHeaderBtns v-slot="{ css }">
     <!-- Left side -->
-    <TheBtn
+    <VBtn
       v-memo="[isSmall]"
       :class="[
         css,
@@ -13,7 +13,7 @@
       :tooltip="isSmall ? false : true"
       @click="pltState.refreshCard_(-1)"
     />
-    <TheBtn
+    <VBtn
       v-memo="[isSmall, isRunning]"
       :class="[
         css,
@@ -73,7 +73,7 @@
       class="spacer"
     />
     <!-- Right side -->
-    <TheBtn
+    <VBtn
       v-memo="[isSmall]"
       :class="[
         css,
@@ -90,7 +90,7 @@
       v-model="isOpening.input_"
     />
 
-    <TheBtn
+    <VBtn
       v-memo="[isSmall]"
       :class="[
         css,
@@ -107,7 +107,7 @@
       v-model="isOpening.harmony_"
     />
 
-    <TheBtn
+    <VBtn
       v-memo="[isSmall]"
       :class="[
         css,
@@ -119,12 +119,12 @@
       :tooltip="isSmall ? false : true"
       @click="isOpening.fav_ = !isOpening.fav_"
     />
-    <TheBookmarks
+    <VBookmarks
       v-if="inInit.fav_ || isOpening.fav_"
       v-model="isOpening.fav_"
     />
 
-    <TheBtn
+    <VBtn
       :class="[
         css,
         $style.btn
@@ -140,7 +140,7 @@
       v-model="isOpening.setting_"
     />
 
-    <TheBtn
+    <VBtn
       ref="githubRef"
       :class="[
         css,
@@ -152,7 +152,7 @@
       :text="isSmall ? 'GitHub連結' : undefined"
       :tooltip="isSmall ? false : true"
     />
-    <!-- <TheBtn
+    <!-- <VBtn
       :class="$style.btn"
       prepend-icon="info-circle"
       text="Settings"
@@ -248,9 +248,9 @@
 <script setup lang='ts'>
 import { ref, computed, watch, defineAsyncComponent, reactive } from 'vue';
 import { createReusableTemplate, toValue } from '@vueuse/core';
-import $style from './TheHeader.module.scss';
+import $style from './VHeader.module.scss';
 import DropdownMenu from '../Custom/DropdownMenu.vue';
-import TheBtn from '@/components/Custom/TheBtn.vue';
+import VBtn from '@/components/Custom/VBtn.vue';
 // Utils
 import { HOTKEYS } from '@/constants/hotkeys';
 import { invertBoolean, map } from '@/utils/helpers';
@@ -274,14 +274,14 @@ const InputPaletteDialog = defineAsyncComponent(
     })
 );
 const HarmonyGenDialog = defineAsyncComponent(
-  () => import('@/components/HarmonyGenDialog/HarmonyGenDialog.vue')
+  () => import('@/components/HarmonyGenDialog/HarmonyGenerator.vue')
     .then(component => {
       inInit.harmony_ = true;
       return component;
     })
 );
-const TheBookmarks = defineAsyncComponent(
-  () => import('@/components/TheBookmarks/TheBookmarks.vue')
+const VBookmarks = defineAsyncComponent(
+  () => import('@/components/TheBookmarks/VBookmarks.vue')
     .then(component => {
       inInit.fav_ = true;
       return component;

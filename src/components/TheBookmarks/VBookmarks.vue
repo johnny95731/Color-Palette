@@ -11,7 +11,7 @@
       :class="$style.header"
     >
       <h2>書籤</h2>
-      <TheBtn
+      <VBtn
         icon="x-lg"
         aria-label="關閉"
         @click="model = false"
@@ -20,10 +20,10 @@
     <div
       :class="$style.menuBar"
     >
-      <TheBtn
+      <VBtn
         v-for="(label, i) in TabLabels"
         :key="`page ${label}`"
-        :ref="(el) => tabRefs[i] = el as InstanceType<typeof TheBtn>"
+        :ref="(el) => tabRefs[i] = el as InstanceType<typeof VBtn>"
         :text="label"
         :class="i === tabIdx ? $style.selected : undefined"
         @click="tabIdx = i"
@@ -50,21 +50,21 @@
         />
       </template>
     </ul>
-    <TheBtn
+    <VBtn
       :prepend-icon="state.icon"
       :class="$style.appendPlt"
       @keydown="handleFocusoutDialog"
       @click="favPltChanged"
     >
       {{ state.text }}
-    </TheBtn>
+    </VBtn>
   </OverlayContainer>
 </template>
 
 <script lang="ts" setup>
 import { ref, computed, watch, nextTick, toValue } from 'vue';
-import $style from './TheBookmarks.module.scss';
-import TheBtn from '../Custom/TheBtn.vue';
+import $style from './VBookmarks.module.scss';
+import VBtn from '../Custom/VBtn.vue';
 import OverlayContainer from '@/components/Custom/OverlayContainer.vue';
 import ColorBlock from './ColorBlock.vue';
 import PaletteBlock from './PaletteBlock.vue';
@@ -85,7 +85,7 @@ const model = defineModel<boolean>();
 const TabLabels: string[] = ['Colors', 'Palettes'];
 const tabIdx = ref<number>(0);
 
-const tabRefs = ref<InstanceType<typeof TheBtn>[]>([]);
+const tabRefs = ref<InstanceType<typeof VBtn>[]>([]);
 watch(model, async (newVal) => { // focus dialog when open it.
   await nextTick();
   if (newVal) toValue(tabRefs)[toValue(tabIdx)]?.$el.focus();

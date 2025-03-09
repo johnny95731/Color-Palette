@@ -11,7 +11,7 @@
       :class="$style.header"
     >
       <h2>輸入調色盤</h2>
-      <TheBtn
+      <VBtn
         icon="x-lg"
         aria-label="close"
         @click="isShowing = false"
@@ -30,7 +30,7 @@
           :class="$style.color"
           :style="i === draggingIdx && divPosition"
         >
-          <TheBtn
+          <VBtn
             icon="list"
             @pointerdown="startDragging($event)"
           />
@@ -47,13 +47,13 @@
             @change="handleHexEditingFinished($event, i)"
             @keydown="handlePaste($event, i)"
           >
-          <TheBtn
+          <VBtn
             v-if="colors.length > 2"
             icon="x-lg"
             aria-label="移除"
             @click="deleteColor(i)"
           />
-          <TheIcon
+          <VIcon
             v-if="i !==draggingIdx && i === finalIdx"
             type="arrow-left"
           />
@@ -66,7 +66,7 @@
       <div
         :class="$style.buttons"
       >
-        <TheBtn
+        <VBtn
           style="align-self: center;"
           prepend-icon="plus"
           text="新增"
@@ -87,7 +87,7 @@
           >
           預覽
         </label>
-        <TheBtn
+        <VBtn
           v-once
           text="確定"
           @click="comfirm"
@@ -101,9 +101,11 @@
 import { CSSProperties, ref, unref, watch } from 'vue';
 import $style from './InputPaletteDialog.module.scss';
 import OverlayContainer from '@/components/Custom/OverlayContainer.vue';
-import TheBtn from './../Custom/TheBtn.vue';
+import VBtn from '../Custom/VBtn.vue';
+import VIcon from '../Custom/VIcon.vue';
 // utils
 import { invertBoolean, isNullish, map } from '@/utils/helpers';
+import { clip } from '@/utils/numeric';
 import { ctrlOnly, hexTextEdited, pasteText } from '@/utils/browser';
 import { useDragableElement } from '@/composables/useDragableElement';
 import { MAX_NUM_OF_CARDS } from '@/constants/pltStore';
@@ -112,8 +114,6 @@ import usePltStore from 'stores/usePltStore';
 import { isValidHex, randRgbGen, rgb2hex } from '@/utils/colors';
 // type
 import type { Position } from '@vueuse/core';
-import TheIcon from '../Custom/TheIcon.vue';
-import { clip } from '@/utils/numeric';
 
 const isShowing = defineModel<boolean>(); // Show/Hide
 const isPreview = ref<boolean>(true);

@@ -3,7 +3,7 @@
     ref="cardContainerRef"
     :class="$style.container"
   >
-    <TheCard
+    <VCard
       v-for="(card, i) in pltState.cards_"
       :key="`card${i}`"
       :ref="(el) => cardRefs[i] = (el as CardInstance)"
@@ -26,7 +26,7 @@
         :class="$style.insertWrapper"
         :style="val"
       >
-        <TheBtn
+        <VBtn
           variant="flat"
           icon="arrows-expand-vertical"
           @click="handleAddCard(i)"
@@ -38,10 +38,11 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, reactive, watch, nextTick } from 'vue';
-import $style from './ThePalette.module.scss';
-import TheBtn from '../Custom/TheBtn.vue';
-import TheCard from './TheCard.vue';
+import { ref, computed, reactive, toRef, watch, nextTick } from 'vue';
+import $style from './VPalette.module.scss';
+import VBtn from '../Custom/VBtn.vue';
+import VCard from './VCard.vue';
+// utils
 import { useDragableElement } from '@/composables/useDragableElement';
 import { equallyLength, evalPosition, forLoop, map } from '@/utils/helpers';
 import { rangeMapping, round } from '@/utils/numeric';
@@ -54,9 +55,8 @@ import media from '@/composables/useMedia';
 // Types
 import type { CSSProperties } from 'vue';
 import type { Position } from '@vueuse/core';
-import { toRef } from 'vue';
 
-type CardInstance = InstanceType<typeof TheCard>;
+type CardInstance = InstanceType<typeof VCard>;
 
 const cardContainerRef = ref<HTMLDivElement>();
 const cardRefs = ref<CardInstance[]>([]);

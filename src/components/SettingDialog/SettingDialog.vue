@@ -12,7 +12,7 @@
       :class="$style.header"
     >
       <h2>設定</h2>
-      <TheBtn
+      <VBtn
         icon="x-lg"
         aria-label="close"
         @click="model = false"
@@ -21,10 +21,10 @@
     <div
       :class="$style.menubar"
     >
-      <TheBtn
+      <VBtn
         v-for="(opt, i) in tabLabels"
         :key="`setting-${opt}`"
-        :ref="el => tabRefs[i] = el as InstanceType<typeof TheBtn>"
+        :ref="el => tabRefs[i] = el as InstanceType<typeof VBtn>"
         :class="[
           $style.tab,
           i === tabIdx && $style.selected
@@ -44,7 +44,7 @@
             Border
           </h3>
           <span>Show</span>
-          <TheSwitch
+          <VSwitch
             label="show border"
             hide-label
             :model-value="settingsState.border.show"
@@ -54,7 +54,7 @@
             <label
               id="border-width"
             >Width(px)</label>
-            <TheSlider
+            <VSlider
               label="#border-width"
               :max="BORDER_MAX_WIDTH"
               :model-value="settingsState.border.width"
@@ -82,7 +82,7 @@
           <label
             id="transition-position"
           >Position(ms)</label>
-          <TheSlider
+          <VSlider
             label="#transition-position"
             :max="TRANSITION_MAX_POS"
             step="50"
@@ -92,7 +92,7 @@
           <label
             id="transition-color"
           >Color(ms)</label>
-          <TheSlider
+          <VSlider
             label="#transition-color"
             :max="TRANSITION_MAX_COLOR"
             step="50"
@@ -134,7 +134,7 @@
             <label
               id="contrast-coeff-name"
             >Coeff.</label>
-            <TheSlider
+            <VSlider
               label="#contrast-coeff-name"
               :max="contrastCoeffMax"
               step="0.001"
@@ -149,12 +149,12 @@
             v-once
             :class="$style.buttons"
           >
-            <TheBtn
+            <VBtn
               text="Reset"
               :class="$style.resetBtn"
               @click="contrastBtnEvent('reset')"
             />
-            <TheBtn
+            <VBtn
               text="Apply"
               :class="$style.applyBtn"
               @keydown="handleFocusoutDialog"
@@ -171,10 +171,10 @@
 import { computed, ref, reactive, watch, nextTick, unref } from 'vue';
 import $style from './SettingDialog.module.scss';
 import OverlayContainer from '@/components/Custom/OverlayContainer.vue';
-import TheBtn from './../Custom/TheBtn.vue';
+import VBtn from '../Custom/VBtn.vue';
 import SelectMenu from '../Custom/SelectMenu.vue';
-import TheSwitch from '../Custom/TheSwitch.vue';
-import TheSlider from '../Custom/TheSlider.vue';
+import VSwitch from '../Custom/VSwitch.vue';
+import VSlider from '../Custom/VSlider.vue';
 import { forLoop } from '@/utils/helpers';
 import { isTabKey } from '@/utils/browser';
 // constants
@@ -204,7 +204,7 @@ const tabLabels = [
 ] as const;
 const tabIdx = ref(0);
 
-const tabRefs = ref<InstanceType<typeof TheBtn>[]>([]);
+const tabRefs = ref<InstanceType<typeof VBtn>[]>([]);
 
 function handleFocusoutDialog(e: KeyboardEvent) {
   if (isTabKey(e)) {

@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import { shallowMount, mount } from '@vue/test-utils';
-import TheBtn from '@/components/Custom/TheBtn.vue';
+import VBtn from '@/components/Custom/VBtn.vue';
 import type { VueWrapper } from '@vue/test-utils';
 
 const text = 'TestBtn';
@@ -8,7 +8,7 @@ const createBtn = <T extends Record<string, unknown>>(
   options?: T,
   shallow: boolean = true
 ) => {
-  return (shallow ? shallowMount : mount)(TheBtn, {
+  return (shallow ? shallowMount : mount)(VBtn, {
     props: {
       text,
     },
@@ -19,7 +19,7 @@ const createBtn = <T extends Record<string, unknown>>(
 describe('props', () => {
   test('type', async () => {
     for (const buttonType of ['button', 'submit', 'reset'] as const) {
-      const btn = shallowMount(TheBtn, {
+      const btn = shallowMount(VBtn, {
         props: {
           type: buttonType,
           text,
@@ -51,7 +51,7 @@ describe('props', () => {
   });
 
   test('append/prepend slot and prop(icon)', () => {
-    const testSlot = async (btn?: VueWrapper<InstanceType<typeof TheBtn>>) => {
+    const testSlot = async (btn?: VueWrapper<InstanceType<typeof VBtn>>) => {
       const withSlot = createBtn({
         props: {
           ...btn?.props(),
@@ -115,7 +115,7 @@ describe('props', () => {
     expect(btn.find('.btn__content the-icon-stub').attributes('type'))
       .toBe('test content');
     // Slot has higher than prop (icon and text)
-    const withSlot = shallowMount(TheBtn, {
+    const withSlot = shallowMount(VBtn, {
       props: {
         ...btn.props(),
       },

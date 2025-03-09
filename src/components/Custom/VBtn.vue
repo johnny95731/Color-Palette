@@ -14,7 +14,7 @@
     :rel="href ? 'noopener noreferrer' : undefined"
     :disabled="href ? undefined : disabled"
   >
-    <TheTooltip
+    <VTooltip
       v-if="tooltip"
       v-bind="tooltip_"
       activator="parent"
@@ -28,7 +28,7 @@
       class="btn__prepend"
     >
       <slot name="prepend">
-        <TheIcon
+        <VIcon
           v-if="prependIcon"
           :type="prependIcon"
         />
@@ -39,7 +39,7 @@
       class="btn__content"
     >
       <slot>
-        <TheIcon
+        <VIcon
           v-if="icon"
           :type="icon"
         />
@@ -53,7 +53,7 @@
       class="btn__append"
     >
       <slot name="append">
-        <TheIcon
+        <VIcon
           v-if="appendIcon"
           :type="appendIcon"
         />
@@ -63,9 +63,9 @@
 </template>
 
 <script setup lang="ts">
-import TheIcon from '@/components/Custom/TheIcon.vue';
-import TheTooltip from './TheTooltip.vue';
-import type { Props as TooltipProps } from './TheTooltip.vue';
+import VIcon from '@/components/Custom/VIcon.vue';
+import VTooltip from './VTooltip.vue';
+import type { Props as TooltipProps } from './VTooltip.vue';
 import { computed } from 'vue';
 
 export type Props = {

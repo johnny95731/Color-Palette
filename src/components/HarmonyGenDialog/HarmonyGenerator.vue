@@ -12,7 +12,7 @@
       :class="$style.header"
     >
       <h2>調和調色盤</h2>
-      <TheBtn
+      <VBtn
         icon="x-lg"
         aria-label="關閉"
         @click="isShowing = false"
@@ -25,7 +25,7 @@
         v-memo="palette"
         :class="$style.palette"
       >
-        <TheTooltip
+        <VTooltip
           location="top"
           text="Copied"
           :openOnHover="false"
@@ -33,7 +33,7 @@
           :eager="false"
         >
           <template #activator="{handleClick}">
-            <TheBtn
+            <VBtn
               v-for="(hex, i) in palette"
               :key="i"
               :style="{
@@ -43,9 +43,9 @@
               @click="copyHex(i);handleClick($event)"
             />
           </template>
-        </TheTooltip>
+        </VTooltip>
       </div>
-      <TheBtn
+      <VBtn
         v-memo="[palette[0]]"
         :style="{
           color: rgb2gray(hex2rgb(palette[0])) > 127 ? '#000' : '#FFF',
@@ -97,7 +97,7 @@
           >
           預覽
         </label>
-        <TheBtn
+        <VBtn
           v-once
           @click="comfirm"
           text="確定"
@@ -109,13 +109,13 @@
 
 <script setup lang="ts">
 import { computed, reactive, ref, watch, unref } from 'vue';
-import $style from './HarmonyGenDialog.module.scss';
+import $style from './HarmonyGenerator.module.scss';
 // components
 import SelectMenu from '../Custom/SelectMenu.vue';
 import ColorPicker from '../Custom/ColorPicker.vue';
 import OverlayContainer from '../Custom/OverlayContainer.vue';
-import TheBtn from '../Custom/TheBtn.vue';
-import TheTooltip from '../Custom/TheTooltip.vue';
+import VBtn from '../Custom/VBtn.vue';
+import VTooltip from '../Custom/VTooltip.vue';
 // utils and constants
 import { HARMONY_METHODS, HSB_MAX } from '@/constants/colors';
 import { getHarmonize, hex2rgb, hsb2rgb, rgb2gray, rgb2hex } from '@/utils/colors';

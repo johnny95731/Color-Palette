@@ -6,7 +6,7 @@
       backgroundColor: props.hex,
     }"
   >
-    <TheTooltip
+    <VTooltip
       location="top"
       text="Copied"
       :openOnHover="false"
@@ -14,7 +14,7 @@
       :eager="false"
     >
       <template #activator="{handleClick}">
-        <TheBtn
+        <VBtn
           class="ripple"
           :style="iconFilterStyle"
           prepend-icon="copy"
@@ -24,7 +24,7 @@
           @click="copyText(props.hex);handleClick($event)"
         />
       </template>
-    </TheTooltip>
+    </VTooltip>
     <span
       :class="$style.delWrapper"
     >
@@ -33,7 +33,7 @@
         aria-label="刪除書籤"
         @click="delFavColor"
       >
-        <TheIcon
+        <VIcon
           type="trash3-fill"
         />
       </button>
@@ -43,10 +43,10 @@
 
 <script lang="ts" setup>
 import { computed, toValue } from 'vue';
-import $style from './TheBookmarks.module.scss';
-import TheBtn from '../Custom/TheBtn.vue';
-import TheTooltip from '../Custom/TheTooltip.vue';
-import TheIcon from '../Custom/TheIcon.vue';
+import $style from './VBookmarks.module.scss';
+import VBtn from '../Custom/VBtn.vue';
+import VTooltip from '../Custom/VTooltip.vue';
+import VIcon from '../Custom/VIcon.vue';
 import { hex2rgb, rgb2gray } from '@/utils/colors';
 import { copyText } from '@/utils/browser';
 import useFavStore from '@/features/stores/useFavStore';
