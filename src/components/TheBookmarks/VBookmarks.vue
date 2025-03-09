@@ -70,10 +70,10 @@ import ColorBlock from './ColorBlock.vue';
 import PaletteBlock from './PaletteBlock.vue';
 // Utils
 import { isTabKey } from '@/utils/browser';
+import { map } from '@/utils/helpers';
 // Store
 import usePltStore from 'stores/usePltStore';
 import useFavStore from 'stores/useFavStore';
-import { map } from '@/utils/helpers';
 
 
 const emit = defineEmits<{

@@ -98,7 +98,7 @@
 </template>
 
 <script setup lang="ts">
-import { CSSProperties, ref, unref, watch } from 'vue';
+import { ref, unref, watch } from 'vue';
 import $style from './InputPaletteDialog.module.scss';
 import OverlayContainer from '@/components/Custom/OverlayContainer.vue';
 import VBtn from '../Custom/VBtn.vue';
@@ -113,6 +113,7 @@ import { MAX_NUM_OF_CARDS } from '@/constants/pltStore';
 import usePltStore from 'stores/usePltStore';
 import { isValidHex, randRgbGen, rgb2hex } from '@/utils/colors';
 // type
+import type { CSSProperties } from 'vue';
 import type { Position } from '@vueuse/core';
 
 const isShowing = defineModel<boolean>(); // Show/Hide

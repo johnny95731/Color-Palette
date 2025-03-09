@@ -49,13 +49,14 @@
 </template>
 
 <script setup lang="ts">
-import { inject, ModelRef, onMounted, provide, ref, unref, watch } from 'vue';
+import { inject, onMounted, provide, ref, unref, watch } from 'vue';
 import { invertBoolean } from '@/utils/helpers';
 import { useElementBounding } from '@/composables/useElementBounding';
 import { OVERLAY_SYMBOL } from '@/constants/browser';
+import { calcOverlayZIndex } from '@/utils/browser';
 import type { CSSProperties } from 'vue';
 import type { VueClass } from 'types/browser';
-import { calcOverlayZIndex } from '@/utils/browser';
+import type { ModelRef } from 'vue';
 
 export type Props = {
   /**

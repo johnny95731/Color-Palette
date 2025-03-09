@@ -1,4 +1,4 @@
-import { ColorSpaces } from '@/types/colors';
+import type { ColorSpaces } from '@/types/colors';
 
 /**
  * Initial color space in palette.

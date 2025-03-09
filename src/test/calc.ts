@@ -1,7 +1,7 @@
 /* v8 ignore start */
 export const calc = (
   name: string,
-  fn: Function,
+  fn: Function, // eslint-disable-line
   ...args: unknown[]
 ) => {
   const result = fn(...args);

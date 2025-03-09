@@ -1,4 +1,4 @@
-import { SortActions } from '@/types/colors';
+import type { SortActions } from '@/types/colors';
 
 export const HOTKEYS = {
   refresh_: 'r',

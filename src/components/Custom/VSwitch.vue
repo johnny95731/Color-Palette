@@ -34,13 +34,11 @@
 </template>
 
 <script setup lang="ts">
-import {
-  ModelRef,
-  computed, onMounted, ref, watch,
-} from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { toValue } from '@vueuse/core';
 import { invertBoolean } from '@/utils/helpers';
 import { getComponentId } from '@/utils/browser';
+import type { ModelRef } from 'vue';
 
 type Props = {
   inputId?: string,

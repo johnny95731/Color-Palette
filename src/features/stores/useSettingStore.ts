@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { BORDER_COLOR, COLOR_FUNCTIONS } from '@/constants/settingStore';
-import { ColorSpaces } from '@/types/colors';
+import type { ColorSpaces } from '@/types/colors';
 
 
 export type BorderStyle = {

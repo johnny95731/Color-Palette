@@ -1,8 +1,8 @@
 import { SORTING_ACTIONS } from '@/constants/colors';
-import { SortActions } from '@/types/colors';
 import { hex2lab, hex2rgb, lab2lch, rgb2gray } from './colors';
 import { deg2rad, l2DistSq, mod } from './numeric';
 import { map } from './helpers';
+import type { SortActions } from '@/types/colors';
 
 
 
