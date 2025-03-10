@@ -85,10 +85,6 @@
       :tooltip="isSmall ? false : true"
       @click="isOpening.input_ = !isOpening.input_"
     />
-    <InputPaletteDialog
-      v-if="inInit.input_ || isOpening.input_"
-      v-model="isOpening.input_"
-    />
 
     <VBtn
       v-memo="[isSmall]"
@@ -101,10 +97,6 @@
       :text="isSmall ? '調和調色盤' : undefined"
       :tooltip="isSmall ? false : true"
       @click="isOpening.harmony_ = !isOpening.harmony_"
-    />
-    <HarmonyGenDialog
-      v-if="inInit.harmony_ || isOpening.harmony_"
-      v-model="isOpening.harmony_"
     />
 
     <VBtn
@@ -119,10 +111,6 @@
       :tooltip="isSmall ? false : true"
       @click="isOpening.fav_ = !isOpening.fav_"
     />
-    <VBookmarks
-      v-if="inInit.fav_ || isOpening.fav_"
-      v-model="isOpening.fav_"
-    />
 
     <VBtn
       :class="[
@@ -134,10 +122,6 @@
       :text="isSmall ? '設定' : undefined"
       :tooltip="isSmall ? false : true"
       @click="isOpening.setting_ = !isOpening.setting_"
-    />
-    <SettingDialog
-      v-if="inInit.setting_ || isOpening.setting_"
-      v-model="isOpening.setting_"
     />
 
     <VBtn
@@ -242,6 +226,23 @@
         <HeaderBtns css="dropdown-menu__option" />
       </template>
     </DropdownMenu>
+
+    <InputPaletteDialog
+      v-if="inInit.input_ || isOpening.input_"
+      v-model="isOpening.input_"
+    />
+    <HarmonyGenDialog
+      v-if="inInit.harmony_ || isOpening.harmony_"
+      v-model="isOpening.harmony_"
+    />
+    <VBookmarks
+      v-if="inInit.fav_ || isOpening.fav_"
+      v-model="isOpening.fav_"
+    />
+    <SettingDialog
+      v-if="inInit.setting_ || isOpening.setting_"
+      v-model="isOpening.setting_"
+    />
   </header>
 </template>
 
@@ -304,14 +305,14 @@ const inInit = reactive({
   input_: false,
   harmony_: false,
   fav_: false,
-  setting_: false
+  setting_: false,
 });
 // -open/close state
 const isOpening = reactive({
   input_: false,
   harmony_: false,
   fav_: false,
-  setting_: false
+  setting_: false,
 });
 
 
