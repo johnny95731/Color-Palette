@@ -44,7 +44,7 @@ import VBtn from '../Custom/VBtn.vue';
 import VCard from './VCard.vue';
 // utils
 import { useDragableElement } from '@/composables/useDragableElement';
-import { equallyLength, evalPosition, forLoop, map } from '@/utils/helpers';
+import { equallyLength, evalPosition, forLoop, isNullish, map } from '@/utils/helpers';
 import { rangeMapping, round } from '@/utils/numeric';
 import { rgb2hex } from '@/utils/colors';
 import { INIT_NUM_OF_CARDS, MAX_NUM_OF_CARDS } from '@/constants/pltStore';
@@ -117,8 +117,8 @@ watch(() => pltState.isPending_, (newVal) => {
       setTransitionProperty(i, property);
     }
   );
-  if (draggingIdx.value)
-    setTransitionProperty(draggingIdx.value, newVal ? 'none' : '');
+  if (!isNullish(draggingIdx))
+    setTransitionProperty(draggingIdx.value!, newVal ? 'none' : '');
 }, { flush: 'sync' });
 
 // Set style to all cards.
@@ -236,13 +236,13 @@ const { start: startDragging } = (() => {
     setNewPosition(pos);
   };
   const onMove = (pos: Position) => {
-    if (!cardIdx) return;
+    if (isNullish(cardIdx)) return;
     // Change `.order` attribute.
     pltState.moveCardOrder_(draggingIdx.value!, getIdx(pos));
     setNewPosition(pos);
   };
   const onEnd = () => {
-    if (!cardIdx) return;
+    if (isNullish(cardIdx)) return;
     eventInfo.value = { event_: 'mouseup' };
     if (!settingsState.transition.pos) {
       isInTrans.arr[cardIdx] = false;
