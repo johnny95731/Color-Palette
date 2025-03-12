@@ -1,35 +1,16 @@
 <template>
-  <OverlayContainer
-    :content-class="$style.container"
-    role="dialog"
-    type="offcanvas"
-    :eager="true"
+  <VDialog
+    ref="dialogRef"
+    :overlayProps="{
+      contentClass: $style.bookmarkers
+    }"
+    title="書籤"
+    :tabs="TabLabels"
+    :transparent="false"
     transition="slide-x"
-    v-model="model"
+    v-model="isOpened"
+    v-model:tab-idx="tabIdx"
   >
-    <header
-      :class="$style.header"
-    >
-      <h2>書籤</h2>
-      <VBtn
-        icon="x-lg"
-        aria-label="關閉"
-        @click="model = false"
-      />
-    </header>
-    <div
-      :class="$style.menuBar"
-    >
-      <VBtn
-        v-for="(label, i) in TabLabels"
-        :key="`page ${label}`"
-        :ref="(el) => tabRefs[i] = el as InstanceType<typeof VBtn>"
-        :text="label"
-        :class="i === tabIdx ? $style.selected : undefined"
-        @click="tabIdx = i"
-      />
-    </div>
-    <!-- Page content -->
     <ul
       :class="$style.pageContent"
     >
@@ -50,22 +31,22 @@
         />
       </template>
     </ul>
-    <VBtn
-      :prepend-icon="state.icon"
-      :class="$style.appendPlt"
-      @keydown="handleFocusoutDialog"
-      @click="favPltChanged"
-    >
-      {{ state.text }}
-    </VBtn>
-  </OverlayContainer>
+    <template #actions>
+      <VBtn
+        :class="$style.appendPlt"
+        :prepend-icon="state.icon"
+        :text="state.text"
+        @keydown="handleFocusoutDialog"
+        @click="favPltChanged"
+      />
+    </template>
+  </VDialog>
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, watch, nextTick, toValue } from 'vue';
+import { ref, computed, watch, nextTick, toValue, unref } from 'vue';
 import $style from './VBookmarks.module.scss';
 import VBtn from '../Custom/VBtn.vue';
-import OverlayContainer from '@/components/Custom/OverlayContainer.vue';
 import ColorBlock from './ColorBlock.vue';
 import PaletteBlock from './PaletteBlock.vue';
 // Utils
@@ -74,32 +55,29 @@ import { map } from '@/utils/helpers';
 // Store
 import usePltStore from '@/features/usePltStore';
 import useFavStore from '@/features/useFavStore';
+import VDialog from '../Custom/VDialog.vue';
 
 
-const emit = defineEmits<{
-  (e: 'focusoutDialog'): void
-}>();
+const isOpened = defineModel<boolean>();
 
-const model = defineModel<boolean>();
+const dialogRef = ref<InstanceType<typeof VDialog>>();
 
 const TabLabels: string[] = ['Colors', 'Palettes'];
 const tabIdx = ref<number>(0);
 
-const tabRefs = ref<InstanceType<typeof VBtn>[]>([]);
-watch(model, async (newVal) => { // focus dialog when open it.
+watch(isOpened, async (newVal) => { // focus dialog when open it.
   await nextTick();
-  if (newVal) toValue(tabRefs)[toValue(tabIdx)]?.$el.focus();
+  if (newVal) unref(dialogRef)?.tabRefs[unref(tabIdx)]?.$el.focus();
   else pltState.setEditingIdx_();
 });
 
 function handleFocusoutDialog(e: KeyboardEvent) {
   if (isTabKey(e)) {
     e.preventDefault();
-    if (toValue(tabIdx) !== TabLabels.length - 1)  // switch to next tab page.
-      toValue(tabRefs)[++tabIdx.value]?.$el.focus();
-    else {
-      model.value = false;
-      emit('focusoutDialog');
+    if (toValue(tabIdx) !== TabLabels.length - 1) {// switch to next tab page.
+      unref(dialogRef)?.tabRefs[++tabIdx.value]?.$el.focus();
+    } else {
+      isOpened.value = false;
     }
   }
 }

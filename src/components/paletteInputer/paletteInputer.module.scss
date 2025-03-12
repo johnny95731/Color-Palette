@@ -1,0 +1,48 @@
+@use "@/assets/variables.scss" as *;
+
+.paletteInputer {
+  width: 320px;
+  height: 400px;
+}
+
+.palette {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: start;
+
+}
+
+.color {
+  position: relative;
+
+  display: flex;
+  gap: 8px;
+  align-items: center;
+
+  margin-left: 8px;
+
+  label {
+    user-select: none;
+    display: inline-block;
+    width: 45px;
+    border-radius: $radius-md;
+  }
+
+  input {
+    padding: 2px 8px;
+    border-radius: $radius-sm;
+    font-size: $font-md;
+  }
+
+  button {
+    padding: 0;
+    border-radius: $radius-rounded;
+  }
+
+  > i {
+    position: relative;
+    top: 100%;
+    transform: translateY(-50%)
+  }
+}

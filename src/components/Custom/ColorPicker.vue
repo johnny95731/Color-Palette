@@ -1,116 +1,119 @@
 <template>
-  <OverlayContainer
-    ref="containerRef"
-    role="dialog"
-    :eager="true"
-    transition="slide-y"
-    transparent
-    :content-class="[
-      'color-picker',
-      `color-picker--${variant}`
-    ]"
-    v-model="modelShow"
+  <VDialog
+    ref="dialogRef"
+    :overlayProps="{
+      contentClass: [
+        'color-picker',
+        `color-picker--${variant}`
+      ]
+    }"
+    title="Color Picker"
+    v-model="isOpened"
   >
-    <div
-      class="color-picker__pickers"
-    >
+    <template #content>
       <div
-        class="color-picker__canvas"
-      >
-        <canvas
-          v-once
-          ref="canvasPickerRef"
-          :width="COLOR_PICKER_CANVAS_SIZE"
-          :height="COLOR_PICKER_CANVAS_SIZE"
-        />
-        <div
-          v-if="variant === 'wheel'"
-          class="color-picker__mask"
-        />
-        <div
-          class="color-picker__thumb"
-          :style="canvasThumbStyle"
-          @pointerdown="canvasDraggingStart"
-        />
-      </div>
-      <VSlider
-        v-if="variant !== 'wheel'"
-        :showRange="false"
-        min="0"
-        :max="variant === 'rect' ? HSB_MAX[0] : HSB_MAX[2]"
-        :trackerBackground="
-          variant === 'rect' ?
-            'linear-gradient(to right, #F00, #FF0, #0F0, #0FF, #00F, #F0F, #F00)' :
-            'linear-gradient(to right, #000, #fff)'
-        "
-        :thumbBackground="secondThumbStyle.background"
-        :model-value="variant === 'rect' ? currentColor[0] : currentColor[2]"
-        @update:modelValue="updaters.slider_"
-      />
-      <div
-        v-else
-        ref="secondPickerRef"
-        class="color-picker__rect-picker"
-        :style="secondPickerStyle"
+        class="color-picker__pickers"
       >
         <div
-          class="color-picker__thumb"
-          rectPickerThumeStyle
-          :style="secondThumbStyle"
-          @pointerdown="sliderDraggingStart"
-        />
-      </div>
-    </div>
-    <div class="color-picker__edits">
-      <div
-        class="color-picker__preview"
-        :style="{background: hexColor}"
-      />
-      <label
-        class="color-picker__hex-input"
-      >
-        Hex
-        <input
-          name="color-piker-hex"
-          maxlength="7"
-          size="7"
-          v-model.lazy="hexColor"
+          class="color-picker__canvas"
         >
-      </label>
-      <div class="color-picker__hsb-inputs">
+          <canvas
+            v-once
+            ref="canvasPickerRef"
+            :width="COLOR_PICKER_CANVAS_SIZE"
+            :height="COLOR_PICKER_CANVAS_SIZE"
+          />
+          <div
+            v-if="variant === 'wheel'"
+            class="color-picker__mask"
+          />
+          <div
+            class="color-picker__thumb"
+            :style="canvasThumbStyle"
+            @pointerdown="canvasDraggingStart"
+          />
+        </div>
+        <VSlider
+          v-if="variant !== 'wheel'"
+          :showRange="false"
+          min="0"
+          :max="variant === 'rect' ? HSB_MAX[0] : HSB_MAX[2]"
+          :trackerBackground="
+            variant === 'rect' ?
+              'linear-gradient(to right, #F00, #FF0, #0F0, #0FF, #00F, #F0F, #F00)' :
+              'linear-gradient(to right, #000, #fff)'
+          "
+          :thumbBackground="secondThumbStyle.background"
+          :model-value="variant === 'rect' ? currentColor[0] : currentColor[2]"
+          @update:modelValue="updaters.slider_"
+        />
+        <div
+          v-else
+          ref="secondPickerRef"
+          class="color-picker__rect-picker"
+          :style="secondPickerStyle"
+        >
+          <div
+            class="color-picker__thumb"
+            rectPickerThumeStyle
+            :style="secondThumbStyle"
+            @pointerdown="sliderDraggingStart"
+          />
+        </div>
+      </div>
+      <div class="color-picker__edits">
+        <div
+          class="color-picker__preview"
+          :style="{background: hexColor}"
+        />
         <label
-          v-for="([key, label], i) in [
-            ['hue', '色調'], ['sat', '彩度'], ['bri', '亮度']]"
-          :key="key"
-          v-memo="[currentColor[i]]"
+          class="color-picker__hex-input"
         >
-          {{ label }}
+          Hex
           <input
-            :name="`color-piker-${key}`"
-            type="number"
-            inputmode="decimal"
-            min="0"
-            :max="HSB_MAX[i]"
-            step="any"
-            v-model.lazy="currentColor[i]"
+            name="color-piker-hex"
+            maxlength="7"
+            size="7"
+            v-model.lazy="hexColor"
           >
         </label>
+        <div class="color-picker__hsb-inputs">
+          <label
+            v-for="([key, label], i) in [
+              ['hue', '色調'], ['sat', '彩度'], ['bri', '亮度']]"
+            :key="key"
+            v-memo="[currentColor[i]]"
+          >
+            {{ label }}
+            <input
+              :name="`color-piker-${key}`"
+              type="number"
+              inputmode="decimal"
+              min="0"
+              :max="HSB_MAX[i]"
+              step="any"
+              v-model.lazy="currentColor[i]"
+            >
+          </label>
+        </div>
+        <div class="color-picker__variants">
+          樣式
+          <SelectMenu
+            :items="['rect', 'rounded', 'wheel']"
+            v-model="variant"
+          />
+        </div>
       </div>
-      <div class="color-picker__variants">
-        樣式
-        <SelectMenu
-          :items="['rect', 'rounded', 'wheel']"
-          v-model="variant"
-        />
-      </div>
-    </div>
-  </OverlayContainer>
+    </template>
+  </VDialog>
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref, toValue, unref, watch } from 'vue';
 import { useDragableElement } from '@/composables/useDragableElement';
 import VSlider from './VSlider.vue';
+import SelectMenu from './SelectMenu.vue';
+import VDialog from './VDialog.vue';
 // utils
 import { cartesian2polar, mod, polar2cartesian, rangeMapping, round, toPercent } from '@/utils/numeric';
 import { hex2hsb, hsb2hex, isValidHex } from '@/utils/colors';
@@ -121,16 +124,15 @@ import { COLOR_PICKER_CANVAS_SIZE } from '@/constants/browser';
 // types
 import type { MaybeRef, ModelRef } from 'vue';
 import type { Position } from '@vueuse/core';
-import OverlayContainer from './OverlayContainer.vue';
-import SelectMenu from './SelectMenu.vue';
 
 
-const modelShow = defineModel<boolean>('show', { default: false });
+const isOpened = defineModel<boolean>('show', { default: false });
 
 const variant = ref<'rect' | 'rounded' | 'wheel'>('wheel');
 
-// DOM refs
-const containerRef = ref<InstanceType<typeof OverlayContainer>>();
+// Node refs
+const dialogRef = ref<InstanceType<typeof VDialog>>();
+
 const canvasPickerRef = ref<HTMLCanvasElement>();
 const secondPickerRef = ref<HTMLDivElement>();
 
@@ -140,7 +142,7 @@ const wheelHalfWidth = ref(0);
 const updateWheelHalfWidth = () => {
   if (unref(variant) === 'wheel' && canvasPickerRef.value) {
     wheelHalfWidth.value = toPercent(
-      getPropertyValue(containerRef.value?.contentRef, '--wheel-width') / (COLOR_PICKER_CANVAS_SIZE * 2),
+      getPropertyValue(dialogRef.value?.overlayContentRef, '--wheel-width') / (COLOR_PICKER_CANVAS_SIZE * 2),
       2
     );
   } else
@@ -149,7 +151,7 @@ const updateWheelHalfWidth = () => {
 
 watch(variant, () => updateWheelHalfWidth(), { flush: 'post' });
 onMounted(() => {
-  containerRef.value!.contentRef!.style
+  dialogRef.value?.overlayContentRef?.style
     .setProperty('--canvas-size', `${COLOR_PICKER_CANVAS_SIZE}px`);
   updateWheelHalfWidth();
 });
@@ -379,7 +381,9 @@ watch(
   updateColorPicker,
   { deep: true, flush: 'post' }
 );
-onMounted(updateColorPicker);
+onMounted(() => {
+  updateColorPicker();
+});
 
 // Canvas event
 const canvasDraggingStart = toValue(() => {
@@ -421,9 +425,9 @@ const modelColor = defineModel<number[]>() as ModelRef<number[]>;
 watch(currentColor, (newVal) => {
   modelColor.value = newVal;
 }, { immediate: true });
-watch(modelColor, (newVal) =>
-  setCurrentColor(newVal),
-{ deep: true });
+watch(modelColor, (newVal) => {
+  setCurrentColor(newVal);
+}, { deep: true });
 </script>
 
 <style lang="scss">
@@ -448,16 +452,18 @@ $wheel-width: $thumb-diam + 4px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  gap: 12px;
   align-items: center;
 
   width: calc(var(--canvas-size) + 32px);
-  padding: 8px 16px 20px;
+  // padding: 8px 16px 20px;
+  padding-bottom: 20px;
   border-radius: $radius-lg;
 
-  background: $color1;
 
   &__pickers {
     position: relative;
+    width: var(--canvas-size);
   }
 
   &__thumb {
@@ -557,8 +563,6 @@ $wheel-width: $thumb-diam + 4px;
 
   &--wheel {
     --wheel-width: #{$wheel-width};
-
-    gap: 31px;
 
     #{$root}__mask {
       cursor: default;

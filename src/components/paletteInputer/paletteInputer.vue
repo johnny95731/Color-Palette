@@ -1,106 +1,83 @@
 <template>
-  <OverlayContainer
-    :content-class="$style.settingDialog"
-    role="dialog"
-    :eager="true"
-    transition="slide-y"
-    transparent
+  <VDialog
+    :overlayProps="{
+      contentClass: $style.paletteInputer
+    }"
+    title="輸入調色盤"
     v-model="isShowing"
   >
-    <header
-      :class="$style.header"
-    >
-      <h2>輸入調色盤</h2>
-      <VBtn
-        icon="x-lg"
-        aria-label="close"
-        @click="isShowing = false"
-      />
-    </header>
     <div
-      :class="$style.content"
+      ref="contentRef"
+      :class="$style.palette"
     >
       <div
-        ref="contentRef"
-        :class="$style.palette"
+        v-for="(hex, i) in colors"
+        :key="i"
+        :class="$style.color"
+        :style="i === draggingIdx && divPosition"
       >
-        <div
-          v-for="(hex, i) in colors"
-          :key="i"
-          :class="$style.color"
-          :style="i === draggingIdx && divPosition"
+        <VBtn
+          icon="list"
+          @pointerdown="startDragging($event)"
+        />
+        <label
+          :for="`color${i+1}`"
+          :style="{background: hex, color: hex}"
+        >{{ `color${i+1}` }}</label>
+        <input
+          :id="`color${i+1}`"
+          maxlength="7"
+          size="7"
+          :value="hex"
+          @input="hexTextEdited($event)"
+          @change="handleHexEditingFinished($event, i)"
+          @keydown="handlePaste($event, i)"
         >
-          <VBtn
-            icon="list"
-            @pointerdown="startDragging($event)"
-          />
-          <label
-            :for="`color${i+1}`"
-            :style="{background: hex, color: hex}"
-          >{{ `color${i+1}` }}</label>
-          <input
-            :id="`color${i+1}`"
-            maxlength="7"
-            size="7"
-            :value="hex"
-            @input="hexTextEdited($event)"
-            @change="handleHexEditingFinished($event, i)"
-            @keydown="handlePaste($event, i)"
-          >
-          <VBtn
-            v-if="colors.length > 2"
-            icon="x-lg"
-            aria-label="移除"
-            @click="deleteColor(i)"
-          />
-          <VIcon
-            v-if="i !==draggingIdx && i === finalIdx"
-            type="arrow-left"
-          />
-        </div>
+        <VBtn
+          v-if="colors.length > 2"
+          icon="x-lg"
+          aria-label="移除"
+          @click="deleteColor(i)"
+        />
+        <VIcon
+          v-if="i !==draggingIdx && i === finalIdx"
+          type="arrow-left"
+        />
       </div>
+    </div>
+    <template #actions>
+      <VBtn
+        prepend-icon="plus"
+        text="新增"
+        :disabled="colors.length === MAX_NUM_OF_CARDS"
+        @click="addColor"
+      />
       <div
         v-once
         class="spacer"
       />
-      <div
-        :class="$style.buttons"
+      <label
+        v-once
       >
-        <VBtn
-          style="align-self: center;"
-          prepend-icon="plus"
-          text="新增"
-          :disabled="colors.length === MAX_NUM_OF_CARDS"
-          @click="addColor"
-        />
-        <div
-          v-once
-          class="spacer"
-        />
-        <label
-          v-once
+        <input
+          type="checkbox"
+          name="preview"
+          v-model="isPreview"
         >
-          <input
-            type="checkbox"
-            name="preview"
-            v-model="isPreview"
-          >
-          預覽
-        </label>
-        <VBtn
-          v-once
-          text="確定"
-          @click="comfirm"
-        />
-      </div>
-    </div>
-  </OverlayContainer>
+        預覽
+      </label>
+      <VBtn
+        v-once
+        text="確定"
+        @click="comfirm"
+      />
+    </template>
+  </VDialog>
 </template>
 
 <script setup lang="ts">
 import { ref, unref, watch } from 'vue';
-import $style from './InputPaletteDialog.module.scss';
-import OverlayContainer from '@/components/Custom/OverlayContainer.vue';
+import $style from './paletteInputer.module.scss';
 import VBtn from '../Custom/VBtn.vue';
 import VIcon from '../Custom/VIcon.vue';
 // utils
@@ -115,6 +92,7 @@ import { isValidHex, randRgbGen, rgb2hex } from '@/utils/colors';
 // type
 import type { CSSProperties } from 'vue';
 import type { Position } from '@vueuse/core';
+import VDialog from '../Custom/VDialog.vue';
 
 const isShowing = defineModel<boolean>(); // Show/Hide
 const isPreview = ref<boolean>(true);

@@ -69,7 +69,7 @@ export type Props = {
   transparent?: boolean,
   hideScrim?: boolean,
   role?: string,
-  type?: 'menu' | 'dialog' | 'offcanvas' | 'tooltip'
+  type?: 'menu' | 'dialog' | 'tooltip'
   ariaModal?: boolean,
   transition?: string,
   contentClass?: VueClass
@@ -223,11 +223,6 @@ defineExpose({
   &--dialog {
     align-items: center;
     justify-content: center;
-  }
-
-  &--offcanvas {
-    align-items: stretch;
-    justify-content: right;
   }
 
   &--tooltip > &__content{

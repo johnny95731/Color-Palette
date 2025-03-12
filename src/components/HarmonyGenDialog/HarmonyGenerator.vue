@@ -1,110 +1,91 @@
 <template>
-  <OverlayContainer
-    :content-class="$style.genDialog"
-    role="dialog"
-    :eager="true"
-    transition="slide-y"
-    transparent
-    v-model="isShowing"
+  <VDialog
+    :overlay-props="{
+      contentClass: $style.genDialog
+    }"
+    title="調和調色盤"
+    v-model="isOpened"
   >
-    <header
-      v-once
-      :class="$style.header"
-    >
-      <h2>調和調色盤</h2>
-      <VBtn
-        icon="x-lg"
-        aria-label="關閉"
-        @click="isShowing = false"
-      />
-    </header>
     <div
-      :class="$style.content"
+      v-memo="palette"
+      :class="$style.palette"
     >
-      <div
-        v-memo="palette"
-        :class="$style.palette"
+      <VTooltip
+        location="top"
+        text="Copied"
+        :openOnHover="false"
+        openOnClick
+        :eager="false"
       >
-        <VTooltip
-          location="top"
-          text="Copied"
-          :openOnHover="false"
-          openOnClick
-          :eager="false"
-        >
-          <template #activator="{handleClick}">
-            <VBtn
-              v-for="(hex, i) in palette"
-              :key="i"
-              :style="{
-                background: hex
-              }"
-              :ripple="false"
-              @click="copyHex(i);handleClick($event)"
-            />
-          </template>
-        </VTooltip>
-      </div>
-      <VBtn
-        v-memo="[palette[0]]"
-        :style="{
-          color: rgb2gray(hex2rgb(palette[0])) > 127 ? '#000' : '#FFF',
-          background: palette[0],
-        }"
-        prepend-icon="eyedropper"
-        text="開啟color picker"
-        @click="showColorPicker = !showColorPicker"
-      />
-      <ColorPicker
-        v-model="currentColor"
-        v-model:show="showColorPicker"
-      />
-      <div>
-        調和方法
-        <SelectMenu
-          :items="HARMONY_METHODS"
-          v-model:index="harmonyArgs.method"
-        />
-      </div>
-      <!-- shades, tints, and tones. -->
-      <div
-        v-if="1 <= harmonyArgs.method && harmonyArgs.method <= 3"
-        v-memo="[harmonyArgs]"
-        :class="$style.numbers"
-      >
-        <label for="harmony-num">數量</label>
-        <input
-          id="harmony-num"
-          name="harmony-num"
-          type="number"
-          :min="MIN_NUM_OF_CARDS"
-          :max="MAX_NUM_OF_CARDS"
-          v-model.lazy.number="harmonyArgs.num"
-        >
-      </div>
-      <div
-        v-once
-        class="spacer"
-      />
-      <div
-        :class="$style.buttons"
-      >
-        <label>
-          <input
-            type="checkbox"
-            name="preview"
-            v-model="isPreview"
+        <template #activator="{handleClick}">
+          <button
+            v-for="(hex, i) in palette"
+            :key="i"
+            type="button"
+            :style="{
+              background: hex
+            }"
+            :aria-label="`color ${hex}`"
+            @click="copyHex(i);handleClick($event)"
           >
-          預覽
-        </label>
-        <VBtn
-          v-once
-          @click="comfirm"
-          text="確定"
-        />
-      </div>
+            <div class="btn__overlay" />
+          </button>
+        </template>
+      </VTooltip>
     </div>
-  </OverlayContainer>
+    <VBtn
+      v-memo="[palette[0]]"
+      :style="{
+        color: rgb2gray(hex2rgb(palette[0])) > 127 ? '#000' : '#FFF',
+        background: palette[0],
+      }"
+      prepend-icon="eyedropper"
+      text="開啟color picker"
+      @click="showColorPicker = !showColorPicker"
+    />
+    <ColorPicker
+      v-model="currentColor"
+      v-model:show="showColorPicker"
+    />
+    <div>
+      調和方法
+      <SelectMenu
+        :items="HARMONY_METHODS"
+        v-model:index="harmonyArgs.method"
+      />
+    </div>
+    <!-- shades, tints, and tones. -->
+    <div
+      v-if="1 <= harmonyArgs.method && harmonyArgs.method <= 3"
+      v-memo="[harmonyArgs]"
+      :class="$style.numbers"
+    >
+      <label for="harmony-num">數量</label>
+      <input
+        id="harmony-num"
+        name="harmony-num"
+        type="number"
+        :min="MIN_NUM_OF_CARDS"
+        :max="MAX_NUM_OF_CARDS"
+        v-model.lazy.number="harmonyArgs.num"
+      >
+    </div>
+    <template #actions>
+      <label>
+        <input
+          type="checkbox"
+          name="preview"
+          v-model="isPreview"
+        >
+        預覽
+      </label>
+      <VBtn
+        v-once
+        @click="comfirm"
+        text="確定"
+      />
+    </template>
+  </VDialog>
 </template>
 
 <script setup lang="ts">
@@ -113,7 +94,7 @@ import $style from './HarmonyGenerator.module.scss';
 // components
 import SelectMenu from '../Custom/SelectMenu.vue';
 import ColorPicker from '../Custom/ColorPicker.vue';
-import OverlayContainer from '../Custom/OverlayContainer.vue';
+import VDialog from '../Custom/VDialog.vue';
 import VBtn from '../Custom/VBtn.vue';
 import VTooltip from '../Custom/VTooltip.vue';
 // utils and constants
@@ -125,9 +106,9 @@ import { MAX_NUM_OF_CARDS, MIN_NUM_OF_CARDS } from '@/constants/pltStore';
 // stores
 import usePltStore from '@/features/usePltStore';
 // types
-import type{ ModelRef } from 'vue';
+import type { ModelRef } from 'vue';
 
-const isShowing = defineModel<boolean>() as ModelRef<boolean>;
+const isOpened = defineModel<boolean>() as ModelRef<boolean>;
 
 const showColorPicker = ref(false);
 
@@ -173,7 +154,7 @@ const comfirm = () => {
   // Overwrite `originalPalette`. Because close dialog will restore palette from
   // `originalPalette`.
   saveOrininal();
-  invertBoolean(isShowing);
+  invertBoolean(isOpened);
 };
 
 const originalPalette = ref<number[][]>([[]]);
@@ -184,7 +165,7 @@ const originalPalette = ref<number[][]>([[]]);
 const saveOrininal = () => {
   originalPalette.value = map(pltState.cards_, card => card.color_);
 };
-watch(isShowing, (newVal) => {
+watch(isOpened, (newVal) => {
   if (newVal) {
     saveOrininal();
     preview();

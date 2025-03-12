@@ -2,60 +2,10 @@
 @use "@/assets/variables.scss" as *;
 
 .genDialog {
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-
   height: 340px;
-  border-radius: $radius-lg;
 
-  background-color: $color1;
-}
-
-.header {
-  overflow: auto;
-  display: flex;
-  flex: 0 0 auto;
-  align-items: center;
-  justify-content: space-between;
-
-  width: 100%;
-  height: 34px;
-
-  background-color: $color5;
-
-  >h2 {
-    user-select: none;
-
-    margin: 0;
-    padding: 0 10px;
-
-    font-size: $font-lg;
-    font-weight: $font-weight-bold;
-    color: $color2;
-    text-align: center;
-  }
-
-  :global(.btn) {
-    padding: 4px;
-    color: #fff;
-  }
-}
-
-.content {
-  display: flex;
-  flex: 1 1 0;
-  flex-direction: column;
-
-  height: 0;
-  padding: 12px 12px 8px;
-
-  > *:not([class]) > * {
-    margin-top: 8px;
-  }
-
-  > * + * {
-    margin-top: 12px;
+  > :global(.dialog__content) {
+    padding: 12px 12px 8px;
   }
 }
 
@@ -67,7 +17,7 @@ $color-div-margin: 4px;
   height: 30px;
   text-align: center;
 
-  :global(.btn) {
+  button {
     display: inline-block;
     aspect-ratio: 1;
     height: $color-div-size;
@@ -88,17 +38,4 @@ $color-div-margin: 4px;
     border-radius: $radius-md;
     background-color: #ddd;
   }
-}
-
-.buttons {
-  display: flex;
-  flex: 0 0 auto;
-  gap: 8px;
-  align-items: center;
-  justify-content: end;
-
-  width: 100%;
-  padding: 8px 4px;
-
-  font-size: $font-md;
 }

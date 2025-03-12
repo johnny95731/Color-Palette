@@ -35,10 +35,11 @@
       <template #activator="{handleClick}">
         <button
           type="button"
-          class="ripple"
+          class="btn ripple"
           aria-label="複製調色盤HEX碼"
           @click="copyText(plt);handleClick($event)"
         >
+          <div class="btn__overlay" />
           {{ plt }}
         </button>
       </template>

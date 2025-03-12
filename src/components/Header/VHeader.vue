@@ -268,7 +268,7 @@ import type { Mixing } from 'types/mixing';
 
 
 const InputPaletteDialog = defineAsyncComponent(
-  () => import('@/components/InputPaletteDialog/InputPaletteDialog.vue')
+  () => import('@/components/paletteInputer/paletteInputer.vue')
     .then(component => {
       inInit.input_ = true;
       return component;
