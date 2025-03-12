@@ -14,7 +14,6 @@
       :style="showToolbar"
       role="toolbar"
       :aria-label="`卡片${cardIdx}工具列`"
-      @keydown.stop
     >
       <CondWrapper
         tag="div"
