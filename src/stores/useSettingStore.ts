@@ -1,6 +1,15 @@
 import { defineStore } from 'pinia';
-import { BORDER_COLOR, COLOR_FUNCTIONS } from '@/constants/settingStore';
-import type { ColorSpaces } from '@/types/colors';
+import type { ColorSpaces } from '@/utils/colors';
+
+
+// consts
+export const BORDER_MAX_WIDTH = 10 as const;
+export const BORDER_COLOR = ['white', 'gray', 'black'] as const;
+
+export const TRANSITION_MAX_POS = 1000;
+export const TRANSITION_MAX_COLOR = 3000;
+
+export const COLOR_FUNCTIONS = ['modern', 'legacy'] as const;
 
 
 export type BorderStyle = {

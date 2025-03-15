@@ -87,16 +87,14 @@ import VBtn from './VBtn.vue';
 import VIcon from './VIcon.vue';
 // utils
 import { sleep, invertBoolean, getLetterCaseConverter } from '@/utils/helpers';
-import { getComponentId } from '@/utils/browser';
+import { getComponentId, MENU_SYMBOL } from '@/utils/browser';
 import { mod } from '@/utils/numeric';
 import { noModifierKey, shiftOnly, hasPopup } from '@/utils/browser';
 import { useElementBounding } from '@/composables/useElementBounding';
-// constants
-import { MENU_SYMBOL } from '@/constants/browser';
 // Types
 import type { CSSProperties, ModelRef } from 'vue';
-import type { VueClass } from 'types/browser';
 import type { Props as VBtnProps } from './VBtn.vue';
+import type { VueClass } from '@/utils/browser';
 
 type MenuItem = {
   val: string,

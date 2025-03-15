@@ -1,9 +1,16 @@
-import { SORTING_ACTIONS } from '@/constants/colors';
-import { hex2lab, hex2rgb, lab2lch, rgb2gray } from './colors';
-import { deg2rad, l2DistSq, mod } from './numeric';
-import { map } from './helpers';
-import type { SortActions } from '@/types/colors';
+import { map } from '../helpers';
+import { deg2rad, l2DistSq, mod } from '../numeric';
+import { hex2lab, hex2rgb, lab2lch, rgb2gray } from '../colors';
 
+
+// # Constants
+/**
+ * Actions for sorting palette colors.
+ */
+export const SORTING_ACTIONS = [
+  'luminance', 'random', 'inversion', 'CIE76', 'CIE94', 'CIEDE2000'
+] as const;
+export type SortActions = typeof SORTING_ACTIONS[number];
 
 
 // # Distance functions.

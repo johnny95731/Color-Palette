@@ -1,17 +1,32 @@
 import { defineStore } from 'pinia';
 // Utils
 import { map, forLoop, shuffle } from '@/utils/helpers.ts';
-import {
-  rgb2hex, randRgbGen, hex2rgb, getSpaceInfos, getContrastAdjuster,
-} from '@/utils/colors.ts';
-import { mixers } from '@/utils/mixing';
-import { getDistOp, tspGreedy } from '@/utils/sorting';
-import { INIT_COLOR_SPACE, INIT_NUM_OF_CARDS, MAX_NUM_OF_CARDS } from '@/constants/pltStore';
-import { CONTRAST_METHODS, SORTING_ACTIONS } from '@/constants/colors';
+import { rgb2hex, randRgbGen, hex2rgb, getSpaceInfos } from '@/utils/colors.ts';
+import { mixers } from '@/utils/manipulate/mixing';
+import { getDistOp, SORTING_ACTIONS, tspGreedy } from '@/utils/manipulate/sorting';
+import { CONTRAST_METHODS, getContrastAdjuster } from '@/utils/manipulate/contrast';
 // Types
-import type { OrderState, SortActions, ColorSpaces } from 'types/colors';
-import type { Mixing } from 'types/mixing';
-import type { ColorSpaceInfos } from '@/types/colors';
+import type { ColorSpaces, ColorSpaceInfos } from '@/utils/colors.ts';
+import type { Mixing } from '@/utils/manipulate/mixing';
+import type { SortActions } from '@/utils/manipulate/sorting';
+
+
+/**
+ * Initial color space in palette.
+ */
+export const INIT_COLOR_SPACE: ColorSpaces = 'name';
+
+/**
+ * Initial number of color in palette.
+ */
+export const INIT_NUM_OF_CARDS = 5;
+export const MIN_NUM_OF_CARDS = 2;
+export const MAX_NUM_OF_CARDS = 8;
+
+/**
+ * The current order of cards.
+ */
+export type OrderState = Exclude<SortActions, 'inversion'>;
 
 
 export type Card = {

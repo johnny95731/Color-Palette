@@ -12,11 +12,11 @@ import { ref, onMounted, computed, onUnmounted } from 'vue';
 import { toValue } from '@vueuse/core';
 import VHeader from './components/Header/VHeader.vue';
 import VPalette from './components/Palette/VPalette.vue';
-import { HOTKEYS } from './constants/hotkeys';
+import { HOTKEYS } from './utils/hotkeys';
 // Store and Context
-import usePltStore from './features/usePltStore';
+import usePltStore from './stores/usePltStore';
 // types
-import type { SortActions } from './types/colors';
+import type { SortActions } from './utils/manipulate/sorting';
 
 
 const headerRef = ref<InstanceType<typeof VHeader>>();

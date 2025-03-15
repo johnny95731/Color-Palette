@@ -1,9 +1,29 @@
-import { map } from './helpers.ts';
-import { getSpaceInfos } from './colors.ts';
-import { elementwiseMean } from './numeric.ts';
-import { HSL_MAX } from '@/constants/colors.ts';
-import type { Mixer, Mixing } from '@/types/mixing.ts';
-import type { ColorSpaces } from '@/types/colors.ts';
+import { map } from '../helpers.ts';
+import { HSL_MAX, getSpaceInfos } from '../colors.ts';
+import { elementwiseMean } from '../numeric.ts';
+import type { ColorSpaces } from '@/utils/colors.ts';
+
+
+// # Constants
+/**
+ * Support mix modes.
+ */
+export const MIXING_MODES = [
+  'mean', 'brighter', 'deeper', 'soft light', 'random',
+] as const;
+
+
+export const MULTIPLICATION_MAX = 10;
+export const GAMMA_MAX = 3;
+
+export type Mixer = ((c1: number[], c2: number[]) => number[]) |
+((c1: number[], c2: number[], colorSpace: ColorSpaces) => number[]);
+
+/**
+ * Support mix modes.
+ */
+export type Mixing = typeof MIXING_MODES[number];
+
 
 /**
  * Mixing two colors by evaluate their average.
@@ -23,13 +43,13 @@ const meanMixing = (
 };
 
 /**
- * Blending two colors by evaluate their average.
+ * Blending two colors by evaluate their RGB average.
  * @param color1 Numeric of a color.
  * @param color2 Numeric of a color.
  * @param colorSpace Color space.
  * @returns The mean value of color1 and color2.
  */
-const additive = (
+const additive = ( // eslint-disable-line
   color1: number[], color2: number[], colorSpace: ColorSpaces,
 ): number[] => {
   const { converter, inverter } = getSpaceInfos(colorSpace);

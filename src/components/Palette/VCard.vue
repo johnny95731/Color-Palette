@@ -208,18 +208,18 @@ import VSlider from '../Custom/VSlider.vue';
 import OverlayContainer from '../Custom/OverlayContainer.vue';
 import CondWrapper from '../Custom/CondWrapper.vue';
 // Utils
+import { map } from '@/utils/helpers';
 import { round, toPercent } from '@/utils/numeric';
 import { rgb2gray, getClosestNamed, hex2rgb, unzipCssNamed, unzipedNameList, gradientGen, getNamedColorRgb, isValidHex } from '@/utils/colors';
 import { copyText, hexTextEdited, isTabKey } from '@/utils/browser';
 // Stores
-import usePltStore from '@/features/usePltStore';
-import useFavStore from '@/features/useFavStore';
-import useSettingStore from '@/features/useSettingStore';
+import usePltStore from '@/stores/usePltStore';
+import useFavStore from '@/stores/useFavStore';
+import useSettingStore from '@/stores/useSettingStore';
 import media from '@/composables/useMedia';
 // Types
 import type { CSSProperties } from 'vue';
-import type { Card } from '@/features/usePltStore';
-import { map } from '@/utils/helpers';
+import type { Card } from '@/stores/usePltStore';
 
 const cardContainerRef = ref<HTMLElement>();
 const hexTextRef = ref<InstanceType<typeof VBtn>>();

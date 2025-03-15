@@ -1,9 +1,22 @@
-import { HARMONY_METHODS } from '@/constants/colors';
-import { forLoop, map } from './helpers';
-import type { HarmonyMethods } from '@/types/colors';
-import { hueRotation } from './colors';
+import { forLoop, map } from '../helpers';
+import { hueRotation } from '../colors';
 
 
+// # Constants
+/**
+ * Methods of adjusting contrast.
+ */
+export const HARMONY_METHODS = [
+  'analogous', 'shades', 'tints', 'tones', 'triad', 'complement',
+  'split complement', 'tetrad', 'square', 'compound'
+] as const;
+/**
+ * Support harmony adjusting methods.
+ */
+export type HarmonyMethods = typeof HARMONY_METHODS[number];
+
+
+// # Harmonize
 /**
  * Generate a harmony palette from a primary color (in HSB).
  * The hues of palette are [

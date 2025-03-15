@@ -110,17 +110,15 @@
 
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref, toValue, unref, watch } from 'vue';
-import { useDragableElement } from '@/composables/useDragableElement';
 import VSlider from './VSlider.vue';
 import SelectMenu from './SelectMenu.vue';
 import VDialog from './VDialog.vue';
 // utils
 import { cartesian2polar, mod, polar2cartesian, rangeMapping, round, toPercent } from '@/utils/numeric';
-import { hex2hsb, hsb2hex, isValidHex } from '@/utils/colors';
+import { hex2hsb, hsb2hex, HSL_MAX, isValidHex } from '@/utils/colors';
 import { isNullish, map } from '@/utils/helpers';
-import { getPropertyValue } from '@/utils/browser';
-import { HSL_MAX } from '@/constants/colors';
-import { COLOR_PICKER_CANVAS_SIZE } from '@/constants/browser';
+import { COLOR_PICKER_CANVAS_SIZE, getPropertyValue } from '@/utils/browser';
+import { useDragableElement } from '@/composables/useDragableElement';
 // types
 import type { MaybeRef, ModelRef } from 'vue';
 import type { Position } from '@vueuse/core';

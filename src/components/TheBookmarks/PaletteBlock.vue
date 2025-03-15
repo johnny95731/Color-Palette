@@ -52,12 +52,14 @@ import { computed, toValue } from 'vue';
 import $style from './VBookmarks.module.scss';
 import VIcon from '../Custom/VIcon.vue';
 import VTooltip from '../Custom/VTooltip.vue';
+// utils
 import { map, forLoop } from '@/utils/helpers';
 import { toPercent } from '@/utils/numeric';
 import { isValidHex } from '@/utils/colors';
 import { copyText } from '@/utils/browser';
-import useFavStore from '@/features/useFavStore';
-import usePltStore from '@/features/usePltStore';
+// stores
+import useFavStore from '@/stores/useFavStore';
+import usePltStore from '@/stores/usePltStore';
 
 type Props = {
   plt: string;

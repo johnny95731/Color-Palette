@@ -57,10 +57,10 @@
 import { computed, nextTick, ref, watch } from 'vue';
 import OverlayContainer from '@/components/Custom/OverlayContainer.vue';
 import VBtn from '@/components/Custom/VBtn.vue';
-import { V_DIALOG_OVERLAY_PROPS } from '@/constants/browser';
+import { V_DIALOG_OVERLAY_PROPS } from '@/utils/browser';
 import type { ModelRef } from 'vue';
 import type { Props as OverlayProps } from '@/components/Custom/OverlayContainer.vue';
-import type { VueClass } from '@/types/browser';
+import type { VueClass } from '@/utils/browser';
 
 type Props = {
   overlayProps?: Omit<OverlayProps, 'type'>

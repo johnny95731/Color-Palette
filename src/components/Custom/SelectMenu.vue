@@ -101,7 +101,7 @@ import { mod } from '@/utils/numeric';
 import { noModifierKey, shiftOnly } from '@/utils/browser';
 // types
 import type { CSSProperties, MaybeRefOrGetter, ModelRef } from 'vue';
-import type { VueClass } from 'types/browser';
+import type { VueClass } from '@/utils/browser';
 
 type SelectItem = {
   val: string,

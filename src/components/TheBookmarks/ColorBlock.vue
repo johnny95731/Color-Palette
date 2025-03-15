@@ -47,9 +47,12 @@ import $style from './VBookmarks.module.scss';
 import VBtn from '../Custom/VBtn.vue';
 import VTooltip from '../Custom/VTooltip.vue';
 import VIcon from '../Custom/VIcon.vue';
+// utils
 import { hex2rgb, rgb2gray } from '@/utils/colors';
 import { copyText } from '@/utils/browser';
-import useFavStore from '@/features/useFavStore';
+// stores
+import useFavStore from '@/stores/useFavStore';
+// types
 import type { CSSProperties } from 'vue';
 
 type Props = {

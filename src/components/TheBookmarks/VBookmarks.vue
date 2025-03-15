@@ -53,8 +53,8 @@ import PaletteBlock from './PaletteBlock.vue';
 import { isTabKey } from '@/utils/browser';
 import { map } from '@/utils/helpers';
 // Store
-import usePltStore from '@/features/usePltStore';
-import useFavStore from '@/features/useFavStore';
+import usePltStore from '@/stores/usePltStore';
+import useFavStore from '@/stores/useFavStore';
 import VDialog from '../Custom/VDialog.vue';
 
 

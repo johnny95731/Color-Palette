@@ -21,7 +21,7 @@
     "paths": {
       "@/*": ["./src/*"],
       "types/*": ["./src/types/*"],
-      "stores/*": ["./src/features/*"]
+      "stores/*": ["./src/stores/*"]
     }
   }
 }

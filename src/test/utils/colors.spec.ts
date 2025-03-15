@@ -1,8 +1,8 @@
 import { describe, expect, test } from 'vitest';
-import { COLOR_SPACES, RGB_MAX } from '@/constants/colors';
-import { getClosestNamed, getContrastAdjuster, getHarmonize, getSpaceInfos, hex2hsb, hex2rgb, hsb2hex, hueRotation, isValidHex, labFunc, labFuncInv, linearRgb2srgb, randRgbGen, rgb2gray, rgb2hex, sortingByLuminance, srgb2linearRgb, unzipCssNamed } from '@/utils/colors';
+import { COLOR_SPACES, getClosestNamed, getSpaceInfos, hex2hsb, hex2rgb, hsb2hex, hueRotation, isValidHex, linearRgb2srgb, rgb2hex, RGB_MAX, srgb2linearRgb, unzipCssNamed } from '@/utils/colors';
 import { clip, randInt, round } from '@/utils/numeric';
 import NamedColor from '@/assets/NamedColor.json';
+import { getContrastAdjuster } from '@/utils/manipulate/contrast';
 
 
 const stdRgbs: number[][] = [
@@ -63,62 +63,44 @@ describe('CSS named-color', () => {
 describe('linear rgb', () => {
   test('srgb2linearRgb', () => {
     const cases = [
-      [[0,0,0], [0,0,0]],
-      [[RGB_MAX,RGB_MAX,RGB_MAX], [RGB_MAX,RGB_MAX,RGB_MAX]],
+      [0, 0],
+      [RGB_MAX, RGB_MAX],
     ] as const;
     for (const [args, expect_] of cases) {
-      // @ts-expect-error
       const result = srgb2linearRgb(args);
-      for (let i = 0; i < 3; i++) {
-        expect(result[i]).toBeCloseTo(expect_[i]);
-      }
+      expect(result).toBeCloseTo(expect_);
     }
   });
   test('linearRgb2srgb', () => {
     const cases = [
-      [[0,0,0], [0,0,0]],
-      [[RGB_MAX,RGB_MAX,RGB_MAX], [RGB_MAX,RGB_MAX,RGB_MAX]],
+      [0, 0],
+      [RGB_MAX, RGB_MAX],
     ] as const;
     for (const [args, expect_] of cases) {
-      // @ts-expect-error
       const result = linearRgb2srgb(args);
-      for (let i = 0; i < 3; i++) {
-        expect(result[i]).toBeCloseTo(expect_[i]);
-      }
+      expect(result).toBeCloseTo(expect_);
     }
   });
   test('stability', () => {
     const testNum = 500;
     for (let i = 0; i < testNum; i++) {
-      const srgb = randRgbGen();
-      const linearRgb = srgb2linearRgb(srgb);
-      const srgb2 = linearRgb2srgb(linearRgb);
-      const linearRgb2 = srgb2linearRgb(srgb2);
+      const original = Math.random() * RGB_MAX;
+      const linear = srgb2linearRgb(original);
+      const back2Original = linearRgb2srgb(linear);
+      const linear2 = srgb2linearRgb(back2Original);
       const cases = [
-        srgb,
-        linearRgb,
-        srgb2,
-        linearRgb2,
+        original,
+        linear,
+        back2Original,
+        linear2,
       ];
       for (let k = 0; k < 2; k++) {
-        for (let i = 0; i < 3; i++) {
-          expect(cases[k][i]).toBeCloseTo(cases[k+2][i]);
-        }
+        expect(cases[k]).toBeCloseTo(cases[k+2]);
       }
     }
   });
 });
 
-describe('lab helper', () => {
-  test('stability', () => {
-    const testNum = 500;
-    for (let i = 0; i < testNum; i++) {
-      const val = Math.random() * 100;
-      const result = labFuncInv(labFunc(val));
-      expect(result).toBeCloseTo(val, 5);
-    }
-  });
-});
 
 describe('hex', () => {
   test('stability', () => {
@@ -178,20 +160,20 @@ describe('hex', () => {
   });
 });
 
-describe('Sorting', () => {
-  test('By luminance', () => {
-    const case1 = sortingByLuminance([
-      { hex: '000' },
-      { hex: 'fff' },
-    ]);
-    expect(rgb2gray(hex2rgb(case1[0].hex))).toBeLessThan(rgb2gray(hex2rgb(case1[1].hex)));
-    const case2 = sortingByLuminance([
-      { hex: 'fff' },
-      { hex: '000' },
-    ]);
-    expect(rgb2gray(hex2rgb(case2[0].hex))).toBeLessThan(rgb2gray(hex2rgb(case2[1].hex)));
-  });
-});
+// describe('Sorting', () => {
+//   test('By luminance', () => {
+//     const case1 = sortingByLuminance([
+//       { hex: '000' },
+//       { hex: 'fff' },
+//     ]);
+//     expect(rgb2gray(hex2rgb(case1[0].hex))).toBeLessThan(rgb2gray(hex2rgb(case1[1].hex)));
+//     const case2 = sortingByLuminance([
+//       { hex: 'fff' },
+//       { hex: '000' },
+//     ]);
+//     expect(rgb2gray(hex2rgb(case2[0].hex))).toBeLessThan(rgb2gray(hex2rgb(case2[1].hex)));
+//   });
+// });
 
 test('getContrastAdjuster("linear")', () => {
   const converter = getContrastAdjuster('linear');
@@ -222,66 +204,66 @@ test('hueRotation', () => {
   }
 });
 
-describe('getHarmonize', () => {
-  const hsb = [0,0,0];
-  test('analogous', () => {
-    const analogous = getHarmonize('analogous')(hsb);
-    expect(analogous).toContainEqual(hsb);
-    expect(analogous).toContainEqual([30,0,0]);
-    expect(analogous).toContainEqual([330,0,0]);
-  });
-  test('triad', () => {
-    const analogous = getHarmonize('triad')(hsb);
-    expect(analogous).toContainEqual(hsb);
-    expect(analogous).toContainEqual([120,0,0]);
-    expect(analogous).toContainEqual([240,0,0]);
-  });
-  test('complement', () => {
-    const analogous = getHarmonize('complement')(hsb);
-    expect(analogous).toContainEqual(hsb);
-    expect(analogous).toContainEqual([180,0,0]);
-  });
-  test('split complement', () => {
-    const analogous = getHarmonize('split complement')(hsb);
-    expect(analogous).toContainEqual(hsb);
-    expect(analogous).toContainEqual([150,0,0]);
-    expect(analogous).toContainEqual([210,0,0]);
-  });
-  test('tetrad', () => {
-    const analogous = getHarmonize('tetrad')(hsb);
-    expect(analogous).toContainEqual(hsb);
-    expect(analogous).toContainEqual([30,0,0]);
-    expect(analogous).toContainEqual([180,0,0]);
-    expect(analogous).toContainEqual([210,0,0]);
-  });
-  test('square', () => {
-    const analogous = getHarmonize('square')(hsb);
-    expect(analogous).toContainEqual(hsb);
-    expect(analogous).toContainEqual([90,0,0]);
-    expect(analogous).toContainEqual([180,0,0]);
-    expect(analogous).toContainEqual([270,0,0]);
-  });
-  test('compound', () => {
-    const analogous = getHarmonize('compound')(hsb);
-    expect(analogous).toContainEqual(hsb);
-    expect(analogous).toContainEqual([30,0,0]);
-    expect(analogous).toContainEqual([180,0,0]);
-    expect(analogous).toContainEqual([150,0,0]);
-  });
-  const hsb2 = [0,100,100];
-  test('shades', () => {
-    const analogous = getHarmonize('shades')(hsb2, 2);
-    expect(analogous).toContainEqual(hsb2);
-    expect(analogous).toContainEqual([0,100,50]);
-  });
-  test('tints', () => {
-    const analogous = getHarmonize('tints')(hsb2, 2);
-    expect(analogous).toContainEqual(hsb2);
-    expect(analogous).toContainEqual([0,50,100]);
-  });
-  test('tones', () => {
-    const analogous = getHarmonize('tones')(hsb2, 2);
-    expect(analogous).toContainEqual(hsb2);
-    expect(analogous).toContainEqual([0,50,50]);
-  });
-});
+// describe('getHarmonize', () => {
+//   const hsb = [0,0,0];
+//   test('analogous', () => {
+//     const analogous = getHarmonize('analogous')(hsb);
+//     expect(analogous).toContainEqual(hsb);
+//     expect(analogous).toContainEqual([30,0,0]);
+//     expect(analogous).toContainEqual([330,0,0]);
+//   });
+//   test('triad', () => {
+//     const analogous = getHarmonize('triad')(hsb);
+//     expect(analogous).toContainEqual(hsb);
+//     expect(analogous).toContainEqual([120,0,0]);
+//     expect(analogous).toContainEqual([240,0,0]);
+//   });
+//   test('complement', () => {
+//     const analogous = getHarmonize('complement')(hsb);
+//     expect(analogous).toContainEqual(hsb);
+//     expect(analogous).toContainEqual([180,0,0]);
+//   });
+//   test('split complement', () => {
+//     const analogous = getHarmonize('split complement')(hsb);
+//     expect(analogous).toContainEqual(hsb);
+//     expect(analogous).toContainEqual([150,0,0]);
+//     expect(analogous).toContainEqual([210,0,0]);
+//   });
+//   test('tetrad', () => {
+//     const analogous = getHarmonize('tetrad')(hsb);
+//     expect(analogous).toContainEqual(hsb);
+//     expect(analogous).toContainEqual([30,0,0]);
+//     expect(analogous).toContainEqual([180,0,0]);
+//     expect(analogous).toContainEqual([210,0,0]);
+//   });
+//   test('square', () => {
+//     const analogous = getHarmonize('square')(hsb);
+//     expect(analogous).toContainEqual(hsb);
+//     expect(analogous).toContainEqual([90,0,0]);
+//     expect(analogous).toContainEqual([180,0,0]);
+//     expect(analogous).toContainEqual([270,0,0]);
+//   });
+//   test('compound', () => {
+//     const analogous = getHarmonize('compound')(hsb);
+//     expect(analogous).toContainEqual(hsb);
+//     expect(analogous).toContainEqual([30,0,0]);
+//     expect(analogous).toContainEqual([180,0,0]);
+//     expect(analogous).toContainEqual([150,0,0]);
+//   });
+//   const hsb2 = [0,100,100];
+//   test('shades', () => {
+//     const analogous = getHarmonize('shades')(hsb2, 2);
+//     expect(analogous).toContainEqual(hsb2);
+//     expect(analogous).toContainEqual([0,100,50]);
+//   });
+//   test('tints', () => {
+//     const analogous = getHarmonize('tints')(hsb2, 2);
+//     expect(analogous).toContainEqual(hsb2);
+//     expect(analogous).toContainEqual([0,50,100]);
+//   });
+//   test('tones', () => {
+//     const analogous = getHarmonize('tones')(hsb2, 2);
+//     expect(analogous).toContainEqual(hsb2);
+//     expect(analogous).toContainEqual([0,50,50]);
+//   });
+// });

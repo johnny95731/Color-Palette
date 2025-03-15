@@ -252,30 +252,30 @@ import { createReusableTemplate, toValue } from '@vueuse/core';
 import $style from './VHeader.module.scss';
 import DropdownMenu from '../Custom/DropdownMenu.vue';
 import VBtn from '@/components/Custom/VBtn.vue';
-// Utils
-import { HOTKEYS } from '@/constants/hotkeys';
+// utils
+import { HOTKEYS } from '@/utils/hotkeys';
 import { invertBoolean, map } from '@/utils/helpers';
-// Constants
-import { MIXING_MODES } from '@/constants/mixing';
-import { COLOR_SPACES, SORTING_ACTIONS } from '@/constants/colors';
-// Stores / Contexts
+import { COLOR_SPACES } from '@/utils/colors';
+// constants
+import { MIXING_MODES, type Mixing } from '@/utils/manipulate/mixing';
+import { SORTING_ACTIONS, type SortActions } from '@/utils/manipulate/sorting';
+// stores
 import media from '@/composables/useMedia';
-import usePltStore from '@/features/usePltStore';
-import useSettingStore from '@/features/useSettingStore';
-// Types
-import type { ColorSpaces, SortActions } from 'types/colors';
-import type { Mixing } from 'types/mixing';
+import usePltStore from '@/stores/usePltStore';
+import useSettingStore from '@/stores/useSettingStore';
+// types
+import type { ColorSpaces } from '@/utils/colors';
 
 
 const InputPaletteDialog = defineAsyncComponent(
-  () => import('@/components/paletteInputer/paletteInputer.vue')
+  () => import('@/components/PaletteInputer/PaletteInputer.vue')
     .then(component => {
       inInit.input_ = true;
       return component;
     })
 );
 const HarmonyGenDialog = defineAsyncComponent(
-  () => import('@/components/HarmonyGenDialog/HarmonyGenerator.vue')
+  () => import('@/components/HarmonyGenerator/HarmonyGenerator.vue')
     .then(component => {
       inInit.harmony_ = true;
       return component;

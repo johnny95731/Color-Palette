@@ -1,8 +1,7 @@
 import { calc } from '../calc';
 import NamedColor from '@/assets/NamedColor.json';
 import { isSameFloat, l2DistSq, mod, rangeMapping, round } from '@/utils/numeric';
-import { getClosestNamed, getSpaceInfos, hex2rgb, randRgbGen, rgb2hex, rgb2hue } from '@/utils/colors';
-import { COLOR_SPACES, RGB_MAX } from '@/constants/colors';
+import { COLOR_SPACES, getClosestNamed, getSpaceInfos, hex2rgb, randRgbGen, rgb2hex, rgb2hue, RGB_MAX } from '@/utils/colors';
 
 /* v8 ignore start */
 
@@ -74,7 +73,7 @@ const main = () => {
   for (const space of COLOR_SPACES) {
     const { converter, inverter } = getSpaceInfos(space);
     if (space !== 'xyz') continue;
-    allRgbs.forEach((rgb, i) => {
+    allRgbs.forEach((rgb) => {
       const spaceColor = inverter(converter(rgb)).map(val => round(val));
       for (let i = 0;i < 3; i++) {
         if (!isSameFloat(spaceColor[i], rgb[i])) {

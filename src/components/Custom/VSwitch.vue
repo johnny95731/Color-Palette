@@ -34,8 +34,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue';
-import { toValue } from '@vueuse/core';
+import { computed, onMounted, ref, watch, toValue } from 'vue';
 import { invertBoolean } from '@/utils/helpers';
 import { getComponentId } from '@/utils/browser';
 import type { ModelRef } from 'vue';

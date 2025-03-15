@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest';
-import { HOTKEYS } from '@/constants/hotkeys';
+import { HOTKEYS } from '@/utils/hotkeys';
 
 test('Check duplicate hot keys.', () => {
   const allHotKeys = Object.values(HOTKEYS).map(val =>

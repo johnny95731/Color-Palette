@@ -47,10 +47,9 @@ import { useDragableElement } from '@/composables/useDragableElement';
 import { equallyLength, evalPosition, forLoop, isNullish, map } from '@/utils/helpers';
 import { rangeMapping, round } from '@/utils/numeric';
 import { rgb2hex } from '@/utils/colors';
-import { INIT_NUM_OF_CARDS, MAX_NUM_OF_CARDS } from '@/constants/pltStore';
 // Stores / Contexts
-import usePltStore from '@/features/usePltStore';
-import useSettingStore from '@/features/useSettingStore';
+import usePltStore, { INIT_NUM_OF_CARDS, MAX_NUM_OF_CARDS } from '@/stores/usePltStore';
+import useSettingStore from '@/stores/useSettingStore';
 import media from '@/composables/useMedia';
 // Types
 import type { CSSProperties } from 'vue';

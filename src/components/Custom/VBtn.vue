@@ -63,10 +63,10 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
 import VIcon from '@/components/Custom/VIcon.vue';
 import VTooltip from './VTooltip.vue';
 import type { Props as TooltipProps } from './VTooltip.vue';
-import { computed } from 'vue';
 
 export type Props = {
   type?: 'button' | 'submit' | 'reset',

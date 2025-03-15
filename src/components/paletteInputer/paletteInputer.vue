@@ -85,9 +85,8 @@ import { invertBoolean, isNullish, map } from '@/utils/helpers';
 import { clip } from '@/utils/numeric';
 import { ctrlOnly, hexTextEdited, pasteText } from '@/utils/browser';
 import { useDragableElement } from '@/composables/useDragableElement';
-import { MAX_NUM_OF_CARDS } from '@/constants/pltStore';
 // store
-import usePltStore from '@/features/usePltStore';
+import usePltStore, { MAX_NUM_OF_CARDS } from '@/stores/usePltStore';
 import { isValidHex, randRgbGen, rgb2hex } from '@/utils/colors';
 // type
 import type { CSSProperties } from 'vue';

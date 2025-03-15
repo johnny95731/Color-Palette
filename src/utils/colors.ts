@@ -1,16 +1,142 @@
 import NamedColor from '@/assets/NamedColor.json';
-import { clip, dot, mod, randInt, rangeMapping, round, toPercent, l2DistSq, cartesian2polar, polar2cartesian } from './numeric';
 import { map, forLoop } from './helpers';
-import {
-  RGB_MAX, HSL_MAX, CMY_MAX, XYZ_MAX, LAB_MAX, XYZ2RGB_COEFF, RGB2XYZ_COEFF, XYZ_MAX_SCALING, YUV_MAX, CONTRAST_METHODS
-} from '@/constants/colors.ts';
-import type { ColorSpaces, ColorSpaceInfos, ContrastMethods } from '@/types/colors';
+import { clip, dot, mod, randInt, round, toPercent, l2DistSq, cartesian2polar, polar2cartesian } from './numeric';
 
 
-// # Utils
+// # Constants
+/**
+ * Matrix factors for sRGB to CIE XYZ.
+ * Observer. = 2°, Illuminant = D65
+ */
+export const RGB2XYZ_COEFF = [
+  [0.4124564, 0.3575761, 0.1804375],
+  [0.2126729, 0.7151522, 0.0721750],
+  [0.0193339, 0.1191920, 0.9503041],
+] as const;
+/**
+ * Matrix factors for CIE XYZ to sRGB.
+ * Observer. = 2°, Illuminant = D65
+ */
+export const XYZ2RGB_COEFF = [
+  [ 3.2404542, -1.5371385, -0.4985314],
+  [-0.9692660,  1.8760108,  0.0415560],
+  [ 0.0556434, -0.2040259,  1.0572252],
+] as const;
+
+/**
+ * [0.95047, 1, 1.08883]
+ * Observer. = 2°, Illuminant = D65
+ */
+export const RGB2XYZ_COEFF_ROW_SUM = map(
+  RGB2XYZ_COEFF,
+  row => forLoop(
+    row,
+    (acc, val) => acc + val,
+    0
+  )
+);
+/** Scaling XYZ values when convering from rgb. */
+export const XYZ_MAX_SCALING = 100;
+
+/**
+ * Support color spaces.
+ */
+export const COLOR_SPACES = [
+  'rgb', 'name', 'hsl', 'hsb', 'hwb', 'cmy', 'cmyk', 'xyz', 'lab', 'yuv'
+] as const;
+/**
+ * Support color spaces.
+ */
+export type ColorSpaces = typeof COLOR_SPACES[number];
+
+
+// Ranges of channels for each color space.
+export const RGB_MAX = 255;
+/**
+ * Maximum of HSL, HSB, and HWB spaces.
+ */
+export const HSL_MAX = [360, 100, 100] as const;
+/**
+ * Maximum of CMY and CMYK spaces.
+ */
+export const CMY_MAX = 100;
+export const XYZ_MAX = map(RGB2XYZ_COEFF_ROW_SUM, val => XYZ_MAX_SCALING * val);
+export const LAB_MAX = [100, [-128, 128], [-128, 128]] as const;
+export const YUV_MAX = RGB_MAX;
+
+
+// # Helpers
+/** Remove Non-hex characters */
+export const removeNonHex = (str: string) => str.replace(/[^0-9A-F]/ig, '');
+
+/**
+ * Verify the string whether is a (3 channel, no alpha channel) Hex color.
+ * @param str String that need to be verified.
+ * @return Validity of string.
+ */
+export const isValidHex = (str: string): boolean =>
+  [3, 6].includes(removeNonHex(str).length);
+
 export const hueRotation = ([h, s, b]: number[], deg: number) => (
   [mod(h + deg, 360), s, b]
 );
+
+/**
+ * Calculate hue (H channel of HSL/HSB) from rgb. Also, returns minimum and
+ * maximum of rgb.
+ * @param rgb RGB array.
+ * @return [hue, min(r,g,b), max(r,g,b)].
+ */
+export const rgb2hue = ([r, g, b]: number[]): number[] => {
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  const delta = max - min;
+  let hue;
+  if (max === min)
+    hue = 0;
+  else if (max === r)
+    hue = mod((g - b) / delta, 6);
+  else if (max === g)
+    hue = (b - r) / delta + 2;
+  else // max === b:
+    hue = (r - g) / delta + 4;
+  return [60 * hue, min, max];
+};
+
+export const [linearRgb2srgb, srgb2linearRgb] = (() => {
+  const thresh1 = 0.0031308 * RGB_MAX;
+  const thresh2 = thresh1 * 12.92;
+  const p = 1 / 2.4;
+
+  /**
+   * Convert sRGB to linear RGB.
+   * Maps [0, RGB_MAX] into [0, RGB_MAX]
+   */
+  const linearRgb2srgb = (val: number) => {
+    return val < thresh1 ?
+      val * 12.92 :
+      ((val/RGB_MAX)**p * 1.055 - 0.055) * RGB_MAX;
+  };
+
+  /**
+   * Convert linear RGB to sRGB.
+   * Maps [0, RGB_MAX] into [0, RGB_MAX]
+   */
+  const srgb2linearRgb = (val: number) => {
+    return val < thresh2 ?
+      val / 12.92 :
+      ((val/RGB_MAX+0.055) / 1.055)**2.4 * RGB_MAX;
+  };
+  return [linearRgb2srgb, srgb2linearRgb];
+})();
+
+
+/**
+ * Conver Hex to grayscale.
+ * @param rgb Array of RGB color.
+ * @return grayscale [0, RGB_Max]
+ */
+export const rgb2gray = (rgb: number[]) => dot(rgb, [0.299, 0.587, 0.114]);
 
 
 // # CSS named-color
@@ -59,58 +185,20 @@ export const getNamedColorRgb = (name: string): number[] => {
   return hex2rgb(NamedColor[name as keyof typeof NamedColor] ?? 'fff');
 };
 
+
 // # Transformations
-// ## Helpers
 /**
- * Convert sRGB to linear RGB.
- * Maps [0, RGB_MAX] into [0, RGB_MAX]
+ * Convert CIE XYZ to CIE Lab.
+ * @param xyz CIE XYZ color array.
+ * @return CIE Lab color array.
  */
-export const srgb2linearRgb = (() => {
-  const t = 0.04045 * RGB_MAX;
-  return (val: number) => {
-    return val < t ?
-      val / 12.92 :
-      ((val/RGB_MAX+0.055) / 1.055)**2.4 * RGB_MAX;
-  };
-})();
-
+type xyz2lab = (xyz: number[]) => number[];
 /**
- * Convert linear RGB to sRGB.
- * Maps [0, RGB_MAX] into [0, RGB_MAX]
+ * Convert CIE Lab to CIE XYZ.
+ * @param lab CIE Lab color array.
+ * @return CIE XYZ color array.
  */
-export const linearRgb2srgb = (() => {
-  const t = 0.0031308 * RGB_MAX;
-  const p = 1 / 2.4;
-  return (val: number) => {
-    return val < t ?
-      val * 12.92 :
-      ((val/RGB_MAX)**p * 1.055 - 0.055) * RGB_MAX;
-  };
-})();
-
-/**
- * Calculate hue (H channel of HSL/HSB) from rgb. Also, returns minimum and
- * maximum of rgb.
- * @param rgb RGB array.
- * @return [hue, min(r,g,b), max(r,g,b)].
- */
-export const rgb2hue = ([r, g, b]: number[]): number[] => {
-  const max = Math.max(r, g, b);
-  const min = Math.min(r, g, b);
-  const delta = max - min;
-  let hue;
-  if (max === min)
-    hue = 0;
-  else if (max === r)
-    hue = mod((g - b) / delta, 6);
-  else if (max === g)
-    hue = (b - r) / delta + 2;
-  else // max === b:
-    hue = (r - g) / delta + 4;
-  return [60 * hue, min, max];
-};
-
-
+type lab2xyz = (lab: number[]) => number[]
 // ## CIE LAB <-> CIE XYZ
 const [xyz2lab, lab2xyz] = (() => {
   const threshInv = 6/29; // threshold for labFuncInv
@@ -132,12 +220,7 @@ const [xyz2lab, lab2xyz] = (() => {
     return val > threshInv ? val ** 3 : (val - bias) / scaling;
   };
 
-  /**
-   * Convert CIE XYZ to CIE Lab.
-   * @param xyz CIE XYZ color array.
-   * @return CIE Lab color array.
-   */
-  const xyz2lab = (xyz: number[]): number[] => {
+  const xyz2lab: xyz2lab = (xyz: number[]): number[] => {
     const f0 = labFunc(xyz[0] / XYZ_MAX[0]),
       f1 = labFunc(xyz[1] / XYZ_MAX[1]),
       f2 = labFunc(xyz[2] / XYZ_MAX[2]);
@@ -148,12 +231,7 @@ const [xyz2lab, lab2xyz] = (() => {
     ];
   };
 
-  /**
-   * Convert CIE Lab to CIE XYZ.
-   * @param lab CIE Lab color array.
-   * @return CIE XYZ color array.
-   */
-  const lab2xyz = (lab: number[]): number[] => {
+  const lab2xyz: lab2xyz = (lab: number[]): number[] => {
     const c1 = (lab[0] + 16) / 116,
       c2 = lab[1] / 500,
       c3 = lab[2] / 200;
@@ -179,14 +257,7 @@ export const lch2lab = (lch: number[]): number[] => {
   return [l, cart.x, cart.y];
 };
 
-// ## RGB to other spaces.
-/**
- * Conver Hex to grayscale.
- * @param rgb Array of RGB color.
- * @return grayscale [0, RGB_Max]
- */
-export const rgb2gray = (rgb: number[]) => dot(rgb, [0.299, 0.587, 0.114]);
-
+// ## RGB <-> HSL
 /**
  * Convert RGB to HSL.
  * @param rgb RGB color array.
@@ -201,7 +272,33 @@ export const rgb2hsl = (rgb: number[]): number[] => {
   }
   return [hue, HSL_MAX[1] * sat, HSL_MAX[2] * lum];
 };
+/**
+ * Convert HSL to RGB.
+ * @param hsl HSL array.
+ * @return RGB color array.
+ */
+export const hsl2rgb = ([hue, sat, lum]: number[]): number[] => {
+  hue /= 60;
+  sat /= HSL_MAX[1];
+  lum /= HSL_MAX[2];
+  if (sat === 0) {
+    return [lum * RGB_MAX, lum * RGB_MAX, lum * RGB_MAX];
+  }
 
+  const C = (1 - Math.abs(2 * lum - 1)) * sat;
+  const X = C * (1 - Math.abs(hue % 2 - 1));
+  const m = lum - C / 2;
+
+  // if-else case. Only 14% speed.
+  hue = Math.floor(hue) % 6; // %6 for 360deg
+  return [
+    ([C, X, 0, 0, X, C][hue] + m) * RGB_MAX,
+    ([X, C, C, X, 0, 0][hue] + m) * RGB_MAX,
+    ([0, 0, X, C, C, X][hue] + m) * RGB_MAX,
+  ];
+};
+
+// ## RGB <-> HSB
 /**
  * Convert RGB to HSB.
  * @param rgb RGB color array.
@@ -213,7 +310,47 @@ export const rgb2hsb = (rgb: number[]): number[] => {
   const bri = max / RGB_MAX;
   return [hue, HSL_MAX[1] * sat, HSL_MAX[2] * bri];
 };
+/**
+ * Convert HSB to RGB.
+ * @param hsb HSB color array.
+ * @return RGB color array.
+ */
+export const hsb2rgb = ([hue, sat, bri]: number[]): number[] => {
+  hue /= 60;
+  sat /= HSL_MAX[1];
+  bri /= HSL_MAX[2];
+  if (sat === 0) {
+    return[bri * RGB_MAX, bri * RGB_MAX, bri * RGB_MAX];
+  }
+  // Consts
+  const C = sat * bri;
+  const X = C * (1 - Math.abs(hue % 2 - 1));
+  const m = bri - C;
 
+  // if-else case. Only 14% speed.
+  hue = Math.floor(hue) % 6;
+  return [
+    ([C, X, 0, 0, X, C][hue] + m) * RGB_MAX,
+    ([X, C, C, X, 0, 0][hue] + m) * RGB_MAX,
+    ([0, 0, X, C, C, X][hue] + m) * RGB_MAX,
+  ];
+};
+
+// ## HWB <-> HSB
+/**
+ * Convert HWB to HSB.
+ */
+export const hwb2hsb = (hwb: number[]) => {
+  return [
+    hwb[0],
+    hwb[2] === HSL_MAX[2] ? 0 :
+      HSL_MAX[1] * (1 - hwb[1] / (HSL_MAX[2] - hwb[2])),
+    HSL_MAX[2] * (1 - hwb[2] / HSL_MAX[2])
+  ];
+};
+
+
+// ## RGB <-> HWB
 /**
  * Convert RGB to HWB.
  * @param rgb RGB color array.
@@ -226,7 +363,19 @@ export const rgb2hwb = (rgb: number[]): number[] => {
     min * HSL_MAX[1] / RGB_MAX,
     (RGB_MAX - max) * HSL_MAX[2] / RGB_MAX];
 };
+/**
+ * Convert HWB to RGB.
+ * @param hwb HWB color array.
+ * @return RGB color array.
+ */
+export const hwb2rgb = (hwb: number[]): number[] => {
+  // eslint-disable-next-line
+  let [h, w, b] = hwb;
+  if (w + b > 100) [w, b] = [100 * w / (w+b), 100 * b / (w+b)];
+  return hsb2rgb(hwb2hsb([h,w,b]));
+};
 
+// ## RGB <-> CMY
 /**
  * Convert RGB to CMY.
  * @param rgb RGB color array.
@@ -239,7 +388,20 @@ export const rgb2cmy = (rgb: number[]): number[] => {
     3
   );
 };
+/**
+ * Convert CMY to RGB.
+ * @param cmyk CMY color array.
+ * @return RGB color array.
+ */
+export const cmy2rgb = ([c, m, y]: number[]): number[] => {
+  return [
+    RGB_MAX - c * RGB_MAX / CMY_MAX,
+    RGB_MAX - m * RGB_MAX / CMY_MAX,
+    RGB_MAX - y * RGB_MAX / CMY_MAX
+  ];
+};
 
+// ## RGB <-> CMYK
 /**
  * Convert RGB to CMYK.
  * @param rgb RGB color array.
@@ -257,6 +419,22 @@ export const rgb2cmyk = (rgb: number[]): number[] => {
   ];
 };
 /**
+ * Convert CMYK to RGB.
+ * @param cmyk CMYK color array.
+ * @return RGB color array.
+ */
+export const cmyk2rgb = ([c, m, y, k]: number[]): number[] => {
+  return cmy2rgb(
+    [
+      clip(c + k, 0, CMY_MAX),
+      clip(m + k, 0, CMY_MAX),
+      clip(y + k, 0, CMY_MAX),
+    ]
+  );
+};
+
+// ## RGB <-> CIE XYZ
+/**
  * Convert RGB to CIE XYZ.
  * @param rgb RGB color array.
  * @return CIE XYZ color array. The result will be scaling to [0, 100]
@@ -269,151 +447,6 @@ export const rgb2xyz = (rgb: number[]): number[] => {
     dot(RGB2XYZ_COEFF[1], linearRgb) * coeff,
     dot(RGB2XYZ_COEFF[2], linearRgb) * coeff,
   ];
-};
-
-/**
- * Convert RGB to CIE LAB.
- * @param rgb RGB color array.
- * @return CIE LAB color array.
- */
-export const rgb2lab = (rgb: number[]): number[] => {
-  return xyz2lab(rgb2xyz(rgb));
-};
-
-/**
- * Convert RGB to YUV.
- * @param rgb RGB color array.
- * @return YUV color array.
- */
-export const rgb2yuv = (rgb: number[]) => [
-  rgb2gray(rgb),
-  dot([-0.169,-0.331, 0.5  ], rgb) + 128,
-  dot([ 0.5,  -0.419,-0.081], rgb) + 128
-];
-
-
-// ## From other space to RGB.
-/**
- * Convert HSL to RGB.
- * @param hsl HSL array.
- * @return RGB color array.
- */
-export const hsl2rgb = ([hue, sat, lum]: number[]): number[] => {
-  hue /= 60;
-  sat /= HSL_MAX[1];
-  lum /= HSL_MAX[2];
-  if (sat === 0) {
-    return [lum * RGB_MAX, lum * RGB_MAX, lum * RGB_MAX];
-  }
-  // Consts
-  const C = (1 - Math.abs(2 * lum - 1)) * sat;
-  const X = C * (1 - Math.abs(hue % 2 - 1));
-  const m = lum - C / 2;
-
-  hue = Math.floor(hue) % 6;
-  return [
-    ([C, X, 0, 0, X, C][hue] + m) * RGB_MAX,
-    ([X, C, C, X, 0, 0][hue] + m) * RGB_MAX,
-    ([0, 0, X, C, C, X][hue] + m) * RGB_MAX,
-  ];
-  // if-else case. Only 14% speed.
-  // let rgbPrime: [number, number, number];
-  // if (h < 1) rgbPrime = [C, X, 0];
-  // else if (h < 2) rgbPrime = [X, C, 0];
-  // else if (h < 3) rgbPrime = [0, C, X];
-  // else if (h < 4) rgbPrime = [0, X, C];
-  // else if (h < 5) rgbPrime = [X, 0, C];
-  // else rgbPrime = [C, 0, X];
-  // return map(rgbPrime, val => RGB_MAX * (val + m));
-};
-
-
-// To RGB.
-/**
- * Convert HSB to RGB.
- * @param hsb HSB color array.
- * @return RGB color array.
- */
-export const hsb2rgb = ([hue, sat, bri]: number[]): number[] => {
-  hue /= 60;
-  sat /= HSL_MAX[1];
-  bri /= HSL_MAX[2];
-  if (sat === 0) {
-    return[bri * RGB_MAX, bri * RGB_MAX, bri * RGB_MAX];
-  }
-  // Consts
-  const C = sat * bri;
-  const X = C * (1 - Math.abs(hue % 2 - 1));
-  const m = bri - C;
-  hue = Math.floor(hue) % 6;
-  return [
-    ([C, X, 0, 0, X, C][hue] + m) * RGB_MAX,
-    ([X, C, C, X, 0, 0][hue] + m) * RGB_MAX,
-    ([0, 0, X, C, C, X][hue] + m) * RGB_MAX,
-  ];
-  // if-else case. Only 14% speed.
-  // let rgbPrime;
-  // if (angleLevel < 1) rgbPrime = [C, X, 0];
-  // else if (angleLevel < 2) rgbPrime = [X, C, 0];
-  // else if (angleLevel < 3) rgbPrime = [0, C, X];
-  // else if (angleLevel < 4) rgbPrime = [0, X, C];
-  // else if (angleLevel < 5) rgbPrime = [X, 0, C];
-  // else rgbPrime = [C, 0, X];
-  // return map(rgbPrime, val => RGB_MAX * (val + m));
-};
-
-
-/**
- * Convert HWB to HSB.
- */
-export const hwb2hsb = (hwb: number[]) => {
-  return [
-    hwb[0],
-    hwb[2] === HSL_MAX[2] ? 0 :
-      HSL_MAX[1] * (1 - hwb[1] / (HSL_MAX[2] - hwb[2])),
-    HSL_MAX[2] * (1 - hwb[2] / HSL_MAX[2])
-  ];
-};
-
-/**
- * Convert HWB to RGB.
- * @param hwb HWB color array.
- * @return RGB color array.
- */
-export const hwb2rgb = (hwb: number[]): number[] => {
-  // eslint-disable-next-line
-  let [h, w, b] = hwb;
-  if (w + b > 100) [w, b] = [100 * w / (w+b), 100 * b / (w+b)];
-  return hsb2rgb(hwb2hsb([h,w,b]));
-};
-
-/**
- * Convert CMY to RGB.
- * @param cmyk CMY color array.
- * @return RGB color array.
- */
-export const cmy2rgb = ([c, m, y]: number[]): number[] => {
-  return [
-    RGB_MAX - c * RGB_MAX / CMY_MAX,
-    RGB_MAX - m * RGB_MAX / CMY_MAX,
-    RGB_MAX - y * RGB_MAX / CMY_MAX
-  ];
-};
-
-/**
- * Convert CMYK to RGB.
- * @param cmyk CMYK color array.
- * @return RGB color array.
- */
-export const cmyk2rgb = ([c, m, y, k]: number[]): number[] => {
-
-  return cmy2rgb(
-    [
-      clip(c + k, 0, CMY_MAX),
-      clip(m + k, 0, CMY_MAX),
-      clip(y + k, 0, CMY_MAX),
-    ]
-  );
 };
 /**
  * Convert CIE XYZ to RGB.
@@ -428,6 +461,15 @@ export const xyz2rgb = (xyz: number[]): number[] => {
   );
 };
 
+// ## RGB <-> CIE Lab
+/**
+ * Convert RGB to CIE Lab.
+ * @param rgb RGB color array.
+ * @return CIE Lab color array.
+ */
+export const rgb2lab = (rgb: number[]): number[] => {
+  return xyz2lab(rgb2xyz(rgb));
+};
 /**
  * Convert CIE LAB to RGB.
  * @param lab CIE LAB color array.
@@ -437,13 +479,23 @@ export const lab2rgb = (lab: number[]): number[] => {
   return xyz2rgb(lab2xyz(lab));
 };
 
+// ## RGB <-> YUV
+/**
+ * Convert RGB to YUV.
+ * @param rgb RGB color array.
+ * @return YUV color array.
+ */
+export const rgb2yuv = (rgb: number[]) => [
+  rgb2gray(rgb),
+  dot([-0.169,-0.331, 0.5  ], rgb) + 128,
+  dot([ 0.5,  -0.419,-0.081], rgb) + 128
+];
 /**
  * Convert YUV to sRGB.
  * @param yuv YUV color array.
  * @return sRGB color array.
  */
 export const yuv2rgb = (yuv: number[]) => {
-
   const pre = map(yuv, (val, i) => val - (i&&128), 3); // bias
   return [
     clip(dot([1,-0.00093, 1.401687], pre), 0, RGB_MAX),
@@ -453,9 +505,6 @@ export const yuv2rgb = (yuv: number[]) => {
 };
 
 // ## Hex
-/** Remove Non-hex characters */
-export const removeNonHex = (str: string) => str.replace(/[^0-9A-F]/ig, '');
-
 /**
  * Convert RGB to Hex.
  * @param rgb RGB color array.
@@ -499,16 +548,35 @@ export const hex2lab = (hex: string) => {
   return rgb2lab(hex2rgb(hex));
 };
 
-/**
- * Verify the string whether is a (3 channel, no alpha channel) Hex color.
- * @param str String that need to be verified.
- * @return Validity of string.
- */
-export const isValidHex = (str: string): boolean =>
-  [3, 6].includes(removeNonHex(str).length);
-
 
 // ## Transformation wrap
+/**
+ * Infomations about color space.
+ */
+export type ColorSpaceInfos = {
+  /**
+   * Name of channels
+   */
+  labels: string[];
+  /**
+   * Range of each channels.
+   * If type of `range` is [number, number], it means [min, max].
+   * If type of `range` is number, it means the maximum, [0, range].
+   */
+  range: (number | [number, number])[],
+  /**
+   * The converter that convert RGB space to specified color space.
+   * @param x RGB values.
+   * @returns specified color space values.
+   */
+  converter: (x: number[]) => number[],
+  /**
+   * The converter that convert specified color space to RGB space.
+   * @param x specified color space values.
+   * @returns RGB values.
+   */
+  inverter: (x: number[]) => number[],
+};
 /**
  * Return labels(name of channels), range, converter(from RGB to space),
  * and inverter(to RGB)
@@ -628,76 +696,3 @@ export const gradientGen = (() => {
     return `linear-gradient(90deg, ${grads.join(', ')})`;
   };
 })();
-
-
-// # Adjusts contrast.
-/**
- * Scale ths values of RGB.
- * @param rgbs RGB arrays.
- * @param c Scaling coefficient.
- * @return `rgb` after scaling.
- */
-const scaling = (rgbs: number[][], c: number): number[][] => {
-  return map(
-    rgbs,
-    (rgb) => {
-      return map(
-        rgb,
-        val => clip(val * c, 0, RGB_MAX)
-      );
-    }
-  );
-};
-
-/**
- * Gamma correction to RGB array(s).
- * @param rgbs RGB array(s).
- * @param gamma Gamma coefficient.
- * @return `rgb` after correction. The type is the
- * same as `rgb`.
- */
-const gammaCorrection = (rgbs: number[][], gamma: number): number[][] => {
-  const normalizeCoeff = RGB_MAX ** (1 - gamma);
-  return map(
-    rgbs,
-    rgb => map(rgb, (val) => normalizeCoeff * (val**gamma), 3)
-  );
-};
-
-/**
- * Scaling the range of brightness values of a color array in YUV space to a
- * larger range.
- */
-const brightnessScaling = (rgbs: number[][]): number[][] => {
-  const yuvs = map(
-    rgbs,
-    rgb => rgb2yuv(rgb),
-  );
-
-  const [minY, maxY] = forLoop(
-    yuvs,
-    (prev, [y]) => {
-      if (y < prev[0]) prev[0] = y;
-      if (y > prev[1]) prev[1] = y;
-      return prev;
-    },
-    [YUV_MAX, 0]
-  );
-  const sqrtMinY = Math.sqrt(minY);
-
-  return map(
-    yuvs,
-    yuv => {
-      yuv[0] = rangeMapping(yuv[0], minY, maxY, sqrtMinY, YUV_MAX);
-      return yuv2rgb(yuv);
-    }
-  );
-};
-
-
-export const getContrastAdjuster = (method: ContrastMethods) => {
-  if (method === CONTRAST_METHODS[0]) return scaling;
-  if (method === CONTRAST_METHODS[1]) return gammaCorrection;
-  if (method === CONTRAST_METHODS[2]) return brightnessScaling;
-  return brightnessScaling;
-};

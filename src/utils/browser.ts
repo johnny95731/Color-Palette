@@ -1,7 +1,35 @@
 import { getCurrentInstance } from 'vue';
 import { randomCharacter } from './helpers';
-import type { EventHandler } from '@/types/browser';
-import type { Props as OverlayProps } from '@/components/Custom/OverlayContainer.vue';
+import type { Props as OverlayProps } from '@/components/Custom/OverlayContainer.vue';import type { Ref, ShallowRef, WritableComputedRef } from 'vue';
+
+
+// # Constants
+export const COLOR_PICKER_CANVAS_SIZE = 200;
+
+// Component default
+export const V_DIALOG_OVERLAY_PROPS = {
+  eager: true,
+  role: 'dialog',
+  transition: 'slide-y',
+  transparent: true,
+  type: 'dialog',
+} as const;
+
+// Symbols: for inject and provide in custom components
+export const OVERLAY_SYMBOL = Symbol('overlay');
+export const MENU_SYMBOL = Symbol('menu');
+
+
+export type EventHandler<E extends Event = Event> = (
+  (evt?: E) => void | unknown | Promise<void | unknown>) | (
+  (evt: E) => void | unknown | Promise<void | unknown>
+)
+
+export type MaybeRef <T = unknown> = T | Ref<T> | ShallowRef<T> | WritableComputedRef<T>
+
+export type WindowEventName = keyof WindowEventMap;
+
+export type VueClass = string | unknown[] | {[key in string]: unknown}
 
 
 export function getPropertyValue(el: HTMLElement | null | undefined, property: string): number;

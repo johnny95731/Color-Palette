@@ -147,20 +147,17 @@ import VBtn from '../Custom/VBtn.vue';
 import SelectMenu from '../Custom/SelectMenu.vue';
 import VSwitch from '../Custom/VSwitch.vue';
 import VSlider from '../Custom/VSlider.vue';
+import VDialog from '../Custom/VDialog.vue';
+// utils
 import { forLoop } from '@/utils/helpers';
 import { isTabKey } from '@/utils/browser';
-// constants
-import { CONTRAST_METHODS, GAMMA_MAX, MULTIPLICATION_MAX } from '@/constants/colors';
-import {
-  BORDER_MAX_WIDTH, TRANSITION_MAX_COLOR, TRANSITION_MAX_POS, BORDER_COLOR,
-  COLOR_FUNCTIONS,
-} from '@/constants/settingStore';
-// Stores / Contexts
-import usePltStore from '@/features/usePltStore';
-import useSettingStore from '@/features/useSettingStore';
-// Types
-import type { TransitionStyle } from '@/features/useSettingStore';
-import VDialog from '../Custom/VDialog.vue';
+import { CONTRAST_METHODS } from '@/utils/manipulate/contrast';
+import { GAMMA_MAX, MULTIPLICATION_MAX } from '@/utils/manipulate/mixing';
+// stores
+import usePltStore from '@/stores/usePltStore';
+import useSettingStore, { BORDER_COLOR, BORDER_MAX_WIDTH, COLOR_FUNCTIONS, TRANSITION_MAX_COLOR, TRANSITION_MAX_POS } from '@/stores/useSettingStore';
+// types
+import type { TransitionStyle } from '@/stores/useSettingStore';
 
 const model = defineModel<boolean>(); // Show/Hide
 

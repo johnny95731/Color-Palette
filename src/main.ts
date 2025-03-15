@@ -7,7 +7,7 @@ import '@/assets/transition.scss';
 
 import { createApp } from 'vue';
 import App from './App.vue';
-import useFavStore from './features/useFavStore';
+import useFavStore from './stores/useFavStore';
 
 const app = createApp(App);
 app.use(createPinia());

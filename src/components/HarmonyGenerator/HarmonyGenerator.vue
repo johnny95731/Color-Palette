@@ -97,14 +97,13 @@ import ColorPicker from '../Custom/ColorPicker.vue';
 import VDialog from '../Custom/VDialog.vue';
 import VBtn from '../Custom/VBtn.vue';
 import VTooltip from '../Custom/VTooltip.vue';
-// utils and constants
-import { HARMONY_METHODS, HSL_MAX } from '@/constants/colors';
-import { getHarmonize, hex2rgb, hsb2rgb, rgb2gray, rgb2hex } from '@/utils/colors';
+// utils
 import { invertBoolean, map } from '@/utils/helpers';
+import { hex2rgb, hsb2rgb, HSL_MAX, rgb2gray, rgb2hex } from '@/utils/colors';
 import { copyText } from '@/utils/browser';
-import { MAX_NUM_OF_CARDS, MIN_NUM_OF_CARDS } from '@/constants/pltStore';
+import { getHarmonize, HARMONY_METHODS } from '@/utils/manipulate/harmony';
 // stores
-import usePltStore from '@/features/usePltStore';
+import usePltStore, { MAX_NUM_OF_CARDS, MIN_NUM_OF_CARDS } from '@/stores/usePltStore';
 // types
 import type { ModelRef } from 'vue';
 
