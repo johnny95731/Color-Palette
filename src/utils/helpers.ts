@@ -82,17 +82,22 @@ export function map<R, T>(
       ((val: T, i: number) => R),
   len?: number,
 ): R[] {
-  return forLoop(
-    // @ts-expect-error
-  	arr,
-  	(acc, val, i) => {
-  	  acc.push(callback(val, i));
-  	  return acc;
-  	},
-  	[] as R[],
-  	len
-  );
+  const result = [];
+  if (typeof arr === 'number') {
+    len = arr;
+    for (let i = 0; i < len; i++) {
+      // @ts-expect-error
+      result.push(callback(null, i));
+    }
+  } else {
+    len ??= arr.length;
+    for (let i = 0; i < len; i++) {
+      result.push(callback(arr[i], i));
+    }
+  }
+  return result;
 }
+
 
 export function forLoop<R>(
   len: number,

@@ -1,5 +1,4 @@
-import { map } from '@/utils/helpers';
-import { sum } from '@/utils/numeric';
+import { forLoop, map } from '@/utils/helpers';
 
 // #Space
 /**
@@ -25,8 +24,14 @@ export const XYZ2RGB_COEFF = [
  * [0.95047, 1, 1.08883]
  * Observer. = 2°, Illuminant = D65
  */
-export const RGB2XYZ_COEFF_ROW_SUM = map(RGB2XYZ_COEFF, row => sum(row));
-
+export const RGB2XYZ_COEFF_ROW_SUM = map(
+  RGB2XYZ_COEFF,
+  row => forLoop(
+    row,
+    (acc, val) => acc + val,
+    0
+  )
+);
 /** Scaling XYZ values when convering from rgb. */
 export const XYZ_MAX_SCALING = 100;
 
@@ -37,16 +42,19 @@ export const COLOR_SPACES = [
   'rgb', 'name', 'hsl', 'hsb', 'hwb', 'cmy', 'cmyk', 'xyz', 'lab', 'yuv'
 ] as const;
 
-// Maximums of each color space.
+// Ranges of channels for each color space.
 export const RGB_MAX = 255;
+/**
+ * Maximum of HSL, HSB, and HWB spaces.
+ */
 export const HSL_MAX = [360, 100, 100] as const;
-export const HSB_MAX = HSL_MAX;
-export const HWB_MAX = HSL_MAX;
+/**
+ * Maximum of CMY and CMYK spaces.
+ */
 export const CMY_MAX = 100;
-export const CMYK_MAX = 100;
 export const XYZ_MAX = map(
   RGB2XYZ_COEFF_ROW_SUM,
-  val => Math.ceil(XYZ_MAX_SCALING * val)
+  val => XYZ_MAX_SCALING * val
 );
 export const LAB_MAX = [100, [-128, 128], [-128, 128]] as const;
 export const YUV_MAX = RGB_MAX;

@@ -110,12 +110,12 @@ export const rad2deg = (deg: number) => {
 
 /** A variant of Math.atan2 function. Return degree instead of radian. */
 export const atan2Deg = (y: number, x: number) =>
-  mod(rad2deg(Math.atan2(y,x)), 360);
+  (rad2deg(Math.atan2(y,x)) + 360) % 360;
 
 /** Polar coordinate to Cartesian coordinate */
 export const cartesian2polar = (y: number, x: number, place?: number) => {
   let deg = atan2Deg(y, x),
-    radius = Math.sqrt(x**2 + y**2);
+    radius = Math.sqrt(x*x + y*y);
   if (!isNullish(place)) {
     deg = round(deg, place);
     radius = round(radius, place);
@@ -144,17 +144,6 @@ export const dot = (arr1: readonly number[], arr2: readonly number[]): number =>
     (prev, val, i) => prev + val * arr2[i],
     0,
     Math.min(arr1.length, arr2.length)
-  );
-};
-
-/**
- * Sum of items of an array.
- */
-export const sum = (arr: readonly number[]) => {
-  return forLoop(
-    arr,
-    (prev, val) => prev + val,
-    0
   );
 };
 

@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest';
-import { cartesian2polar, clip, countDecimals, deg2rad, dot, elementwiseMean, isSameFloat, l2DistSq, mod, polar2cartesian, rad2deg, randInt, rangeMapping, round, sum, toPercent } from '@/utils/numeric';
+import { cartesian2polar, clip, countDecimals, deg2rad, dot, elementwiseMean, isSameFloat, l2DistSq, mod, polar2cartesian, rad2deg, randInt, rangeMapping, round, toPercent } from '@/utils/numeric';
 import { describe } from 'node:test';
 
 test('mod', () => {
@@ -315,24 +315,6 @@ test('dot', () => {
   }
 });
 
-test('sum', () => {
-  const cases = [
-    // [arr1, expect]
-    [[1], 1],
-    [[1,1], 2],
-    [[1,1,1], 3],
-    [[0,0,0,0,0,0,0,0], 0],
-    [[1,2,3], 6],
-  ] as const;
-  for (const [arr1, expect_] of cases) {
-    const result = sum(arr1);
-    expect(
-      result,
-      `sum([${arr1.join(',')}]) should be ${expect_}, not ${result}.`
-    )
-      .toBeCloseTo(expect_);
-  }
-});
 
 test('l2Dist', () => {
   const cases = [
