@@ -1,5 +1,6 @@
 import { getCurrentInstance } from 'vue';
 import { randomCharacter } from './helpers';
+import { removeNonHex } from './colors';
 import type { Props as OverlayProps } from '@/components/Custom/OverlayContainer.vue';import type { Ref, ShallowRef, WritableComputedRef } from 'vue';
 
 
@@ -92,8 +93,7 @@ export function getCursorPosition(
  */
 export const hexTextEdited: EventHandler = (e: Event) => {
   const textInput = e!.currentTarget as HTMLInputElement;
-  let text = (textInput.value);
-  text = text.replace(/[^A-F0-9]/ig, '');
+  const text = removeNonHex(textInput.value);
   textInput.value = `#${text.toUpperCase()}`;
 };
 
