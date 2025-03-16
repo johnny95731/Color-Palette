@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { COLOR_SPACES, getClosestNamed, getSpaceInfos, hex2hsb, hex2rgb, hsb2hex, hueRotation, isValidHex, linearRgb2srgb, rgb2hex, RGB_MAX, srgb2linearRgb, unzipCssNamed } from '@/utils/colors';
+import { COLOR_SPACES, getClosestNamed, getSpaceInfos, hex2rgb, hueRotation, isValidHex, linearRgb2srgb, rgb2hex, RGB_MAX, srgb2linearRgb, unzipCssNamed } from '@/utils/colors';
 import { clip, randInt, round } from '@/utils/numeric';
 import NamedColor from '@/assets/NamedColor.json';
 import { getContrastAdjuster } from '@/utils/manipulate/contrast';
@@ -13,13 +13,65 @@ const stdRgbs: number[][] = [
   [0, 0, RGB_MAX],
 ];
 
+describe('hex', () => {
+  test('stability', () => {
+    const cases = [
+      '#000000',
+      '#FFFFFF',
+      '#FF0000',
+      '#00FF00',
+      '#0000FF',
+      '#FFFF00',
+      '#00FFFF',
+      '#FF00FF',
+      '#F00000',
+      '#0F0000',
+      '#000F00',
+      '#0000F0',
+      '#00000F',
+    ] as const;
+    for (const hex of cases) {
+      const rgb = hex2rgb(hex);
+      const preimage = rgb2hex(rgb);
+      expect(
+        preimage,
+        `${hex} is not stable`
+      )
+        .toBe(hex);
+      expect(
+        hex2rgb(preimage),
+        `[${rgb.join(',')}] is not stable`
+      )
+        .toEqual(rgb);
+    }
+  });
+  test('isValidHex', () => {
+    const cases = [
+      ['#000', true],
+      ['#fff', true],
+      ['000', true],
+      ['fff', true],
+      ['00a0', false],
+      ['ffsfdf', false],
+      ['fg48t4ghf', false],
+      ['fffa8d', true],
+    ] as const;
+    for (const [hex, expect_] of cases) {
+      expect(
+        isValidHex(hex),
+        `${hex} is ${expect_ ? '' : 'in'}valid, but get ${!expect_}`
+      )
+        .toBe(expect_);
+    }
+  });
+});
 
 describe('Space transform stability', () => {
   for (const space of COLOR_SPACES) {
     test(`space ${space}`, () => {
       const errorMsgs: string[] = [];
       const { converter, inverter } = getSpaceInfos(space);
-      stdRgbs.forEach((rgb) => {
+      for (const rgb of stdRgbs) {
         const spaceColor = inverter(converter(rgb)).map(val => round(val));
         for (let i = 0;i < 3; i++) {
           if (Math.abs(spaceColor[i] - rgb[i]) > 1) {
@@ -29,7 +81,7 @@ describe('Space transform stability', () => {
             break;
           }
         }
-      });
+      }
       expect(errorMsgs, errorMsgs.join('. ')).toHaveLength(0);
     });
   }
@@ -38,9 +90,9 @@ describe('Space transform stability', () => {
 describe('CSS named-color', () => {
   test('unzipCssNamed function', () => {
     const cases = {
-      TestCases: 'Test Cases',
-      red: 'red',
-      rEd: 'r Ed',
+      TestCase: 'Test Case',
+      testcase: 'testcase',
+      testCase: 'test Case',
     } as const;
     for (const [key, val] of Object.entries(cases))
       expect(unzipCssNamed(key), `${key} should be ${val}`).toBe(val);
@@ -51,8 +103,8 @@ describe('CSS named-color', () => {
   });
 
   test('stability of `getClosestNamed`', () => {
-    for (const [name, rgb] of Object.entries(NamedColor)) {
-      getClosestNamed(hex2rgb(rgb))
+    for (const [name, hex] of Object.entries(NamedColor)) {
+      getClosestNamed(hex2rgb(hex))
         .then(result => {
           expect(result, `${result} should be ${name}`).toBe(name);
         });
@@ -102,79 +154,6 @@ describe('linear rgb', () => {
 });
 
 
-describe('hex', () => {
-  test('stability', () => {
-    const cases = [
-      ['#000000'],
-      ['#FFFFFF'],
-      ['#FF0000'],
-      ['#00FF00'],
-      ['#0000FF'],
-      ['#FFFF00'],
-      ['#00FFFF'],
-      ['#FF00FF'],
-    ] as const;
-    for (const [hex] of cases) {
-      const rgb = hex2rgb(hex);
-      expect(
-        rgb2hex(rgb),
-        `${hex} is not stable`
-      )
-        .toStrictEqual(hex);
-      expect(
-        hex2rgb(rgb2hex(rgb)),
-        `[${rgb.join(',')}] is not stable`
-      )
-        .toStrictEqual(rgb);
-      const hsb = hex2hsb(hex);
-      expect(
-        hsb2hex(hsb),
-        `${hex} is not stable`
-      )
-        .toStrictEqual(hex);
-      expect(
-        hex2hsb(hsb2hex(hsb)),
-        `[${hsb.join(',')}] is not stable`
-      )
-        .toStrictEqual(hsb);
-    }
-  });
-  test('isValidHex', () => {
-    const cases = [
-      ['#000', true],
-      ['#fff', true],
-      ['000', true],
-      ['fff', true],
-      ['00a0', false],
-      ['ffsfdf', false],
-      ['fg48t4ghf', false],
-      ['fffa8d', true],
-    ] as const;
-    for (const [hex, expect_] of cases) {
-      expect(
-        isValidHex(hex),
-        `${hex} is ${expect_ ? '' : 'in'}valid, but get ${!expect_}`
-      )
-        .toBe(expect_);
-    }
-  });
-});
-
-// describe('Sorting', () => {
-//   test('By luminance', () => {
-//     const case1 = sortingByLuminance([
-//       { hex: '000' },
-//       { hex: 'fff' },
-//     ]);
-//     expect(rgb2gray(hex2rgb(case1[0].hex))).toBeLessThan(rgb2gray(hex2rgb(case1[1].hex)));
-//     const case2 = sortingByLuminance([
-//       { hex: 'fff' },
-//       { hex: '000' },
-//     ]);
-//     expect(rgb2gray(hex2rgb(case2[0].hex))).toBeLessThan(rgb2gray(hex2rgb(case2[1].hex)));
-//   });
-// });
-
 test('getContrastAdjuster("linear")', () => {
   const converter = getContrastAdjuster('linear');
   expect(converter(stdRgbs, 1)).toStrictEqual(stdRgbs);
@@ -203,67 +182,3 @@ test('hueRotation', () => {
     expect(hueRotation([hue,0,0], deg)[0]).toBe(expect_);
   }
 });
-
-// describe('getHarmonize', () => {
-//   const hsb = [0,0,0];
-//   test('analogous', () => {
-//     const analogous = getHarmonize('analogous')(hsb);
-//     expect(analogous).toContainEqual(hsb);
-//     expect(analogous).toContainEqual([30,0,0]);
-//     expect(analogous).toContainEqual([330,0,0]);
-//   });
-//   test('triad', () => {
-//     const analogous = getHarmonize('triad')(hsb);
-//     expect(analogous).toContainEqual(hsb);
-//     expect(analogous).toContainEqual([120,0,0]);
-//     expect(analogous).toContainEqual([240,0,0]);
-//   });
-//   test('complement', () => {
-//     const analogous = getHarmonize('complement')(hsb);
-//     expect(analogous).toContainEqual(hsb);
-//     expect(analogous).toContainEqual([180,0,0]);
-//   });
-//   test('split complement', () => {
-//     const analogous = getHarmonize('split complement')(hsb);
-//     expect(analogous).toContainEqual(hsb);
-//     expect(analogous).toContainEqual([150,0,0]);
-//     expect(analogous).toContainEqual([210,0,0]);
-//   });
-//   test('tetrad', () => {
-//     const analogous = getHarmonize('tetrad')(hsb);
-//     expect(analogous).toContainEqual(hsb);
-//     expect(analogous).toContainEqual([30,0,0]);
-//     expect(analogous).toContainEqual([180,0,0]);
-//     expect(analogous).toContainEqual([210,0,0]);
-//   });
-//   test('square', () => {
-//     const analogous = getHarmonize('square')(hsb);
-//     expect(analogous).toContainEqual(hsb);
-//     expect(analogous).toContainEqual([90,0,0]);
-//     expect(analogous).toContainEqual([180,0,0]);
-//     expect(analogous).toContainEqual([270,0,0]);
-//   });
-//   test('compound', () => {
-//     const analogous = getHarmonize('compound')(hsb);
-//     expect(analogous).toContainEqual(hsb);
-//     expect(analogous).toContainEqual([30,0,0]);
-//     expect(analogous).toContainEqual([180,0,0]);
-//     expect(analogous).toContainEqual([150,0,0]);
-//   });
-//   const hsb2 = [0,100,100];
-//   test('shades', () => {
-//     const analogous = getHarmonize('shades')(hsb2, 2);
-//     expect(analogous).toContainEqual(hsb2);
-//     expect(analogous).toContainEqual([0,100,50]);
-//   });
-//   test('tints', () => {
-//     const analogous = getHarmonize('tints')(hsb2, 2);
-//     expect(analogous).toContainEqual(hsb2);
-//     expect(analogous).toContainEqual([0,50,100]);
-//   });
-//   test('tones', () => {
-//     const analogous = getHarmonize('tones')(hsb2, 2);
-//     expect(analogous).toContainEqual(hsb2);
-//     expect(analogous).toContainEqual([0,50,50]);
-//   });
-// });

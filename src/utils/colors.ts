@@ -42,7 +42,7 @@ export const XYZ_MAX_SCALING = 100;
  * Support color spaces.
  */
 export const COLOR_SPACES = [
-  'rgb', 'name', 'hsl', 'hsb', 'hwb', 'cmy', 'cmyk', 'xyz', 'lab', 'yuv'
+  'rgb', 'name', 'hsl', 'hsb', 'hwb', 'cmyk', 'xyz', 'lab', 'yuv'
 ] as const;
 /**
  * Support color spaces.
@@ -56,10 +56,7 @@ export const RGB_MAX = 255;
  * Maximum of HSL, HSB, and HWB spaces.
  */
 export const HSL_MAX = [360, 100, 100] as const;
-/**
- * Maximum of CMY and CMYK spaces.
- */
-export const CMY_MAX = 100;
+export const CMYK_MAX = 100;
 export const XYZ_MAX = map(RGB2XYZ_COEFF_ROW_SUM, val => XYZ_MAX_SCALING * val);
 export const LAB_MAX = [100, [-128, 128], [-128, 128]] as const;
 export const YUV_MAX = RGB_MAX;
@@ -375,32 +372,6 @@ export const hwb2rgb = (hwb: number[]): number[] => {
   return hsb2rgb(hwb2hsb([h,w,b]));
 };
 
-// ## RGB <-> CMY
-/**
- * Convert RGB to CMY.
- * @param rgb RGB color array.
- * @return CMYK color array.
- */
-export const rgb2cmy = (rgb: number[]): number[] => {
-  return map(
-    rgb,
-    (val) => (RGB_MAX - val) * CMY_MAX / RGB_MAX,
-    3
-  );
-};
-/**
- * Convert CMY to RGB.
- * @param cmyk CMY color array.
- * @return RGB color array.
- */
-export const cmy2rgb = ([c, m, y]: number[]): number[] => {
-  return [
-    RGB_MAX - c * RGB_MAX / CMY_MAX,
-    RGB_MAX - m * RGB_MAX / CMY_MAX,
-    RGB_MAX - y * RGB_MAX / CMY_MAX
-  ];
-};
-
 // ## RGB <-> CMYK
 /**
  * Convert RGB to CMYK.
@@ -412,10 +383,22 @@ export const rgb2cmyk = (rgb: number[]): number[] => {
   const max = Math.max(r, g, b);
   // 8x faster than map(rgb, fn) and -0.01KB after minified.
   return [
-    (1 - r / max) * CMY_MAX,
-    (1 - g / max) * CMY_MAX,
-    (1 - b / max) * CMY_MAX,
-    (1 - max / RGB_MAX) * CMY_MAX
+    (1 - r / max) * CMYK_MAX,
+    (1 - g / max) * CMYK_MAX,
+    (1 - b / max) * CMYK_MAX,
+    (1 - max / RGB_MAX) * CMYK_MAX
+  ];
+};
+/**
+ * Convert CMY to RGB.
+ * @param cmyk CMY color array.
+ * @return RGB color array.
+ */
+export const cmy2rgb = ([c, m, y]: number[]): number[] => {
+  return [
+    RGB_MAX - c * RGB_MAX / CMYK_MAX,
+    RGB_MAX - m * RGB_MAX / CMYK_MAX,
+    RGB_MAX - y * RGB_MAX / CMYK_MAX
   ];
 };
 /**
@@ -426,9 +409,9 @@ export const rgb2cmyk = (rgb: number[]): number[] => {
 export const cmyk2rgb = ([c, m, y, k]: number[]): number[] => {
   return cmy2rgb(
     [
-      clip(c + k, 0, CMY_MAX),
-      clip(m + k, 0, CMY_MAX),
-      clip(y + k, 0, CMY_MAX),
+      clip(c + k, 0, CMYK_MAX),
+      clip(m + k, 0, CMYK_MAX),
+      clip(y + k, 0, CMYK_MAX),
     ]
   );
 };
@@ -525,7 +508,7 @@ export const rgb2hex = (rgb: number[]): string => {
  * @return rgb
  */
 export const hex2rgb = (hex: string): number[] => {
-  const hexMatch = /^#([0-9a-f]{3,6})$/i.exec(hex);
+  const hexMatch = /^#?([0-9A-F]{3,6})$/i.exec(hex);
   if (!hexMatch) return [0, 0, 0];
 
   hex = hexMatch[1];
@@ -606,17 +589,10 @@ export const getSpaceInfos = (
       converter: rgb2hwb,
       inverter: hwb2rgb,
     };
-  case 'cmy':
-    return {
-      labels: ['Cyan', 'Magenta', 'Yellow'],
-      range: [CMY_MAX, CMY_MAX, CMY_MAX],
-      converter: rgb2cmy,
-      inverter: cmy2rgb,
-    };
   case 'cmyk':
     return {
       labels: ['Cyan', 'Magenta', 'Yellow', 'Black'],
-      range: [CMY_MAX, CMY_MAX, CMY_MAX, CMY_MAX],
+      range: [CMYK_MAX, CMYK_MAX, CMYK_MAX, CMYK_MAX],
       converter: rgb2cmyk,
       inverter: cmyk2rgb,
     };

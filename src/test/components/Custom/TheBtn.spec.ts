@@ -80,18 +80,18 @@ describe('props', () => {
         appendIcon: 'test append',
       }
     });
-    expect(withoutSlot.find('.btn__prepend > the-icon-stub').exists()).toBeTruthy();
-    expect(withoutSlot.find('.btn__prepend > the-icon-stub').attributes('type'))
+    expect(withoutSlot.find('.btn__prepend > v-icon-stub').exists()).toBeTruthy();
+    expect(withoutSlot.find('.btn__prepend > v-icon-stub').attributes('type'))
       .toBe('test prepend');
-    expect(withoutSlot.find('.btn__append > the-icon-stub').exists()).toBeTruthy();
-    expect(withoutSlot.find('.btn__append > the-icon-stub').attributes('type'))
+    expect(withoutSlot.find('.btn__append > v-icon-stub').exists()).toBeTruthy();
+    expect(withoutSlot.find('.btn__append > v-icon-stub').attributes('type'))
       .toBe('test append');
     // Slot has higher priority than prop(prependIcon/appendIcon)
     testSlot(withoutSlot)
       // slot will cover prop content
       .then((withSlot) => {
-        expect(withSlot.find('.btn__prepend > the-icon-stub').exists()).toBeFalsy();
-        expect(withSlot.find('.btn__append > the-icon-stub').exists()).toBeFalsy();
+        expect(withSlot.find('.btn__prepend > v-icon-stub').exists()).toBeFalsy();
+        expect(withSlot.find('.btn__append > v-icon-stub').exists()).toBeFalsy();
       });
   });
 
@@ -111,8 +111,8 @@ describe('props', () => {
     expect(btn.find('.btn--icon').exists()).toBeTruthy();
     // No inner text when `icon` prop is set.
     expect(btn.find('.btn__content').text()).toBeFalsy();
-    expect(btn.find('.btn__content the-icon-stub').exists()).toBeTruthy();
-    expect(btn.find('.btn__content the-icon-stub').attributes('type'))
+    expect(btn.find('.btn__content v-icon-stub').exists()).toBeTruthy();
+    expect(btn.find('.btn__content v-icon-stub').attributes('type'))
       .toBe('test content');
     // Slot has higher than prop (icon and text)
     const withSlot = shallowMount(VBtn, {
