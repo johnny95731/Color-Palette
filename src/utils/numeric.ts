@@ -148,17 +148,6 @@ export const dot = (arr1: readonly number[], arr2: readonly number[]): number =>
 };
 
 /**
- * L2-Norm (not take square root yet) of two array.
- */
-export const l2Norm = (arr: readonly number[]) => {
-  return Math.sqrt(forLoop(
-    arr,
-    (prev, val) => prev + val * val,
-    0
-  ));
-};
-
-/**
  * Square of L2-distance (not take square root yet) of two array.
  */
 export const l2DistSq = (arr1: number[], arr2: number[]): number => {
