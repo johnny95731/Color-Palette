@@ -173,12 +173,12 @@ const tabLabels = [
 
 const tabIdx = ref(0);
 
-function handleFocusoutDialog(e: KeyboardEvent) {
+const handleFocusoutDialog = (e: KeyboardEvent) => {
   if (isTabKey(e)) {
     e.preventDefault();
     model.value = false;
   }
-}
+};
 
 watch(model, async (newVal) => {
   await nextTick();
@@ -239,12 +239,12 @@ const handleMethodChanged = (idx: number) => {
   updateContrastDisplay();
 };
 
-function updateContrastDisplay() {
+const updateContrastDisplay = () => {
   pltState.adjustContrast_(
     contrastArgs.method,
     contrastArgs[contrastArgs.method]
   );
-}
+};
 
 const contrastBtnEvent = (state: 'start' | 'reset') => {
   pltState.setIsAdjustingPlt_(state);

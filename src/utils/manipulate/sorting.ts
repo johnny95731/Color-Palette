@@ -137,11 +137,11 @@ export const getDistOp = (
  * @param dist Distance function.
  * @param initPoint Initial point. If the element point
  */
-export function tspGreedy<key extends keyof T, T extends object>(
+export const tspGreedy = <key extends keyof T, T extends object>(
   arr: T[],
   dist: (a: {[k in key]: T[key]}, b: {[k in key]: T[key]}) => number,
   initPoint: {[k in key]: T[key]},
-): T[] {
+): T[] => {
   const result: T[] = [];
   // remaining indices
   const indices = map(arr, (_, i) => i);
@@ -166,4 +166,4 @@ export function tspGreedy<key extends keyof T, T extends object>(
     result.push(pivot);
   }
   return JSON.parse(JSON.stringify(result));
-}
+};

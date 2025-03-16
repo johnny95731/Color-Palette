@@ -152,7 +152,7 @@ export const useDragableElement = (
   const cleanups: (() => void)[] = [];
   const config = { capture: options.capture ?? true };
 
-  function start(e: PointerEvent) {
+  const start = (e: PointerEvent) => {
     if (e.button !== 0) return;
     const pos = calcPos(e);
     if (unref(onStart)?.(pos, e) === false)
@@ -165,21 +165,21 @@ export const useDragableElement = (
     );
     handleEvent(e);
     return false;
-  }
-  function move(e: PointerEvent) {
+  };
+  const move = (e: PointerEvent) => {
     if (!isDragging_.value) return;
 
     const pos = calcPos(e);
     position.value = pos;
     unref(onMove)?.(pos, e);
     handleEvent(e);
-  }
-  function end(e: PointerEvent) {
+  };
+  const end = (e: PointerEvent) => {
     isDragging_.value = false;
     cleanups.forEach(fn => fn());
     unref(onEnd)?.(position.value, e);
     handleEvent(e);
-  }
+  };
 
   let cleanupStart: (() => void) | undefined;
   watch(() => toValue(binding), (newVal) => {

@@ -25,12 +25,12 @@ const emptyRect = {
 /**
  * Modify of vueuse.useElementBounding
  */
-export function useElementBounding<K extends RectKeys>(
+export const useElementBounding = <K extends RectKeys>(
   target: MaybeComputedElementRef,
   options: UseElementBoundingOptions & {
     filter?: K[]
   } = {},
-) {
+) => {
   const {
     reset = true,
     windowResize = true,
@@ -45,7 +45,7 @@ export function useElementBounding<K extends RectKeys>(
   const rectObj: Rect<K> =
     shallowReactive<Rect>(objPick(emptyRect, filter));
 
-  function recalculate() {
+  const recalculate = () => {
     const el = unrefElement(target);
     if (!el) {
       if (reset)
@@ -54,14 +54,14 @@ export function useElementBounding<K extends RectKeys>(
     }
     const rect = el.getBoundingClientRect();
     Object.assign(rectObj, objPick(rect, filter));
-  }
+  };
 
-  function update() {
+  const update = () => {
     if (updateTiming === 'sync')
       recalculate();
     else if (updateTiming === 'next-frame')
       requestAnimationFrame(() => recalculate());
-  }
+  };
 
   useResizeObserver(target, update);
   watch(() => unrefElement(target), ele => !ele && update());
@@ -84,4 +84,4 @@ export function useElementBounding<K extends RectKeys>(
     rect: rectObj,
     update,
   };
-}
+};

@@ -189,6 +189,39 @@ const menuItems = computed(() => {
 const isOpened = defineModel<boolean>('show') as ModelRef<boolean>;
 const openedChild = ref(0);
 
+
+/**
+ * The topmost layer activator that is not the last element of a menu.
+ */
+const topNonLastActivator = () => {
+  return !parent || !parent.isLast(unref(activator)) ?
+    unref(activator) :
+    parent.topNonLastActivator();
+};
+
+/**
+ * Closing nested menus until `target` in this menu.
+ */
+const nestedClosing = async (target?: Element | EventTarget | null) => {
+  // `handleClick` may be trigger from multi-layers. Make sure that
+  // menu is closing from innermost layer.
+  if (
+    !unref(openedChild) &&
+    (
+      !target ||
+      (
+        unref(contentRef) &&
+        !unref(contentRef)!.contains(target as Element)
+      )
+    )
+  ) {
+    invertBoolean(isOpened, false);
+    await sleep(250);
+    await nextTick();
+    parent?.nestedClosing(target);
+  }
+};
+
 type MenuProvided = {
   /**
    * The most top activator that is not the last element of a menu.
@@ -230,38 +263,6 @@ provide<MenuProvided>(MENU_SYMBOL, {
   },
   nestedClosing
 });
-
-/**
- * The topmost layer activator that is not the last element of a menu.
- */
-function topNonLastActivator() {
-  return !parent || !parent.isLast(unref(activator)) ?
-    unref(activator) :
-    parent.topNonLastActivator();
-}
-
-/**
- * Closing nested menus until `target` in this menu.
- */
-async function nestedClosing (target?: Element | EventTarget | null) {
-  // `handleClick` may be trigger from multi-layers. Make sure that
-  // menu is closing from innermost layer.
-  if (
-    !unref(openedChild) &&
-    (
-      !target ||
-      (
-        unref(contentRef) &&
-        !unref(contentRef)!.contains(target as Element)
-      )
-    )
-  ) {
-    invertBoolean(isOpened, false);
-    await sleep(250);
-    await nextTick();
-    parent?.nestedClosing(target);
-  }
-}
 
 const { rect: activatorRect } = useElementBounding(activator);
 const menuContainerStyle = computed<CSSProperties>(() => {

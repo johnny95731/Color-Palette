@@ -335,13 +335,13 @@ const isRunning = ref<boolean>(false);
 const intervalId = ref<number | null>(null);
 
 const delay = computed(() => Math.max(settingState.transition.color, 1000));
-function slidePlay() {
+const slidePlay = () => {
   intervalId.value = window.setInterval(
     () => toValue(isRunning) && pltState.refreshCard_(-1),
     toValue(delay)
   );
-}
-function haldleClickSlides() {
+};
+const haldleClickSlides = () => {
   if (toValue(isRunning)) { // play -> pause
     window.clearInterval(toValue(intervalId) as number | undefined);
     intervalId.value = null;
@@ -351,7 +351,7 @@ function haldleClickSlides() {
   }
   invertBoolean(isRunning);
   pltState.setIsPending_(toValue(isRunning));
-}
+};
 watch(
   () => settingState.transition.color,
   () => {

@@ -107,15 +107,15 @@ watch(() => [props.label, toValue(idForInput)] as const, (newVal, oldVal) => {
 // Handle values
 const model = defineModel<boolean>() as ModelRef<boolean>;
 
-function handleClick() {
+const handleClick = () => {
   invertBoolean(model);
-}
-function handleKeyDown(e: KeyboardEvent) {
+};
+const handleKeyDown = (e: KeyboardEvent) => {
   const key = e.key.toLowerCase();
   if (key === ' ') {
     invertBoolean(model);
   }
-}
+};
 
 </script>
 

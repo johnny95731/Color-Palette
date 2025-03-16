@@ -359,7 +359,7 @@ const handleLeaveFocusing = (e: KeyboardEvent) => {
 /**
  * Finish Hex editing when input is blurred or press 'Enter'
  */
-const handleHexEditingFinished = function(e: Event) {
+const handleHexEditingFinished = (e: Event) => {
   const text = (e.currentTarget as HTMLInputElement).value;
   if (text !== props.card.hex_ && isValidHex(text)) {
     const newColor = space.value.converter(hex2rgb(text));
@@ -375,7 +375,7 @@ const selectName = (name: string) => pltState.editCard_(
 /**
  * Slider changed event.
  */
-const handleSliderChange = function(newVal: number, idx: number) {
+const handleSliderChange = (newVal: number, idx: number) => {
   const newColor = [...props.card.color_];
   newColor[idx] = newVal;
   roundedColor.value = newColor;

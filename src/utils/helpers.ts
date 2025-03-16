@@ -45,44 +45,46 @@ export const objPick = <T extends object, K extends (string | number | symbol)>(
  * Shuffle an array by Fisher-Yates shuffle. The process will change the input
  * array.
  */
-export function shuffle<T>(arr: T[]): T[] {
+export const shuffle = <T>(arr: T[]): T[] => {
   let j: number;
   for (let i = arr.length - 1; i > 0; i--) {
     j = randInt(i);
     [arr[i], arr[j]] = [arr[j], arr[i]];
   }
   return arr;
+};
+
+
+type map = {
+  /**
+   * Generate an array with specific length.
+   *
+   * Faster than Array.prototype.map about 10%-22% on Edge and 7%-15% on Firefox.
+   */
+  <R>(
+    len: number,
+    callback: (val: null, i: number) => R
+  ): R[];
+  /**
+   * Similar to Array.prototype.map but more generalize.
+   * But with an argument to restrict the length of returned array.
+   *
+   * Faster than Array.prototype.map about 10%-22% on Edge and 7%-15% on Firefox.
+   */
+  <R, T>(
+    arr: readonly T[],
+    callback: (val: T, i: number) => R,
+    len?: number,
+  ): R[]
 }
-
-
-/**
- * Generate an array with specific length.
- *
- * Faster than Array.prototype.map about 10%-22% on Edge and 7%-15% on Firefox.
- */
-export function map<R>(
-  len: number,
-  callback: (val: null, i: number) => R
-): R[]
-/**
- * Similar to Array.prototype.map but more generalize.
- * But with an argument to restrict the length of returned array.
- *
- * Faster than Array.prototype.map about 10%-22% on Edge and 7%-15% on Firefox.
- */
-export function map<R, T>(
-  arr: readonly T[],
-  callback: (val: T, i: number) => R,
-  len?: number,
-): R[]
-export function map<R, T>(
+export const map: map = <R, T>(
   arr: number | readonly T[],
   callback:
     typeof arr extends number ?
       ((val: null, i: number) => R) :
       ((val: T, i: number) => R),
   len?: number,
-): R[] {
+): R[] => {
   const result = [];
   if (typeof arr === 'number') {
     len = arr;
@@ -97,27 +99,28 @@ export function map<R, T>(
     }
   }
   return result;
+};
+
+type forLoop = {
+  <R>(
+    len: number,
+    callback: (acc: R, val: null, i: number) => R,
+    init?: R,
+    _?: number
+  ): R;
+  <R, T extends string>(
+    arr: T,
+    callback: (acc: R, val: T, i: number) => R,
+    init?: R,
+    len?: number,
+  ): R;
+  <R, T>(
+    arr: readonly T[],
+    callback: (acc: R, val: T, i: number) => R,
+    init?: R,
+    len?: number,
+  ): R;
 }
-
-
-export function forLoop<R>(
-  len: number,
-  callback: (acc: R, val: null, i: number) => R,
-  init?: R,
-  _?: number
-): R
-export function forLoop<R, T extends string>(
-  arr: T,
-  callback: (acc: R, val: T, i: number) => R,
-  init?: R,
-  len?: number,
-): R
-export function forLoop<R, T>(
-  arr: readonly T[],
-  callback: (acc: R, val: T, i: number) => R,
-  init?: R,
-  len?: number,
-): R
 
 /**
  * Same as Array.prototype.reduce but with for-loop.
@@ -131,7 +134,7 @@ export function forLoop<R, T>(
  * @param len Length of returened
  * @returns
  */
-export function forLoop<R, T>(
+export const forLoop: forLoop = <R, T>(
   arr: readonly T[] | string | number,
   callback:
     typeof arr extends number ?
@@ -139,7 +142,7 @@ export function forLoop<R, T>(
       ((acc: R, val: T, i: number) => R),
   init?: R,
   len?: number,
-): R {
+): R => {
   let s = init;
   if (typeof arr === 'number') {
     len = arr;

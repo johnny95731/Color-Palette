@@ -71,7 +71,7 @@ watch(isOpened, async (newVal) => { // focus dialog when open it.
   else pltState.setEditingIdx_();
 });
 
-function handleFocusoutDialog(e: KeyboardEvent) {
+const handleFocusoutDialog = (e: KeyboardEvent) => {
   if (isTabKey(e)) {
     e.preventDefault();
     if (toValue(tabIdx) !== TabLabels.length - 1) {// switch to next tab page.
@@ -80,7 +80,7 @@ function handleFocusoutDialog(e: KeyboardEvent) {
       isOpened.value = false;
     }
   }
-}
+};
 
 const pltState = usePltStore();
 const favState = useFavStore();
@@ -105,8 +105,8 @@ const state = computed<{
   }
 });
 
-function favPltChanged() {
+const favPltChanged = () => {
   favState.favPltsChanged_(toValue(pltStrings));
   tabIdx.value = 1;
-}
+};
 </script>

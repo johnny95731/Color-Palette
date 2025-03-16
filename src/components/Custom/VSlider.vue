@@ -174,10 +174,10 @@ const roundingValue = (newVal?: number) => {
 /**
  * Rounding the value to satify step and update model.
  */
-function updateModel(newVal?: number) {
+const updateModel = (newVal?: number) => {
   newVal = roundingValue(newVal);
   if (!isSameFloat(newVal, model.value)) model.value = newVal;
-}
+};
 
 // Init model
 (() => {

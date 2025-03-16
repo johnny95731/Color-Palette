@@ -33,61 +33,50 @@ export type WindowEventName = keyof WindowEventMap;
 export type VueClass = string | unknown[] | {[key in string]: unknown}
 
 
-export function getPropertyValue(el: HTMLElement | null | undefined, property: string): number;
-export function getPropertyValue(property: string): number;
-export function getPropertyValue(
+type getPropertyValue = {
+  /**
+   * Get CSS property of a given elemnt.
+   */
+  (el: HTMLElement | null | undefined, property: string): number;
+  /**
+   * Get CSS property of document.documentElement.
+   */
+  (property: string): number;
+}
+const getPropertyValue = (
   el: HTMLElement | string | null | undefined,
   property?: string
-) {
+) => {
   if (typeof el === 'string') {
     property = el;
     el = document.documentElement;
   }
   if (!el) el = document.documentElement;
-  const num = +getComputedStyle(el!)
-    .getPropertyValue(property ?? 'width' as string)
-    .replace(/[^0-9]/g, '');
+  const num = parseFloat(
+    getComputedStyle(el!)
+      .getPropertyValue(property ?? 'width' as string)
+  );
   return Number.isNaN(num) ? 0 : num;
-
-}
+};
+export { getPropertyValue };
 
 // Id generater
-const getRandomId = (prev?: string) => {
-  let id = (prev ?? '') + randomCharacter(true);
-  while (document.getElementById(id))
-    id += randomCharacter();
-  return id;
-};
-
-export const getComponentId = (prefix: string = 'component') => {
-  const thisInstance = getCurrentInstance();
-  if (!thisInstance || document.getElementById(`${prefix}-${thisInstance.uid}`))
-    return getRandomId(prefix+'-');
-  return `${prefix}-${thisInstance.uid}`;
-};
+export const getComponentId = (() => {
+  const getRandomId = (prev?: string) => {
+    let id = (prev ?? '') + randomCharacter(true);
+    while (document.getElementById(id))
+      id += randomCharacter();
+    return id;
+  };
+  return (prefix: string = 'component') => {
+    const thisInstance = getCurrentInstance();
+    if (!thisInstance || document.getElementById(`${prefix}-${thisInstance.uid}`))
+      return getRandomId(prefix+'-');
+    return `${prefix}-${thisInstance.uid}`;
+  };
+})();
 
 // Events
-export const stopPropagation = (e: Event) => e.stopPropagation();
-
-export function getCursorPosition(e: MouseEvent | TouchEvent): MouseEvent | Touch
-export function getCursorPosition(
-  e: MouseEvent | TouchEvent,
-  client: `${'client' | 'page' | 'screen'}${'Y' | 'X'}`
-): number
-/**
- * Return TouchList if `e` is TouchEvent else return `e`
- */
-export function getCursorPosition(
-  e: MouseEvent | TouchEvent,
-  client?: `${'client' | 'page' | 'screen'}${'Y' | 'X'}`
-) {
-  // @ts-expect-error
-  const obj = e.touches ?
-    (e as TouchEvent).touches[0] :
-    (e as MouseEvent);
-  return client ? obj[client] : obj;
-}
-
 /**
  * Remove non-hex text and add "#" to first word.
  */
