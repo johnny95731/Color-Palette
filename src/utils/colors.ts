@@ -66,13 +66,15 @@ export const YUV_MAX = RGB_MAX;
 /** Remove Non-hex characters */
 export const removeNonHex = (str: string) => str.replace(/[^0-9A-F]/ig, '');
 
+const hexMatcher = /^#?(([0-9A-F]{3}){1,2})$/i;
 /**
  * Verify the string whether is a (3 channel, no alpha channel) Hex color.
  * @param str String that need to be verified.
  * @return Validity of string.
  */
-export const isValidHex = (str: string): boolean =>
-  [3, 6].includes(removeNonHex(str).length);
+export const isValidHex = (str: string): boolean => {
+  return hexMatcher.test(str);
+};
 
 export const hueRotation = ([h, s, b]: number[], deg: number) => (
   [mod(h + deg, 360), s, b]
@@ -100,32 +102,35 @@ export const rgb2hue = ([r, g, b]: number[]): number[] => {
   return [60 * hue, min, max];
 };
 
-export const [linearRgb2srgb, srgb2linearRgb] = (() => {
+
+/**
+ * Convert sRGB to linear RGB.
+ * Maps [0, RGB_MAX] into [0, RGB_MAX]
+ */
+type linearRgb2srgb = (val: number) => number;
+/**
+ * Convert linear RGB to sRGB.
+ * Maps [0, RGB_MAX] into [0, RGB_MAX]
+ */
+type srgb2linearRgb = (val: number) => number;
+const [linearRgb2srgb, srgb2linearRgb] = (() => {
   const thresh1 = 0.0031308 * RGB_MAX;
   const thresh2 = thresh1 * 12.92;
   const p = 1 / 2.4;
 
-  /**
-   * Convert sRGB to linear RGB.
-   * Maps [0, RGB_MAX] into [0, RGB_MAX]
-   */
   const linearRgb2srgb = (val: number) => {
     return val < thresh1 ?
       val * 12.92 :
       ((val/RGB_MAX)**p * 1.055 - 0.055) * RGB_MAX;
   };
-
-  /**
-   * Convert linear RGB to sRGB.
-   * Maps [0, RGB_MAX] into [0, RGB_MAX]
-   */
-  const srgb2linearRgb = (val: number) => {
+  const srgb2linearRgb: srgb2linearRgb = (val: number) => {
     return val < thresh2 ?
       val / 12.92 :
       ((val/RGB_MAX+0.055) / 1.055)**2.4 * RGB_MAX;
   };
-  return [linearRgb2srgb, srgb2linearRgb];
+  return [linearRgb2srgb, srgb2linearRgb] as const;
 })();
+export { linearRgb2srgb, srgb2linearRgb }; // To read jsdoc.
 
 
 /**
@@ -195,7 +200,7 @@ type xyz2lab = (xyz: number[]) => number[];
  * @param lab CIE Lab color array.
  * @return CIE XYZ color array.
  */
-type lab2xyz = (lab: number[]) => number[]
+type lab2xyz = (lab: number[]) => number[];
 // ## CIE LAB <-> CIE XYZ
 const [xyz2lab, lab2xyz] = (() => {
   const threshInv = 6/29; // threshold for labFuncInv
@@ -508,7 +513,7 @@ export const rgb2hex = (rgb: number[]): string => {
  * @return rgb
  */
 export const hex2rgb = (hex: string): number[] => {
-  const hexMatch = /^#?([0-9A-F]{3,6})$/i.exec(hex);
+  const hexMatch = hexMatcher.exec(hex);
   if (!hexMatch) return [0, 0, 0];
 
   hex = hexMatch[1];
