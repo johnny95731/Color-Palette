@@ -24,8 +24,9 @@
       class="dialog__tabs"
     >
       <VBtn
+        v-memo="[tabIdx]"
         v-for="(opt, i) in tabs"
-        :key="`setting-${opt}`"
+        :key="`tab-${i}`"
         :ref="el => tabRefs[i] = el as InstanceType<typeof VBtn>"
         :class="[
           'dialog__tab',

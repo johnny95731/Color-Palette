@@ -79,6 +79,18 @@
         css,
         $style.btn
       ]"
+      prepend-icon="circle-half"
+      aria-label="對比度"
+      :text="isSmall ? '對比度' : undefined"
+      :tooltip="isSmall ? false : true"
+      @click="isOpening.contrast_ = !isOpening.contrast_"
+    />
+    <VBtn
+      v-memo="[isSmall]"
+      :class="[
+        css,
+        $style.btn
+      ]"
       prepend-icon="upload"
       aria-label="輸入調色盤"
       :text="isSmall ? '輸入調色盤' : undefined"
@@ -227,6 +239,10 @@
       </template>
     </DropdownMenu>
 
+    <ContrastDialog
+      v-if="inInit.contrast_ || isOpening.contrast_"
+      v-model="isOpening.contrast_"
+    />
     <InputPaletteDialog
       v-if="inInit.input_ || isOpening.input_"
       v-model="isOpening.input_"
@@ -267,6 +283,13 @@ import useSettingStore from '@/stores/useSettingStore';
 import type { ColorSpaces } from '@/utils/colors';
 
 
+const ContrastDialog = defineAsyncComponent(
+  () => import('@/components/ContrastDialog/ContrastDialog.vue')
+    .then(component => {
+      inInit.contrast_ = true;
+      return component;
+    })
+);
 const InputPaletteDialog = defineAsyncComponent(
   () => import('@/components/PaletteInputer/PaletteInputer.vue')
     .then(component => {
@@ -302,18 +325,14 @@ const [DefineHeaderBtns, HeaderBtns] = createReusableTemplate<{css?: string}>();
 // Show/Hide dialogs
 // -Is resource loaded
 const inInit = reactive({
+  contrast_: false,
   input_: false,
   harmony_: false,
   fav_: false,
   setting_: false,
 });
 // -open/close state
-const isOpening = reactive({
-  input_: false,
-  harmony_: false,
-  fav_: false,
-  setting_: false,
-});
+const isOpening = reactive({ ...inInit });
 
 
 const isShowingDialog = computed(() => {

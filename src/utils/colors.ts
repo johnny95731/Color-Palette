@@ -140,8 +140,29 @@ export { linearRgb2srgb, srgb2linearRgb }; // To read jsdoc.
  */
 export const rgb2gray = (rgb: number[]) => dot(rgb, [0.299, 0.587, 0.114]);
 
+/**
+ * Evaluate relative luminance from sRGB.
+ */
+const relativeLuminance = (srgb: number[]) => {
+  const linear = map(srgb, val => srgb2linearRgb(val), 3);
+  return dot(linear, [0.2126, 0.7152, 0.0722]) / RGB_MAX;
+};
+
+/**
+ * Returns the contrast ratio which is defined by WCAG 2.1.
+ */
+export const getContrastRatio = (hex1: string, hex2: string) => {
+  const lum1 = relativeLuminance(hex2rgb(hex1));
+  const lum2 = relativeLuminance(hex2rgb(hex2));
+  const ratio = (lum1 + 0.05) / (lum2 + 0.05);
+  return round(ratio < 1 ? 1 / ratio : ratio, 3);
+};
+
 
 // # CSS named-color
+/**
+ * Add a white space before capital letters except the first letter.
+ */
 export const unzipCssNamed = (name: string) => name.replace(/([A-Z])/g, ' $1').trim();
 
 /**
@@ -428,7 +449,7 @@ export const cmyk2rgb = ([c, m, y, k]: number[]): number[] => {
  * @return CIE XYZ color array. The result will be scaling to [0, 100]
  */
 export const rgb2xyz = (rgb: number[]): number[] => {
-  const linearRgb = map(rgb, val => srgb2linearRgb(val)),
+  const linearRgb = map(rgb, val => srgb2linearRgb(val), 3),
     coeff = XYZ_MAX_SCALING / RGB_MAX;
   return [
     dot(RGB2XYZ_COEFF[0], linearRgb) * coeff,
@@ -517,7 +538,7 @@ export const hex2rgb = (hex: string): number[] => {
   if (!hexMatch) return [0, 0, 0];
 
   hex = hexMatch[1];
-  if (hexMatch && hex.length === 4)
+  if (hexMatch && hex.length === 3)
     hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
   // .slice is slower
   const num = parseInt(hex, 16);
