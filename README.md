@@ -90,5 +90,4 @@
   拖曳卡片位置以及更改顏色的過度動畫時間。<br/>
 
 ## Icons
-Favicon: color-wheel.png來自flaticon之[Color creator](https://www.flaticon.com/authors/color-creator)<br/>
 其餘圖案來自[Bootstrap Icons](https://icons.getbootstrap.com/)
