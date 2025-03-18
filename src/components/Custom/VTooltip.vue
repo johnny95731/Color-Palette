@@ -153,6 +153,7 @@ const tooltipStyle = computed<CSSProperties>(() => {
 
 // Show/Hide events
 const isOpened = defineModel<boolean>();
+// TODO: 開啟dialog內的tooltip時，關閉dialog後會導致tooltip無法正常開啟。
 let delayTimeoutId: number | void;
 const handleShow = (e: MouseEvent) => {
   if (!props.openOnHover && e.type === 'mouseenter') return;

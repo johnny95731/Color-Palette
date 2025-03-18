@@ -134,4 +134,6 @@ const handleTransitionChanged = (
   else transition.color = val;
   settingsState.setTransition_(attr, val);
 };
+
+// TODO: 漸層顯示卡片
 </script>
