@@ -90,4 +90,4 @@
   拖曳卡片位置以及更改顏色的過度動畫時間。<br/>
 
 ## Icons
-其餘圖案來自[Bootstrap Icons](https://icons.getbootstrap.com/)
+[Bootstrap Icons](https://icons.getbootstrap.com/)
