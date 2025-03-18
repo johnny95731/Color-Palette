@@ -48,7 +48,7 @@
         location="top"
         :activator="thumbRef"
         :text="model"
-        :model-value="isShowLabel"
+        :model-value="isShowingLabel"
       />
     </div>
   </div>
@@ -234,7 +234,7 @@ const handleKeyDown = (e: KeyboardEvent) => {
 };
 
 // Label/Tooltip
-const isShowLabel = computed(() => {
+const isShowingLabel = computed(() => {
   if (props.showVal === 'always') return true;
   else return isDragging.value;
 });

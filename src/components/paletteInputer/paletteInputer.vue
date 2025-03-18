@@ -4,7 +4,7 @@
       contentClass: $style.paletteInputer
     }"
     title="輸入調色盤"
-    v-model="isShowing"
+    v-model="isOpened"
   >
     <div
       ref="contentRef"
@@ -93,7 +93,7 @@ import type { CSSProperties } from 'vue';
 import type { Position } from '@vueuse/core';
 import VDialog from '../Custom/VDialog.vue';
 
-const isShowing = defineModel<boolean>(); // Show/Hide
+const isOpened = defineModel<boolean>(); // Show/Hide
 const isPreview = ref<boolean>(true);
 
 const pltState = usePltStore();
@@ -167,7 +167,7 @@ const comfirm = () => {
   // Overwrite `originalPalette`. Because close dialog will restore palette from
   // `originalPalette`.
   saveOrininal();
-  invertBoolean(isShowing);
+  invertBoolean(isOpened);
 };
 /**
  * Save original palette.
@@ -178,7 +178,7 @@ const saveOrininal = () => {
 };
 
 watch(() => [unref(isPreview), unref(colors)], preview, { deep: true });
-watch(isShowing, (newVal) => {
+watch(isOpened, (newVal) => {
   if (newVal) {
     colors.value = map(pltState.cards_, card => card.hex_);
     saveOrininal();

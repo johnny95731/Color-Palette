@@ -22,8 +22,8 @@ import type { SortActions } from './utils/manipulate/sorting';
 const headerRef = ref<InstanceType<typeof VHeader>>();
 
 const pltState = usePltStore();
-const isShowingOverlay = computed(() =>
-  pltState.isEditing_ || headerRef.value?.isShowingDialog
+const isOverlayOpened = computed(() =>
+  pltState.isEditing_ || headerRef.value?.isSomeDialogOpened_
 );
 const isCardPending = computed(() => pltState.isEditing_ || pltState.isPending_);
 
@@ -34,7 +34,7 @@ const isCardPending = computed(() => pltState.isEditing_ || pltState.isPending_)
     const key = e.key.toLowerCase();
     if (
       // Prevent trigger hotkey when editing or add/remove/move (transition) card.
-      toValue(isCardPending) || toValue(isShowingOverlay)
+      toValue(isCardPending) || toValue(isOverlayOpened)
     ) return;
     if (key === refreshHotkey) {
       pltState.refreshCard_(-1);

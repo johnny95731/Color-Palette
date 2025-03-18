@@ -5,7 +5,7 @@
       contentClass: $style.settingDialog
     }"
     title="設定"
-    v-model="model"
+    v-model="isOpened"
   >
     <div
       :class="$style.region"
@@ -103,7 +103,7 @@ import useSettingStore, { BORDER_COLOR, BORDER_MAX_WIDTH, COLOR_FUNCTIONS, TRANS
 import type { TransitionStyle } from '@/stores/useSettingStore';
 import { isTabKey } from '@/utils/browser';
 
-const model = defineModel<boolean>(); // Show/Hide
+const isOpened = defineModel<boolean>(); // Show/Hide
 
 const dialogRef = ref<InstanceType<typeof VDialog>>();
 
@@ -113,7 +113,7 @@ const settingsState = useSettingStore();
 const handleFocusoutDialog = (e: KeyboardEvent) => {
   if (isTabKey(e)) {
     e.preventDefault();
-    model.value = false;
+    isOpened.value = false;
   }
 };
 

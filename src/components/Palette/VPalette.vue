@@ -17,7 +17,7 @@
     />
     <!-- Insert Region -->
     <div
-      v-show="isShowInsert"
+      v-show="isShowingInsert"
       :class="$style.insertOverlay"
     >
       <div
@@ -288,6 +288,6 @@ watch(() => isInTrans.arr.some((val) => val),
 /**
  * Style of insertion region.
  */
-const isShowInsert = computed(() =>
+const isShowingInsert = computed(() =>
   !(pltState.numOfCards_ === MAX_NUM_OF_CARDS || pltState.isPending_));
 </script>

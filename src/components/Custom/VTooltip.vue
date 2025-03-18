@@ -1,7 +1,7 @@
 <template>
   <slot
     name="activator"
-    :isShow="isShow"
+    :isOpened="isOpened"
     :props="activatorProps"
     :handleClick="handleClick"
   />
@@ -15,7 +15,7 @@
     :eager="eager"
     hide-scrim
     :content-style="tooltipStyle"
-    v-model="isShow"
+    v-model="isOpened"
   >
     <div
       v-bind="$attrs"
@@ -152,19 +152,19 @@ const tooltipStyle = computed<CSSProperties>(() => {
 });
 
 // Show/Hide events
-const isShow = defineModel<boolean>();
+const isOpened = defineModel<boolean>();
 let delayTimeoutId: number | void;
 const handleShow = (e: MouseEvent) => {
   if (!props.openOnHover && e.type === 'mouseenter') return;
   // Clear timeout
   delayTimeoutId = clearTimeout(delayTimeoutId as number | undefined);
-  // Set `isShow`
+  // Set `isOpened`
   if (toValue(openDelay_))
     delayTimeoutId = window.setTimeout(
-      invertBoolean, toValue(openDelay_), isShow, true
+      invertBoolean, toValue(openDelay_), isOpened, true
     );
   else
-    invertBoolean(isShow, true);
+    invertBoolean(isOpened, true);
   // To get activator position.
   currentTarget.value = e.currentTarget as HTMLElement;
 };
@@ -173,13 +173,13 @@ const handleHide = (e: MouseEvent) => {
   // Clear timeout
   if (!isNullish(delayTimeoutId))
     (delayTimeoutId = clearTimeout(delayTimeoutId!));
-  // Set `isShow`
+  // Set `isOpened`
   if (toValue(closeDelay_))
     delayTimeoutId = window.setTimeout(
-      invertBoolean, toValue(closeDelay_), isShow, false
+      invertBoolean, toValue(closeDelay_), isOpened, false
     );
   else
-    invertBoolean(isShow, false);
+    invertBoolean(isOpened, false);
 };
 
 let clickTimeout: number | void;
@@ -187,11 +187,11 @@ const handleClick = (e: MouseEvent) => {
   if (!props.openOnClick) return;
   if (clickTimeout)
     clickTimeout = window.clearTimeout(clickTimeout as number | undefined);
-  invertBoolean(isShow, true);
+  invertBoolean(isOpened, true);
   // To get activator position.
   currentTarget.value = e.currentTarget as HTMLElement;
   clickTimeout = window.setTimeout(
-    invertBoolean, toValue(clickOpenDuration_) + toValue(closeDelay_), isShow, false
+    invertBoolean, toValue(clickOpenDuration_) + toValue(closeDelay_), isOpened, false
   );
 };
 

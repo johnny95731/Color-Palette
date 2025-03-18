@@ -335,12 +335,12 @@ const inInit = reactive({
 const isOpening = reactive({ ...inInit });
 
 
-const isShowingDialog = computed(() => {
+const isSomeDialogOpened = computed(() => {
   return Object.values(isOpening).some((val) => val);
 });
 
 defineExpose({
-  isShowingDialog
+  isSomeDialogOpened_: isSomeDialogOpened
 });
 
 

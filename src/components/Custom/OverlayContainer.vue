@@ -1,13 +1,13 @@
 <template>
   <Teleport to="#overlay-container">
     <div
-      v-if="eager || model || isActive"
-      v-show="model || isActive"
+      v-if="eager || isOpened || isActive"
+      v-show="isOpened || isActive"
       v-bind="$attrs"
       :class="[
         'overlay',
         `overlay--${type}`,
-        model && 'overlay--active'
+        isOpened && 'overlay--active'
       ]"
       :style="{
         zIndex
@@ -20,7 +20,7 @@
       >
         <div
           v-if="!hideScrim"
-          v-show="isActive && model"
+          v-show="isActive && isOpened"
           class="overlay__scrim"
           :style="{
             backgroundColor: transparent ? 'transparent' : undefined,
@@ -34,7 +34,7 @@
       >
         <div
           ref="contentRef"
-          v-show="isActive && model"
+          v-show="isActive && isOpened"
           class="overlay__content"
           v-bind="{
             class: contentClass,
@@ -93,8 +93,8 @@ const emit = defineEmits<{
 }>();
 
 const handleKeydown = (e: KeyboardEvent) => {
-  if (unref(model) && e.key === 'Escape') {
-    invertBoolean(model, false);
+  if (unref(isOpened) && e.key === 'Escape') {
+    invertBoolean(isOpened, false);
   }
 };
 
@@ -112,7 +112,7 @@ const { mousedown_, clickOutside_ } = (() => {
     },
     clickOutside_: (e: MouseEvent) => {
       if (pointerdownOutside && isClickOutside(e) && !unref(openedChild)) {
-        model.value = false;
+        isOpened.value = false;
       }
       pointerdownOutside = false;
     },
@@ -120,7 +120,7 @@ const { mousedown_, clickOutside_ } = (() => {
 })();
 
 // Control show and hide
-const model = defineModel<boolean>() as ModelRef<boolean>;
+const isOpened = defineModel<boolean>() as ModelRef<boolean>;
 // Container can not be closed before content transition end.
 // Need another state to delay closing container.
 const isActive = ref(false);
@@ -170,7 +170,7 @@ const handleAfterLeave = () => {
   emit('transitionEnd');
 };
 
-watch(model, (newVal) => {
+watch(isOpened, (newVal) => {
   if (newVal) {
     isActive.value = true;
     parent?.register();
@@ -181,7 +181,7 @@ watch(model, (newVal) => {
 // flush: 'post' to maker container updated first when eager is false
 onMounted(() => {
   // Trigger transition is dialog is open
-  isActive.value = model.value;
+  isActive.value = isOpened.value;
 });
 
 
