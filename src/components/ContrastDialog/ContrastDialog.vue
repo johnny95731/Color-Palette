@@ -180,8 +180,8 @@ const contrastBtnEvent = (state: 'start' | 'reset') => {
 
 
 // # Page 1: Contrast Ratio
-const bgColor = ref<string>('#000000'); // background
-const textColor = ref<string>('#FFFFFF'); // foreground
+const bgColor = ref<string>('#FFFFFF'); // background
+const textColor = ref<string>('#000000'); // foreground
 watch(bgColor, (n) => console.log(n));
 /**
  * Finish Hex editing when input is blurred or press 'Enter'
