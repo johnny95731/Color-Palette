@@ -5,88 +5,113 @@
       contentClass: $style.settingDialog
     }"
     title="設定"
+    :tabs="tabLabels"
     v-model="isOpened"
+    v-model:tab-idx="tabIdx"
   >
-    <div
-      :class="$style.region"
-      aria-labelledby="title-border"
-    >
-      <h3 id="title-border">
-        Border
-      </h3>
-      <span>Show</span>
-      <VSwitch
-        label="show border"
-        hide-label
-        :model-value="settingsState.border.show"
-        @update:model-value="settingsState.setBorder_('show', $event)"
-      />
-      <template v-if="settingsState.border.show">
+    <template v-if="tabIdx === 0">
+      <div
+        :class="$style.region"
+        aria-label="調色盤"
+      >
         <label
-          id="border-width"
-        >Width(px)</label>
-        <VSlider
-          label="#border-width"
-          :max="BORDER_MAX_WIDTH"
-          :model-value="settingsState.border.width"
-          @update:model-value="settingsState.setBorder_('width', $event)"
-        />
-        <label
-          id="border-color"
-        >Color</label>
+          v-once
+          id="color-syntax"
+        >顯示</label>
         <SelectMenu
-          label="#border-color"
-          :items="BORDER_COLOR"
+          v-memo="[settingsState.paletteDisplay_]"
+          v-model="settingsState.paletteDisplay_"
+          label="#color-syntax"
+          :items="PALETTE_DISPLAY"
           letter-case="start"
-          :model-value="settingsState.border.color"
-          @update:model-value="settingsState.setBorder_('color', $event)"
         />
-      </template>
-    </div>
-    <div
-      :class="$style.region"
-      aria-labelledby="title-transition"
-    >
-      <h3 id="title-transition">
-        Transition
-      </h3>
-      <label
-        id="transition-position"
-      >Position(ms)</label>
-      <VSlider
-        label="#transition-position"
-        :max="TRANSITION_MAX_POS"
-        step="50"
-        :model-value="settingsState.transition.pos"
-        @update:model-value="handleTransitionChanged($event, 'pos')"
-      />
-      <label
-        id="transition-color"
-      >Color(ms)</label>
-      <VSlider
-        label="#transition-color"
-        :max="TRANSITION_MAX_COLOR"
-        step="50"
-        :model-value="transition.color"
-        @update:model-value="handleTransitionChanged($event, 'color')"
-      />
-    </div>
-    <div
-      :class="$style.region"
-      aria-labelledby="title-Transition"
-    >
-      <h3 id="title-others">
-        Others
-      </h3>
-      <label id="color-notation">Color Notation</label>
-      <SelectMenu
-        v-model="settingsState.colorNotation_"
-        label="#color-notation"
-        :items="COLOR_FUNCTIONS"
-        letter-case="start"
-        @keydown="handleFocusoutDialog"
-      />
-    </div>
+        <label
+          v-once
+          id="color-syntax"
+        >色彩語法</label>
+        <SelectMenu
+          v-memo="[settingsState.colorSyntax_]"
+          v-model="settingsState.colorSyntax_"
+          label="#color-syntax"
+          :items="COLOR_SYNTAX"
+          letter-case="start"
+        />
+      </div>
+    </template>
+    <template v-else-if="tabIdx === 1">
+      <div
+        :class="$style.region"
+        aria-labelledby="title-border"
+      >
+        <h3
+          v-once
+          id="title-border"
+        >
+          邊界(Border)
+        </h3>
+        <span v-once>顯示</span>
+        <VSwitch
+          label="show border"
+          hide-label
+          :model-value="settingsState.border.show"
+          @update:model-value="settingsState.setBorder_('show', $event)"
+        />
+        <template v-if="settingsState.border.show">
+          <label
+            v-once
+            id="border-width"
+          >寬度(px)</label>
+          <VSlider
+            v-memo="[settingsState.border.width]"
+            label="#border-width"
+            :max="BORDER_MAX_WIDTH"
+            :model-value="settingsState.border.width"
+            @update:model-value="settingsState.setBorder_('width', $event)"
+          />
+          <label
+            v-once
+            id="border-color"
+          >顏色</label>
+          <SelectMenu
+            v-memo="[settingsState.border.color]"
+            label="#border-color"
+            :items="BORDER_COLOR"
+            letter-case="start"
+            :model-value="settingsState.border.color"
+            @update:model-value="settingsState.setBorder_('color', $event)"
+          />
+        </template>
+      </div>
+      <div
+        :class="$style.region"
+        aria-labelledby="title-transition"
+      >
+        <h3 id="title-transition">
+          轉場(Transition)
+        </h3>
+        <label
+          id="transition-position"
+        >Position(ms)</label>
+        <VSlider
+          label="#transition-position"
+          :max="TRANSITION_MAX_POS"
+          step="50"
+          :model-value="settingsState.transition.pos"
+          @update:model-value="handleTransitionChanged($event, 'pos')"
+        />
+        <label
+          id="transition-color"
+        >Color(ms)</label>
+        <VSlider
+          label="#transition-color"
+          :max="TRANSITION_MAX_COLOR"
+          step="50"
+          :model-value="transition.color"
+          @update:model-value="handleTransitionChanged($event, 'color')"
+          @keydown="handleFocusoutDialog"
+        />
+      </div>
+    </template>
   </VDialog>
 </template>
 
@@ -97,18 +122,15 @@ import SelectMenu from '../Custom/SelectMenu.vue';
 import VSwitch from '../Custom/VSwitch.vue';
 import VSlider from '../Custom/VSlider.vue';
 import VDialog from '../Custom/VDialog.vue';
+import { isTabKey } from '@/utils/browser';
 // stores
-import useSettingStore, { BORDER_COLOR, BORDER_MAX_WIDTH, COLOR_FUNCTIONS, TRANSITION_MAX_COLOR, TRANSITION_MAX_POS } from '@/stores/useSettingStore';
+import useSettingStore, { BORDER_COLOR, BORDER_MAX_WIDTH, COLOR_SYNTAX, PALETTE_DISPLAY, TRANSITION_MAX_COLOR, TRANSITION_MAX_POS } from '@/stores/useSettingStore';
 // types
 import type { TransitionStyle } from '@/stores/useSettingStore';
-import { isTabKey } from '@/utils/browser';
 
 const isOpened = defineModel<boolean>(); // Show/Hide
 
 const dialogRef = ref<InstanceType<typeof VDialog>>();
-
-const settingsState = useSettingStore();
-
 
 const handleFocusoutDialog = (e: KeyboardEvent) => {
   if (isTabKey(e)) {
@@ -117,7 +139,14 @@ const handleFocusoutDialog = (e: KeyboardEvent) => {
   }
 };
 
-// page 0: Card
+const tabLabels = [
+  '展示', '卡片'
+];
+const tabIdx = ref<number>(0);
+
+const settingsState = useSettingStore();
+
+// page 1: Card
 // -Transition states
 const transition = reactive<{
   pos: number,
@@ -134,6 +163,4 @@ const handleTransitionChanged = (
   else transition.color = val;
   settingsState.setTransition_(attr, val);
 };
-
-// TODO: 漸層顯示卡片
 </script>

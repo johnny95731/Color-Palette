@@ -3,8 +3,8 @@
     ref="cardContainerRef"
     :class="[
       $style.cardContainer,
-      cardIdx === 0 && $style.first,
-      cardIdx === pltState.numOfCards_-1 && $style.last,
+      order.isFirst_ && $style.first,
+      order.isLast_ && $style.last,
     ]"
     :style="cardStyle"
     @transitionend="$emit('transitionend')"
@@ -226,7 +226,6 @@ const hexTextRef = ref<InstanceType<typeof VBtn>>();
 
 type Props = {
   cardIdx: number;
-  card: Card;
 };
 const props = defineProps<Props>();
 
@@ -237,6 +236,14 @@ defineEmits<{
 }>();
 
 const pltState = usePltStore();
+
+const order = computed(() => ({
+  isFirst_: props.cardIdx === 0,
+  isLast_: props.cardIdx === pltState.numOfCards_ - 1
+}));
+
+const card = computed<Card>(() => pltState.cards_[props.cardIdx]);
+
 const space = computed(() => {
   const infos = pltState.spaceInfos_;
   return {
@@ -249,11 +256,11 @@ const space = computed(() => {
   };
 });
 
-const isLight = computed(() => rgb2gray(hex2rgb(props.card.hex_)) > 127);
+const isLight = computed(() => rgb2gray(hex2rgb(card.value.hex_)) > 127);
 
 const roundedColor = computed({
   get() {
-    return map(props.card.color_, (val) => round(val));
+    return map(card.value.color_, (val) => round(val));
   },
   set(newColorArr: number[]) {
     pltState.editCard_(props.cardIdx, newColorArr);
@@ -264,7 +271,7 @@ const roundedColor = computed({
 // States / Consts
 const favState = useFavStore();
 const isFav = computed(() => {
-  return favState.colors_.includes(props.card.hex_);
+  return favState.colors_.includes(card.value.hex_);
 });
 const showToolbar = computed(() => {
   return {
@@ -280,7 +287,7 @@ const closeIconStyle = computed<CSSProperties | undefined>(() => {
     } : undefined;
 });
 const isLock = computed(() => (
-  props.card.isLock_ ?
+  card.value.isLock_ ?
     { icon: 'lock-fill', label: '解鎖刷新' } as const :
     { icon: 'unlock-fill', label: '鎖定刷新' } as const
 ));
@@ -300,13 +307,13 @@ const showEditor = computed({
   }
 });
 
-const { getColorString_ } = useSettingStore();
+const settingState = useSettingStore();
 const detail = asyncComputed<string>(
   () => {
     return pltState.colorSpace_ === 'name' ?
-      getClosestNamed(props.card.color_)
+      getClosestNamed(card.value.color_)
         .then(str => unzipCssNamed(str)) :
-      getColorString_(pltState.colorSpace_, roundedColor.value);
+      settingState.getColorFunction_(pltState.colorSpace_, roundedColor.value);
   },
   'white'
 );
@@ -314,7 +321,7 @@ const detail = asyncComputed<string>(
 const cardStyle = computed<CSSProperties>(() => {
   return {
     color: isLight.value ? '#000' : '#fff',
-    backgroundColor: props.card.hex_,
+    ...(settingState.paletteDisplay_ === 'block' && { background: toValue(card).hex_ })
   };
 });
 
@@ -361,7 +368,7 @@ const handleLeaveFocusing = (e: KeyboardEvent) => {
  */
 const handleHexEditingFinished = (e: Event) => {
   const text = (e.currentTarget as HTMLInputElement).value;
-  if (text !== props.card.hex_ && isValidHex(text)) {
+  if (text !== card.value.hex_ && isValidHex(text)) {
     const newColor = space.value.converter(hex2rgb(text));
     roundedColor.value = newColor;
   }
@@ -376,7 +383,7 @@ const selectName = (name: string) => pltState.editCard_(
  * Slider changed event.
  */
 const handleSliderChange = (newVal: number, idx: number) => {
-  const newColor = [...props.card.color_];
+  const newColor = [...card.value.color_];
   newColor[idx] = newVal;
   roundedColor.value = newColor;
 };

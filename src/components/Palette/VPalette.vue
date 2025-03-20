@@ -2,6 +2,7 @@
   <div
     ref="cardContainerRef"
     :class="$style.container"
+    :style="paletteGradient"
   >
     <VCard
       v-for="(card, i) in pltState.cards_"
@@ -10,7 +11,6 @@
       :class="draggingIdx === i && $style.dragging"
       :style="[styleInSetting, cardStyle[i]]"
       :cardIdx="i"
-      :card="card"
       @transitionend="isInTrans.arr[i] = false;"
       @remove="handleRemoveCard(i)"
       @dragging="startDragging($event)"
@@ -45,7 +45,7 @@ import VCard from './VCard.vue';
 // utils
 import { useDragableElement } from '@/composables/useDragableElement';
 import { equallyLength, evalPosition, forLoop, isNullish, map } from '@/utils/helpers';
-import { rangeMapping, round } from '@/utils/numeric';
+import { rangeMapping, round, toPercent } from '@/utils/numeric';
 import { rgb2hex } from '@/utils/colors';
 // Stores / Contexts
 import usePltStore, { INIT_NUM_OF_CARDS, MAX_NUM_OF_CARDS } from '@/stores/usePltStore';
@@ -63,16 +63,40 @@ const cardRefs = ref<CardInstance[]>([]);
 const pltState = usePltStore();
 const settingsState = useSettingStore();
 
+const paletteGradient = computed(() => {
+  if (settingsState.paletteDisplay_ === 'block') return;
+  else {
+    const direction = media.isSmall ? '180deg' : '90deg';
+    const step = 1 / pltState.numOfCards_;
+    const half = step / 2;
+    const cards = map(pltState.cards_, (card) => ({ hex_: card.hex_, order_: card.order_ }));
+    cards.sort((a,b) => a.order_ - b.order_);
+    const colorStops = map(
+      cards,
+      (card, i) => `${card.hex_} ${toPercent(half + i * step, 0)}%`
+    );
+    return {
+      background: `linear-gradient(${direction},${colorStops.join()})`
+    };
+  }
+});
+
 const posTime = toRef(() => settingsState.transition.pos);
 const colorTime = toRef(() => settingsState.transition.pos);
 
-const styleInSetting = computed<CSSProperties>(() => ({
-  borderWidth: `${settingsState.border.width / 2}px`,
-  borderColor: settingsState.border.show ? settingsState.border.color : '',
-  transitionDuration: (
-    `${posTime.value}ms, ${posTime.value}ms, ${colorTime.value}ms`
-  ),
-}));
+const styleInSetting = computed<CSSProperties>(() => {
+  return {
+    ...(
+      settingsState.paletteDisplay_ === 'block' && {
+        borderWidth: `${settingsState.border.width / 2}px`,
+        borderColor: settingsState.border.show ? settingsState.border.color : ''
+      }
+    ),
+    transitionDuration: (
+      `${posTime.value}ms, ${posTime.value}ms, ${colorTime.value}ms`
+    )
+  };
+});
 
 
 /**
