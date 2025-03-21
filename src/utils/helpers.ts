@@ -4,27 +4,6 @@ import type { Ref, WritableComputedRef } from 'vue';
 
 
 // ### Object helpers
-/**
- * Check whether two object has same keys.
- */
-// export const hasSameKeys = (obj1: object, obj2: object): boolean => {
-//   const keys1 = Object.keys(obj1);
-//   const keys2 = Object.keys(obj2);
-//   const allKeys = new Set([...keys1, ...keys2]);
-//   if (!allKeys.size) return true;
-//   if (!(allKeys.size === keys1.length && allKeys.size === keys2.length))
-//     return false;
-//   // Deep check
-//   for (const key of allKeys) {
-//     // @ts-expect-error Already deal `undefined` case.
-//     const item1 = typeof obj1[key] === 'object' ? obj1[key] : {};
-//     // @ts-expect-error Already deal `undefined` case.
-//     const item2 = typeof obj2[key] === 'object' ? obj2[key] : {};
-//     if (!hasSameKeys(item1, item2)) return false;
-//   }
-//   return true;
-// };
-
 export const objPick = <T extends object, K extends (string | number | symbol)>(
   obj: T,
   keys: K[]
@@ -40,6 +19,13 @@ export const objPick = <T extends object, K extends (string | number | symbol)>(
     ),
   ) as {[key in K]: key extends keyof T ? T[key] : undefined}
   );
+
+/**
+ * Simple way to deep copy entire object.
+ */
+export const copyObj = (obj: unknown) => {
+  return JSON.parse(JSON.stringify(obj));
+};
 
 /**
  * Shuffle an array by Fisher-Yates shuffle. The process will change the input

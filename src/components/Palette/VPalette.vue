@@ -50,6 +50,7 @@ import { rgb2hex } from '@/utils/colors';
 // Stores / Contexts
 import usePltStore, { INIT_NUM_OF_CARDS, MAX_NUM_OF_CARDS } from '@/stores/usePltStore';
 import useSettingStore from '@/stores/useSettingStore';
+import useFavStore from '@/stores/useFavStore';
 import media from '@/composables/useMedia';
 // Types
 import type { CSSProperties } from 'vue';
@@ -62,6 +63,13 @@ const cardRefs = ref<CardInstance[]>([]);
 
 const pltState = usePltStore();
 const settingsState = useSettingStore();
+const favState = useFavStore();
+
+const init = [
+  settingsState.initializeSettings_(),
+  favState.initializeColors_(),
+  favState.initializePlts_()
+];
 
 const paletteGradient = computed(() => {
   if (settingsState.paletteDisplay_ === 'block') return;
@@ -308,6 +316,8 @@ watch(() => isInTrans.arr.some((val) => val),
     pltState.setIsPending_(false);
   }
 );
+
+await Promise.all(init);
 
 /**
  * Style of insertion region.

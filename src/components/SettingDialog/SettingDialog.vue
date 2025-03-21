@@ -116,7 +116,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue';
+import { ref, reactive, watch } from 'vue';
 import $style from './SettingDialog.module.scss';
 import SelectMenu from '../Custom/SelectMenu.vue';
 import VSwitch from '../Custom/VSwitch.vue';
@@ -163,4 +163,7 @@ const handleTransitionChanged = (
   else transition.color = val;
   settingsState.setTransition_(attr, val);
 };
+
+// Update storage
+watch(settingsState.$state, settingsState.updateStorage, { deep: true });
 </script>

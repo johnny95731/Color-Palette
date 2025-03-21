@@ -3,13 +3,14 @@
     ref="headerRef"
   />
   <main id="main">
-    <VPalette />
+    <Suspense>
+      <VPalette />
+    </Suspense>
   </main>
 </template>
 
 <script setup lang='ts'>
-import { ref, onMounted, computed, onUnmounted } from 'vue';
-import { toValue } from '@vueuse/core';
+import { ref, onMounted, computed, toValue } from 'vue';
 import VHeader from './components/Header/VHeader.vue';
 import VPalette from './components/Palette/VPalette.vue';
 import { HOTKEYS } from './utils/hotkeys';
@@ -17,7 +18,6 @@ import { HOTKEYS } from './utils/hotkeys';
 import usePltStore from './stores/usePltStore';
 // types
 import type { SortActions } from './utils/manipulate/sorting';
-
 
 const headerRef = ref<InstanceType<typeof VHeader>>();
 
@@ -54,6 +54,5 @@ const isCardPending = computed(() => pltState.isEditing_ || pltState.isPending_)
     body.classList.remove('preload');
     body.addEventListener('keydown', keyDownEvent);
   });
-  onUnmounted(() => body.removeEventListener('keydown', keyDownEvent));
 })();
 </script>

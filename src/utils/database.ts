@@ -2,27 +2,30 @@ import { createStore, update } from 'idb-keyval';
 
 // Favorite
 const favStore = createStore('Palette', 'Favorites');
-// -Key: Favorite Colors
-const STORE_FAV_COLORS = 'Colors';
-// -Key: Favorite Palettes
-const STORE_FAV_PLTS = 'Plts';
 
-const updateFavStore = <T>(
-  key: typeof STORE_FAV_COLORS | typeof STORE_FAV_PLTS,
+const STORE_KEYS = {
+  /**
+   * Favorite colors
+   */
+  colors: 'Colors',
+  /**
+   * Favorite palettes
+   */
+  plts: 'Plts',
+  /**
+   * Settings
+   */
+  settings: 'Settings'
+} as const;
+
+export const updateStore = <T>(
+  key: keyof typeof STORE_KEYS,
   callback: (prev: T | undefined) => T
 ) => {
   return update<T>(
-    key,
+    STORE_KEYS[key],
     callback,
     favStore
   )
     .catch((e) => console.error(e));
 };
-
-export const updateFavColors = <T extends string[]>(
-  callback: (prev: T | undefined) => T
-) => updateFavStore<T>(STORE_FAV_COLORS, callback);
-
-export const updateFavPlts = <T extends string[]>(
-  callback: (prev: T | undefined) => T
-) => updateFavStore<T>(STORE_FAV_PLTS, callback);

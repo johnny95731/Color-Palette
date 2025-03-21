@@ -7,14 +7,9 @@ import '@/assets/transition.scss';
 
 import { createApp } from 'vue';
 import App from './App.vue';
-import useFavStore from './stores/useFavStore';
 
 const app = createApp(App);
 app.use(createPinia());
-// Loading databases.
-const favState = useFavStore();
-favState.initializeColors_();
-favState.initializePlts_();
 
 app.mount('#app');
 

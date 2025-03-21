@@ -1,5 +1,7 @@
 import { defineStore } from 'pinia';
+import { updateStore } from '@/utils/database';
 import type { ColorSpaces } from '@/utils/colors';
+import { copyObj } from '@/utils/helpers';
 
 
 // consts
@@ -61,10 +63,10 @@ export type State = {
 
 const useSettingStore = defineStore('setting', {
   state(): State {
-    const initialState: State = {
+    return {
       border: {
         show: false,
-        width: 2,
+        width: 3,
         color: 'white',
       },
       transition: {
@@ -74,47 +76,53 @@ const useSettingStore = defineStore('setting', {
       paletteDisplay_: 'block',
       colorSyntax_: 'modern',
     };
-    // Initialize Settings
-    for (const key of Object.keys(initialState) as (keyof State)[]) {
-      const storageItem = localStorage.getItem(key); // object in storage.
-      const initItem = initialState[key];
-      // First time loading the page
-      if (!storageItem) localStorage.setItem(key, JSON.stringify(initItem));
-      else {
-        const storageObj = JSON.parse(storageItem);
-        if (typeof initItem === typeof storageObj) continue;
-        // Updating versions may cause different keys.
-        // Pick and assign the common part.
-        if (typeof initItem === 'object') {
-          // Assign previous value to current state for common attributes.
-          for (const itemKey of Object.keys(storageObj)) {
-        type attrKey = keyof typeof initItem;
-        if (typeof initItem[itemKey as attrKey] === typeof storageObj[itemKey])
-          initItem[itemKey as attrKey] = storageObj[itemKey];
-          }
-        } else {
-          // @ts-expect-error
-          initialState[key] = storageObj;
-        }
-      }
-    }
-    return initialState;
   },
   actions: {
+    initializeSettings_() {
+      // Initialize Settings
+      return updateStore<State | undefined>('settings', (prev) => {
+        if (!prev) return copyObj(this.$state);
+        for (const key of Object.keys(this.$state) as (keyof State)[]) {
+          const initItem = this[key];
+          let storageItem: typeof initItem;
+          try {
+            storageItem = prev[key];
+          } catch {
+            continue;
+          }
+          // Updating versions may cause different keys.
+          // Pick and assign the common part.
+          if (typeof initItem === 'object') {
+            // Assign previous value to current state for common attributes.
+            for (const itemKey of Object.keys(initItem) as (keyof typeof initItem)[]) {
+              // @ts-expect-error
+              if (typeof initItem[itemKey] === typeof storageItem[itemKey])
+                // @ts-expect-error
+                initItem[itemKey] = storageItem[itemKey];
+            }
+          } else {
+            // @ts-expect-error
+            this[key] = storageItem;
+          }
+        }
+        return copyObj(this.$state);
+      });
+    },
     setBorder_(attr: keyof BorderStyle, val: number | string | boolean) {
       // @ts-expect-error.
       this.border[attr] = val;
-      // Update store
-      localStorage.setItem('border', JSON.stringify(this.border));
     },
     setTransition_(attr: keyof TransitionStyle, val: number) {
       this.transition[attr] = val;
-      // Update store
-      localStorage.setItem('transition', JSON.stringify(this.transition));
     },
     getColorFunction_(space: ColorSpaces, arr: number[]) {
       const sep = this.colorSyntax_ === 'modern' ? ' ' : ',';
       return `${space}(${arr.join(sep)})`;
+    },
+    updateStorage() {
+      updateStore('settings', () => {
+        return JSON.parse(JSON.stringify(this.$state));
+      });
     }
   },
 });
