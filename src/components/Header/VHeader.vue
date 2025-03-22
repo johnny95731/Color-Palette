@@ -25,7 +25,7 @@
       :tooltip="isSmall ? false : true"
       @click="haldleClickSlides"
     />
-    <DropdownMenu
+    <SelectMenu
       v-memo="[isSmall, pltState.sortBy_]"
       prepend-icon="sort-down"
       :class="[
@@ -36,10 +36,12 @@
       :text="isSmall ? '排序' : undefined"
       :tooltip="true"
       :items="sortingMenuItems"
-      :current-val="pltState.sortBy_"
-      @click-item="pltState.sortCards_($event as SortActions)"
+      hide-value
+      :fit-activator="false"
+      :model-value="pltState.sortBy_"
+      @update:model-value="pltState.sortCards_($event as SortActions)"
     />
-    <DropdownMenu
+    <SelectMenu
       v-memo="[isSmall, pltState.mixMode_]"
       prepend-icon="file-earmark-plus"
       :class="[
@@ -50,10 +52,12 @@
       :text="isSmall ? '混色' : undefined"
       :tooltip="isSmall ? false : true"
       :items="MIXING_MODES"
-      :current-val="pltState.mixMode_"
-      @click-item="pltState.setBlendMode_($event as Mixing)"
+      hide-value
+      :fit-activator="false"
+      :model-value="pltState.mixMode_"
+      @update:model-value="pltState.setBlendMode_($event as Mixing)"
     />
-    <DropdownMenu
+    <SelectMenu
       v-memo="[isSmall, pltState.colorSpace_]"
       prepend-icon="sliders"
       :class="[
@@ -65,8 +69,10 @@
       :tooltip="isSmall ? false : true"
       letter-case="all-caps"
       :items="COLOR_SPACES"
-      :current-val="pltState.colorSpace_"
-      @click-item="pltState.setColorSpace_($event as ColorSpaces)"
+      hide-value
+      :fit-activator="false"
+      :model-value="pltState.colorSpace_"
+      @update:model-value="pltState.setColorSpace_($event as ColorSpaces)"
     />
     <div
       v-if="!isSmall"
@@ -281,6 +287,7 @@ import usePltStore from '@/stores/usePltStore';
 import useSettingStore from '@/stores/useSettingStore';
 // types
 import type { ColorSpaces } from '@/utils/colors';
+import SelectMenu from '../Custom/SelectMenu.vue';
 
 
 const ContrastDialog = defineAsyncComponent(

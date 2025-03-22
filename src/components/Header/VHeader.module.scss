@@ -48,21 +48,21 @@
 }
 
 .btn {
+  gap: 0 !important;
+  width: auto !important;
   padding: 8px !important;
 
-  :global(.btn__prepend i::before)  {
-    font-size: $font-lg;
-  }
-
-  &:not(:global(.dropdown-menu)) {
-    gap: 0 !important;
-  }
-
-  &:global(.dropdown-menu) {
+  &:global(.select)  {
     gap: 2px !important;
   }
 
+  :global(.btn__prepend) {
+    font-size: $font-lg;
+  }
+
   @include small {
-    grid-template-columns: max-content min-content max-content;
+    gap: 4px !important;
+    width: 100% !important;
+    font-weight: $font-weight-bold !important;
   }
 }

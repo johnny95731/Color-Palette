@@ -1,92 +1,90 @@
 <template>
-  <div
+  <VBtn
     v-bind="labelState"
+    ref="activatorRef"
     :class="[
       'select',
-      isOpened && 'select--active'
+      isOpened && 'select--active',
     ]"
-    data-haspopup="true"
+    :prepend-icon="prependIcon"
+    :tooltip="tooltip"
     :aria-controls="eager || isOpened ? idForMenu : undefined"
     :aria-expanded="isOpened"
-    :title="btnLabel"
+    data-haspopup="true"
+    @click="handleClickBtn"
+    @focusout="handleClickBtn($event, false)"
+    @keydown="handleKeyDown"
   >
-    <VBtn
-      ref="activatorRef"
-      :class="[
-        'select__activator',
-        titleClass
-      ]"
-      :text="btnLabel"
-      @click="handleClickBtn"
-      @focusout="handleClickBtn($event, false)"
-      @keydown="handleKeyDown"
-    >
-      <template #append>
-        <VIcon
-          type="caret-down-fill"
-          class="triangle"
-        />
-      </template>
-    </VBtn>
-    <div class="field">
-      <label
-        v-if="labelState['aria-label']"
-        :for="idForInput"
-      >{{ labelState['aria-label'] }}</label>
-      <input
-        v-bind="labelState"
-        :id="idForInput"
-        type="text"
-        inputmode="none"
-        tabindex="-1"
-        :value="model"
-        @focus="activatorRef?.$el.focus();"
-      >
-    </div>
-    <OverlayContainer
-      :id="idForMenu"
-      class="menu"
-      type="menu"
-      :content-class="[
-        'select__content',
-        isMobile && 'select__content--mobile',
-        contentClass
-      ]"
-      :content-style="menuStyle"
-      hideScrim
-      :eager="eager"
-      :esc-event="false"
-      v-model="isOpened"
-    >
-      <div
-        ref="containerRef"
-        :class="[
+    <template #default>
+      {{ btnLabel }}
+      <div class="field">
+        <label
+          v-if="labelState['aria-label']"
+          :for="idForInput"
+        >{{ labelState['aria-label'] }}</label>
+        <input
+          v-bind="labelState"
+          :id="idForInput"
+          type="text"
+          inputmode="none"
+          tabindex="-1"
+          :value="model"
+          @focus="activatorRef?.$el.focus();"
+        >
+      </div>
+      <OverlayContainer
+        :id="idForMenu"
+        class="menu"
+        type="menu"
+        :content-class="[
+          'select__content',
+          isMobile && 'select__content--mobile',
           contentClass
         ]"
-        aria-live="polite"
-        :tabindex="-1"
-        @click="handleClickBtn"
-        @focusout="handleClickBtn($event, false)"
-        @keydown="handleKeyDown"
+        :content-style="menuStyle"
+        hideScrim
+        :eager="eager"
+        :esc-event="false"
+        v-model="isOpened"
       >
-        <slot
-          name="items"
-          :props="optionProps"
+        <div
+          ref="containerRef"
+          :class="[
+            contentClass
+          ]"
+          aria-live="polite"
+          :tabindex="-1"
+          @click="handleClickBtn"
+          @focusout="handleClickBtn($event, false)"
+          @keydown="handleKeyDown"
         >
-          <button
-            v-memo="[modelIndex === i]"
-            v-for="(item, i) in selectItems"
-            :key="`Option ${item.val}`"
-            v-bind="optionProps[i]"
-            type="button"
+          <slot
+            name="items"
+            :props="optionProps"
           >
-            {{ item.name }}
-          </button>
-        </slot>
-      </div>
-      <OverlayContainer />
-    </overlaycontainer>
-  </div>
+            <button
+              v-memo="[modelIndex === i]"
+              v-for="(item, i) in selectItems"
+              :key="`Option ${item.val}`"
+              v-bind="optionProps[i]"
+              type="button"
+            >
+              {{ item.name }}
+            </button>
+          </slot>
+        </div>
+      </OverlayContainer>
+    </template>
+    <template
+      v-if="!hideTriangle"
+      #append
+    >
+      <VIcon
+        type="caret-down-fill"
+        class="triangle"
+      />
+    </template>
+  </VBtn>
 </template>
 
 <script setup lang="ts">
@@ -101,39 +99,39 @@ import { mod } from '@/utils/numeric';
 import { noModifierKey, shiftOnly } from '@/utils/browser';
 // types
 import type { CSSProperties, MaybeRefOrGetter, ModelRef } from 'vue';
+import type { Props as VBtnProps } from './VBtn.vue';
 import type { VueClass } from '@/utils/browser';
 
 type SelectItem = {
   val: string,
   name?: string,
+  hotkey?: string
 }
 
 type Props = {
   isMobile?: boolean,
   eager?: boolean
-  items?: readonly (string | {
-    name: string,
-    val: string,
-    hotkey?: string
-  })[];
+  items?: readonly (string | SelectItem)[];
   inputId?: string,
   listboxId?:string,
   label?: string,
-  listboxLabel?: string,
-  title?: string,
-  showValue?: boolean,
-  titleClass?: VueClass,
+  text?: string,
+  prependIcon?: string;
+  tooltip?: VBtnProps['tooltip']
+  hideTriangle?: boolean,
+  hideValue?: boolean,
   contentClass?: VueClass,
   /**
    * Letter case for menu items (display name). Default to be start case.
    */
   letterCase?: 'origin' | 'start' | 'all-caps';
+  fitActivator?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  showValue: true,
   eager: false,
   letterCase: 'start',
+  fitActivator: true,
 });
 
 const activatorRef = ref<InstanceType<typeof VBtn>>();
@@ -239,10 +237,10 @@ const handleNullishModel = (
 };
 
 const handleSelect = (idx: number) => modelIndex.value = idx;
-const btnLabel = computed<string>(() =>
-  props.showValue ?
-    unref(selectItems)[unref(modelIndex)!].name :
-    (props.title ?? 'select')
+const btnLabel = computed<string | undefined>(() =>
+  props.hideValue ?
+    props.text :
+    unref(selectItems)[unref(modelIndex)!].name
 );
 
 watch(
@@ -288,11 +286,10 @@ const menuStyle = shallowRef<CSSProperties>({});
 const updateMenuStyle = () => {
   const rect = (unref(activatorRef)?.$el as HTMLElement).getBoundingClientRect();
   menuStyle.value = {
-    width: rect.width + 'px',
+    width: props.fitActivator ? rect.width + 'px' : undefined,
     maxHeight: `${
       Math.min(
         document.documentElement.clientHeight - rect.bottom,
-        120
       )
     }px`,
     top: props.isMobile ? 'var(--header-height)' : rect.bottom + 'px',

@@ -51,8 +51,7 @@
               v-for="item in menuItems"
               :key="item.val"
               :class="[
-                'dropdown-menu__option',
-                item.val === props.currentVal && 'dropdown-menu__option--selected'
+                'dropdown-menu__option'
               ]"
               type="button"
               @click="$emit('click-item', item.val)"
@@ -122,7 +121,6 @@ type Props = {
   activatorId?:string,
   menuId?:string,
   contentClass?: VueClass,
-  currentVal?: string,
   hideTriangle?: boolean,
   /**
    * Letter case for menu items (display name). Default to be start case.

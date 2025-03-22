@@ -7,25 +7,15 @@ $trans-duration: 120ms;
 }
 
 .select {
+  grid-template-columns: max-content 1fr max-content;
   width: 100%;
+  text-align: start;
 
-  &__activator.btn {
-    grid-template-columns: max-content 1fr max-content;
-
-    width: 100%;
-    padding: 4px 8px 4px 4px;
-
-    color: $color5;
-    text-align: start;
-
-    background-color: $color1;
-
-    .btn__content {
-      overflow: hidden;
-      display: block; // `text-overflow` only works on block containers;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
+  .btn__content {
+    overflow: hidden;
+    display: block; // `text-overflow` only works on block containers;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 }
 
@@ -122,8 +112,8 @@ $trans-duration: 120ms;
     z-index: 10;
     transform: translateX(-100%);
   }
+}
 
-  &--selected {
-    font-weight: $font-weight-bold;
-  }
+.select__option--selected {
+  font-weight: $font-weight-bold;
 }
