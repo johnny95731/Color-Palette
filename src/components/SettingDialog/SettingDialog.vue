@@ -95,10 +95,14 @@
         :class="$style.region"
         aria-labelledby="title-transition"
       >
-        <h3 id="title-transition">
+        <h3
+          v-once
+          id="title-transition"
+        >
           轉場(Transition)
         </h3>
         <label
+          v-once
           id="transition-position"
         >Position(ms)</label>
         <VSlider
@@ -109,9 +113,11 @@
           @update:model-value="handleTransitionChanged($event, 'pos')"
         />
         <label
+          v-once
           id="transition-color"
         >Color(ms)</label>
         <VSlider
+          v-memo="[transition.color]"
           label="#transition-color"
           :max="TRANSITION_MAX_COLOR"
           step="50"

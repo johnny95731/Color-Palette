@@ -35,7 +35,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref, watch, toValue } from 'vue';
-import { invertBoolean } from '@/utils/helpers';
+import { forLoop, invertBoolean } from '@/utils/helpers';
 import { getComponentId } from '@/utils/browser';
 import type { ModelRef } from 'vue';
 
@@ -82,19 +82,19 @@ watch(() => [props.label, toValue(idForInput)] as const, (newVal, oldVal) => {
   const isLabelSame = newVal[0] === oldVal[0];
   const isIdSame = newVal[1] === oldVal[1];
   if (!isLabelSame) {
-    [oldVal[0], newVal[0]].forEach((label, i) => {
-      if (label && label.startsWith('#')) {
-        // Old props.label refer to an element. Remove HTMLFor attribute.
-        // New props.label refer to an element. Add HTMLFor attribute.
-        const element = document.getElementById(label.slice(1));
-        if (element) {
+    forLoop(
+      [oldVal[0], newVal[0]],
+      (_, label, i) => {
+        if (label?.startsWith('#')) {
+          // Old props.label refer to an element. Remove HTMLFor attribute.
+          // New props.label refer to an element. Add HTMLFor attribute.
+          const element = document.getElementById(label.slice(1));
           if (i === 0)
-            element.removeAttribute('for');
+            element?.removeAttribute('for');
           else
-            element.setAttribute('for', newVal[1]);
+            element?.setAttribute('for', newVal[1]);
         }
-      }
-    });
+      });
   }
   if (!isIdSame && newVal[0]?.startsWith('#')) {
     // Update HTMLFor for label if props.label refer to an element and input ID changed

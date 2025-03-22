@@ -1,5 +1,6 @@
 import { computed, ref, toValue, unref, watch } from 'vue';
 import { useEventListener } from '@vueuse/core';
+import { forLoop } from '@/utils/helpers';
 import { clip, rangeMapping } from '@/utils/numeric';
 import type { MaybeRef, MaybeRefOrGetter } from 'vue';
 import type { Position } from '@vueuse/core';
@@ -176,7 +177,7 @@ export const useDragableElement = (
   };
   const end = (e: PointerEvent) => {
     isDragging_.value = false;
-    cleanups.forEach(fn => fn());
+    forLoop(cleanups, (_, fn) => fn());
     unref(onEnd)?.(position.value, e);
     handleEvent(e);
   };

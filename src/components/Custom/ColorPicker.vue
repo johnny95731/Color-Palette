@@ -116,7 +116,7 @@ import VDialog from './VDialog.vue';
 // utils
 import { cartesian2polar, mod, polar2cartesian, rangeMapping, round, toPercent } from '@/utils/numeric';
 import { hex2hsb, hsb2hex, HSL_MAX, isValidHex } from '@/utils/colors';
-import { isNullish, map } from '@/utils/helpers';
+import { forLoop, isNullish, map } from '@/utils/helpers';
 import { COLOR_PICKER_CANVAS_SIZE, getPropertyValue } from '@/utils/browser';
 import { useDragableElement } from '@/composables/useDragableElement';
 // types
@@ -310,7 +310,10 @@ onMounted(() => {
   const hexes = [
     '#f00', '#ff0', '#0f0', '#0ff', '#00f', '#f0f', '#f00'
   ] as const;
-  hexes.forEach((hex, i)=>hueGrad.addColorStop(i / (hexes.length - 1), hex));
+  forLoop(
+    hexes,
+    (_, hex, i)=>hueGrad.addColorStop(i / (hexes.length - 1), hex)
+  );
   canvasGrads.hue_ = hueGrad;
 });
 

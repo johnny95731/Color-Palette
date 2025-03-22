@@ -166,12 +166,12 @@ const usePltStore = defineStore('plt', {
       const tempSort = this.sortBy_;
       const cards = this.cards_;
       const cardState = newCard(idx, this.colorSpace_, this.spaceInfos_.converter(rgb));
-      cards.forEach((card) => {
+      forLoop(cards, (_, card) => {
         if (card.order_ >= idx) card.order_++;
       });
       cards.splice(idx, 0, cardState);
       this.sortBy_ = 'random';
-      if (useSettingStore().autoSort_) {
+      if (useSettingStore().autoSort_ && tempSort !== 'random') {
         this.sortCards_(tempSort);
       }
     },
@@ -180,11 +180,11 @@ const usePltStore = defineStore('plt', {
       const tempSort = this.sortBy_;
       const cards = this.cards_;
       const removedOrder = cards.splice(idx, 1)[0].order_;
-      cards.forEach((card) => {
+      forLoop(cards, (_, card) => {
         if (card.order_ > removedOrder) card.order_--;
       });
       this.sortBy_ = 'random';
-      if (useSettingStore().autoSort_) {
+      if (useSettingStore().autoSort_ && tempSort !== 'random') {
         this.sortCards_(tempSort);
       }
     },
@@ -194,31 +194,32 @@ const usePltStore = defineStore('plt', {
         if (this.cards_[idx].isLock_) return;
         this.cards_[idx] = newCard(idx, this.colorSpace_);
       } else if (idx === -1) {
-        this.cards_.forEach((card, i) =>
+        forLoop(this.cards_, (_, card, i) =>
           card.isLock_ || Object.assign(card, newCard(i, this.colorSpace_))
         );
       }
       this.sortBy_ = 'random';
-      if (useSettingStore().autoSort_) {
+      if (useSettingStore().autoSort_ && tempSort !== 'random') {
         this.sortCards_(tempSort);
       }
     },
     editCard_(idx: number, color: number[]) {
       const { inverter } = this.spaceInfos_;
-      this.cards_[idx].color_ = color;
-      this.cards_[idx].hex_ = rgb2hex(inverter(color));
+      const card = this.cards_[idx];
+      card.color_ = color;
+      card.hex_ = rgb2hex(inverter(color));
       this.sortBy_ = 'random';
     },
     sortCards_(sortBy: SortActions) {
       const opIdx = SORTING_ACTIONS.indexOf(sortBy);
       const op = getDistOp(sortBy);
-      if (
+      if (opIdx === 1) { // random
+        shuffle(this.cards_);
+      } else if (
         opIdx === 2 || // inversion
         this.sortBy_ === SORTING_ACTIONS[opIdx]
       ) {
         this.cards_.reverse();
-      } else if (opIdx === 1) { // random
-        shuffle(this.cards_);
       } else if (opIdx === 0) {
         const distToBlack = map(this.cards_, ({ hex_: hex }) => {
           return op(hex, '#000');
@@ -241,27 +242,33 @@ const usePltStore = defineStore('plt', {
       if (opIdx !== 2)
         // @ts-expect-error
         this.sortBy_ = sortBy;
-      this.cards_.forEach((card, i) => card.order_ = i);
+      forLoop(this.cards_, (_, card, i) => card.order_ = i);
     },
     setIsLock_(idx: number) {
       this.cards_[idx].isLock_ = !this.cards_[idx].isLock_;
     },
     setEditingIdx_(idx?: number) {
-      idx = idx ?? -1;
+      idx ??= -1;
       this.editingIdx_ = this.editingIdx_ === idx ? -1 : idx;
     },
     moveCardOrder_(cardIdx: number, to: number) {
       const initOrder = this.cards_[cardIdx].order_;
       if (initOrder <= to) {
-        this.cards_.forEach((card) => {
-          if (initOrder < card.order_ && card.order_ <= to)
-            card.order_--;
-        });
+        forLoop(
+          this.cards_,
+          (_, card) => {
+            if (initOrder < card.order_ && card.order_ <= to)
+              card.order_--;
+          }
+        );
       } else {
-        this.cards_.forEach((card) => {
-          if (to <= card.order_ && card.order_ < initOrder)
-            card.order_++;
-        });
+        forLoop(
+          this.cards_,
+          (_, card) => {
+            if (to <= card.order_ && card.order_ < initOrder)
+              card.order_++;
+          }
+        );
       }
       this.cards_[cardIdx].order_ = to;
       this.sortBy_ = 'random';
@@ -269,7 +276,7 @@ const usePltStore = defineStore('plt', {
     // Plt state
     resetOrder_() {
       this.cards_.sort((a, b) => a.order_ - b.order_);
-      this.cards_.forEach((card, i) => card.order_ = i);
+      forLoop(this.cards_, (_, card, i) => card.order_ = i);
     },
     setIsPending_(newVal: boolean) {
       this.isPending_ = newVal;
@@ -280,15 +287,21 @@ const usePltStore = defineStore('plt', {
       // cancel: Keep adjusting and reset color.
       this.isAdjustingPlt_ = val !== 'cancel';
       if (val === 'start') {
-        this.cards_.forEach((card) => {
-          card.originHex_ = card.hex_;
-          card.originColor_ = card.color_;
-        });
+        forLoop(
+          this.cards_,
+          (_, card) => {
+            card.originHex_ = card.hex_;
+            card.originColor_ = [...card.color_];
+          }
+        );
       } else { // 'reset' and 'cancel'
-        this.cards_.forEach((card) => {
-          card.hex_ = card.originHex_;
-          card.color_ = card.originColor_;
-        });
+        forLoop(
+          this.cards_,
+          (_, card) => {
+            card.hex_ = card.originHex_;
+            card.color_ = [...card.originColor_];
+          }
+        );
       }
     },
     setPlt_(plt: string[] | number[][]) {

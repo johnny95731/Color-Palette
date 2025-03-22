@@ -649,7 +649,7 @@ export const getSpaceInfos = (
     };
   case 'lab':
     return {
-      labels: ['L', 'a*', 'b*'],
+      labels: ['L*', 'a*', 'b*'],
       range: JSON.parse(JSON.stringify(LAB_MAX)),
       converter: rgb2lab,
       inverter: lab2rgb,
