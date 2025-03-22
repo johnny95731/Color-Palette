@@ -36,6 +36,15 @@
           :items="COLOR_SYNTAX"
           letter-case="start"
         />
+        <span
+          v-once
+          id="auto-sort"
+        >自動排序</span>
+        <VSwitch
+          label="#auto-sort"
+          hide-label
+          v-model="settingsState.autoSort_"
+        />
       </div>
     </template>
     <template v-else-if="tabIdx === 1">

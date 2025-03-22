@@ -46,7 +46,11 @@ type PrimitiveValState = {
    * or
    * legacy syntaxL `rgb(0,0,0)`
    */
-  colorSyntax_: typeof COLOR_SYNTAX[number]
+  colorSyntax_: typeof COLOR_SYNTAX[number],
+  /**
+   * Auto sorting after operations such as refresh, add, and delete.
+   */
+  autoSort_: boolean,
 }
 
 export type State = {
@@ -75,6 +79,7 @@ const useSettingStore = defineStore('setting', {
       },
       paletteDisplay_: 'block',
       colorSyntax_: 'modern',
+      autoSort_: false,
     };
   },
   actions: {

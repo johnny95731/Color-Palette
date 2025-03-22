@@ -9,6 +9,7 @@ import { CONTRAST_METHODS, getContrastAdjuster } from '@/utils/manipulate/contra
 import type { ColorSpaces, ColorSpaceInfos } from '@/utils/colors.ts';
 import type { Mixing } from '@/utils/manipulate/mixing';
 import type { SortActions } from '@/utils/manipulate/sorting';
+import useSettingStore from './useSettingStore';
 
 
 /**
@@ -162,6 +163,7 @@ const usePltStore = defineStore('plt', {
     },
     addCard_(idx: number, rgb: number[]) {
       if (this.numOfCards_ == MAX_NUM_OF_CARDS) return;
+      const tempSort = this.sortBy_;
       const cards = this.cards_;
       const cardState = newCard(idx, this.colorSpace_, this.spaceInfos_.converter(rgb));
       cards.forEach((card) => {
@@ -169,16 +171,25 @@ const usePltStore = defineStore('plt', {
       });
       cards.splice(idx, 0, cardState);
       this.sortBy_ = 'random';
+      if (useSettingStore().autoSort_) {
+        this.sortCards_(tempSort);
+      }
     },
     delCard_(idx: number) {
       if (this.numOfCards_ === 2) return;
+      const tempSort = this.sortBy_;
       const cards = this.cards_;
       const removedOrder = cards.splice(idx, 1)[0].order_;
       cards.forEach((card) => {
         if (card.order_ > removedOrder) card.order_--;
       });
+      this.sortBy_ = 'random';
+      if (useSettingStore().autoSort_) {
+        this.sortCards_(tempSort);
+      }
     },
     refreshCard_(idx: number) {
+      const tempSort = this.sortBy_;
       if (idx >= 0) {
         if (this.cards_[idx].isLock_) return;
         this.cards_[idx] = newCard(idx, this.colorSpace_);
@@ -188,6 +199,9 @@ const usePltStore = defineStore('plt', {
         );
       }
       this.sortBy_ = 'random';
+      if (useSettingStore().autoSort_) {
+        this.sortCards_(tempSort);
+      }
     },
     editCard_(idx: number, color: number[]) {
       const { inverter } = this.spaceInfos_;
