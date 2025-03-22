@@ -42,7 +42,7 @@ export const XYZ_MAX_SCALING = 100;
  * Support color spaces.
  */
 export const COLOR_SPACES = [
-  'rgb', 'name', 'hsl', 'hsb', 'hwb', 'cmyk', 'xyz', 'lab', 'yuv'
+  'rgb', 'name', 'hsl', 'hsb', 'hwb', 'cmyk', 'xyz', 'lab', 'lch', 'yuv'
 ] as const;
 /**
  * Support color spaces.
@@ -59,6 +59,7 @@ export const HSL_MAX = [360, 100, 100] as const;
 export const CMYK_MAX = 100;
 export const XYZ_MAX = map(RGB2XYZ_COEFF_ROW_SUM, val => XYZ_MAX_SCALING * val);
 export const LAB_MAX = [100, [-128, 128], [-128, 128]] as const;
+export const LCH_MAX = [100, 181, 360] as const; // 181 ~= 128 * sqrt(2)
 export const YUV_MAX = RGB_MAX;
 
 
@@ -488,6 +489,23 @@ export const lab2rgb = (lab: number[]): number[] => {
   return xyz2rgb(lab2xyz(lab));
 };
 
+/**
+ * Convert RGB to CIE Lch.
+ * @param rgb RGB color array.
+ * @return CIE Lch color array.
+ */
+export const rgb2lch = (rgb: number[]): number[] => {
+  return lab2lch(xyz2lab(rgb2xyz(rgb)));
+};
+/**
+ * Convert CIE Lch to RGB.
+ * @param lch CIE Lch color array.
+ * @return RGB color array.
+ */
+export const lch2rgb = (lch: number[]): number[] => {
+  return xyz2rgb(lab2xyz(lch2lab(lch)));
+};
+
 // ## RGB <-> YUV
 /**
  * Convert RGB to YUV.
@@ -631,10 +649,17 @@ export const getSpaceInfos = (
     };
   case 'lab':
     return {
-      labels: ['L*', 'a*', 'b*'],
+      labels: ['L', 'a*', 'b*'],
       range: JSON.parse(JSON.stringify(LAB_MAX)),
       converter: rgb2lab,
       inverter: lab2rgb,
+    };
+  case 'lch':
+    return {
+      labels: ['L', 'c', 'h'],
+      range: JSON.parse(JSON.stringify(LCH_MAX)),
+      converter: rgb2lch,
+      inverter: lch2rgb,
     };
   case 'yuv':
     return {
