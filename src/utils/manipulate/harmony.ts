@@ -8,7 +8,7 @@ import { hueRotation } from '../colors';
  */
 export const HARMONY_METHODS = [
   'analogous', 'shades', 'tints', 'tones', 'triad', 'square', 'complement',
-  'split complement', 'tetrad1', 'tetrad2', 'tetrad3'
+  'split complement', 'tetradic1', 'tetradic2', 'tetradic3'
 ] as const;
 /**
  * Support harmony adjusting methods.

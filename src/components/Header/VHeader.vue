@@ -67,7 +67,7 @@
       aria-label="色彩空間"
       :text="isSmall ? '色彩空間' : undefined"
       :tooltip="isSmall ? false : true"
-      letter-case="all-caps"
+      letter-case="origin"
       :items="COLOR_SPACES"
       hide-value
       :fit-activator="false"

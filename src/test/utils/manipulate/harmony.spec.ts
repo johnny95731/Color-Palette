@@ -26,13 +26,6 @@ describe('getHarmonize', () => {
     expect(analogous).toContainEqual([150,0,0]);
     expect(analogous).toContainEqual([210,0,0]);
   });
-  test('tetrad', () => {
-    const analogous = getHarmonize('tetrad')(hsb);
-    expect(analogous).toContainEqual(hsb);
-    expect(analogous).toContainEqual([30,0,0]);
-    expect(analogous).toContainEqual([180,0,0]);
-    expect(analogous).toContainEqual([210,0,0]);
-  });
   test('square', () => {
     const analogous = getHarmonize('square')(hsb);
     expect(analogous).toContainEqual(hsb);
@@ -40,8 +33,15 @@ describe('getHarmonize', () => {
     expect(analogous).toContainEqual([180,0,0]);
     expect(analogous).toContainEqual([270,0,0]);
   });
-  test('compound', () => {
-    const analogous = getHarmonize('compound')(hsb);
+  test('tetrad', () => {
+    const analogous = getHarmonize('tetradic1')(hsb);
+    expect(analogous).toContainEqual(hsb);
+    expect(analogous).toContainEqual([30,0,0]);
+    expect(analogous).toContainEqual([180,0,0]);
+    expect(analogous).toContainEqual([210,0,0]);
+  });
+  test('tetradic3', () => {
+    const analogous = getHarmonize('tetradic3')(hsb);
     expect(analogous).toContainEqual(hsb);
     expect(analogous).toContainEqual([30,0,0]);
     expect(analogous).toContainEqual([180,0,0]);
