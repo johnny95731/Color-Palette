@@ -19,7 +19,7 @@
           label="#contrast-method"
           :items="CONTRAST_METHODS"
           :index="contrastArgs.method"
-          @update:index="handleMethodChanged($event)"
+          @update:idx="handleMethodChanged($event)"
         />
         <template v-if="contrastArgs.method !== 2">
           <label

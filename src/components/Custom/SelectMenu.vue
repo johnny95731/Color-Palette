@@ -212,7 +212,7 @@ const idxInRange = (idx: number): boolean =>
 
 // Values events
 const model = defineModel<string>(); // Higher priority than modelIndex.
-const modelIndex = defineModel<number>('index');
+const modelIndex = defineModel<number>('idx');
 
 // initialize
 /**

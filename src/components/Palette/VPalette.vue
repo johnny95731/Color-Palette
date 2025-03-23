@@ -48,7 +48,7 @@ import { equallyLength, evalPosition, forLoop, isNullish, map } from '@/utils/he
 import { rangeMapping, round, toPercent } from '@/utils/numeric';
 import { rgb2hex } from '@/utils/colors';
 // Stores / Contexts
-import usePltStore, { INIT_NUM_OF_CARDS, MAX_NUM_OF_CARDS } from '@/stores/usePltStore';
+import usePltStore, { MAX_NUM_OF_CARDS } from '@/stores/usePltStore';
 import useSettingStore from '@/stores/useSettingStore';
 import useFavStore from '@/stores/useFavStore';
 import media from '@/composables/useMedia';
@@ -170,7 +170,7 @@ const resetPosition = (pass?: number) => {
 // Add card, remove card, and drag card have transition event.
 // The state is for checking the transition is end.
 const isInTrans = reactive<{arr: boolean[]}>({
-  arr: map(INIT_NUM_OF_CARDS, () => false),
+  arr: map(pltState.cards_, () => false),
 });
 
 
@@ -205,7 +205,7 @@ const handleAddCard = (idx: number) => {
       }
     );
     // Trigger side effect when !isInTrans.some()
-    isInTrans.arr = map(INIT_NUM_OF_CARDS, () => true);
+    isInTrans.arr = map(pltState.cards_, () => true);
   }
 };
 

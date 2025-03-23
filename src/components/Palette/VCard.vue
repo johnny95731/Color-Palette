@@ -144,7 +144,7 @@
         @change="handleHexEditingFinished($event)"
       >
       <SelectMenu
-        v-if="pltState.colorSpace_ === 'name'"
+        v-if="pltState.isInNamedSpace_"
         :class="$style.nameSelect"
         aria-label="CSS named-color選單"
         :items="unzipedNameList"
@@ -181,7 +181,7 @@
             :label="space.labels[i]"
             :showRange="false"
             :showVal="false"
-            :trackerBackground="gradientGen(roundedColor, i, pltState.colorSpace_)"
+            :trackerBackground="gradientGen(roundedColor, i, pltState.colorSpace_.css_)"
             :thumbBackground="card.hex_"
             :min="min"
             :max="max"
@@ -310,7 +310,7 @@ const showEditor = computed({
 const settingState = useSettingStore();
 const detail = asyncComputed<string>(
   () => {
-    return pltState.colorSpace_ === 'name' ?
+    return pltState.isInNamedSpace_ ?
       getClosestNamed(card.value.color_)
         .then(str => unzipCssNamed(str)) :
       settingState.getColorFunction_(pltState.colorSpace_, roundedColor.value);

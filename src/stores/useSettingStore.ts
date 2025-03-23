@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { updateStore } from '@/utils/database';
-import type { ColorSpaces } from '@/utils/colors';
+import type { ColorSpaceObj } from '@/utils/colors';
 import { copyObj } from '@/utils/helpers';
 
 
@@ -120,9 +120,10 @@ const useSettingStore = defineStore('setting', {
     setTransition_(attr: keyof TransitionStyle, val: number) {
       this.transition[attr] = val;
     },
-    getColorFunction_(space: ColorSpaces, arr: number[]) {
+    getColorFunction_(space: ColorSpaceObj, arr: number[]) {
       const sep = this.colorSyntax_ === 'modern' ? ' ' : ',';
-      return `${space}(${arr.join(sep)})`;
+      const colorFunc = space.css_;
+      return `${colorFunc}(${arr.join(sep)})`;
     },
     updateStorage() {
       updateStore('settings', () => {

@@ -68,11 +68,11 @@
       :text="isSmall ? '色彩空間' : undefined"
       :tooltip="isSmall ? false : true"
       letter-case="origin"
-      :items="COLOR_SPACES"
+      :items="spaceMenuItems"
       hide-value
       :fit-activator="false"
-      :model-value="pltState.colorSpace_"
-      @update:model-value="pltState.setColorSpace_($event as ColorSpaces)"
+      :model-value="pltState.colorSpace_.name_"
+      @update:idx="pltState.setColorSpace_($event)"
     />
     <div
       v-if="!isSmall"
@@ -286,7 +286,6 @@ import media from '@/composables/useMedia';
 import usePltStore from '@/stores/usePltStore';
 import useSettingStore from '@/stores/useSettingStore';
 // types
-import type { ColorSpaces } from '@/utils/colors';
 import SelectMenu from '../Custom/SelectMenu.vue';
 
 
@@ -397,4 +396,13 @@ const sortingMenuItems = map(
     hotkey: HOTKEYS.sorting_[name],
   })
 );
+
+const spaceMenuItems = map(
+  COLOR_SPACES,
+  ({ name_ }) => ({
+    name_,
+    val: name_,
+  })
+);
+
 </script>
