@@ -2,7 +2,7 @@ import { defineStore } from 'pinia';
 // Utils
 import { map, forLoop, shuffle } from '@/utils/helpers.ts';
 import { rgb2hex, randRgbGen, hex2rgb, getSpaceInfos, COLOR_SPACES } from '@/utils/colors.ts';
-import { mixers } from '@/utils/manipulate/mixing';
+import { getMixer } from '@/utils/manipulate/mixing';
 import { getDistOp, SORTING_ACTIONS, tspGreedy } from '@/utils/manipulate/sorting';
 import { CONTRAST_METHODS, getContrastAdjuster } from '@/utils/manipulate/contrast';
 import useSettingStore from './useSettingStore';
@@ -149,7 +149,7 @@ const usePltStore = defineStore('plt', {
         // -Add to the last position. Blending the last card and white.
         if (right >= this.numOfCards_) rightRgbColor = [255, 255, 255];
         else rightRgbColor = inverter(this.cards_[right].color_);
-        rgb = mixers[this.mixMode_](
+        rgb = getMixer(this.mixMode_)(
           leftRgbColor, rightRgbColor, this.colorSpace_,
         );
       }

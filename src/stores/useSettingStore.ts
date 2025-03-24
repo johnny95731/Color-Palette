@@ -121,7 +121,7 @@ const useSettingStore = defineStore('setting', {
     },
     updateStorage() {
       updateStore('settings', () => {
-        return JSON.parse(JSON.stringify(this.$state));
+        return copyObj(this.$state);
       });
     }
   },

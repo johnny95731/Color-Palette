@@ -1,4 +1,4 @@
-import { map } from '../helpers';
+import { copyObj, map } from '../helpers';
 import { deg2rad, l2DistSq, mod } from '../numeric';
 import { hex2lab, hex2rgb, lab2lch, rgb2gray } from '../colors';
 
@@ -165,5 +165,5 @@ export const tspGreedy = <key extends keyof T, T extends object>(
     indices.splice(minIdx, 1);
     result.push(pivot);
   }
-  return JSON.parse(JSON.stringify(result));
+  return copyObj(result);
 };

@@ -1,6 +1,6 @@
 import { map } from '../helpers.ts';
-import { COLOR_SPACES, HSL_MAX, getSpaceInfos, type ColorSpace } from '../colors.ts';
-import { elementwiseMean } from '../numeric.ts';
+import { COLOR_SPACES, HSL_MAX, RGB_MAX, getSpaceInfos, type ColorSpace } from '../colors.ts';
+import { clip, elementwiseMean } from '../numeric.ts';
 
 
 // # Constants
@@ -8,7 +8,7 @@ import { elementwiseMean } from '../numeric.ts';
  * Support mix modes.
  */
 export const MIXING_MODES = [
-  'mean', 'brighter', 'deeper', 'soft light', 'random',
+  'mean', 'brighter', 'deeper', 'soft light', 'additive', 'random',
 ] as const;
 
 
@@ -26,36 +26,37 @@ export type Mixing = typeof MIXING_MODES[number];
 
 /**
  * Mixing two colors by evaluate their average.
- * @param color1 RGB color.
- * @param color2 RGB color.
+ * @param color1 Color array.
+ * @param color2 Color array.
  * @param colorSpace Color space.
  * @returns The mean value of color1 and color2.
  */
 const meanMixing = (
-  color1: number[], color2: number[], colorSpace: ColorSpace,
+  color1: number[], color2: number[]
 ): number[] => {
-  const { converter, inverter } = getSpaceInfos(colorSpace);
-  const newColor = elementwiseMean(
-    converter(color1), converter(color2),
-  );
-  return inverter(newColor);
+  const newColor = elementwiseMean(color1, color2);
+  return newColor;
 };
 
 /**
- * Blending two colors by evaluate their RGB average.
- * @param color1 Numeric of a color.
- * @param color2 Numeric of a color.
+ * Mixing two colors by evaluate their RGB sum.
+ * @param color1 Color array.
+ * @param color2 Color array.
  * @param colorSpace Color space.
  * @returns The mean value of color1 and color2.
  */
-const additive = ( // eslint-disable-line
-  color1: number[], color2: number[], colorSpace: ColorSpace,
+const additive = (
+  color1: number[], color2: number[], colorSpace?: ColorSpace,
 ): number[] => {
-  const { converter, inverter } = getSpaceInfos(colorSpace);
-  const newColor = elementwiseMean(
-    converter(color1), converter(color2),
+  const { inverter, converter } = getSpaceInfos(colorSpace ?? COLOR_SPACES[0]);
+  const rgb1 = inverter(color1);
+  const rgb2 = inverter(color2);
+  const newColor = map(
+    rgb1,
+    (val, i) => clip(val + rgb2[i], 0, RGB_MAX),
+    3
   );
-  return inverter(newColor);
+  return converter(newColor);
 };
 
 /**
@@ -95,19 +96,26 @@ const mixingNGamma = (
   const mean = elementwiseMean(color1, color2);
   const { converter, inverter } = getSpaceInfos(COLOR_SPACES[2]); // 'HSL'
   const [hue, sat, lum] = converter(mean);
-  const newSat = Math.pow(sat, gamma) * sacleCoeff[1];
-  const newLum = Math.pow(lum, gamma) * sacleCoeff[2];
+  const newSat = sat**gamma * sacleCoeff[1];
+  const newLum = lum**gamma * sacleCoeff[2];
   return inverter([hue, newSat, newLum]);
 };
 
-const brighter: Mixer = (color1: number[], color2: number[]) =>
+const brighterMix: Mixer = (color1: number[], color2: number[]) =>
   mixingNGamma(color1, color2);
-const deeperBlend: Mixer = (color1: number[], color2: number[]) =>
+const deeperMix: Mixer = (color1: number[], color2: number[]) =>
   mixingNGamma(color1, color2, 1.5);
 
-export const mixers = Object.freeze<Record<Exclude<Mixing, 'random'>, Mixer>>({
-  'mean': meanMixing,
-  'brighter': brighter,
-  'deeper': deeperBlend,
-  'soft light': softLightBlend,
-});
+export const getMixer = (method: string) => {
+  if (method === 'mean')
+    return meanMixing;
+  else if (method === 'brighter')
+    return brighterMix;
+  else if (method === 'deeper')
+    return deeperMix;
+  else if (method === 'soft light')
+    return softLightBlend;
+  else if (method === 'additive')
+    return additive;
+  else return additive;
+};
