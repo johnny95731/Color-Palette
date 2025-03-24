@@ -5,6 +5,16 @@ import { COLOR_SPACES, getClosestNamed, getSpaceInfos, hex2rgb, randRgbGen, rgb2
 
 /* v8 ignore start */
 
+const getEnumeratedRgb = () => {
+  const rangeList = Array.from({ length: RGB_MAX + 1 }, (_, i) => i);
+  const allRgbs: number[][] = [];
+  for (const r of rangeList)
+    for (const g of rangeList)
+      for (const b of rangeList)
+        allRgbs.push([r, g, b]);
+  return allRgbs;
+};
+
 /**
  * Minimum distance between two different css named-color
  */
@@ -62,17 +72,12 @@ const hueEquivalentTest = () => {
 const main = () => {
   calc('Min dist between two css named-color', namedColorMinDist);
   calc('Time cost of `getClosestNamed` (ms)', getNamedColorTimeCost, 500, 100);
-  // hueEquivalentTest();
+  hueEquivalentTest();
 
-  const rangeList = Array.from({ length: RGB_MAX }, (_, i) => i);
-  const allRgbs: number[][] = [];
-  for (const r of rangeList)
-    for (const g of rangeList)
-      for (const b of rangeList)
-        allRgbs.push([r, g, b]);
-  for (const space of COLOR_SPACES) {
+  const allRgbs = getEnumeratedRgb();
+  for (const { name_: space } of COLOR_SPACES) {
     const { converter, inverter } = getSpaceInfos(space);
-    if (space !== 'xyz') continue;
+    if (space !== 'CIEXYZ') continue;
     allRgbs.forEach((rgb) => {
       const spaceColor = inverter(converter(rgb)).map(val => round(val));
       for (let i = 0;i < 3; i++) {

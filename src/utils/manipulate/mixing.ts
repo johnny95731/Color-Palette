@@ -1,7 +1,6 @@
 import { map } from '../helpers.ts';
 import { HSL_MAX, getSpaceInfos } from '../colors.ts';
 import { elementwiseMean } from '../numeric.ts';
-import type { ColorSpaces } from '@/utils/colors.ts';
 
 
 // # Constants
@@ -17,7 +16,7 @@ export const MULTIPLICATION_MAX = 10;
 export const GAMMA_MAX = 3;
 
 export type Mixer = ((c1: number[], c2: number[]) => number[]) |
-((c1: number[], c2: number[], colorSpace: ColorSpaces) => number[]);
+((c1: number[], c2: number[], colorSpace: string) => number[]);
 
 /**
  * Support mix modes.
@@ -33,7 +32,7 @@ export type Mixing = typeof MIXING_MODES[number];
  * @returns The mean value of color1 and color2.
  */
 const meanMixing = (
-  color1: number[], color2: number[], colorSpace: ColorSpaces,
+  color1: number[], color2: number[], colorSpace: string,
 ): number[] => {
   const { converter, inverter } = getSpaceInfos(colorSpace);
   const newColor = elementwiseMean(
@@ -50,7 +49,7 @@ const meanMixing = (
  * @returns The mean value of color1 and color2.
  */
 const additive = ( // eslint-disable-line
-  color1: number[], color2: number[], colorSpace: ColorSpaces,
+  color1: number[], color2: number[], colorSpace: string,
 ): number[] => {
   const { converter, inverter } = getSpaceInfos(colorSpace);
   const newColor = elementwiseMean(

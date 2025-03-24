@@ -38,66 +38,67 @@ export const RGB2XYZ_COEFF_ROW_SUM = map(
 /** Scaling XYZ values when convering from rgb. */
 export const XYZ_MAX_SCALING = 100;
 
-export type ColorSpaceObj = {
+export type ColorSpace = {
   /**
    * Name of the color space.
    */
-  name_: ColorSpaces,
+  name_: string,
   /**
    * Name of CSS color function (if exists). Note that this may be repeated, for example,
    * LCH(ab) and LCH(uv) are `lch`.
    */
-  css_: string
+  css_: string,
+  /**
+   * Browser support this color value or not.
+   */
+  isSupport_: boolean,
 }
 /**
  * Support color spaces.
  */
-export const COLOR_SPACES = [
-  {
-    name_: 'RGB',
-    css_: 'rgb',
-  },
-  {
-    name_: 'Named',
-    css_: 'rgb',
-  },
-  {
-    name_: 'HSL',
-    css_: 'hsl',
-  },
-  {
-    name_: 'HSB',
-    css_: 'hsb',
-  },
-  {
-    name_: 'HWB',
-    css_: 'hwb',
-  },
-  {
-    name_: 'CMYK',
-    css_: 'cmyk',
-  },
-  {
-    name_: 'CIEXYZ',
-    css_: 'xyz'
-  },
-  {
-    name_: 'CIELAB',
-    css_: 'lab'
-  },
-  {
-    name_: 'CIELCH',
-    css_: 'lch'
-  },
-  {
-    name_: 'YUV',
-    css_: 'yuv',
-  },
-] as const;
-/**
- * Support color spaces.
- */
-export type ColorSpaces = typeof COLOR_SPACES[number]['name_'];
+export const COLOR_SPACES = (() => {
+  const spaces = [
+    {
+      name_: 'sRGB',
+      css_: 'rgb'
+    },
+    {
+      name_: 'Named',
+    },
+    {
+      name_: 'HSL',
+    },
+    {
+      name_: 'HSB',
+    },
+    {
+      name_: 'HWB',
+    },
+    {
+      name_: 'CMYK',
+    },
+    {
+      name_: 'CIEXYZ',
+      css_: 'xyz'
+    },
+    {
+      name_: 'CIELAB',
+      css_: 'lab'
+    },
+    {
+      name_: 'CIELCH',
+      css_: 'lch'
+    },
+    {
+      name_: 'YUV',
+    },
+  ] as ColorSpace[];
+  for (const space of spaces) {
+    space.css_ ??= space.name_.toLowerCase();
+    space.isSupport_ = CSS.supports('color', `${space.css_}(0 0 0)`);
+  }
+  return Object.freeze(spaces);
+})();
 
 
 // Ranges of channels for each color space.
@@ -105,11 +106,11 @@ export const RGB_MAX = 255;
 /**
  * Maximum of HSL, HSB, and HWB spaces.
  */
-export const HSL_MAX = [360, 100, 100] as const;
-export const CMYK_MAX = 100;
+export const HSL_MAX = [360, 100, 100] as const; // unit: [deg, %, %]
+export const CMYK_MAX = 100; // unit: %
 export const XYZ_MAX = map(RGB2XYZ_COEFF_ROW_SUM, val => XYZ_MAX_SCALING * val);
-export const LAB_MAX = [100, [-128, 128], [-128, 128]] as const;
-export const LCH_MAX = [100, 181, 360] as const; // 181 ~= 128 * sqrt(2)
+export const LAB_MAX = [100, [-125, 125], [-125, 125]] as const;
+export const LCH_MAX = [100, 100, 360] as const; // unit: [%, %, deg]
 export const YUV_MAX = RGB_MAX;
 
 
@@ -125,6 +126,21 @@ const hexMatcher = /^#?(([0-9A-F]{3}){1,2})$/i;
  */
 export const isValidHex = (str: string): boolean => {
   return hexMatcher.test(str);
+};
+
+export const getColorFunction = (
+  color: number[],
+  space: ColorSpace,
+  checkSupport: boolean = false,
+  sep: string = ' '
+): string => {
+  color = [...color];
+  const colorFunc = space.css_;
+  if (checkSupport && !space.isSupport_) {
+    const { inverter } = getSpaceInfos(space);
+    return getColorFunction(inverter(color), COLOR_SPACES[0]);
+  }
+  return `${colorFunc}(${color.join(sep)})`;
 };
 
 export const hueRotation = ([h, s, b]: number[], deg: number) => (
@@ -284,14 +300,14 @@ const [xyz2lab, lab2xyz] = (() => {
    * The function maps [0, 1] into [4/29, 1]
    */
   const labFunc = (val: number): number => {
-    return val > thresh ? val ** (1/3) : scaling * val + bias;
+    return val > thresh ? Math.cbrt(val) : (scaling * val + bias);
   };
   /**
    * Function that be used in the transformation of CIE LAB to CIE XYZ.
    * The function maps [4/29, 1] into [0, 1]
    */
   const labFuncInv = (val: number) => {
-    return val > threshInv ? val ** 3 : (val - bias) / scaling;
+    return val > threshInv ? val ** 3 : ((val - bias) / scaling);
   };
 
   const xyz2lab: xyz2lab = (xyz: number[]): number[] => {
@@ -317,6 +333,7 @@ const [xyz2lab, lab2xyz] = (() => {
   };
   return [xyz2lab, lab2xyz];
 })();
+export { xyz2lab, lab2xyz };
 
 // ## CIE LAB <-> CIE LCH
 export const lab2lch = (lab: number[]): number[] => {
@@ -634,13 +651,13 @@ export type ColorSpaceInfos = {
   /**
    * Name of channels
    */
-  labels: string[];
+  labels: readonly string[];
   /**
    * Range of each channels.
    * If type of `range` is [number, number], it means [min, max].
    * If type of `range` is number, it means the maximum, [0, range].
    */
-  range: (number | [number, number])[],
+  range: readonly (number | readonly [number, number])[],
   /**
    * The converter that convert RGB space to specified color space.
    * @param x RGB values.
@@ -659,69 +676,69 @@ export type ColorSpaceInfos = {
  * and inverter(to RGB)
  */
 export const getSpaceInfos = (
-  space: string
+  space: ColorSpace
 ): ColorSpaceInfos => {
-  switch (space) {
+  switch (space.name_) {
   case 'HSL':
     return {
       labels: ['Hue', 'Saturation', 'Luminance'],
-      range: [...HSL_MAX],
+      range: HSL_MAX,
       converter: rgb2hsl,
       inverter: hsl2rgb,
     };
   case 'HSB': // hsb = hsv
     return {
       labels: ['Hue', 'Saturation', 'Brightness'],
-      range: [...HSL_MAX],
+      range: HSL_MAX,
       converter: rgb2hsb,
       inverter: hsb2rgb,
     };
   case 'HWB':
     return {
       labels: ['Hue', 'Whiteness', 'Blackness'],
-      range: [...HSL_MAX],
+      range: HSL_MAX,
       converter: rgb2hwb,
       inverter: hwb2rgb,
     };
   case 'CMYK':
     return {
       labels: ['Cyan', 'Magenta', 'Yellow', 'Black'],
-      range: [CMYK_MAX, CMYK_MAX, CMYK_MAX, CMYK_MAX],
+      range: map(4, () => CMYK_MAX),
       converter: rgb2cmyk,
       inverter: cmyk2rgb,
     };
   case 'CIEXYZ':
     return {
       labels: ['X', 'Y', 'Z'],
-      range: [...XYZ_MAX],
+      range: XYZ_MAX,
       converter: rgb2xyz,
       inverter: xyz2rgb,
     };
   case 'CIELAB':
     return {
       labels: ['L*', 'a*', 'b*'],
-      range: JSON.parse(JSON.stringify(LAB_MAX)),
+      range: LAB_MAX,
       converter: rgb2lab,
       inverter: lab2rgb,
     };
   case 'CIELCH':
     return {
       labels: ['L*', 'C*', 'h'],
-      range: JSON.parse(JSON.stringify(LCH_MAX)),
+      range: LCH_MAX,
       converter: rgb2lch,
       inverter: lch2rgb,
     };
   case 'YUV':
     return {
       labels: ['Y', 'U', 'V'],
-      range: [YUV_MAX, YUV_MAX, YUV_MAX],
+      range: map(3, () => YUV_MAX),
       converter: rgb2yuv,
       inverter: yuv2rgb,
     };
   default: // "rgb" and "name"
     return {
       labels: ['Red', 'Green', 'Blue'],
-      range: [RGB_MAX, RGB_MAX, RGB_MAX],
+      range: map(3, () => RGB_MAX),
       converter: (x) => [...x],
       inverter: (x) => [...x],
     };
@@ -739,6 +756,7 @@ export const randRgbGen = (): number[] =>
 
 /**
  * Generate a linear gradient along an axis for a given color and space.
+ * TODO: color function隨空間改變，而不是固定為hex
  */
 export const gradientGen = (() => {
   /**
@@ -749,10 +767,11 @@ export const gradientGen = (() => {
    */
   const steps = 8;
   return (
-    colors: number[], axis: number, space: string,
+    colors: number[],
+    axis: number,
+    space: ColorSpace,
   ) => {
-    const { inverter } = getSpaceInfos(space);
-    const { range } = getSpaceInfos(space);
+    const { inverter, range } = getSpaceInfos(space);
     /**
      * Range of space in specific axis (channel).
      */

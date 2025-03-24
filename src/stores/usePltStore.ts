@@ -5,11 +5,11 @@ import { rgb2hex, randRgbGen, hex2rgb, getSpaceInfos, COLOR_SPACES } from '@/uti
 import { mixers } from '@/utils/manipulate/mixing';
 import { getDistOp, SORTING_ACTIONS, tspGreedy } from '@/utils/manipulate/sorting';
 import { CONTRAST_METHODS, getContrastAdjuster } from '@/utils/manipulate/contrast';
+import useSettingStore from './useSettingStore';
 // Types
-import type { ColorSpaces, ColorSpaceInfos, ColorSpaceObj } from '@/utils/colors.ts';
+import type { ColorSpaceInfos, ColorSpace } from '@/utils/colors.ts';
 import type { Mixing } from '@/utils/manipulate/mixing';
 import type { SortActions } from '@/utils/manipulate/sorting';
-import useSettingStore from './useSettingStore';
 
 
 export const MIN_NUM_OF_CARDS = 2;
@@ -58,7 +58,7 @@ export type Card = {
  * @return {Card} State object.
  */
 const newCard = (
-  order: number, colorSpace: ColorSpaces, color?: number[],
+  order: number, colorSpace: ColorSpace, color?: number[],
 ): Card => {
   const { converter, inverter } = getSpaceInfos(colorSpace);
   if (!color) color = converter(randRgbGen());
@@ -101,7 +101,7 @@ type State = {
    * Color space which will be displayed under hex code and be used in edit
    * mode.
    */
-  colorSpace_: ColorSpaceObj;
+  colorSpace_: ColorSpace;
 }
 
 
@@ -109,7 +109,7 @@ const usePltStore = defineStore('plt', {
   state(): State {
     const space = COLOR_SPACES.find(({ name_ }) => name_ === 'Named')!;
     return {
-      cards_: map(5, (_, i) => newCard(i, space.name_)),
+      cards_: map(5, (_, i) => newCard(i, space)),
       sortBy_: 'random',
       isPending_: false,
       editingIdx_: -1,
@@ -129,7 +129,7 @@ const usePltStore = defineStore('plt', {
       return this.editingIdx_ !== -1;
     },
     spaceInfos_(): ColorSpaceInfos  {
-      return getSpaceInfos(this.colorSpace_.name_);
+      return getSpaceInfos(this.colorSpace_);
     },
   },
   actions: {
@@ -159,7 +159,7 @@ const usePltStore = defineStore('plt', {
       if (this.numOfCards_ == MAX_NUM_OF_CARDS) return;
       const tempSort = this.sortBy_;
       const cards = this.cards_;
-      const cardState = newCard(idx, this.colorSpace_.name_, this.spaceInfos_.converter(rgb));
+      const cardState = newCard(idx, this.colorSpace_, this.spaceInfos_.converter(rgb));
       forLoop(cards, (_, card) => {
         if (card.order_ >= idx) card.order_++;
       });
@@ -170,7 +170,7 @@ const usePltStore = defineStore('plt', {
       }
     },
     delCard_(idx: number) {
-      if (this.numOfCards_ === 2) return;
+      if (this.numOfCards_ === MIN_NUM_OF_CARDS) return;
       const tempSort = this.sortBy_;
       const cards = this.cards_;
       const removedOrder = cards.splice(idx, 1)[0].order_;
@@ -186,10 +186,10 @@ const usePltStore = defineStore('plt', {
       const tempSort = this.sortBy_;
       if (idx >= 0) {
         if (this.cards_[idx].isLock_) return;
-        this.cards_[idx] = newCard(idx, this.colorSpace_.name_);
+        this.cards_[idx] = newCard(idx, this.colorSpace_);
       } else if (idx === -1) {
         forLoop(this.cards_, (_, card, i) =>
-          card.isLock_ || Object.assign(card, newCard(i, this.colorSpace_.name_))
+          card.isLock_ || Object.assign(card, newCard(i, this.colorSpace_))
         );
       }
       this.sortBy_ = 'random';
@@ -306,7 +306,7 @@ const usePltStore = defineStore('plt', {
       this.cards_ = map<Card, string | number[]>(
         plt,
         (color, i) => newCard(
-          i, this.colorSpace_.name_, callback(color),
+          i, this.colorSpace_, callback(color),
         )
       );
       this.sortBy_ = 'random';

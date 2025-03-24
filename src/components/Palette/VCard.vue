@@ -181,7 +181,7 @@
             :label="space.labels[i]"
             :showRange="false"
             :showVal="false"
-            :trackerBackground="gradientGen(roundedColor, i, pltState.colorSpace_.css_)"
+            :trackerBackground="gradientGen(roundedColor, i, pltState.colorSpace_)"
             :thumbBackground="card.hex_"
             :min="min"
             :max="max"
@@ -210,7 +210,7 @@ import CondWrapper from '../Custom/CondWrapper.vue';
 // Utils
 import { map } from '@/utils/helpers';
 import { round, toPercent } from '@/utils/numeric';
-import { rgb2gray, getClosestNamed, hex2rgb, unzipCssNamed, unzipedNameList, gradientGen, getNamedColorRgb, isValidHex } from '@/utils/colors';
+import { rgb2gray, getClosestNamed, hex2rgb, unzipCssNamed, unzipedNameList, gradientGen, getNamedColorRgb, isValidHex, getColorFunction } from '@/utils/colors';
 import { copyText, hexTextEdited, isTabKey } from '@/utils/browser';
 // Stores
 import usePltStore from '@/stores/usePltStore';
@@ -313,7 +313,7 @@ const detail = asyncComputed<string>(
     return pltState.isInNamedSpace_ ?
       getClosestNamed(card.value.color_)
         .then(str => unzipCssNamed(str)) :
-      settingState.getColorFunction_(pltState.colorSpace_, roundedColor.value);
+      getColorFunction(roundedColor.value, pltState.colorSpace_);
   },
   'white'
 );
