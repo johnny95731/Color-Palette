@@ -30,7 +30,7 @@ const distE76 = (hex1: string, hex2: string) => {
 /**
  * Color difference of two hex colors with CIE 1994 formula.
  * Note that CIE 1976 formula is "not" symmetry, that is, `diffE94(hex1, hex2)`
- * and `diffE94(hex2, hex1)` may not different.
+ * and `diffE94(hex2, hex1)` may be different.
  * @param hex1 Hex color 1
  * @param hex2 Hex color 2
  * @returns

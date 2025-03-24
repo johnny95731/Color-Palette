@@ -150,7 +150,7 @@ const usePltStore = defineStore('plt', {
         if (right >= this.numOfCards_) rightRgbColor = [255, 255, 255];
         else rightRgbColor = inverter(this.cards_[right].color_);
         rgb = mixers[this.mixMode_](
-          leftRgbColor, rightRgbColor, this.colorSpace_.name_,
+          leftRgbColor, rightRgbColor, this.colorSpace_,
         );
       }
       return rgb;

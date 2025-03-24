@@ -1,5 +1,5 @@
 import { map } from '../helpers.ts';
-import { HSL_MAX, getSpaceInfos } from '../colors.ts';
+import { COLOR_SPACES, HSL_MAX, getSpaceInfos, type ColorSpace } from '../colors.ts';
 import { elementwiseMean } from '../numeric.ts';
 
 
@@ -16,7 +16,7 @@ export const MULTIPLICATION_MAX = 10;
 export const GAMMA_MAX = 3;
 
 export type Mixer = ((c1: number[], c2: number[]) => number[]) |
-((c1: number[], c2: number[], colorSpace: string) => number[]);
+((c1: number[], c2: number[], colorSpace: ColorSpace) => number[]);
 
 /**
  * Support mix modes.
@@ -32,7 +32,7 @@ export type Mixing = typeof MIXING_MODES[number];
  * @returns The mean value of color1 and color2.
  */
 const meanMixing = (
-  color1: number[], color2: number[], colorSpace: string,
+  color1: number[], color2: number[], colorSpace: ColorSpace,
 ): number[] => {
   const { converter, inverter } = getSpaceInfos(colorSpace);
   const newColor = elementwiseMean(
@@ -49,7 +49,7 @@ const meanMixing = (
  * @returns The mean value of color1 and color2.
  */
 const additive = ( // eslint-disable-line
-  color1: number[], color2: number[], colorSpace: string,
+  color1: number[], color2: number[], colorSpace: ColorSpace,
 ): number[] => {
   const { converter, inverter } = getSpaceInfos(colorSpace);
   const newColor = elementwiseMean(
@@ -93,7 +93,7 @@ const mixingNGamma = (
     (val) => Math.pow(val, (1 - gamma))
   );
   const mean = elementwiseMean(color1, color2);
-  const { converter, inverter } = getSpaceInfos('hsl');
+  const { converter, inverter } = getSpaceInfos(COLOR_SPACES[2]); // 'HSL'
   const [hue, sat, lum] = converter(mean);
   const newSat = Math.pow(sat, gamma) * sacleCoeff[1];
   const newLum = Math.pow(lum, gamma) * sacleCoeff[2];
