@@ -1,6 +1,6 @@
 import { getCurrentInstance } from 'vue';
 import { randomCharacter } from './helpers';
-import { removeNonHex } from './colors';
+import { removeNonHex } from './colorModels/hex';
 import type { Props as OverlayProps } from '@/components/Custom/OverlayContainer.vue';import type { Ref, ShallowRef, WritableComputedRef } from 'vue';
 
 

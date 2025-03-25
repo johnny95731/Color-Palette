@@ -210,8 +210,10 @@ import CondWrapper from '../Custom/CondWrapper.vue';
 // Utils
 import { map } from '@/utils/helpers';
 import { round, toPercent } from '@/utils/numeric';
-import { rgb2gray, getClosestNamed, hex2rgb, unzipCssNamed, unzipedNameList, gradientGen, getNamedColorRgb, isValidHex, getColorFunction } from '@/utils/colors';
+import { rgb2gray, gradientGen, getColorFunction } from '@/utils/colors';
 import { copyText, hexTextEdited, isTabKey } from '@/utils/browser';
+import { getClosestNamed, getNamedColorRgb, unzipCssNamed, unzipedNameList } from '@/utils/colorModels/named';
+import { hex2rgb, isValidHex } from '@/utils/colorModels/hex';
 // Stores
 import usePltStore from '@/stores/usePltStore';
 import useFavStore from '@/stores/useFavStore';

@@ -1,7 +1,8 @@
 import { defineStore } from 'pinia';
 // Utils
 import { map, forLoop, shuffle } from '@/utils/helpers.ts';
-import { rgb2hex, randRgbGen, hex2rgb, getSpaceInfos, COLOR_SPACES } from '@/utils/colors.ts';
+import { randRgbGen, getSpaceInfos, COLOR_SPACES } from '@/utils/colors.ts';
+import { hex2rgb, rgb2hex } from '@/utils/colorModels/hex';
 import { getMixer } from '@/utils/manipulate/mixing';
 import { getDistOp, SORTING_ACTIONS, tspGreedy } from '@/utils/manipulate/sorting';
 import { CONTRAST_METHODS, getContrastAdjuster } from '@/utils/manipulate/contrast';

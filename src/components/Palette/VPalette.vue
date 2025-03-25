@@ -46,7 +46,7 @@ import VCard from './VCard.vue';
 import { useDragableElement } from '@/composables/useDragableElement';
 import { equallyLength, evalPosition, forLoop, isNullish, map } from '@/utils/helpers';
 import { rangeMapping, round, toPercent } from '@/utils/numeric';
-import { rgb2hex } from '@/utils/colors';
+import { rgb2hex } from '@/utils/colorModels/hex';
 // Stores / Contexts
 import usePltStore, { MAX_NUM_OF_CARDS } from '@/stores/usePltStore';
 import useSettingStore from '@/stores/useSettingStore';

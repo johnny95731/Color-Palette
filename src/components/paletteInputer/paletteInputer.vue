@@ -80,18 +80,19 @@ import { ref, unref, watch } from 'vue';
 import $style from './paletteInputer.module.scss';
 import VBtn from '../Custom/VBtn.vue';
 import VIcon from '../Custom/VIcon.vue';
+import VDialog from '../Custom/VDialog.vue';
 // utils
 import { invertBoolean, isNullish, map } from '@/utils/helpers';
 import { clip } from '@/utils/numeric';
 import { ctrlOnly, hexTextEdited, pasteText } from '@/utils/browser';
+import { isValidHex, rgb2hex } from '@/utils/colorModels/hex';
 import { useDragableElement } from '@/composables/useDragableElement';
 // store
 import usePltStore, { MAX_NUM_OF_CARDS } from '@/stores/usePltStore';
-import { isValidHex, randRgbGen, rgb2hex } from '@/utils/colors';
+import { randRgbGen } from '@/utils/colors';
 // type
 import type { CSSProperties } from 'vue';
 import type { Position } from '@vueuse/core';
-import VDialog from '../Custom/VDialog.vue';
 
 const isOpened = defineModel<boolean>(); // Show/Hide
 const isPreview = ref<boolean>(true);

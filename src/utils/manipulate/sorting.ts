@@ -1,6 +1,8 @@
 import { copyObj, map } from '../helpers';
 import { deg2rad, l2DistSq, mod } from '../numeric';
-import { hex2lab, hex2rgb, lab2lch, rgb2gray } from '../colors';
+import { rgb2gray } from '../colors';
+import { hex2lab, hex2rgb } from '../colorModels/hex';
+import { lab2lch } from '../colorModels/cielch';
 
 
 // # Constants

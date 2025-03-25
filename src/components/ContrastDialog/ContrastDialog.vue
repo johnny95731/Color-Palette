@@ -119,11 +119,12 @@ import VDialog from '../Custom/VDialog.vue';
 // utils
 import { forLoop } from '@/utils/helpers';
 import { hexTextEdited, isTabKey } from '@/utils/browser';
+import { getContrastRatio } from '@/utils/colors';
+import { isValidHex } from '@/utils/colorModels/hex';
 import { CONTRAST_METHODS } from '@/utils/manipulate/contrast';
 import { GAMMA_MAX, MULTIPLICATION_MAX } from '@/utils/manipulate/mixing';
 // stores
 import usePltStore from '@/stores/usePltStore';
-import { getContrastRatio, isValidHex } from '@/utils/colors';
 
 const dialogRef = ref<InstanceType<typeof VDialog>>();
 

@@ -48,8 +48,9 @@ import VBtn from '../Custom/VBtn.vue';
 import VTooltip from '../Custom/VTooltip.vue';
 import VIcon from '../Custom/VIcon.vue';
 // utils
-import { hex2rgb, rgb2gray } from '@/utils/colors';
+import { rgb2gray } from '@/utils/colors';
 import { copyText } from '@/utils/browser';
+import { hex2rgb } from '@/utils/colorModels/hex';
 // stores
 import useFavStore from '@/stores/useFavStore';
 // types

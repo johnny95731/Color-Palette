@@ -99,13 +99,15 @@ import VBtn from '../Custom/VBtn.vue';
 import VTooltip from '../Custom/VTooltip.vue';
 // utils
 import { invertBoolean, map } from '@/utils/helpers';
-import { COLOR_MAXES, hex2rgb, hsb2rgb, rgb2gray, rgb2hex } from '@/utils/colors';
+import { COLOR_MAXES, rgb2gray } from '@/utils/colors';
 import { copyText } from '@/utils/browser';
 import { getHarmonize, HARMONY_METHODS } from '@/utils/manipulate/harmony';
 // stores
 import usePltStore, { MAX_NUM_OF_CARDS, MIN_NUM_OF_CARDS } from '@/stores/usePltStore';
 // types
 import type { ModelRef } from 'vue';
+import { hex2rgb, rgb2hex } from '@/utils/colorModels/hex';
+import { hsb2rgb } from '@/utils/colorModels/hsb';
 
 const isOpened = defineModel<boolean>() as ModelRef<boolean>;
 

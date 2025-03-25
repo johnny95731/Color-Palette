@@ -1,6 +1,7 @@
 import { forLoop, map } from '../helpers';
 import { clip, rangeMapping } from '../numeric';
-import { COLOR_MAXES, rgb2yuv, yuv2rgb } from '../colors';
+import { COLOR_MAXES } from '../colors';
+import { rgb2yuv, yuv2rgb } from '../colorModels/yuv';
 
 
 // # Constants

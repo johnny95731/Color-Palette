@@ -115,9 +115,10 @@ import SelectMenu from './SelectMenu.vue';
 import VDialog from './VDialog.vue';
 // utils
 import { cartesian2polar, mod, polar2cartesian, rangeMapping, round, toPercent } from '@/utils/numeric';
-import { COLOR_MAXES, hex2hsb, hsb2hex, isValidHex } from '@/utils/colors';
+import { COLOR_MAXES } from '@/utils/colors';
 import { forLoop, isNullish, map } from '@/utils/helpers';
 import { COLOR_PICKER_CANVAS_SIZE, getPropertyValue } from '@/utils/browser';
+import { hex2hsb, hsb2hex, isValidHex } from '@/utils/colorModels/hex';
 import { useDragableElement } from '@/composables/useDragableElement';
 // types
 import type { MaybeRef, ModelRef } from 'vue';

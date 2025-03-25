@@ -55,8 +55,8 @@ import VTooltip from '../Custom/VTooltip.vue';
 // utils
 import { map, forLoop } from '@/utils/helpers';
 import { toPercent } from '@/utils/numeric';
-import { isValidHex } from '@/utils/colors';
 import { copyText } from '@/utils/browser';
+import { isValidHex } from '@/utils//colorModels/hex';
 // stores
 import useFavStore from '@/stores/useFavStore';
 import usePltStore from '@/stores/usePltStore';
