@@ -99,7 +99,7 @@ import VBtn from '../Custom/VBtn.vue';
 import VTooltip from '../Custom/VTooltip.vue';
 // utils
 import { invertBoolean, map } from '@/utils/helpers';
-import { hex2rgb, hsb2rgb, HSL_MAX, rgb2gray, rgb2hex } from '@/utils/colors';
+import { COLOR_MAXES, hex2rgb, hsb2rgb, rgb2gray, rgb2hex } from '@/utils/colors';
 import { copyText } from '@/utils/browser';
 import { getHarmonize, HARMONY_METHODS } from '@/utils/manipulate/harmony';
 // stores
@@ -114,7 +114,7 @@ const showColorPicker = ref(false);
 // palette and color picker
 const pltState = usePltStore();
 
-const currentColor = ref<number[]>([0, HSL_MAX[1], HSL_MAX[2]]); // hsb color
+const currentColor = ref<number[]>([0, COLOR_MAXES.hsl[1], COLOR_MAXES.hsl[2]]); // hsb color
 const harmonyArgs = reactive<{
   method: number,
   num: number,

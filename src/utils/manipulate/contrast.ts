@@ -1,6 +1,6 @@
 import { forLoop, map } from '../helpers';
 import { clip, rangeMapping } from '../numeric';
-import { rgb2yuv, RGB_MAX, yuv2rgb, YUV_MAX } from '../colors';
+import { COLOR_MAXES, rgb2yuv, yuv2rgb } from '../colors';
 
 
 // # Constants
@@ -26,7 +26,7 @@ const scaling = (rgbs: number[][], c: number): number[][] => {
     (rgb) => {
       return map(
         rgb,
-        val => clip(val * c, 0, RGB_MAX)
+        val => clip(val * c, 0, COLOR_MAXES.rgb)
       );
     }
   );
@@ -40,7 +40,7 @@ const scaling = (rgbs: number[][], c: number): number[][] => {
  * same as `rgb`.
  */
 const gammaCorrection = (rgbs: number[][], gamma: number): number[][] => {
-  const normalizeCoeff = RGB_MAX ** (1 - gamma);
+  const normalizeCoeff = COLOR_MAXES.rgb ** (1 - gamma);
   return map(
     rgbs,
     rgb => map(rgb, (val) => normalizeCoeff * (val**gamma), 3)
@@ -64,14 +64,14 @@ const brightnessScaling = (rgbs: number[][]): number[][] => {
       if (y > prev[1]) prev[1] = y;
       return prev;
     },
-    [YUV_MAX, 0]
+    [COLOR_MAXES.yuv, 0] as [number, number]
   );
   const sqrtMinY = Math.sqrt(minY);
 
   return map(
     yuvs,
     yuv => {
-      yuv[0] = rangeMapping(yuv[0], minY, maxY, sqrtMinY, YUV_MAX);
+      yuv[0] = rangeMapping(yuv[0], minY, maxY, sqrtMinY, COLOR_MAXES.yuv);
       return yuv2rgb(yuv);
     }
   );

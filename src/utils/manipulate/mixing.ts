@@ -1,5 +1,5 @@
 import { map } from '../helpers.ts';
-import { COLOR_SPACES, HSL_MAX, RGB_MAX, getSpaceInfos, type ColorSpace } from '../colors.ts';
+import { COLOR_MAXES, COLOR_SPACES, getSpaceInfos, type ColorSpace } from '../colors.ts';
 import { clip, elementwiseMean } from '../numeric.ts';
 
 
@@ -53,7 +53,7 @@ const additive = (
   const rgb2 = inverter(color2);
   const newColor = map(
     rgb1,
-    (val, i) => clip(val + rgb2[i], 0, RGB_MAX),
+    (val, i) => clip(val + rgb2[i], 0, COLOR_MAXES.rgb),
     3
   );
   return converter(newColor);
@@ -90,7 +90,7 @@ const mixingNGamma = (
    * Scaling coefficients of saturation and luminance.
    */
   const sacleCoeff = map(
-    HSL_MAX,
+    COLOR_MAXES.hsl,
     (val) => Math.pow(val, (1 - gamma))
   );
   const mean = elementwiseMean(color1, color2);

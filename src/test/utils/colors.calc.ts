@@ -1,12 +1,12 @@
 import { calc } from '../calc';
 import NamedColor from '@/assets/NamedColor.json';
 import { isSameFloat, l2DistSq, mod, rangeMapping, round } from '@/utils/numeric';
-import { COLOR_SPACES, getClosestNamed, getSpaceInfos, hex2rgb, randRgbGen, rgb2hex, rgb2hue, RGB_MAX } from '@/utils/colors';
+import { COLOR_MAXES, COLOR_SPACES, getClosestNamed, getSpaceInfos, hex2rgb, randRgbGen, rgb2hex, rgb2hue } from '@/utils/colors';
 
 /* v8 ignore start */
 
 const getEnumeratedRgb = () => {
-  const rangeList = Array.from({ length: RGB_MAX + 1 }, (_, i) => i);
+  const rangeList = Array.from({ length: COLOR_MAXES.rgb + 1 }, (_, i) => i);
   const allRgbs: number[][] = [];
   for (const r of rangeList)
     for (const g of rangeList)
@@ -59,8 +59,8 @@ const atan2Deg = (() => {
  */
 const hueEquivalentTest = () => {
   const rgb = randRgbGen();
-  const [l,a,b] = getSpaceInfos('lab').converter(rgb);
-  const [y,u,v] = getSpaceInfos('yuv').converter(rgb);
+  const [l,a,b] = getSpaceInfos(COLOR_SPACES.find(val => val.name_=== 'CIELAB')!).converter(rgb);
+  const [y,u,v] = getSpaceInfos(COLOR_SPACES.find(val => val.name_=== 'YUV')!).converter(rgb);
 
   const [hue1] = rgb2hue(rgb);
   const hue2 = atan2Deg(b, a);
@@ -75,9 +75,9 @@ const main = () => {
   hueEquivalentTest();
 
   const allRgbs = getEnumeratedRgb();
-  for (const { name_: space } of COLOR_SPACES) {
+  for (const space of COLOR_SPACES) {
     const { converter, inverter } = getSpaceInfos(space);
-    if (space !== 'CIEXYZ') continue;
+    if (space.name_ !== 'CIEXYZ') continue;
     allRgbs.forEach((rgb) => {
       const spaceColor = inverter(converter(rgb)).map(val => round(val));
       for (let i = 0;i < 3; i++) {

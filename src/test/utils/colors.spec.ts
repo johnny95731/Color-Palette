@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { COLOR_SPACES, getClosestNamed, getSpaceInfos, hex2rgb, hueRotation, isValidHex, linearRgb2srgb, rgb2hex, RGB_MAX, srgb2linearRgb, unzipCssNamed } from '@/utils/colors';
+import { COLOR_MAXES, COLOR_SPACES, getClosestNamed, getSpaceInfos, hex2rgb, hueRotation, isValidHex, linearRgb2srgb, rgb2hex, srgb2linearRgb, unzipCssNamed } from '@/utils/colors';
 import { clip, randInt, round } from '@/utils/numeric';
 import NamedColor from '@/assets/NamedColor.json';
 import { getContrastAdjuster } from '@/utils/manipulate/contrast';
@@ -7,10 +7,10 @@ import { getContrastAdjuster } from '@/utils/manipulate/contrast';
 
 const stdRgbs: number[][] = [
   [0, 0, 0],
-  [RGB_MAX, RGB_MAX, RGB_MAX],
-  [RGB_MAX, 0, 0],
-  [0, RGB_MAX, 0],
-  [0, 0, RGB_MAX],
+  [COLOR_MAXES.rgb, COLOR_MAXES.rgb, COLOR_MAXES.rgb],
+  [COLOR_MAXES.rgb, 0, 0],
+  [0, COLOR_MAXES.rgb, 0],
+  [0, 0, COLOR_MAXES.rgb],
 ];
 
 describe('hex', () => {
@@ -116,7 +116,7 @@ describe('linear rgb', () => {
   test('srgb2linearRgb', () => {
     const cases = [
       [0, 0],
-      [RGB_MAX, RGB_MAX],
+      [COLOR_MAXES.rgb, COLOR_MAXES.rgb],
     ] as const;
     for (const [args, expect_] of cases) {
       const result = srgb2linearRgb(args);
@@ -126,7 +126,7 @@ describe('linear rgb', () => {
   test('linearRgb2srgb', () => {
     const cases = [
       [0, 0],
-      [RGB_MAX, RGB_MAX],
+      [COLOR_MAXES.rgb, COLOR_MAXES.rgb],
     ] as const;
     for (const [args, expect_] of cases) {
       const result = linearRgb2srgb(args);
@@ -136,7 +136,7 @@ describe('linear rgb', () => {
   test('stability', () => {
     const testNum = 500;
     for (let i = 0; i < testNum; i++) {
-      const original = Math.random() * RGB_MAX;
+      const original = Math.random() * COLOR_MAXES.rgb;
       const linear = srgb2linearRgb(original);
       const back2Original = linearRgb2srgb(linear);
       const linear2 = srgb2linearRgb(back2Original);
@@ -161,7 +161,7 @@ test('getContrastAdjuster("linear")', () => {
     const factor = randInt(3);
     const newRgb = converter([rgb], factor)[0];
     for (let i = 0; i < 3; i++)
-      expect(newRgb[i]).toBeCloseTo(clip(rgb[i] * factor, 0, RGB_MAX));
+      expect(newRgb[i]).toBeCloseTo(clip(rgb[i] * factor, 0, COLOR_MAXES.rgb));
   }
 });
 
