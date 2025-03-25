@@ -52,7 +52,8 @@
 import { inject, onMounted, provide, ref, unref, watch } from 'vue';
 import { invertBoolean } from '@/utils/helpers';
 import { useElementBounding } from '@/composables/useElementBounding';
-import { calcOverlayZIndex, OVERLAY_SYMBOL } from '@/utils/browser';
+import { calcOverlayZIndex } from '@/utils/browser';
+import { OVERLAY_SYMBOL } from '@/utils/componentSymbols';
 import type { CSSProperties } from 'vue';
 import type { ModelRef } from 'vue';
 import type { VueClass } from '@/utils/browser';

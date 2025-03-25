@@ -73,7 +73,7 @@ export const COLOR_SPACES = (() => {
     space.css_ ??= space.name_.toLowerCase();
     space.isSupport_ = CSS.supports('color', `${space.css_}(0 0 0)`);
   }
-  return Object.freeze(spaces);
+  return spaces;
 })();
 
 
@@ -183,10 +183,13 @@ export const rgb2gray = (rgb: number[]) => dot(rgb, [0.299, 0.587, 0.114]);
 
 /**
  * Evaluate relative luminance from sRGB.
+ * @returns Relative luminance, between [0, 1].
  */
 const relativeLuminance = (srgb: number[]) => {
-  const linear = map(srgb, val => srgb2linearRgb(val), 3);
-  return dot(linear, [0.2126, 0.7152, 0.0722]) / COLOR_MAXES.rgb;
+  return dot(
+    map(srgb, val => srgb2linearRgb(val), 3),
+    [0.2126, 0.7152, 0.0722]
+  ) / COLOR_MAXES.rgb;
 };
 
 /**
@@ -309,8 +312,7 @@ export const getSpaceInfos = (
  * Generate an RGB color.
  * @return [R, G, B]
  */
-export const randRgbGen = (): number[] =>
-  map(3, () => randInt(COLOR_MAXES.rgb));
+export const randRgbGen = () => map(3, () => randInt(COLOR_MAXES.rgb));
 
 /**
  * Generate a linear gradient along an axis for a given color and space.

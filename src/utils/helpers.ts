@@ -9,13 +9,11 @@ export const objPick = <T extends object, K extends (string | number | symbol)>(
   keys: K[]
 ) => (
   Object.fromEntries(
-    forLoop(
+    map(
       keys,
-      (prev, key) => {
-        prev.push([key, obj[key as unknown as keyof T]]);
-        return prev;
-      },
-      [] as [K, T[keyof T]][]
+      (key) => {
+        return [key, obj[key as unknown as keyof T]];
+      }
     ),
   ) as {[key in K]: key extends keyof T ? T[key] : undefined}
   );

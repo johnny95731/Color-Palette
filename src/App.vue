@@ -28,31 +28,29 @@ const isOverlayOpened = computed(() =>
 const isCardPending = computed(() => pltState.isEditing_ || pltState.isPending_);
 
 // Connect hotkey.
-(() => {
-  const { sorting_: sortingHotkey, refresh_: refreshHotkey } = HOTKEYS;
-  const keyDownEvent = (e: KeyboardEvent) => {
-    const key = e.key.toLowerCase();
-    if (
-      // Prevent trigger hotkey when editing or add/remove/move (transition) card.
-      toValue(isCardPending) || toValue(isOverlayOpened)
-    ) return;
-    if (key === refreshHotkey) {
-      pltState.refreshCard_(-1);
+const { sorting_: sortingHotkey, refresh_: refreshHotkey } = HOTKEYS;
+const keyDownEvent = (e: KeyboardEvent) => {
+  const key = e.key.toLowerCase();
+  if (
+  // Prevent trigger hotkey when editing or add/remove/move (transition) card.
+    toValue(isCardPending) || toValue(isOverlayOpened)
+  ) return;
+  if (key === refreshHotkey) {
+    pltState.refreshCard_(-1);
+    return;
+  }
+  for (const [sortBy, hotkey] of Object.entries(sortingHotkey)) {
+    if (key === hotkey) {
+      pltState.sortCards_(sortBy as SortActions);
       return;
     }
-    for (const [sortBy, hotkey] of Object.entries(sortingHotkey)) {
-      if (key === hotkey) {
-        pltState.sortCards_(sortBy as SortActions);
-        return;
-      }
-    }
-  };
+  }
+};
 
-  const body = document.body;
-  onMounted(() => {
-    // `preload` class for preventing annimation occurs on page load.
-    body.classList.remove('preload');
-    body.addEventListener('keydown', keyDownEvent);
-  });
-})();
+const body = document.body;
+onMounted(() => {
+  // `preload` class for preventing annimation occurs on page load.
+  body.classList.remove('preload');
+  body.addEventListener('keydown', keyDownEvent);
+});
 </script>

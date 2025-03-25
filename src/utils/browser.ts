@@ -16,10 +16,6 @@ export const V_DIALOG_OVERLAY_PROPS = {
   type: 'dialog',
 } as const;
 
-// Symbols: for inject and provide in custom components
-export const OVERLAY_SYMBOL = Symbol('overlay');
-export const MENU_SYMBOL = Symbol('menu');
-
 
 export type EventHandler<E extends Event = Event> = (
   (evt?: E) => void | unknown | Promise<void | unknown>) | (
@@ -86,13 +82,12 @@ export const hexTextEdited: EventHandler = (e: Event) => {
   textInput.value = `#${text.toUpperCase()}`;
 };
 
-const clipboard = navigator.clipboard;
 /**
  * Copy text to clipboard.
  */
 export const copyText = (text: string): void => {
   try {
-    clipboard.writeText(text);
+    navigator.clipboard.writeText(text);
   } catch (err) {
     console.error('Failed to copy:', err);
   }
@@ -103,7 +98,7 @@ export const copyText = (text: string): void => {
  */
 export const pasteText = async () => {
   try {
-    return await clipboard.readText();
+    return await navigator.clipboard.readText();
   } catch (err) {
     console.error('Failed to copy:', err);
   }
