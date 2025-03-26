@@ -2,106 +2,56 @@
   <div
     class="switch"
   >
-    <input
-      class="field"
-      ref="inputRef"
-      v-bind="labelState"
-      :id="idForInput"
-      type="checkbox"
-      :value="value"
-      :checked="model"
-      v-model="model"
-      @focus="switchRef?.focus();"
-    >
+    <div class="field">
+      <label
+        v-if="inputState_['aria-label']"
+        :class="[hideLabel && 'field']"
+        :for="inputState_.id"
+        @click.prevent="handleClick();switchRef?.focus()"
+      >{{ inputState_['aria-label'] }}</label>
+      <input
+        v-bind="inputState_"
+        class="field"
+        type="checkbox"
+        inputmode="none"
+        :value="model"
+        :checked="model"
+        v-model="model"
+        @focus="switchRef?.focus();"
+      >
+    </div>
     <div
       ref="switchRef"
-      v-bind="labelState"
       class="switch__slider"
       tabindex="0"
       role="switch"
       :aria-checked="model"
-      :value="value"
+      :aria-labelledby="inputState_['aria-labelledby']"
       @click="handleClick"
       @keydown="handleKeyDown"
     />
-    <label
-      v-if="labelState['aria-label']"
-      :class="[hideLabel && 'field']"
-      :for="idForInput"
-      @click.prevent="handleClick();switchRef?.focus()"
-    >{{ labelState['aria-label'] }}</label>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch, toValue } from 'vue';
-import { forLoop, invertBoolean } from '@/utils/helpers';
-import { getComponentId } from '@/utils/browser';
+import { ref, onUnmounted } from 'vue';
+import useInputField from '@/composables/useInputField';
+import { invertBoolean } from '@/utils/helpers';
 import type { ModelRef } from 'vue';
 
 type Props = {
-  inputId?: string,
   label?: string,
   hideLabel?: boolean;
-
-  value?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
 });
 
-const inputRef = ref<HTMLInputElement>();
 const switchRef = ref<HTMLDivElement>();
 
-
 // Handle form element
-/**
- * Create Id for input
- */
-const idForInput = computed<string>(() =>
-  props.inputId ?? getComponentId('slider')
-);
-/**
- * Aria label for <input /> and role="slider" tag.
- */
-const labelState = computed(() => {
-  if (!props.label) return {};
-  return props.label?.startsWith('#') ? {
-    'aria-labelledby': props.label.slice(1)
-  } : {
-    'aria-label': props.label
-  };
-});
-onMounted(() => {
-  if (!props.label?.startsWith('#')) return;
-  const element = document.getElementById(props.label.slice(1)) as HTMLLabelElement | null;
-  if (element) element.htmlFor = toValue(idForInput);
-});
-// Update label HTMLFor if it is an ID.
-watch(() => [props.label, toValue(idForInput)] as const, (newVal, oldVal) => {
-  const isLabelSame = newVal[0] === oldVal[0];
-  const isIdSame = newVal[1] === oldVal[1];
-  if (!isLabelSame) {
-    forLoop(
-      [oldVal[0], newVal[0]],
-      (_, label, i) => {
-        if (label?.startsWith('#')) {
-          // Old props.label refer to an element. Remove HTMLFor attribute.
-          // New props.label refer to an element. Add HTMLFor attribute.
-          const element = document.getElementById(label.slice(1));
-          if (i === 0)
-            element?.removeAttribute('for');
-          else
-            element?.setAttribute('for', newVal[1]);
-        }
-      });
-  }
-  if (!isIdSame && newVal[0]?.startsWith('#')) {
-    // Update HTMLFor for label if props.label refer to an element and input ID changed
-    const element = document.getElementById(newVal[0].slice(1)) as HTMLLabelElement | null;
-    if (element) element.htmlFor = newVal[1] as string;
-  }
-});
+const { inputState_, cleanup_ } = useInputField(props.label, 'switch');
+onUnmounted(cleanup_);
 
 
 // Handle values

@@ -1,6 +1,5 @@
 <template>
   <VBtn
-    v-bind="labelState"
     ref="activatorRef"
     :class="[
       'select',
@@ -8,7 +7,9 @@
     ]"
     :prepend-icon="prependIcon"
     :tooltip="tooltip"
-    :aria-controls="eager || isOpened ? idForMenu : undefined"
+    :aria-label="inputState_['aria-label']"
+    :aria-labelledby="inputState_['aria-labelledby']"
+    :aria-controls="eager || isOpened ? menuId : undefined"
     :aria-expanded="isOpened"
     data-haspopup="true"
     @click="handleClickBtn"
@@ -19,12 +20,11 @@
       {{ btnLabel }}
       <div class="field">
         <label
-          v-if="labelState['aria-label']"
-          :for="idForInput"
-        >{{ labelState['aria-label'] }}</label>
+          v-if="inputState_['aria-label']"
+          :for="inputState_.id"
+        >{{ inputState_['aria-label'] }}</label>
         <input
-          v-bind="labelState"
-          :id="idForInput"
+          v-bind="inputState_"
           type="text"
           inputmode="none"
           tabindex="-1"
@@ -33,7 +33,7 @@
         >
       </div>
       <OverlayContainer
-        :id="idForMenu"
+        :id="menuId"
         class="menu"
         type="menu"
         :content-class="[
@@ -88,12 +88,13 @@
 </template>
 
 <script setup lang="ts">
-import { watch, ref, onMounted, computed, nextTick, shallowRef, unref } from 'vue';
+import { watch, ref, onMounted, computed, nextTick, shallowRef, unref, onUnmounted } from 'vue';
 import OverlayContainer from './OverlayContainer.vue';
 import VBtn from './VBtn.vue';
 import VIcon from './VIcon.vue';
 // utils
-import { isNullish, invertBoolean, getLetterCaseConverter, map, forLoop } from '@/utils/helpers';
+import useInputField from '@/composables/useInputField';
+import { isNullish, invertBoolean, getLetterCaseConverter, map } from '@/utils/helpers';
 import { getComponentId } from '@/utils/browser';
 import { mod } from '@/utils/numeric';
 import { noModifierKey, shiftOnly } from '@/utils/browser';
@@ -141,56 +142,12 @@ const activator = computed<Element>(() => unref(activatorRef)?.$el);
 
 
 // Handle form element
-/**
- * Create Id for input
- */
-const idForInput = computed<string>(() =>
-  props.inputId ?? getComponentId('select')
-);
-const idForMenu = computed<string>(() =>
+const { inputState_, cleanup_ } = useInputField(props.label, 'select');
+onUnmounted(cleanup_);
+
+const menuId = computed<string>(() =>
   props.listboxId ?? getComponentId('menu')
 );
-/**
- * Aria label for <input> tag and role="combobox".
- */
-const labelState = computed(() => {
-  if (!props.label) return {};
-  return props.label?.startsWith('#') ? {
-    'aria-labelledby': props.label.slice(1)
-  } : {
-    'aria-label': props.label
-  };
-});
-onMounted(() => {
-  if (!props.label?.startsWith('#')) return;
-  const element = document.getElementById(props.label.slice(1)) as HTMLLabelElement | null;
-  if (element) element.htmlFor = unref(idForInput);
-});
-// Update label HTMLFor if it is an ID.
-watch(() => [props.label, unref(idForInput)] as const, (newVal, oldVal) => {
-  const isLabelSame = newVal[0] === oldVal[0];
-  const isIdSame = newVal[1] === oldVal[1];
-  if (!isLabelSame) {
-    forLoop(
-      [oldVal[0], newVal[0]],
-      (_, label, i) => {
-        if (label?.startsWith('#')) {
-          // Old props.label refer to an element. Remove HTMLFor attribute.
-          // New props.label refer to an element. Add HTMLFor attribute.
-          const element = document.getElementById(label.slice(1));
-          if (i === 0)
-            element?.removeAttribute('for');
-          else
-            element?.setAttribute('for', newVal[1]);
-        }
-      });
-  }
-  if (!isIdSame && newVal[0]?.startsWith('#')) {
-    // Update HTMLFor for label if props.label refer to an element and input ID changed
-    const element = document.getElementById(newVal[0].slice(1)) as HTMLLabelElement | null;
-    if (element) element.htmlFor = newVal[1] as string;
-  }
-});
 
 
 const selectItems = computed(() => {

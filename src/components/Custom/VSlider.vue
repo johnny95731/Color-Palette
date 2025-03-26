@@ -1,10 +1,11 @@
 <template>
   <div
-    v-bind="labelState"
     class="slider"
     :style="{
       background: trackerBackground,
     }"
+    :aria-label="inputState_['aria-label']"
+    :aria-labelledby="inputState_['aria-labelledby']"
     role="slider"
     :aria-valuemin="min_"
     :aria-valuemax="max_"
@@ -13,13 +14,13 @@
     @keydown="handleKeyDown"
   >
     <label
-      v-if="labelState && 'aria-label' in labelState"
-      :for="idForInput"
-    >{{ labelState['aria-label'] }}</label>
+      v-if="inputState_['aria-label']"
+      :for="inputState_.id"
+    >{{ inputState_['aria-label'] }}</label>
     <input
-      v-bind="labelState"
-      :id="idForInput"
+      v-bind="inputState_"
       type="range"
+      inputmode="none"
       :min="min_"
       :max="max_"
       :step="step"
@@ -55,17 +56,15 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, watch, ref, computed } from 'vue';
+import { watch, ref, computed, onUnmounted } from 'vue';
 import VTooltip from './VTooltip.vue';
 import { useDragableElement } from '@/composables/useDragableElement';
-import { getComponentId } from '@/utils/browser';
+import useInputField from '@/composables/useInputField';
 import { clip, countDecimals, round, rangeMapping, isSameFloat } from '@/utils/numeric';
-import { forLoop } from '@/utils/helpers';
 import type { ModelRef } from 'vue';
 import type { Position } from '@vueuse/core';
 
 type Props = {
-  inputId?: string,
   label?: string,
   // input attrs
   min?: number | `${number}`,
@@ -92,53 +91,9 @@ const trackerRef = ref<HTMLDivElement>();
 const thumbRef = ref<HTMLDivElement>();
 
 // Handle form element
-/**
- * Create Id for input
- */
-const idForInput = computed<string>(() =>
-  props.inputId ?? getComponentId('slider')
-);
-/**
- * Aria label for <input /> and role="slider" tag.
- */
-const labelState = computed(() => {
-  if (!props.label) return;
-  return props.label?.startsWith('#') ? {
-    'aria-labelledby': props.label.slice(1)
-  } : {
-    'aria-label': props.label
-  };
-});
-onMounted(() => {
-  if (!props.label?.startsWith('#')) return;
-  const element = document.getElementById(props.label.slice(1)) as HTMLLabelElement | null;
-  if (element) element.htmlFor = idForInput.value;
-});
-// Update label HTMLFor if it is an ID.
-watch(() => [props.label, idForInput.value] as const, (newVal, oldVal) => {
-  const isLabelSame = newVal[0] === oldVal[0];
-  const isIdSame = newVal[1] === oldVal[1];
-  if (!isLabelSame) {
-    forLoop(
-      [oldVal[0], newVal[0]],
-      (_, label, i) => {
-        if (label?.startsWith('#')) {
-          // Old props.label refer to an element. Remove HTMLFor attribute.
-          // New props.label refer to an element. Add HTMLFor attribute.
-          const element = document.getElementById(label.slice(1));
-          if (i === 0)
-            element?.removeAttribute('for');
-          else
-            element?.setAttribute('for', newVal[1]);
-        }
-      });
-  }
-  if (!isIdSame && newVal[0]?.startsWith('#')) {
-    // Update HTMLFor for label if props.label refer to an element and input ID changed
-    const element = document.getElementById(newVal[0].slice(1)) as HTMLLabelElement | null;
-    if (element) element.htmlFor = newVal[1] as string;
-  }
-});
+const { inputState_, cleanup_ } = useInputField(props.label, 'slider');
+onUnmounted(cleanup_);
+
 
 const min_ = computed(() => isNaN(+props.min) ? 0 : +props.min);
 const max_ = computed(() => isNaN(+props.max) ? 100 : +props.max);
@@ -238,10 +193,6 @@ const handleKeyDown = (e: KeyboardEvent) => {
 const isShowingLabel = computed(() => {
   if (props.showVal === 'always') return true;
   else return isDragging.value;
-});
-
-defineExpose({
-  inputId: idForInput
 });
 </script>
 

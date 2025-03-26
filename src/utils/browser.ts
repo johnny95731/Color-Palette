@@ -56,6 +56,12 @@ const getPropertyValue = (
 };
 export { getPropertyValue };
 
+
+export const isId = (str: string | undefined | null): str is `#${string}` => {
+  return !!str?.startsWith('#');
+};
+
+
 // Id generater
 export const getComponentId = (() => {
   const getRandomId = (prev?: string) => {
