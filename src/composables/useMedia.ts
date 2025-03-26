@@ -45,25 +45,25 @@ const initialState: MediaContext = {
 
 const media = shallowReactive<MediaContext>(initialState);
 const handleWindowResize = () => {
-  const windowSize: [number, number] = [
+  const windowSize_: [number, number] = [
     document.body.offsetHeight,
     document.body.offsetWidth
   ];
-  const isSmall = windowSize[1] <= maxSmallSize;
-  const headerHeight = getPropertyValue('--header-height');
+  const isSmall_ = windowSize_[1] <= maxSmallSize;
+  const headerHeight_ = getPropertyValue('--header-height');
   // Mobile browser 100vh including toolbar.
   // window.innerHeight did not include toolbar.
   document.documentElement.style
     .setProperty('--app-height', `${window.innerHeight}px`);
   // update
   Object.assign(media, {
-    windowSize,
-    headerHeight,
-    isSmall,
-    pos: isSmall ? 'top' : 'left',
-    clientPos: isSmall ? 'clientY' : 'clientX',
-    bound: isSmall ? [headerHeight, windowSize[0]] : [0, windowSize[1]],
-  });
+    windowSize_,
+    headerHeight_,
+    isSmall_,
+    pos_: isSmall_ ? 'top' : 'left',
+    clientPos_: isSmall_ ? 'clientY' : 'clientX',
+    bound_: isSmall_ ? [headerHeight_, windowSize_[0]] : [0, windowSize_[1]],
+  } satisfies MediaContext);
 };
 
 addEventListener('resize', handleWindowResize, { capture: true });
