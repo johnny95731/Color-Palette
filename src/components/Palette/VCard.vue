@@ -196,7 +196,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, nextTick, ref, shallowReactive, watch } from 'vue';
+import { computed, nextTick, ref, shallowReactive, unref, watch } from 'vue';
 import { asyncComputed, toValue } from '@vueuse/core';
 import $style from './VCard.module.scss';
 // Components
@@ -258,11 +258,11 @@ const space = computed(() => {
   };
 });
 
-const isLight = computed(() => rgb2gray(hex2rgb(card.value.hex_)) > 127);
+const isLight = computed(() => rgb2gray(hex2rgb(unref(card).hex_)) > 127);
 
 const roundedColor = computed({
   get() {
-    return map(card.value.color_, (val) => round(val));
+    return map(unref(card).color_, (val) => round(val));
   },
   set(newColorArr: number[]) {
     pltState.editCard_(props.cardIdx, newColorArr);
@@ -273,7 +273,7 @@ const roundedColor = computed({
 // States / Consts
 const favState = useFavStore();
 const isFav = computed(() => {
-  return favState.colors_.includes(card.value.hex_);
+  return favState.colors_.includes(unref(card).hex_);
 });
 const showToolbar = computed(() => {
   return {
@@ -289,12 +289,12 @@ const closeIconStyle = computed<CSSProperties | undefined>(() => {
     } : undefined;
 });
 const isLock = computed(() => (
-  card.value.isLock_ ?
+  unref(card).isLock_ ?
     { icon: 'lock-fill', label: '解鎖刷新' } as const :
     { icon: 'unlock-fill', label: '鎖定刷新' } as const
 ));
 const isFavIcon = computed(() => (
-  toValue(isFav) ?
+  unref(isFav) ?
     { icon: 'star-fill', label: '移出書籤' } as const :
     { icon: 'star', label: '加入書籤' } as const
 ));
@@ -313,7 +313,7 @@ const settingState = useSettingStore();
 const detail = asyncComputed<string>(
   () => {
     return pltState.isInNamedSpace_ ?
-      getClosestNamed(card.value.color_)
+      getClosestNamed(unref(card).color_)
         .then(str => unzipCssNamed(str)) :
       getColorFunction(roundedColor.value, pltState.colorSpace_);
   },
@@ -337,7 +337,7 @@ watch(showEditor, async (newShow) => {
     let left: string | undefined, right: string | undefined;
     if (!media.isSmall_) {
       // dialogWidth = 150px, 75 = 150 / 2
-      const halfDialogWidth =  75 / media.windowSize_[1]; // to percent
+      const halfDialogWidth =  75 / document.body.offsetWidth; // to percent
       const center = (props.cardIdx + 0.5) / pltState.numOfCards_;
       if (center - halfDialogWidth < 0) { // left pos of dialog is out of viewport
         left = '0';
@@ -370,7 +370,7 @@ const handleLeaveFocusing = (e: KeyboardEvent) => {
  */
 const handleHexEditingFinished = (e: Event) => {
   const text = (e.currentTarget as HTMLInputElement).value;
-  if (text !== card.value.hex_ && isValidHex(text)) {
+  if (text !== unref(card).hex_ && isValidHex(text)) {
     const newColor = space.value.converter(hex2rgb(text));
     roundedColor.value = newColor;
   }
@@ -385,7 +385,7 @@ const selectName = (name: string) => pltState.editCard_(
  * Slider changed event.
  */
 const handleSliderChange = (newVal: number, idx: number) => {
-  const newColor = [...card.value.color_];
+  const newColor = [...unref(card).color_];
   newColor[idx] = newVal;
   roundedColor.value = newColor;
 };

@@ -62,19 +62,19 @@
         <VSwitch
           label="show border"
           hide-label
-          :model-value="settingsState.border.show"
+          :model-value="settingsState.border_.show_"
           @update:model-value="settingsState.setBorder_('show', $event)"
         />
-        <template v-if="settingsState.border.show">
+        <template v-if="settingsState.border_.show_">
           <label
             v-once
             id="border-width"
           >寬度(px)</label>
           <VSlider
-            v-memo="[settingsState.border.width]"
+            v-memo="[settingsState.border_.width_]"
             label="#border-width"
             :max="BORDER_MAX_WIDTH"
-            :model-value="settingsState.border.width"
+            :model-value="settingsState.border_.width_"
             @update:model-value="settingsState.setBorder_('width', $event)"
           />
           <label
@@ -82,11 +82,11 @@
             id="border-color"
           >顏色</label>
           <SelectMenu
-            v-memo="[settingsState.border.color]"
+            v-memo="[settingsState.border_.color_]"
             label="#border-color"
             :items="BORDER_COLOR"
             letter-case="start"
-            :model-value="settingsState.border.color"
+            :model-value="settingsState.border_.color_"
             @update:model-value="settingsState.setBorder_('color', $event)"
           />
         </template>
@@ -109,7 +109,7 @@
           label="#transition-position"
           :max="TRANSITION_MAX_POS"
           step="50"
-          :model-value="settingsState.transition.pos"
+          :model-value="settingsState.transition_.pos_"
           @update:model-value="handleTransitionChanged($event, 'pos')"
         />
         <label
@@ -167,8 +167,8 @@ const transition = reactive<{
   pos: number,
   color: number,
 }>({
-  pos: settingsState.transition.pos,
-  color: settingsState.transition.color,
+  pos: settingsState.transition_.pos_,
+  color: settingsState.transition_.color_,
 });
 
 const handleTransitionChanged = (
@@ -180,5 +180,5 @@ const handleTransitionChanged = (
 };
 
 // Update storage
-watch(settingsState.$state, settingsState.updateStorage, { deep: true });
+watch(settingsState.$state, settingsState.updateStorage_, { deep: true });
 </script>

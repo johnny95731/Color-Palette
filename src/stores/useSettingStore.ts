@@ -18,20 +18,20 @@ export type BorderStyle = {
   /**
    * Show border or not.
    */
-  show: boolean;
-  width: number;
-  color: typeof BORDER_COLOR[number];
+  show_: boolean;
+  width_: number;
+  color_: typeof BORDER_COLOR[number];
 };
 
 export type TransitionStyle = {
   /**
    * Position transition (happens only when dragging) duration (in `ms`).
    */
-  pos: number;
+  pos_: number;
   /**
    * Background-color transition duration (in `ms`).
    */
-  color: number
+  color_: number
 }
 
 type PrimitiveValState = {
@@ -56,25 +56,25 @@ export type State = {
   /**
    * Border of cards.
    */
-  border: BorderStyle;
+  border_: BorderStyle;
   /**
    * Transition of cards
    */
-  transition: TransitionStyle;
+  transition_: TransitionStyle;
 } & PrimitiveValState;
 
 
 const useSettingStore = defineStore('setting', {
   state(): State {
     return {
-      border: {
-        show: false,
-        width: 3,
-        color: 'white',
+      border_: {
+        show_: false,
+        width_: 3,
+        color_: 'white',
       },
-      transition: {
-        pos: 200,
-        color: 200,
+      transition_: {
+        pos_: 200,
+        color_: 200,
       },
       paletteDisplay_: 'block',
       colorSyntax_: 'modern',
@@ -114,12 +114,12 @@ const useSettingStore = defineStore('setting', {
     },
     setBorder_(attr: keyof BorderStyle, val: number | string | boolean) {
       // @ts-expect-error.
-      this.border[attr] = val;
+      this.border_[attr] = val;
     },
     setTransition_(attr: keyof TransitionStyle, val: number) {
-      this.transition[attr] = val;
+      this.transition_[attr] = val;
     },
-    updateStorage() {
+    updateStorage_() {
       updateStore('settings', () => {
         return copyObj(this.$state);
       });

@@ -74,7 +74,7 @@ const init = [
 const paletteGradient = computed(() => {
   if (settingsState.paletteDisplay_ === 'block') return;
   else {
-    const direction = media.isSmall_ ? '180deg' : '90deg';
+    const direction = `${media.isSmall_ ? 180 : 90}deg`;
     const step = 1 / pltState.numOfCards_;
     const half = step / 2;
     const cards = map(pltState.cards_, (card) => ({ hex_: card.hex_, order_: card.order_ }));
@@ -89,15 +89,15 @@ const paletteGradient = computed(() => {
   }
 });
 
-const posTime = toRef(() => settingsState.transition.pos);
-const colorTime = toRef(() => settingsState.transition.pos);
+const posTime = toRef(() => settingsState.transition_.pos_);
+const colorTime = toRef(() => settingsState.transition_.pos_);
 
 const styleInSetting = computed<CSSProperties>(() => {
   return {
     ...(
       settingsState.paletteDisplay_ === 'block' && {
-        borderWidth: `${settingsState.border.width / 2}px`,
-        borderColor: settingsState.border.show ? settingsState.border.color : ''
+        borderWidth: `${settingsState.border_.width_ / 2}px`,
+        borderColor: settingsState.border_.show_ ? settingsState.border_.color_ : ''
       }
     ),
     transitionDuration: (
@@ -113,15 +113,15 @@ const styleInSetting = computed<CSSProperties>(() => {
 const cardPosition = computed(
   () => map(
     pltState.numOfCards_ + 1,
-    (_, i) => ({ [media.pos_]: evalPosition(i, pltState.numOfCards_) })
+    (_, i) => ({ [media.beginPos_]: evalPosition(i, pltState.numOfCards_) })
   )
 );
 
 const resetCardStyle = () => {
   const length = pltState.numOfCards_;
   cardStyle.value = map(pltState.cards_, (_,i) => ({
-    [media.pos_]: evalPosition(i, length),
-    [media.isSmall_ ? 'height' : 'width']: equallyLength(length),
+    [media.beginPos_]: evalPosition(i, length),
+    [media.cardAxis_]: equallyLength(length),
     transitionProperty: 'none'
   }));
 };
@@ -129,11 +129,11 @@ const cardStyle = ref<CSSProperties[]>([]);
 resetCardStyle();
 
 const setSize = (idx: number, size?: string) => {
-  cardStyle.value[idx][media.isSmall_ ? 'height' : 'width'] =
+  cardStyle.value[idx][media.cardAxis_] =
     size ?? equallyLength(pltState.numOfCards_);
 };
 const setPosition = (idx: number, pos?: string) => {
-  cardStyle.value[idx][media.pos_] = pos ?? evalPosition(pltState.cards_[idx].order_, pltState.numOfCards_);
+  cardStyle.value[idx][media.beginPos_] = pos ?? evalPosition(pltState.cards_[idx].order_, pltState.numOfCards_);
 };
 const setTransitionProperty = (idx: number, newVal: 'none' | '') => {
   cardStyle.value[idx].transitionProperty = newVal;
@@ -188,7 +188,7 @@ const eventInfo = ref<{
 // Insert Regions
 const handleAddCard = (idx: number) => {
   const newRgb = pltState.mixCard_(idx - 1);
-  if (!settingsState.transition.pos) { // no transition.
+  if (!settingsState.transition_.pos_) { // no transition.
     pltState.addCard_(idx, newRgb);
   } else {
     pltState.setIsPending_(true);
@@ -216,7 +216,7 @@ const handleAddCard = (idx: number) => {
  */
 const handleRemoveCard = (idx: number) => {
   if (pltState.numOfCards_ === 2) return;
-  if (!settingsState.transition.pos) { // no transition.
+  if (!settingsState.transition_.pos_) { // no transition.
     pltState.delCard_(idx);
   } else {
     pltState.setIsPending_(true);
@@ -275,7 +275,7 @@ const { start: startDragging } = (() => {
   const onEnd = () => {
     if (isNullish(cardIdx)) return;
     eventInfo.value = { event_: 'mouseup' };
-    if (!settingsState.transition.pos) {
+    if (!settingsState.transition_.pos_) {
       isInTrans.arr[cardIdx] = false;
     }
     // Dragging card move to target position.
