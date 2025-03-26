@@ -96,15 +96,15 @@ const useSettingStore = defineStore('setting', {
           }
           // Updating versions may cause different keys.
           // Pick and assign the common part.
-          if (typeof initItem === 'object') {
+          if (typeof initItem === 'object' && typeof storageItem === 'object') {
             // Assign previous value to current state for common attributes.
             for (const itemKey of Object.keys(initItem) as (keyof typeof initItem)[]) {
-              // @ts-expect-error
-              if (typeof initItem[itemKey] === typeof storageItem[itemKey])
-                // @ts-expect-error
+              if (
+                typeof initItem[itemKey] === typeof storageItem[itemKey]
+              )
                 initItem[itemKey] = storageItem[itemKey];
             }
-          } else {
+          } else if (typeof initItem !== 'object') {
             // @ts-expect-error
             this[key] = storageItem;
           }
