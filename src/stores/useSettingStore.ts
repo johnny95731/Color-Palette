@@ -18,67 +18,67 @@ export type BorderStyle = {
   /**
    * Show border or not.
    */
-  show_: boolean;
-  width_: number;
-  color_: typeof BORDER_COLOR[number];
+  show: boolean;
+  width: number;
+  color: typeof BORDER_COLOR[number];
 };
 
 export type TransitionStyle = {
   /**
    * Position transition (happens only when dragging) duration (in `ms`).
    */
-  pos_: number;
+  pos: number;
   /**
    * Background-color transition duration (in `ms`).
    */
-  color_: number
+  color: number
 }
 
 type PrimitiveValState = {
   /**
    *  Display the colors in palette as block or as gradient.
    */
-  paletteDisplay_: typeof PALETTE_DISPLAY[number]
+  paletteDisplay: typeof PALETTE_DISPLAY[number]
   /**
    * CSS color-value syntax.
    * Modern syntax: `rgb(0 0 0)`,
    * or
    * legacy syntaxL `rgb(0,0,0)`
    */
-  colorSyntax_: typeof COLOR_SYNTAX[number],
+  colorSyntax: typeof COLOR_SYNTAX[number],
   /**
    * Auto sorting after operations such as refresh, add, and delete.
    */
-  autoSort_: boolean,
+  autoSort: boolean,
 }
 
 export type State = {
   /**
    * Border of cards.
    */
-  border_: BorderStyle;
+  border: BorderStyle;
   /**
    * Transition of cards
    */
-  transition_: TransitionStyle;
+  transition: TransitionStyle;
 } & PrimitiveValState;
 
 
 const useSettingStore = defineStore('setting', {
   state(): State {
     return {
-      border_: {
-        show_: false,
-        width_: 3,
-        color_: 'white',
+      border: {
+        show: false,
+        width: 3,
+        color: 'white',
       },
-      transition_: {
-        pos_: 200,
-        color_: 200,
+      transition: {
+        pos: 200,
+        color: 200,
       },
-      paletteDisplay_: 'block',
-      colorSyntax_: 'modern',
-      autoSort_: false,
+      paletteDisplay: 'block',
+      colorSyntax: 'modern',
+      autoSort: false,
     };
   },
   actions: {
@@ -114,10 +114,10 @@ const useSettingStore = defineStore('setting', {
     },
     setBorder_(attr: keyof BorderStyle, val: number | string | boolean) {
       // @ts-expect-error.
-      this.border_[attr] = val;
+      this.border[attr] = val;
     },
     setTransition_(attr: keyof TransitionStyle, val: number) {
-      this.transition_[attr] = val;
+      this.transition[attr] = val;
     },
     updateStorage_() {
       updateStore('settings', () => {

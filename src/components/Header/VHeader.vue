@@ -359,7 +359,7 @@ const settingState = useSettingStore();
 const isRunning = ref<boolean>(false);
 const intervalId = ref<number | null>(null);
 
-const delay = computed(() => Math.max(settingState.transition_.color_, 1000));
+const delay = computed(() => Math.max(settingState.transition.color, 1000));
 const slidePlay = () => {
   intervalId.value = window.setInterval(
     () => toValue(isRunning) && pltState.refreshCard_(-1),
@@ -378,7 +378,7 @@ const haldleClickSlides = () => {
   pltState.setIsPending_(toValue(isRunning));
 };
 watch(
-  () => settingState.transition_.color_,
+  () => settingState.transition.color,
   () => {
     if (toValue(isRunning)) {
       window.clearInterval(toValue(intervalId) as number | undefined);

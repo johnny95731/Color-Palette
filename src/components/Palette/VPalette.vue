@@ -72,7 +72,7 @@ const init = [
 ];
 
 const paletteGradient = computed(() => {
-  if (settingsState.paletteDisplay_ === 'block') return;
+  if (settingsState.paletteDisplay === 'block') return;
   else {
     const direction = `${media.isSmall_ ? 180 : 90}deg`;
     const step = 1 / pltState.numOfCards_;
@@ -89,15 +89,15 @@ const paletteGradient = computed(() => {
   }
 });
 
-const posTime = toRef(() => settingsState.transition_.pos_);
-const colorTime = toRef(() => settingsState.transition_.pos_);
+const posTime = toRef(() => settingsState.transition.pos);
+const colorTime = toRef(() => settingsState.transition.pos);
 
 const styleInSetting = computed<CSSProperties>(() => {
   return {
     ...(
-      settingsState.paletteDisplay_ === 'block' && {
-        borderWidth: `${settingsState.border_.width_ / 2}px`,
-        borderColor: settingsState.border_.show_ ? settingsState.border_.color_ : ''
+      settingsState.paletteDisplay === 'block' && {
+        borderWidth: `${settingsState.border.width / 2}px`,
+        borderColor: settingsState.border.show ? settingsState.border.color : ''
       }
     ),
     transitionDuration: (
@@ -188,7 +188,7 @@ const eventInfo = ref<{
 // Insert Regions
 const handleAddCard = (idx: number) => {
   const newRgb = pltState.mixCard_(idx - 1);
-  if (!settingsState.transition_.pos_) { // no transition.
+  if (!settingsState.transition.pos) { // no transition.
     pltState.addCard_(idx, newRgb);
   } else {
     pltState.setIsPending_(true);
@@ -216,7 +216,7 @@ const handleAddCard = (idx: number) => {
  */
 const handleRemoveCard = (idx: number) => {
   if (pltState.numOfCards_ === 2) return;
-  if (!settingsState.transition_.pos_) { // no transition.
+  if (!settingsState.transition.pos) { // no transition.
     pltState.delCard_(idx);
   } else {
     pltState.setIsPending_(true);
@@ -275,7 +275,7 @@ const { start: startDragging } = (() => {
   const onEnd = () => {
     if (isNullish(cardIdx)) return;
     eventInfo.value = { event_: 'mouseup' };
-    if (!settingsState.transition_.pos_) {
+    if (!settingsState.transition.pos) {
       isInTrans.arr[cardIdx] = false;
     }
     // Dragging card move to target position.

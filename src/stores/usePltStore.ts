@@ -166,7 +166,7 @@ const usePltStore = defineStore('plt', {
       });
       cards.splice(idx, 0, cardState);
       this.sortBy_ = 'random';
-      if (useSettingStore().autoSort_ && tempSort !== 'random') {
+      if (useSettingStore().autoSort && tempSort !== 'random') {
         this.sortCards_(tempSort);
       }
     },
@@ -179,7 +179,7 @@ const usePltStore = defineStore('plt', {
         if (card.order_ > removedOrder) card.order_--;
       });
       this.sortBy_ = 'random';
-      if (useSettingStore().autoSort_ && tempSort !== 'random') {
+      if (useSettingStore().autoSort && tempSort !== 'random') {
         this.sortCards_(tempSort);
       }
     },
@@ -194,7 +194,7 @@ const usePltStore = defineStore('plt', {
         );
       }
       this.sortBy_ = 'random';
-      if (useSettingStore().autoSort_ && tempSort !== 'random') {
+      if (useSettingStore().autoSort && tempSort !== 'random') {
         this.sortCards_(tempSort);
       }
     },

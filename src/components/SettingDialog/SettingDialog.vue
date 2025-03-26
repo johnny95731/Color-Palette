@@ -19,8 +19,8 @@
           id="color-syntax"
         >顯示</label>
         <SelectMenu
-          v-memo="[settingsState.paletteDisplay_]"
-          v-model="settingsState.paletteDisplay_"
+          v-memo="[settingsState.paletteDisplay]"
+          v-model="settingsState.paletteDisplay"
           label="#color-syntax"
           :items="PALETTE_DISPLAY"
           letter-case="start"
@@ -30,8 +30,8 @@
           id="color-syntax"
         >色彩語法</label>
         <SelectMenu
-          v-memo="[settingsState.colorSyntax_]"
-          v-model="settingsState.colorSyntax_"
+          v-memo="[settingsState.colorSyntax]"
+          v-model="settingsState.colorSyntax"
           label="#color-syntax"
           :items="COLOR_SYNTAX"
           letter-case="start"
@@ -43,7 +43,7 @@
         <VSwitch
           label="#auto-sort"
           hide-label
-          v-model="settingsState.autoSort_"
+          v-model="settingsState.autoSort"
         />
       </div>
     </template>
@@ -62,19 +62,19 @@
         <VSwitch
           label="show border"
           hide-label
-          :model-value="settingsState.border_.show_"
+          :model-value="settingsState.border.show"
           @update:model-value="settingsState.setBorder_('show', $event)"
         />
-        <template v-if="settingsState.border_.show_">
+        <template v-if="settingsState.border.show">
           <label
             v-once
             id="border-width"
           >寬度(px)</label>
           <VSlider
-            v-memo="[settingsState.border_.width_]"
+            v-memo="[settingsState.border.width]"
             label="#border-width"
             :max="BORDER_MAX_WIDTH"
-            :model-value="settingsState.border_.width_"
+            :model-value="settingsState.border.width"
             @update:model-value="settingsState.setBorder_('width', $event)"
           />
           <label
@@ -82,11 +82,11 @@
             id="border-color"
           >顏色</label>
           <SelectMenu
-            v-memo="[settingsState.border_.color_]"
+            v-memo="[settingsState.border.color]"
             label="#border-color"
             :items="BORDER_COLOR"
             letter-case="start"
-            :model-value="settingsState.border_.color_"
+            :model-value="settingsState.border.color"
             @update:model-value="settingsState.setBorder_('color', $event)"
           />
         </template>
@@ -109,7 +109,7 @@
           label="#transition-position"
           :max="TRANSITION_MAX_POS"
           step="50"
-          :model-value="settingsState.transition_.pos_"
+          :model-value="settingsState.transition.pos"
           @update:model-value="handleTransitionChanged($event, 'pos')"
         />
         <label
@@ -167,8 +167,8 @@ const transition = reactive<{
   pos: number,
   color: number,
 }>({
-  pos: settingsState.transition_.pos_,
-  color: settingsState.transition_.color_,
+  pos: settingsState.transition.pos,
+  color: settingsState.transition.color,
 });
 
 const handleTransitionChanged = (
