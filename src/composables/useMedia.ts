@@ -5,28 +5,28 @@ type MediaContext = {
   /**
    * The device size, [height, width].
    */
-  windowSize: [number, number];
+  windowSize_: [number, number];
   /**
    * Height of header.
    */
-  headerHeight: number;
+  headerHeight_: number;
   /**
    * The device is small (width <= 900px) or not.
    */
-  isSmall: boolean;
+  isSmall_: boolean;
   /**
    * Card pos along flow direction. For getting data from event.
    */
-  pos: 'left' | 'top';
+  pos_: 'left' | 'top';
   /**
    * Cursor pos direction along flow direction. For getting data from event.
    */
-  clientPos: 'clientX' | 'clientY';
+  clientPos_: 'clientX' | 'clientY';
   /**
    * For adjusting card position or varifying valid cursor position.
    * Along y-direction if isSmall else x-direction.
    */
-  bound: [number, number];
+  bound_: [number, number];
 }
 
 /**
@@ -35,12 +35,12 @@ type MediaContext = {
 const maxSmallSize = getPropertyValue('--small-view');
 
 const initialState: MediaContext = {
-  windowSize: [1, 1],
-  headerHeight: 0,
-  isSmall: true,
-  pos: 'left',
-  clientPos: 'clientX',
-  bound: [0, 1],
+  windowSize_: [1, 1],
+  headerHeight_: 0,
+  isSmall_: true,
+  pos_: 'left',
+  clientPos_: 'clientX',
+  bound_: [0, 1],
 };
 
 const media = shallowReactive<MediaContext>(initialState);

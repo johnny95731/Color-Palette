@@ -144,11 +144,11 @@ const { start: startDragging } = (() => {
     divPosition.value.top = 0;
   };
   return useDragableElement(contentRef, {
-    containerElement: contentRef,
-    binding: false,
-    onStart,
-    onMove,
-    onEnd,
+    containerElement_: contentRef,
+    binding_: false,
+    onStart_: onStart,
+    onMove_: onMove,
+    onEnd_: onEnd,
   });
 })();
 

@@ -393,9 +393,9 @@ const canvasDraggingStart = toValue(() => {
     updaters.value.canvas_(pos);
   };
   const { start } = useDragableElement(canvasPickerRef, {
-    containerElement: canvasPickerRef,
-    onStart: update,
-    onMove: update,
+    containerElement_: canvasPickerRef,
+    onStart_: update,
+    onMove_: update,
   });
   return start;
 });
@@ -406,9 +406,9 @@ const sliderDraggingStart = toValue(() => {
     updaters.value.secondPicker_!(pos);
   };
   const { start } = useDragableElement(secondPickerRef, {
-    containerElement: secondPickerRef,
-    onStart: update,
-    onMove: update,
+    containerElement_: secondPickerRef,
+    onStart_: update,
+    onMove_: update,
   });
   return start;
 });

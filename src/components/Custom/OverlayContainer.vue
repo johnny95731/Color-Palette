@@ -86,7 +86,7 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const contentRef = ref<HTMLDivElement>();
-const { rect } = useElementBounding(contentRef);
+const { rect_ } = useElementBounding(contentRef);
 
 const emit = defineEmits<{
   'update:modelValue': [newVal: boolean],
@@ -103,8 +103,8 @@ const handleKeydown = (e: KeyboardEvent) => {
 const { mousedown_, clickOutside_ } = (() => {
   const isClickOutside = (e: PointerEvent | MouseEvent) => (
     !(
-      rect.top <= e.clientY && e.clientY <= rect.bottom &&
-    rect.left <= e.clientX && e.clientX <= rect.right
+      rect_.top <= e.clientY && e.clientY <= rect_.bottom &&
+    rect_.left <= e.clientX && e.clientX <= rect_.right
     )
   );
   let pointerdownOutside: boolean = false;

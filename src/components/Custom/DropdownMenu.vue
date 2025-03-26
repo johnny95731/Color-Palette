@@ -263,7 +263,7 @@ provide<MenuProvided>(MENU_SYMBOL, {
   nestedClosing
 });
 
-const { rect: activatorRect } = useElementBounding(activator);
+const { rect_: activatorRect } = useElementBounding(activator);
 const menuContainerStyle = computed<CSSProperties>(() => {
   return {
     minWidth: activatorRect.width + 'px',

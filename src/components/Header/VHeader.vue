@@ -341,16 +341,16 @@ const inInit = reactive({
 const isOpening = reactive({ ...inInit });
 
 
-const isSomeDialogOpened = computed(() => {
+const isSomeDialogOpened_ = computed(() => {
   return Object.values(isOpening).some((val) => val);
 });
 
 defineExpose({
-  isSomeDialogOpened_: isSomeDialogOpened
+  isSomeDialogOpened_
 });
 
 
-const isSmall = computed(() => media.isSmall);
+const isSmall = computed(() => media.isSmall_);
 
 const pltState = usePltStore();
 const settingState = useSettingStore();

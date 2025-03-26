@@ -159,19 +159,19 @@ watch(model, (newVal) => {
 }, { immediate: true });
 
 // onChange event => Drag or key down.
-const { isDragging } = (() => {
+const { isDragging_ } = (() => {
   const update = (pos: Position) => {
     updateModel(rangeMapping(pos.x, 0, 100, min_.value, max_.value));
   };
   return useDragableElement(trackerRef, {
-    containerElement: trackerRef,
-    onStart: update,
-    onMove: update,
-    initialValue: {
+    containerElement_: trackerRef,
+    onStart_: update,
+    onMove_: update,
+    initialValue_: {
       x: rangeMapping(model.value, min_.value, max_.value, 0, 100),
       y: 0,
     },
-    axis: 'x'
+    axis_: 'x'
   });
 })();
 // -Key down
@@ -192,7 +192,7 @@ const handleKeyDown = (e: KeyboardEvent) => {
 // Label/Tooltip
 const isShowingLabel = computed(() => {
   if (props.showVal === 'always') return true;
-  else return isDragging.value;
+  else return isDragging_.value;
 });
 </script>
 

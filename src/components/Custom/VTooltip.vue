@@ -116,35 +116,35 @@ const clickOpenDuration_ = computed<number>(() =>
 // Tooltip position
 //** Current activator */
 const currentTarget = ref<HTMLElement | null>(null);
-const { rect } = useElementBounding(currentTarget);
+const { rect_ } = useElementBounding(currentTarget);
 const tooltipStyle = computed<CSSProperties>(() => {
   if (!(currentTarget.value instanceof Element)) return {};
   const location = props.location;
   if (location === 'left') {
     return {
-      top: `${rect.top + rect.height / 2}px`,
-      right: `${document.body.clientWidth - (rect.left - 4)}px`,
+      top: `${rect_.top + rect_.height / 2}px`,
+      right: `${document.body.clientWidth - (rect_.left - 4)}px`,
       transform: 'translateY(-50%)',
     };
   }
   else if (location === 'right') {
     return {
-      top: `${rect.top + rect.height / 2}px`,
-      left: `${rect.right + 4}px`,
+      top: `${rect_.top + rect_.height / 2}px`,
+      left: `${rect_.right + 4}px`,
       transform: 'translateY(-50%)',
     };
   }
   else if (location === 'top') {
     return {
-      bottom: `${document.body.clientHeight - (rect.top - 4)}px`,
-      left: `${rect.left + rect.width / 2}px`,
+      bottom: `${document.body.clientHeight - (rect_.top - 4)}px`,
+      left: `${rect_.left + rect_.width / 2}px`,
       transform: 'translateX(-50%)',
     };
   }
   else if (location === 'bottom') {
     return {
-      top: `${rect.bottom + 4}px`,
-      left: `${rect.left + rect.width / 2}px`,
+      top: `${rect_.bottom + 4}px`,
+      left: `${rect_.left + rect_.width / 2}px`,
       transform: 'translateX(-50%)',
     };
   }

@@ -74,7 +74,7 @@ const init = [
 const paletteGradient = computed(() => {
   if (settingsState.paletteDisplay_ === 'block') return;
   else {
-    const direction = media.isSmall ? '180deg' : '90deg';
+    const direction = media.isSmall_ ? '180deg' : '90deg';
     const step = 1 / pltState.numOfCards_;
     const half = step / 2;
     const cards = map(pltState.cards_, (card) => ({ hex_: card.hex_, order_: card.order_ }));
@@ -113,15 +113,15 @@ const styleInSetting = computed<CSSProperties>(() => {
 const cardPosition = computed(
   () => map(
     pltState.numOfCards_ + 1,
-    (_, i) => ({ [media.pos]: evalPosition(i, pltState.numOfCards_) })
+    (_, i) => ({ [media.pos_]: evalPosition(i, pltState.numOfCards_) })
   )
 );
 
 const resetCardStyle = () => {
   const length = pltState.numOfCards_;
   cardStyle.value = map(pltState.cards_, (_,i) => ({
-    [media.pos]: evalPosition(i, length),
-    [media.isSmall ? 'height' : 'width']: equallyLength(length),
+    [media.pos_]: evalPosition(i, length),
+    [media.isSmall_ ? 'height' : 'width']: equallyLength(length),
     transitionProperty: 'none'
   }));
 };
@@ -129,17 +129,17 @@ const cardStyle = ref<CSSProperties[]>([]);
 resetCardStyle();
 
 const setSize = (idx: number, size?: string) => {
-  cardStyle.value[idx][media.isSmall ? 'height' : 'width'] =
+  cardStyle.value[idx][media.isSmall_ ? 'height' : 'width'] =
     size ?? equallyLength(pltState.numOfCards_);
 };
 const setPosition = (idx: number, pos?: string) => {
-  cardStyle.value[idx][media.pos] = pos ?? evalPosition(pltState.cards_[idx].order_, pltState.numOfCards_);
+  cardStyle.value[idx][media.pos_] = pos ?? evalPosition(pltState.cards_[idx].order_, pltState.numOfCards_);
 };
 const setTransitionProperty = (idx: number, newVal: 'none' | '') => {
   cardStyle.value[idx].transitionProperty = newVal;
 };
 
-watch(() => [pltState.numOfCards_, media.isSmall], resetCardStyle);
+watch(() => [pltState.numOfCards_, media.isSmall_], resetCardStyle);
 watch(() => pltState.isPending_, (newVal) => {
   const property = newVal ? '' : 'none';
   forLoop(
@@ -241,7 +241,7 @@ const { start: startDragging } = (() => {
   let cardIdx: number | null;
   let halfCardLength: number = 50 / pltState.numOfCards_;
   /** Get mouse position along specific axis. */
-  const getCoordinate = (pos: Position) => media.isSmall ? pos.y : pos.x;
+  const getCoordinate = (pos: Position) => media.isSmall_ ? pos.y : pos.x;
   /** Get index of card that cursor on  */
   const getIdx = (pos: Position) => {
     return rangeMapping(
@@ -284,11 +284,11 @@ const { start: startDragging } = (() => {
     draggingIdx.value = cardIdx = null;
   };
   return useDragableElement(cardContainerRef, {
-    containerElement: cardContainerRef,
-    binding: false,
-    onStart,
-    onMove,
-    onEnd,
+    containerElement_: cardContainerRef,
+    binding_: false,
+    onStart_: onStart,
+    onMove_: onMove,
+    onEnd_: onEnd,
   });
 })();
 // Drag events end

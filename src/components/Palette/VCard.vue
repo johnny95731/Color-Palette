@@ -17,7 +17,7 @@
     >
       <CondWrapper
         tag="div"
-        :is-wrap="media.isSmall"
+        :is-wrap="media.isSmall_"
       >
         <VBtn
           icon="x-lg"
@@ -42,7 +42,7 @@
       </CondWrapper>
       <CondWrapper
         tag="div"
-        :is-wrap="media.isSmall"
+        :is-wrap="media.isSmall_"
       >
         <VBtn
           v-once
@@ -335,9 +335,9 @@ watch(showEditor, async (newShow) => {
   if (newShow) {
     // Dialog position
     let left: string | undefined, right: string | undefined;
-    if (!media.isSmall) {
+    if (!media.isSmall_) {
       // dialogWidth = 150px, 75 = 150 / 2
-      const halfDialogWidth =  75 / media.windowSize[1]; // to percent
+      const halfDialogWidth =  75 / media.windowSize_[1]; // to percent
       const center = (props.cardIdx + 0.5) / pltState.numOfCards_;
       if (center - halfDialogWidth < 0) { // left pos of dialog is out of viewport
         left = '0';
