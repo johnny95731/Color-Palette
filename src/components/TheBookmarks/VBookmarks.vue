@@ -18,14 +18,14 @@
         v-if="tabIdx === 0"
       >
         <ColorBlock
-          v-for="(hex) in favState.colors_"
+          v-for="(hex) in favState.colors"
           :key="`favColor ${hex}`"
           :hex="hex"
         />
       </template>
       <template v-else-if="tabIdx === 1">
         <PaletteBlock
-          v-for="(plt) in favState.plts_"
+          v-for="(plt) in favState.plts"
           :key="`favPlt ${plt}`"
           :plt="plt"
         />
@@ -68,7 +68,7 @@ const tabIdx = ref<number>(0);
 watch(isOpened, async (newVal) => { // focus dialog when open it.
   await nextTick();
   if (newVal) unref(dialogRef)?.tabRefs[unref(tabIdx)]?.$el.focus();
-  else pltState.setEditingIdx_();
+  else pltState.setEditingIdx();
 });
 
 const handleFocusoutDialog = (e: KeyboardEvent) => {
@@ -85,13 +85,13 @@ const handleFocusoutDialog = (e: KeyboardEvent) => {
 const pltState = usePltStore();
 const favState = useFavStore();
 const pltStrings = computed(() => (
-  map(pltState.cards_, ({ hex_ }) => hex_.slice(1)).join('-')
+  map(pltState.cards, ({ hex }) => hex.slice(1)).join('-')
 ));
 const state = computed<{
   icon: string,
   text: string,
 }>(() => {
-  const isFavPlt = favState.plts_.includes(toValue(pltStrings));
+  const isFavPlt = favState.plts.includes(toValue(pltStrings));
   if (isFavPlt) {
     return {
       icon: 'bookmark-dash',
@@ -106,7 +106,7 @@ const state = computed<{
 });
 
 const favPltChanged = () => {
-  favState.favPltsChanged_(toValue(pltStrings));
+  favState.favPltsChanged(toValue(pltStrings));
   tabIdx.value = 1;
 };
 </script>

@@ -13,8 +13,8 @@ export default defineConfig({
   base: './',
   build: {
     outDir: 'dist',
-    sourcemap: false,
     assetsDir: '',
+    sourcemap: false,
     minify: 'terser',
     cssMinify: 'lightningcss',
     terserOptions: {
@@ -25,7 +25,7 @@ export default defineConfig({
         properties: {
           regex: /_$/
         }
-      }
+      },
     }
   },
   plugins: [

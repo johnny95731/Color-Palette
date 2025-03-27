@@ -7,11 +7,11 @@ export type State = {
   /**
    * Favorite colors.
    */
-  colors_: string[];
+  colors: string[];
   /**
    * Favorite palettes(plts).
    */
-  plts_: string[];
+  plts: string[];
   /**
    * Whether the colors/plts is loaded.
    */
@@ -20,8 +20,8 @@ export type State = {
 
 
 const initialState: State = {
-  colors_: [],
-  plts_: [],
+  colors: [],
+  plts: [],
   isInitialized_: [false, false],
 };
 
@@ -30,34 +30,34 @@ const useFavStore = defineStore('favorites', {
   actions: {
     async initializeColors_() {
       await updateStore<string[]>('colors', (prev) => {
-        return this.colors_ = prev ?? [];
+        return this.colors = prev ?? [];
       });
       this.isInitialized_[0] = true;
     },
     async initializePlts_() {
       await updateStore<string[]>('plts', (prev) => {
-        return this.plts_ = prev ?? [];
+        return this.plts = prev ?? [];
       });
       this.isInitialized_[1] = true;
     },
-    favColorsChanged_(targetHex: string) {
-      const isIncluding = this.colors_.includes(targetHex);
+    favColorsChanged(targetHex: string) {
+      const isIncluding = this.colors.includes(targetHex);
       // Update state
       if (isIncluding) { // Favoriting => Non-Favoriting
-        this.colors_ = this.colors_.filter((hex) => hex !== targetHex);
+        this.colors = this.colors.filter((hex) => hex !== targetHex);
       } else { // Non-Favoriting => Favoriting
-        this.colors_.push(targetHex);
+        this.colors.push(targetHex);
       }
-      updateStore('colors', () => copyObj(this.colors_));
+      updateStore('colors', () => copyObj(this.colors));
     },
-    favPltsChanged_(targetPlt: string) {
+    favPltsChanged(targetPlt: string) {
       // Update state
-      if (this.plts_.includes(targetPlt)) { // Favoriting => Non-Favoriting
-        this.plts_ = this.plts_.filter((plt) => plt !== targetPlt);
+      if (this.plts.includes(targetPlt)) { // Favoriting => Non-Favoriting
+        this.plts = this.plts.filter((plt) => plt !== targetPlt);
       } else { // Non-Favoriting => Favoriting
-        this.plts_.push(targetPlt);
+        this.plts.push(targetPlt);
       }
-      updateStore('plts', () => copyObj(this.plts_));
+      updateStore('plts', () => copyObj(this.plts));
     }
   },
 });

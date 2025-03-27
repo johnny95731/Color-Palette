@@ -116,10 +116,10 @@ const useSettingStore = defineStore('setting', {
       // @ts-expect-error.
       this.border[attr] = val;
     },
-    setTransition_(attr: keyof TransitionStyle, val: number) {
+    setTransition(attr: keyof TransitionStyle, val: number) {
       this.transition[attr] = val;
     },
-    updateStorage_() {
+    updateStorage() {
       updateStore('settings', () => {
         return copyObj(this.$state);
       });

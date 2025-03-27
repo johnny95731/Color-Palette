@@ -5,7 +5,7 @@
     :style="paletteGradient"
   >
     <VCard
-      v-for="(card, i) in pltState.cards_"
+      v-for="(card, i) in pltState.cards"
       :key="`card${i}`"
       :ref="(el) => cardRefs[i] = (el as CardInstance)"
       :class="draggingIdx === i && $style.dragging"
@@ -77,7 +77,7 @@ const paletteGradient = computed(() => {
     const direction = `${media.isSmall_ ? 180 : 90}deg`;
     const step = 1 / pltState.numOfCards_;
     const half = step / 2;
-    const cards = map(pltState.cards_, (card) => ({ hex_: card.hex_, order_: card.order_ }));
+    const cards = map(pltState.cards, (card) => ({ hex_: card.hex, order_: card.order_ }));
     cards.sort((a,b) => a.order_ - b.order_);
     const colorStops = map(
       cards,
@@ -119,7 +119,7 @@ const cardPosition = computed(
 
 const resetCardStyle = () => {
   const length = pltState.numOfCards_;
-  cardStyle.value = map(pltState.cards_, (_,i) => ({
+  cardStyle.value = map(pltState.cards, (_,i) => ({
     [media.beginPos_]: evalPosition(i, length),
     [media.cardAxis_]: equallyLength(length),
     transitionProperty: 'none'
@@ -133,7 +133,7 @@ const setSize = (idx: number, size?: string) => {
     size ?? equallyLength(pltState.numOfCards_);
 };
 const setPosition = (idx: number, pos?: string) => {
-  cardStyle.value[idx][media.beginPos_] = pos ?? evalPosition(pltState.cards_[idx].order_, pltState.numOfCards_);
+  cardStyle.value[idx][media.beginPos_] = pos ?? evalPosition(pltState.cards[idx].order_, pltState.numOfCards_);
 };
 const setTransitionProperty = (idx: number, newVal: 'none' | '') => {
   cardStyle.value[idx].transitionProperty = newVal;
@@ -143,7 +143,7 @@ watch(() => [pltState.numOfCards_, media.isSmall_], resetCardStyle);
 watch(() => pltState.isPending_, (newVal) => {
   const property = newVal ? '' : 'none';
   forLoop(
-    pltState.cards_,
+    pltState.cards,
     (_, __, i) => {
       setTransitionProperty(i, property);
     }
@@ -162,7 +162,7 @@ watch(() => pltState.isPending_, (newVal) => {
  */
 const resetPosition = (pass?: number) => {
   forLoop(
-    pltState.cards_,
+    pltState.cards,
     (_, __, i) => i !== pass && setPosition(i)
   );
 };
@@ -170,7 +170,7 @@ const resetPosition = (pass?: number) => {
 // Add card, remove card, and drag card have transition event.
 // The state is for checking the transition is end.
 const isInTrans = reactive<{arr: boolean[]}>({
-  arr: map(pltState.cards_, () => false),
+  arr: map(pltState.cards, () => false),
 });
 
 
@@ -197,7 +197,7 @@ const handleAddCard = (idx: number) => {
     // Transition: shrink and move card. The enpty space is new card
     const length = equallyLength(pltState.numOfCards_ + 1);
     forLoop(
-      pltState.cards_,
+      pltState.cards,
       (_, __, i) => {
         setSize(i, length);
         const bias = i >= idx ? 1 : 0;
@@ -205,7 +205,7 @@ const handleAddCard = (idx: number) => {
       }
     );
     // Trigger side effect when !isInTrans.some()
-    isInTrans.arr = map(pltState.cards_, () => true);
+    isInTrans.arr = map(pltState.cards, () => true);
   }
 };
 
@@ -220,11 +220,11 @@ const handleRemoveCard = (idx: number) => {
     pltState.delCard_(idx);
   } else {
     pltState.setIsPending_(true);
-    isInTrans.arr = map(pltState.cards_, () => true);
+    isInTrans.arr = map(pltState.cards, () => true);
     const newSize = equallyLength(pltState.numOfCards_ - 1);
     // Shrink target card and expand other card.
     forLoop(
-      pltState.cards_,
+      pltState.cards,
       (_, __, i) => {
         setSize(i, i === idx ? '0' : newSize);
         const bias = i > idx ? 1 : 0;
@@ -284,11 +284,11 @@ const { start: startDragging } = (() => {
     draggingIdx.value = cardIdx = null;
   };
   return useDragableElement(cardContainerRef, {
-    containerElement_: cardContainerRef,
-    binding_: false,
-    onStart_: onStart,
-    onMove_: onMove,
-    onEnd_: onEnd,
+    containerElement: cardContainerRef,
+    binding: false,
+    onStart: onStart,
+    onMove: onMove,
+    onEnd: onEnd,
   });
 })();
 // Drag events end

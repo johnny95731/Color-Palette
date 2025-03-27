@@ -14,71 +14,71 @@ export interface UseDraggableOptions {
    *
    * @default true
    */
-  preventDefault_?: MaybeRefOrGetter<boolean>
+  preventDefault?: MaybeRefOrGetter<boolean>
 
   /**
    * Prevent events propagation
    *
    * @default true
    */
-  stopPropagation_?: MaybeRefOrGetter<boolean>
+  stopPropagation?: MaybeRefOrGetter<boolean>
 
   /**
    * Whether dispatch events in capturing phase
    *
    * @default true
    */
-  capture_?: boolean
+  capture?: boolean
 
   /**
    * Element for calculating bounds (If not set, it will use the event's target).
    *
    * @default undefined
    */
-  containerElement_?: MaybeRefOrGetter<HTMLElement | SVGElement | null | undefined>
+  containerElement?: MaybeRefOrGetter<HTMLElement | SVGElement | null | undefined>
 
   /**
    * Initial position of the element.
    *
    * @default object { x: 0, y: 0 }
    */
-  initialValue_?: MaybeRefOrGetter<Partial<Position>>
+  initialValue?: MaybeRefOrGetter<Partial<Position>>
 
   /**
    * Binding `start` function automatically.
    *
    * @default true
    */
-  binding_?: MaybeRefOrGetter<boolean>
+  binding?: MaybeRefOrGetter<boolean>
 
   /**
    * Callback when the dragging starts. Return `false` to prevent dragging.
    */
-  onStart_?: MaybeRef<(position: Position, event: PointerEvent) => void | false>
+  onStart?: MaybeRef<(position: Position, event: PointerEvent) => void | false>
 
   /**
    * Callback during dragging.
    */
-  onMove_?: MaybeRef<(position: Position, event: PointerEvent) => void>
+  onMove?: MaybeRef<(position: Position, event: PointerEvent) => void>
 
   /**
    * Callback when dragging end.
    */
-  onEnd_?: MaybeRef<(position: Position, event: PointerEvent) => void>
+  onEnd?: MaybeRef<(position: Position, event: PointerEvent) => void>
 
   /**
    * Axis to drag on.
    *
    * @default 'both'
    */
-  axis_?: 'x' | 'y' | 'both'
+  axis?: 'x' | 'y' | 'both'
 
   /**
    * Whether map the possition to percentage (0~100).
    *
    * @default true
    */
-  toRatio_?: boolean
+  toRatio?: boolean
 }
 
 /**
@@ -89,19 +89,19 @@ export interface UseDraggableOptions {
  */
 export const useDragableElement = (
   target: MaybeRefOrGetter<HTMLElement | null | undefined>,
-  options: UseDraggableOptions = { capture_: true }
+  options: UseDraggableOptions = { capture: true }
 ) => {
   const {
-    preventDefault_ = false,
-    stopPropagation_ = false,
-    containerElement_ = document.documentElement,
-    initialValue_,
-    binding_ = true,
-    onMove_,
-    onEnd_,
-    onStart_,
-    axis_ = 'both',
-    toRatio_ = true,
+    preventDefault: preventDefault_ = false,
+    stopPropagation: stopPropagation_ = false,
+    containerElement: containerElement_ = document.documentElement,
+    initialValue: initialValue_,
+    binding: binding_ = true,
+    onMove: onMove_,
+    onEnd: onEnd_,
+    onStart: onStart_,
+    axis: axis_ = 'both',
+    toRatio: toRatio_ = true,
   } = options;
 
   const isDragging_ = ref(false);
@@ -150,7 +150,7 @@ export const useDragableElement = (
 
   // Dragging events
   const cleanups: (() => void)[] = [];
-  const config = { capture: options.capture_ ?? true };
+  const config = { capture: options.capture ?? true };
 
   const start_ = (e: PointerEvent) => {
     if (e.button !== 0) return;

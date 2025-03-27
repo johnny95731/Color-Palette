@@ -162,19 +162,19 @@ const contrastCoeffMax = computed(() => {
 
 const handleMethodChanged = (idx: number) => {
   contrastArgs.method = idx!;
-  pltState.setIsAdjustingPlt_('reset');
+  pltState.setIsAdjustingPlt('reset');
   updateContrastResult();
 };
 
 const updateContrastResult = () => {
-  pltState.adjustContrast_(
+  pltState.adjustContrast(
     contrastArgs.method,
     contrastArgs[contrastArgs.method]
   );
 };
 
 const contrastBtnEvent = (state: 'start' | 'reset') => {
-  pltState.setIsAdjustingPlt_(state);
+  pltState.setIsAdjustingPlt(state);
   contrastArgs[contrastArgs.method] = 1;
   updateContrastResult();
 };
@@ -203,19 +203,19 @@ watch(isOpened, async (newVal) => {
   await nextTick();
   if (newVal && tabIdx.value === 0) {
     // Start adjusting when open dialog and in 2nd tab
-    pltState.setIsAdjustingPlt_('start');
+    pltState.setIsAdjustingPlt('start');
     updateContrastResult();
-  } else if (!newVal && pltState.isAdjustingPlt_)
-    pltState.setIsAdjustingPlt_('cancel');
+  } else if (!newVal && pltState.isAdjustingPlt)
+    pltState.setIsAdjustingPlt('cancel');
   // Focusing on tab after opening the dialog.
   dialogRef.value?.tabRefs[unref(tabIdx)]?.$el.focus();
 }, { flush: 'post' });
 
 watch(tabIdx, (newVal, oldVal) => {
   if (newVal === 0) { // Switch to tab 0
-    pltState.setIsAdjustingPlt_('start');
+    pltState.setIsAdjustingPlt('start');
     updateContrastResult();
   } else if (oldVal === 0) // From tab 0 switch to another tab.
-    pltState.setIsAdjustingPlt_('cancel');
+    pltState.setIsAdjustingPlt('cancel');
 }, { flush: 'post', immediate: true });
 </script>

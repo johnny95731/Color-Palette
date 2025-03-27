@@ -142,7 +142,7 @@ const isPreview = ref(true);
  * Preview the palette (will restore when dialog is closed).
  */
 const preview = () => {
-  pltState.setPlt_(
+  pltState.setPlt(
     unref(isPreview) ? unref(palette) : unref(originalPalette)
   );
 };
@@ -151,7 +151,7 @@ watch(() => [unref(isPreview), unref(palette)],
 );
 /** Overwrite current palette and close. (will not restore when dialog is closed) */
 const comfirm = () => {
-  pltState.setPlt_(unref(palette));
+  pltState.setPlt(unref(palette));
   // Overwrite `originalPalette`. Because close dialog will restore palette from
   // `originalPalette`.
   saveOrininal();
@@ -164,13 +164,13 @@ const originalPalette = ref<number[][]>([[]]);
  * To restore palette when close dialog.
  */
 const saveOrininal = () => {
-  originalPalette.value = map(pltState.cards_, card => card.color_);
+  originalPalette.value = map(pltState.cards, card => card.color);
 };
 watch(isOpened, (newVal) => {
   if (newVal) {
     saveOrininal();
     preview();
   } else
-    pltState.setPlt_(unref(originalPalette)); // restore palette from `originalPalette`
+    pltState.setPlt(unref(originalPalette)); // restore palette from `originalPalette`
 }, { immediate: true });
 </script>

@@ -1,4 +1,4 @@
-import { computed, toValue, unref, watch } from 'vue';
+import { computed, shallowRef, toValue, unref, watch } from 'vue';
 import { tryOnMounted } from '@vueuse/core';
 import { getComponentId, isId } from '@/utils/browser';
 import type { MaybeRefOrGetter } from 'vue';
@@ -24,8 +24,6 @@ const useInputField = (
   componentName?: string
 ) => {
 
-  const labelIsId = computed(() => isId(toValue(label)));
-
   /**
    * Create Id for input
    */
@@ -33,23 +31,22 @@ const useInputField = (
   /**
    * Aria label for <input />
    */
-  const inputState_ = computed(() => {
-    label = toValue(label);
-    return {
-      id: toValue(idForInput),
-      'aria-labelledby': unref(labelIsId) ? label!.slice(1) : undefined,
-      'aria-label': unref(labelIsId) ? undefined : label,
-    };
+  const state = shallowRef<{
+    id: string,
+    ariaLabelledby?: string,
+    ariaLabel?: string
+  }>({
+    id: toValue(idForInput),
   });
   tryOnMounted(() => {
-    if (unref(labelIsId))
+    if (isId(toValue(label)))
       document
         .querySelector(toValue(label)!)
         ?.setAttribute('for', toValue(idForInput));
   });
 
 
-  const cleanup_ = watch(
+  const cleanup = watch(
     () => [toValue(label), toValue(idForInput)] as const,
     (newVal, oldVal) => {
       if (isId(oldVal[0])) {
@@ -58,12 +55,18 @@ const useInputField = (
       if (isId(newVal[0])) {
         document.querySelector(newVal[0])?.setAttribute('for', newVal[1]);
       }
+      const labelIsId = isId(newVal[0]);
+      state.value = {
+        id: unref(idForInput),
+        ariaLabelledby: labelIsId ? newVal[0].slice(1) : undefined,
+        ariaLabel: labelIsId ? undefined : newVal[0],
+      };
     }
   );
 
   return {
-    inputState_,
-    cleanup_: cleanup_.stop,
+    state: state,
+    cleanup: cleanup.stop,
   };
 };
 export default useInputField;

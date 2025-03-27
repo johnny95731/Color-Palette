@@ -144,11 +144,11 @@ const { start: startDragging } = (() => {
     divPosition.value.top = 0;
   };
   return useDragableElement(contentRef, {
-    containerElement_: contentRef,
-    binding_: false,
-    onStart_: onStart,
-    onMove_: onMove,
-    onEnd_: onEnd,
+    containerElement: contentRef,
+    binding: false,
+    onStart: onStart,
+    onMove: onMove,
+    onEnd: onEnd,
   });
 })();
 
@@ -157,14 +157,14 @@ const { start: startDragging } = (() => {
  * Preview the palette (will restore when dialog is closed).
  */
 const preview = () => {
-  pltState.setPlt_(
+  pltState.setPlt(
     unref(isPreview) ? unref(colors) : unref(original)
   );
 };
 
 /** Overwrite current palette and close. (will not restore when dialog is closed) */
 const comfirm = () => {
-  pltState.setPlt_(unref(colors));
+  pltState.setPlt(unref(colors));
   // Overwrite `originalPalette`. Because close dialog will restore palette from
   // `originalPalette`.
   saveOrininal();
@@ -175,17 +175,17 @@ const comfirm = () => {
  * To restore palette when close dialog.
  */
 const saveOrininal = () => {
-  original.value = map(pltState.cards_, card => card.hex_);
+  original.value = map(pltState.cards, card => card.hex);
 };
 
 watch(() => [unref(isPreview), unref(colors)], preview, { deep: true });
 watch(isOpened, (newVal) => {
   if (newVal) {
-    colors.value = map(pltState.cards_, card => card.hex_);
+    colors.value = map(pltState.cards, card => card.hex);
     saveOrininal();
     preview();
   } else
-    pltState.setPlt_(unref(original)); // restore palette from `originalPalette`
+    pltState.setPlt(unref(original)); // restore palette from `originalPalette`
 }, { immediate: true });
 
 /**

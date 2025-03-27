@@ -7,8 +7,8 @@
     ]"
     :prepend-icon="prependIcon"
     :tooltip="tooltip"
-    :aria-label="inputState_['aria-label']"
-    :aria-labelledby="inputState_['aria-labelledby']"
+    :aria-label="fieldState.ariaLabel"
+    :aria-labelledby="fieldState.ariaLabelledby"
     :aria-controls="eager || isOpened ? menuId : undefined"
     :aria-expanded="isOpened"
     data-haspopup="true"
@@ -20,11 +20,13 @@
       {{ btnLabel }}
       <div class="field">
         <label
-          v-if="inputState_['aria-label']"
-          :for="inputState_.id"
-        >{{ inputState_['aria-label'] }}</label>
+          v-if="fieldState.ariaLabel"
+          :for="fieldState.id"
+        >{{ fieldState.ariaLabel }}</label>
         <input
-          v-bind="inputState_"
+          :id="fieldState.id"
+          :aria-label="fieldState.ariaLabel"
+          :aria-labelledby="fieldState.ariaLabelledby"
           type="text"
           inputmode="none"
           tabindex="-1"
@@ -142,8 +144,8 @@ const activator = computed<Element>(() => unref(activatorRef)?.$el);
 
 
 // Handle form element
-const { inputState_, cleanup_ } = useInputField(props.label, 'select');
-onUnmounted(cleanup_);
+const { state: fieldState, cleanup } = useInputField(props.label, 'select');
+onUnmounted(cleanup);
 
 const menuId = computed<string>(() =>
   props.listboxId ?? getComponentId('menu')

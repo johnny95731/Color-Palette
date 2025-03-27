@@ -59,8 +59,8 @@ const atan2Deg = (() => {
  */
 const hueEquivalentTest = () => {
   const rgb = randRgbGen();
-  const [l,a,b] = getSpaceInfos(COLOR_SPACES.find(val => val.name_=== 'CIELAB')!).converter(rgb);
-  const [y,u,v] = getSpaceInfos(COLOR_SPACES.find(val => val.name_=== 'YUV')!).converter(rgb);
+  const [l,a,b] = getSpaceInfos(COLOR_SPACES.find(val => val.name=== 'CIELAB')!).converter(rgb);
+  const [y,u,v] = getSpaceInfos(COLOR_SPACES.find(val => val.name=== 'YUV')!).converter(rgb);
 
   const [hue1] = rgb2hue(rgb);
   const hue2 = atan2Deg(b, a);
@@ -77,7 +77,7 @@ const main = () => {
   const allRgbs = getEnumeratedRgb();
   for (const space of COLOR_SPACES) {
     const { converter, inverter } = getSpaceInfos(space);
-    if (space.name_ !== 'CIEXYZ') continue;
+    if (space.name !== 'CIEXYZ') continue;
     allRgbs.forEach((rgb) => {
       const spaceColor = inverter(converter(rgb)).map(val => round(val));
       for (let i = 0;i < 3; i++) {

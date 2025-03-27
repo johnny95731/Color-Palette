@@ -42,7 +42,6 @@
         >自動排序</span>
         <VSwitch
           label="#auto-sort"
-          hide-label
           v-model="settingsState.autoSort"
         />
       </div>
@@ -61,7 +60,6 @@
         <span v-once>顯示</span>
         <VSwitch
           label="show border"
-          hide-label
           :model-value="settingsState.border.show"
           @update:model-value="settingsState.setBorder_('show', $event)"
         />
@@ -176,9 +174,9 @@ const handleTransitionChanged = (
 ) => {
   if (attr === 'pos') transition.pos = val;
   else transition.color = val;
-  settingsState.setTransition_(attr, val);
+  settingsState.setTransition(attr, val);
 };
 
 // Update storage
-watch(settingsState.$state, settingsState.updateStorage_, { deep: true });
+watch(settingsState.$state, settingsState.updateStorage, { deep: true });
 </script>

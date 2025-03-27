@@ -4,19 +4,17 @@
   >
     <div class="field">
       <label
-        v-if="inputState_['aria-label']"
-        :class="[hideLabel && 'field']"
-        :for="inputState_.id"
+        v-if="state.ariaLabel"
+        :for="state.id"
         @click.prevent="handleClick();switchRef?.focus()"
-      >{{ inputState_['aria-label'] }}</label>
+      >{{ state.ariaLabel }}</label>
       <input
-        v-bind="inputState_"
-        class="field"
+        :id="state.id"
+        :aria-label="state.ariaLabel"
+        :aria-labelledby="state.ariaLabelledby"
         type="checkbox"
         inputmode="none"
-        :value="model"
         :checked="model"
-        v-model="model"
         @focus="switchRef?.focus();"
       >
     </div>
@@ -26,7 +24,7 @@
       tabindex="0"
       role="switch"
       :aria-checked="model"
-      :aria-labelledby="inputState_['aria-labelledby']"
+      :aria-labelledby="state.ariaLabel"
       @click="handleClick"
       @keydown="handleKeyDown"
     />
@@ -41,7 +39,6 @@ import type { ModelRef } from 'vue';
 
 type Props = {
   label?: string,
-  hideLabel?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -50,8 +47,8 @@ const props = withDefaults(defineProps<Props>(), {
 const switchRef = ref<HTMLDivElement>();
 
 // Handle form element
-const { inputState_, cleanup_ } = useInputField(props.label, 'switch');
-onUnmounted(cleanup_);
+const { state, cleanup } = useInputField(props.label, 'switch');
+onUnmounted(cleanup);
 
 
 // Handle values
@@ -66,7 +63,6 @@ const handleKeyDown = (e: KeyboardEvent) => {
     invertBoolean(model);
   }
 };
-
 </script>
 
 <style lang="scss">

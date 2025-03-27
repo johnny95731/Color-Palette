@@ -70,6 +70,6 @@ const iconFilterStyle = computed<CSSProperties>(() => (
 
 const favState = useFavStore();
 const delFavColor = () => {
-  favState.favColorsChanged_(props.hex);
+  favState.favColorsChanged(props.hex);
 };
 </script>

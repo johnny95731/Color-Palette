@@ -4,8 +4,8 @@
     :style="{
       background: trackerBackground,
     }"
-    :aria-label="inputState_['aria-label']"
-    :aria-labelledby="inputState_['aria-labelledby']"
+    :aria-label="state.ariaLabel"
+    :aria-labelledby="state.ariaLabelledby"
     role="slider"
     :aria-valuemin="min_"
     :aria-valuemax="max_"
@@ -13,21 +13,25 @@
     tabindex="0"
     @keydown="handleKeyDown"
   >
-    <label
-      v-if="inputState_['aria-label']"
-      :for="inputState_.id"
-    >{{ inputState_['aria-label'] }}</label>
-    <input
-      v-bind="inputState_"
-      type="range"
-      inputmode="none"
-      :min="min_"
-      :max="max_"
-      :step="step"
-      :value="model"
-      tabindex="-1"
-      @focusin="$el.focus()"
-    >
+    <div class="field">
+      <label
+        v-if="state.ariaLabel"
+        :for="state.id"
+      >{{ state.ariaLabel }}</label>
+      <input
+        :id="state.id"
+        :aria-label="state.ariaLabel"
+        :aria-labelledby="state.ariaLabelledby"
+        type="range"
+        inputmode="none"
+        :min="min_"
+        :max="max_"
+        :step="step"
+        :value="model"
+        tabindex="-1"
+        @focusin="$el.focus()"
+      >
+    </div>
     <template v-if="showRange">
       <span class="slider__bound-label">{{ min }}</span>
       <span class="slider__bound-label">{{ max }}</span>
@@ -91,8 +95,8 @@ const trackerRef = ref<HTMLDivElement>();
 const thumbRef = ref<HTMLDivElement>();
 
 // Handle form element
-const { inputState_, cleanup_ } = useInputField(props.label, 'slider');
-onUnmounted(cleanup_);
+const { state, cleanup } = useInputField(props.label, 'slider');
+onUnmounted(cleanup);
 
 
 const min_ = computed(() => isNaN(+props.min) ? 0 : +props.min);
@@ -164,14 +168,14 @@ const { isDragging_ } = (() => {
     updateModel(rangeMapping(pos.x, 0, 100, min_.value, max_.value));
   };
   return useDragableElement(trackerRef, {
-    containerElement_: trackerRef,
-    onStart_: update,
-    onMove_: update,
-    initialValue_: {
+    containerElement: trackerRef,
+    onStart: update,
+    onMove: update,
+    initialValue: {
       x: rangeMapping(model.value, min_.value, max_.value, 0, 100),
       y: 0,
     },
-    axis_: 'x'
+    axis: 'x'
   });
 })();
 // -Key down
