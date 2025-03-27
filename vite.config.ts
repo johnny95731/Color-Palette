@@ -6,6 +6,7 @@ import lightningcss from 'vite-plugin-lightningcss';
 // @ts-expect-error
 import viteJoinMediaQueries from 'vite-join-media-queries';
 import { patchCssModules } from 'vite-css-modules';
+import terserPlugin from './vite-terser-plugin';
 
 const metaUrl = import.meta.url;
 // https://vitejs.dev/config/
@@ -15,18 +16,8 @@ export default defineConfig({
     outDir: 'dist',
     assetsDir: '',
     sourcemap: false,
-    minify: 'terser',
+    minify: false,
     cssMinify: 'lightningcss',
-    terserOptions: {
-      compress: {
-        drop_console: ['log', 'time', 'timeEnd']
-      },
-      mangle: {
-        properties: {
-          regex: /_$/
-        }
-      },
-    }
   },
   plugins: [
     vue({
@@ -41,6 +32,7 @@ export default defineConfig({
     }),
     lightningcss(),
     patchCssModules(),
+    terserPlugin(),
   ],
   resolve: {
     alias: {
