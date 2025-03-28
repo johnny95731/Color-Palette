@@ -18,16 +18,16 @@ export type ColorSpace = {
   /**
    * Name of the color space.
    */
-  name: string,
+  name_: string,
   /**
    * Name of CSS color function (if exists). Note that this may be repeated, for example,
    * LCH(ab) and LCH(uv) are `lch`.
    */
-  css: string,
+  css_: string,
   /**
    * Browser support this color value or not.
    */
-  isSupport: boolean,
+  isSupport_: boolean,
 }
 /**
  * Support color spaces.
@@ -35,43 +35,43 @@ export type ColorSpace = {
 export const COLOR_SPACES = (() => {
   const spaces = [
     {
-      name: 'sRGB',
-      css: 'rgb'
+      name_: 'sRGB',
+      css_: 'rgb'
     },
     {
-      name: 'Named',
+      name_: 'Named',
     },
     {
-      name: 'HSL',
+      name_: 'HSL',
     },
     {
-      name: 'HSB',
+      name_: 'HSB',
     },
     {
-      name: 'HWB',
+      name_: 'HWB',
     },
     {
-      name: 'CMYK',
+      name_: 'CMYK',
     },
     {
-      name: 'CIEXYZ',
-      css: 'xyz'
+      name_: 'CIEXYZ',
+      css_: 'xyz'
     },
     {
-      name: 'CIELAB',
-      css: 'lab'
+      name_: 'CIELAB',
+      css_: 'lab'
     },
     {
-      name: 'CIELCH',
-      css: 'lch'
+      name_: 'CIELCH',
+      css_: 'lch'
     },
     {
-      name: 'YUV',
+      name_: 'YUV',
     },
   ] as ColorSpace[];
   for (const space of spaces) {
-    space.css ??= space.name.toLowerCase();
-    space.isSupport = CSS.supports('color', `${space.css}(0 0 0)`);
+    space.css_ ??= space.name_.toLowerCase();
+    space.isSupport_ = CSS.supports('color', `${space.css_}(0 0 0)`);
   }
   return spaces;
 })();
@@ -109,8 +109,8 @@ export const getColorFunction = (
   sep: string = ' '
 ): string => {
   color = [...color];
-  const colorFunc = space.css;
-  if (checkSupport && !space.isSupport) {
+  const colorFunc = space.css_;
+  if (checkSupport && !space.isSupport_) {
     const { inverter } = getSpaceInfos(space);
     return getColorFunction(inverter(color), COLOR_SPACES[0]);
   }
@@ -238,7 +238,7 @@ export type ColorSpaceInfos = {
 export const getSpaceInfos = (
   space: ColorSpace | string
 ): ColorSpaceInfos => {
-  if (typeof space === 'object') space = space.name;
+  if (typeof space === 'object') space = space.name_;
   switch (space) {
   case 'HSL':
     return {

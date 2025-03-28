@@ -71,7 +71,7 @@
       :items="spaceMenuItems"
       hide-value
       :fit-activator="false"
-      :model-value="pltState.colorSpace_.name"
+      :model-value="pltState.colorSpace_.name_"
       @update:idx="pltState.setColorSpace_($event)"
     />
     <div
@@ -399,7 +399,7 @@ const sortingMenuItems = map(
 
 const spaceMenuItems = map(
   COLOR_SPACES,
-  ({ name: name_ }) => ({
+  ({ name_: name_ }) => ({
     name_,
     val: name_,
   })

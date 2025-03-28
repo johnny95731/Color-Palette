@@ -14,71 +14,71 @@ export interface UseDraggableOptions {
    *
    * @default true
    */
-  preventDefault?: MaybeRefOrGetter<boolean>
+  preventDefault_?: MaybeRefOrGetter<boolean>
 
   /**
    * Prevent events propagation
    *
    * @default true
    */
-  stopPropagation?: MaybeRefOrGetter<boolean>
+  stopPropagation_?: MaybeRefOrGetter<boolean>
 
   /**
    * Whether dispatch events in capturing phase
    *
    * @default true
    */
-  capture?: boolean
+  capture_?: boolean
 
   /**
    * Element for calculating bounds (If not set, it will use the event's target).
    *
    * @default undefined
    */
-  containerElement?: MaybeRefOrGetter<HTMLElement | SVGElement | null | undefined>
+  containerElement_?: MaybeRefOrGetter<HTMLElement | SVGElement | null | undefined>
 
   /**
    * Initial position of the element.
    *
    * @default object { x: 0, y: 0 }
    */
-  initialValue?: MaybeRefOrGetter<Partial<Position>>
+  initialValue_?: MaybeRefOrGetter<Partial<Position>>
 
   /**
    * Binding `start` function automatically.
    *
    * @default true
    */
-  binding?: MaybeRefOrGetter<boolean>
+  binding_?: MaybeRefOrGetter<boolean>
 
   /**
    * Callback when the dragging starts. Return `false` to prevent dragging.
    */
-  onStart?: MaybeRef<(position: Position, event: PointerEvent) => void | false>
+  onStart_?: MaybeRef<(position: Position, event: PointerEvent) => void | false>
 
   /**
    * Callback during dragging.
    */
-  onMove?: MaybeRef<(position: Position, event: PointerEvent) => void>
+  onMove_?: MaybeRef<(position: Position, event: PointerEvent) => void>
 
   /**
    * Callback when dragging end.
    */
-  onEnd?: MaybeRef<(position: Position, event: PointerEvent) => void>
+  onEnd_?: MaybeRef<(position: Position, event: PointerEvent) => void>
 
   /**
    * Axis to drag on.
    *
    * @default 'both'
    */
-  axis?: 'x' | 'y' | 'both'
+  axis_?: 'x' | 'y' | 'both'
 
   /**
    * Whether map the possition to percentage (0~100).
    *
    * @default true
    */
-  toRatio?: boolean
+  toRatio_?: boolean
 }
 
 /**
@@ -89,19 +89,19 @@ export interface UseDraggableOptions {
  */
 export const useDragableElement = (
   target: MaybeRefOrGetter<HTMLElement | null | undefined>,
-  options: UseDraggableOptions = { capture: true }
+  options: UseDraggableOptions = { capture_: true }
 ) => {
   const {
-    preventDefault: preventDefault_ = false,
-    stopPropagation: stopPropagation_ = false,
-    containerElement: containerElement_ = document.documentElement,
-    initialValue: initialValue_,
-    binding: binding_ = true,
-    onMove: onMove_,
-    onEnd: onEnd_,
-    onStart: onStart_,
-    axis: axis_ = 'both',
-    toRatio: toRatio_ = true,
+    preventDefault_: preventDefault_ = false,
+    stopPropagation_: stopPropagation_ = false,
+    containerElement_: containerElement_ = document.documentElement,
+    initialValue_: initialValue_,
+    binding_: binding_ = true,
+    onMove_: onMove_,
+    onEnd_: onEnd_,
+    onStart_: onStart_,
+    axis_: axis_ = 'both',
+    toRatio_: toRatio_ = true,
   } = options;
 
   const isDragging_ = ref(false);
@@ -134,7 +134,7 @@ export const useDragableElement = (
   /** Calculate cursor position. */
   const calcPos = (e: PointerEvent) => {
     const containerRect = getContainerRect();
-    let { x, y } = position_.value;
+    let { x, y } = unref(position_);
     if (axis_ === 'x' || axis_ === 'both') {
       x = e.clientX;
       if (containerRect)
@@ -150,7 +150,7 @@ export const useDragableElement = (
 
   // Dragging events
   const cleanups: (() => void)[] = [];
-  const config = { capture: options.capture ?? true };
+  const config = { capture: options.capture_ ?? true };
 
   const start_ = (e: PointerEvent) => {
     if (e.button !== 0) return;
@@ -177,7 +177,7 @@ export const useDragableElement = (
   const end = (e: PointerEvent) => {
     isDragging_.value = false;
     forLoop(cleanups, (_, fn) => fn());
-    unref(onEnd_)?.(position_.value, e);
+    unref(onEnd_)?.(unref(position_), e);
     handleEvent(e);
   };
 
@@ -190,8 +190,7 @@ export const useDragableElement = (
 
   return {
     position_,
-    // Avoid to be changed.
-    isDragging_: computed(() => isDragging_.value),
+    isDragging_: computed(() => unref(isDragging_)),
     start: start_,
   };
 };

@@ -18,14 +18,14 @@
         v-if="tabIdx === 0"
       >
         <ColorBlock
-          v-for="(hex) in favState.colors"
+          v-for="(hex) in favState.colors_"
           :key="`favColor ${hex}`"
           :hex="hex"
         />
       </template>
       <template v-else-if="tabIdx === 1">
         <PaletteBlock
-          v-for="(plt) in favState.plts"
+          v-for="(plt) in favState.plts_"
           :key="`favPlt ${plt}`"
           :plt="plt"
         />
@@ -34,8 +34,8 @@
     <template #actions>
       <VBtn
         :class="$style.appendPlt"
-        :prepend-icon="state.icon"
-        :text="state.text"
+        :prepend-icon="btnState.icon_"
+        :text="btnState.text_"
         @keydown="handleFocusoutDialog"
         @click="favPltChanged"
       />
@@ -68,7 +68,7 @@ const tabIdx = ref<number>(0);
 watch(isOpened, async (newVal) => { // focus dialog when open it.
   await nextTick();
   if (newVal) unref(dialogRef)?.tabRefs[unref(tabIdx)]?.$el.focus();
-  else pltState.setEditingIdx();
+  else pltState.setEditingIdx_();
 });
 
 const handleFocusoutDialog = (e: KeyboardEvent) => {
@@ -85,28 +85,21 @@ const handleFocusoutDialog = (e: KeyboardEvent) => {
 const pltState = usePltStore();
 const favState = useFavStore();
 const pltStrings = computed(() => (
-  map(pltState.cards, ({ hex }) => hex.slice(1)).join('-')
+  map(pltState.cards_, ({ hex_ }) => hex_.slice(1)).join('-')
 ));
-const state = computed<{
-  icon: string,
-  text: string,
+const btnState = computed<{
+  icon_: string,
+  text_: string,
 }>(() => {
-  const isFavPlt = favState.plts.includes(toValue(pltStrings));
-  if (isFavPlt) {
-    return {
-      icon: 'bookmark-dash',
-      text: 'Remove Pallete',
-    } as const;
-  } else {
-    return {
-      icon: 'bookmark-plus',
-      text: 'Append Pallete',
-    } as const;
-  }
+  const isFavPlt = favState.plts_.includes(toValue(pltStrings));
+  return {
+    icon_: `bookmark-${isFavPlt ? 'dash' : 'plus'}`,
+    text_: `${isFavPlt ? 'Remove' : 'Append'} Pallete`,
+  } as const;
 });
 
 const favPltChanged = () => {
-  favState.favPltsChanged(toValue(pltStrings));
+  favState.favPltsChanged_(toValue(pltStrings));
   tabIdx.value = 1;
 };
 </script>

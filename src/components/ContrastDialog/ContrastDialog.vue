@@ -18,10 +18,10 @@
         <SelectMenu
           label="#contrast-method"
           :items="CONTRAST_METHODS"
-          :index="contrastArgs.method"
+          :index="contrastArgs.method_"
           @update:idx="handleMethodChanged($event)"
         />
-        <template v-if="contrastArgs.method !== 2">
+        <template v-if="contrastArgs.method_ !== 2">
           <label
             id="contrast-coeff-name"
           >Coeff.</label>
@@ -29,9 +29,9 @@
             label="#contrast-coeff-name"
             :max="contrastCoeffMax"
             step="0.001"
-            :model-value="contrastArgs[contrastArgs.method]"
+            :model-value="contrastArgs[contrastArgs.method_]"
             @update:model-value="
-              contrastArgs[contrastArgs.method] = $event;
+              contrastArgs[contrastArgs.method_] = $event;
               updateContrastResult();
             "
           />
@@ -146,7 +146,7 @@ const handleFocusoutDialog = (e: KeyboardEvent) => {
 
 // # Page 0: Adjuster
 type ContrastArgs = {
-  method: number
+  method_: number
 } & {
   [key in number]: number;
 }
@@ -154,28 +154,28 @@ const contrastArgs = reactive<ContrastArgs>(
   forLoop(
     CONTRAST_METHODS,
     (prev, _, i) => ((prev[i] = 1), prev),
-    { method: 0 } as ContrastArgs
+    { method_: 0 } as ContrastArgs
   ));
 const contrastCoeffMax = computed(() => {
-  return contrastArgs.method ? GAMMA_MAX : MULTIPLICATION_MAX;
+  return contrastArgs.method_ ? GAMMA_MAX : MULTIPLICATION_MAX;
 });
 
 const handleMethodChanged = (idx: number) => {
-  contrastArgs.method = idx!;
-  pltState.setIsAdjustingPlt('reset');
+  contrastArgs.method_ = idx!;
+  pltState.setIsAdjustingPlt_('reset');
   updateContrastResult();
 };
 
 const updateContrastResult = () => {
-  pltState.adjustContrast(
-    contrastArgs.method,
-    contrastArgs[contrastArgs.method]
+  pltState.adjustContrast_(
+    contrastArgs.method_,
+    contrastArgs[contrastArgs.method_]
   );
 };
 
 const contrastBtnEvent = (state: 'start' | 'reset') => {
-  pltState.setIsAdjustingPlt(state);
-  contrastArgs[contrastArgs.method] = 1;
+  pltState.setIsAdjustingPlt_(state);
+  contrastArgs[contrastArgs.method_] = 1;
   updateContrastResult();
 };
 
@@ -188,34 +188,34 @@ watch(bgColor, (n) => console.log(n));
  * Finish Hex editing when input is blurred or press 'Enter'
  */
 const handleHexEditingFinished = function(e: Event, idx: 'bg' | 'fg') {
-  const ref = idx === 'bg' ? bgColor : textColor;
+  const colorRef = idx === 'bg' ? bgColor : textColor;
   const text = (e.currentTarget as HTMLInputElement).value;
-  if (text !== ref.value && isValidHex(text)) {
-    ref.value = text;
+  if (text !== unref(colorRef) && isValidHex(text)) {
+    colorRef.value = text;
   }
 };
-const contrastRatio = computed(() => getContrastRatio(bgColor.value, textColor.value));
+const contrastRatio = computed(() => getContrastRatio(unref(bgColor), unref(textColor)));
 
 
 // Show and Hide
 const isOpened = defineModel<boolean>();
 watch(isOpened, async (newVal) => {
   await nextTick();
-  if (newVal && tabIdx.value === 0) {
+  if (newVal && unref(tabIdx) === 0) {
     // Start adjusting when open dialog and in 2nd tab
-    pltState.setIsAdjustingPlt('start');
+    pltState.setIsAdjustingPlt_('start');
     updateContrastResult();
-  } else if (!newVal && pltState.isAdjustingPlt)
-    pltState.setIsAdjustingPlt('cancel');
+  } else if (!newVal && pltState.isAdjustingPlt_)
+    pltState.setIsAdjustingPlt_('cancel');
   // Focusing on tab after opening the dialog.
-  dialogRef.value?.tabRefs[unref(tabIdx)]?.$el.focus();
+  unref(dialogRef)?.tabRefs[unref(tabIdx)]?.$el.focus();
 }, { flush: 'post' });
 
 watch(tabIdx, (newVal, oldVal) => {
   if (newVal === 0) { // Switch to tab 0
-    pltState.setIsAdjustingPlt('start');
+    pltState.setIsAdjustingPlt_('start');
     updateContrastResult();
   } else if (oldVal === 0) // From tab 0 switch to another tab.
-    pltState.setIsAdjustingPlt('cancel');
+    pltState.setIsAdjustingPlt_('cancel');
 }, { flush: 'post', immediate: true });
 </script>

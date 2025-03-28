@@ -18,7 +18,10 @@ $color-div-margin: 4px;
   text-align: center;
 
   button {
+    position: relative;
+
     display: inline-block;
+
     aspect-ratio: 1;
     height: $color-div-size;
     border-radius: $radius-rounded;

@@ -37,7 +37,7 @@
           :icon="isFavIcon.icon"
           :aria-label="isFavIcon.label"
           :ripple="false"
-          @click="favState.favColorsChanged(card.hex);"
+          @click="favState.favColorsChanged_(card.hex_);"
         />
       </CondWrapper>
       <CondWrapper
@@ -65,7 +65,7 @@
           aria-label="調整"
           aria-haspopup="dialog"
           :ripple="false"
-          @click="pltState.setEditingIdx(cardIdx)"
+          @click="pltState.setEditingIdx_(cardIdx)"
         />
       </CondWrapper>
     </div>
@@ -83,7 +83,7 @@
           <div
             :class="$style.hexText"
             @click="
-              copyText(card.hex.slice(1));
+              copyText(card.hex_.slice(1));
               handleClick($event)
             "
           >
@@ -94,7 +94,7 @@
             <VBtn
               ref="hexTextRef"
               :ripple="false"
-              :text="card.hex"
+              :text="card.hex_"
             />
           </div>
           <div
@@ -128,18 +128,18 @@
     >
       <label
         :for="`card${cardIdx}-hex`"
-        :style="{backgroundColor: card.hex}"
+        :style="{backgroundColor: card.hex_}"
       >
-        {{ card.hex }}
+        {{ card.hex_ }}
       </label>
       <input
-        v-memo="[card.hex]"
+        v-memo="[card.hex_]"
         ref="hexInputRef"
         :id="`card${cardIdx}-hex`"
         :class="$style.hexInput"
         type="text"
         maxlength="7"
-        :value="card.hex"
+        :value="card.hex_"
         @input="hexTextEdited($event)"
         @change="handleHexEditingFinished($event)"
       >
@@ -182,7 +182,7 @@
             :showRange="false"
             :showVal="false"
             :trackerBackground="gradientGen(roundedColor, i, pltState.colorSpace_)"
-            :thumbBackground="card.hex"
+            :thumbBackground="card.hex_"
             :min="min"
             :max="max"
             :model-value="roundedColor[i]"
@@ -244,7 +244,7 @@ const order = computed(() => ({
   isLast_: props.cardIdx === pltState.numOfCards_ - 1
 }));
 
-const card = computed<Card>(() => pltState.cards[props.cardIdx]);
+const card = computed<Card>(() => pltState.cards_[props.cardIdx]);
 
 const space = computed(() => {
   const infos = pltState.spaceInfos_;
@@ -258,11 +258,11 @@ const space = computed(() => {
   };
 });
 
-const isLight = computed(() => rgb2gray(hex2rgb(unref(card).hex)) > 127);
+const isLight = computed(() => rgb2gray(hex2rgb(unref(card).hex_)) > 127);
 
 const roundedColor = computed({
   get() {
-    return map(unref(card).color, (val) => round(val));
+    return map(unref(card).color_, (val) => round(val));
   },
   set(newColorArr: number[]) {
     pltState.editCard_(props.cardIdx, newColorArr);
@@ -273,7 +273,7 @@ const roundedColor = computed({
 // States / Consts
 const favState = useFavStore();
 const isFav = computed(() => {
-  return favState.colors.includes(unref(card).hex);
+  return favState.colors_.includes(unref(card).hex_);
 });
 const showToolbar = computed(() => {
   return {
@@ -305,7 +305,7 @@ const showEditor = computed({
     return pltState.editingIdx_ === props.cardIdx;
   },
   set() {
-    pltState.setEditingIdx(props.cardIdx);
+    pltState.setEditingIdx_(props.cardIdx);
   }
 });
 
@@ -313,17 +313,17 @@ const settingState = useSettingStore();
 const detail = asyncComputed<string>(
   () => {
     return pltState.isInNamedSpace_ ?
-      getClosestNamed(unref(card).color)
+      getClosestNamed(unref(card).color_)
         .then(str => unzipCssNamed(str)) :
-      getColorFunction(roundedColor.value, pltState.colorSpace_);
+      getColorFunction(unref(roundedColor), pltState.colorSpace_);
   },
   'white'
 );
 
 const cardStyle = computed<CSSProperties>(() => {
   return {
-    color: isLight.value ? '#000' : '#fff',
-    ...(settingState.paletteDisplay === 'block' && { background: toValue(card).hex })
+    color: unref(isLight) ? '#000' : '#fff',
+    ...(settingState.paletteDisplay === 'block' && { background: toValue(card).hex_ })
   };
 });
 
@@ -352,9 +352,9 @@ watch(showEditor, async (newShow) => {
     Object.assign(containerStyle, { left, right });
     // Focus on input after opening dialog
     await nextTick();
-    hexInputRef.value?.focus();
+    unref(hexInputRef)?.focus();
   } else {
-    hexTextRef.value?.$el.focus();
+    unref(hexTextRef)?.$el.focus();
   }
 });
 
@@ -370,8 +370,8 @@ const handleLeaveFocusing = (e: KeyboardEvent) => {
  */
 const handleHexEditingFinished = (e: Event) => {
   const text = (e.currentTarget as HTMLInputElement).value;
-  if (text !== unref(card).hex && isValidHex(text)) {
-    const newColor = space.value.converter(hex2rgb(text));
+  if (text !== unref(card).hex_ && isValidHex(text)) {
+    const newColor = unref(space).converter(hex2rgb(text));
     roundedColor.value = newColor;
   }
 };
@@ -385,7 +385,7 @@ const selectName = (name: string) => pltState.editCard_(
  * Slider changed event.
  */
 const handleSliderChange = (newVal: number, idx: number) => {
-  const newColor = [...unref(card).color];
+  const newColor = [...unref(card).color_];
   newColor[idx] = newVal;
   roundedColor.value = newColor;
 };

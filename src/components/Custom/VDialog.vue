@@ -55,7 +55,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, ref, watch } from 'vue';
+import { computed, nextTick, ref, unref, watch } from 'vue';
 import OverlayContainer from '@/components/Custom/OverlayContainer.vue';
 import VBtn from '@/components/Custom/VBtn.vue';
 import { V_DIALOG_OVERLAY_PROPS } from '@/utils/browser';
@@ -101,13 +101,13 @@ const closeBtnRef = ref<InstanceType<typeof VBtn>>();
 watch(isOpened, async (newVal) => {
   await nextTick();
   if (newVal) {
-    (closeBtnRef.value?.$el as HTMLButtonElement).focus();
+    (unref(closeBtnRef)?.$el as HTMLButtonElement).focus();
   }
 });
 
 defineExpose({
   tabRefs,
-  overlayContentRef: computed(() => overlayRef.value?.contentRef),
+  overlayContentRef: computed(() => unref(overlayRef)?.contentRef),
   contentRef,
 });
 </script>
@@ -201,8 +201,6 @@ defineExpose({
     width: 100%;
     height: 100%;
     padding: 0 12px 12px;
-
-    background-color: $color2;
 
     > button, > a {
       padding: 3px 12px;

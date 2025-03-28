@@ -28,7 +28,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch, toValue, getCurrentInstance, onMounted } from 'vue';
+import { computed, ref, watch, toValue, getCurrentInstance, onMounted, unref } from 'vue';
 import { useEventListener } from '@vueuse/core';
 import OverlayContainer from './OverlayContainer.vue';
 import { useElementBounding } from '@/composables/useElementBounding';
@@ -118,7 +118,7 @@ const clickOpenDuration_ = computed<number>(() =>
 const currentTarget = ref<HTMLElement | null>(null);
 const { rect_ } = useElementBounding(currentTarget);
 const tooltipStyle = computed<CSSProperties>(() => {
-  if (!(currentTarget.value instanceof Element)) return {};
+  if (!(unref(currentTarget) instanceof Element)) return {};
   const location = props.location;
   if (location === 'left') {
     return {
@@ -204,7 +204,7 @@ const activatorProps = computed(() => ({
   onMouseenter: handleShow,
   onMouseleave: handleHide,
   onClick: handleClick,
-  'aria-describedby': idForContainer.value,
+  'aria-describedby': unref(idForContainer),
 }));
 </script>
 

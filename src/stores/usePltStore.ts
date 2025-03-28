@@ -30,11 +30,11 @@ export type Card = {
   /**
    * RGB hex code.
    */
-  hex: string;
+  hex_: string;
   /**
    * Color array in specific color space.
    */
-  color: number[];
+  color_: number[];
   /**
    * Stores hex before editing the palette.
    */
@@ -66,8 +66,8 @@ const newCard = (
   const hex = rgb2hex(inverter(color));
   return {
     order_: order,
-    hex: hex,
-    color: color,
+    hex_: hex,
+    color_: color,
     originHex_: hex,
     originColor_: color,
     isLock_: false,
@@ -77,7 +77,7 @@ const newCard = (
 
 
 type State = {
-  cards: Card[];
+  cards_: Card[];
   /**
    * The order of cards.
    */
@@ -93,7 +93,7 @@ type State = {
   /**
    * Edit the palette.
    */
-  isAdjustingPlt: boolean;
+  isAdjustingPlt_: boolean;
   /**
    * How to evaluate a new color when insert a new card.
    */
@@ -108,23 +108,23 @@ type State = {
 
 const usePltStore = defineStore('plt', {
   state(): State {
-    const space = COLOR_SPACES.find(({ name: name_ }) => name_ === 'Named')!;
+    const space = COLOR_SPACES.find(({ name_: name_ }) => name_ === 'Named')!;
     return {
-      cards: map(5, (_, i) => newCard(i, space)),
+      cards_: map(5, (_, i) => newCard(i, space)),
       sortBy_: 'random',
       isPending_: false,
       editingIdx_: -1,
-      isAdjustingPlt: false,
+      isAdjustingPlt_: false,
       mixMode_: 'mean',
       colorSpace_: space,
     };
   },
   getters: {
     isInNamedSpace_(): boolean {
-      return this.colorSpace_.name === 'Named';
+      return this.colorSpace_.name_ === 'Named';
     },
     numOfCards_(): number {
-      return this.cards.length;
+      return this.cards_.length;
     },
     isEditing_(): boolean {
       return this.editingIdx_ !== -1;
@@ -146,10 +146,10 @@ const usePltStore = defineStore('plt', {
         let rightRgbColor;
         // -Add to thequallyLengthsition. Blending the first card and black.
         if (left < 0) leftRgbColor = [0, 0, 0];
-        else leftRgbColor = inverter(this.cards[left].color);
+        else leftRgbColor = inverter(this.cards_[left].color_);
         // -Add to the last position. Blending the last card and white.
         if (right >= this.numOfCards_) rightRgbColor = [255, 255, 255];
-        else rightRgbColor = inverter(this.cards[right].color);
+        else rightRgbColor = inverter(this.cards_[right].color_);
         rgb = getMixer(this.mixMode_)(
           leftRgbColor, rightRgbColor, this.colorSpace_,
         );
@@ -159,7 +159,7 @@ const usePltStore = defineStore('plt', {
     addCard_(idx: number, rgb: number[]) {
       if (this.numOfCards_ == MAX_NUM_OF_CARDS) return;
       const tempSort = this.sortBy_;
-      const cards = this.cards;
+      const cards = this.cards_;
       const cardState = newCard(idx, this.colorSpace_, this.spaceInfos_.converter(rgb));
       forLoop(cards, (_, card) => {
         if (card.order_ >= idx) card.order_++;
@@ -173,7 +173,7 @@ const usePltStore = defineStore('plt', {
     delCard_(idx: number) {
       if (this.numOfCards_ === MIN_NUM_OF_CARDS) return;
       const tempSort = this.sortBy_;
-      const cards = this.cards;
+      const cards = this.cards_;
       const removedOrder = cards.splice(idx, 1)[0].order_;
       forLoop(cards, (_, card) => {
         if (card.order_ > removedOrder) card.order_--;
@@ -186,10 +186,10 @@ const usePltStore = defineStore('plt', {
     refreshCard_(idx: number) {
       const tempSort = this.sortBy_;
       if (idx >= 0) {
-        if (this.cards[idx].isLock_) return;
-        this.cards[idx] = newCard(idx, this.colorSpace_);
+        if (this.cards_[idx].isLock_) return;
+        this.cards_[idx] = newCard(idx, this.colorSpace_);
       } else if (idx === -1) {
-        forLoop(this.cards, (_, card, i) =>
+        forLoop(this.cards_, (_, card, i) =>
           card.isLock_ || Object.assign(card, newCard(i, this.colorSpace_))
         );
       }
@@ -200,34 +200,34 @@ const usePltStore = defineStore('plt', {
     },
     editCard_(idx: number, color: number[]) {
       const { inverter } = this.spaceInfos_;
-      const card = this.cards[idx];
-      card.color = color;
-      card.hex = rgb2hex(inverter(color));
+      const card = this.cards_[idx];
+      card.color_ = color;
+      card.hex_ = rgb2hex(inverter(color));
       this.sortBy_ = 'random';
     },
     sortCards_(sortBy: SortActions) {
       const opIdx = SORTING_ACTIONS.indexOf(sortBy);
       const op = getDistOp(sortBy);
       if (opIdx === 1) { // random
-        shuffle(this.cards);
+        shuffle(this.cards_);
       } else if (
         opIdx === 2 || // inversion
         this.sortBy_ === SORTING_ACTIONS[opIdx]
       ) {
-        this.cards.reverse();
+        this.cards_.reverse();
       } else if (opIdx === 0) {
-        const distToBlack = map(this.cards, ({ hex: hex }) => {
+        const distToBlack = map(this.cards_, ({ hex_: hex }) => {
           return op(hex, '#000');
         });
-        this.cards.sort((a, b) => {
+        this.cards_.sort((a, b) => {
           return distToBlack[a.order_] - distToBlack[b.order_];
         });
       }
       else {
         const dist = (a: Pick<Card, 'hex_'>, b: Pick<Card, 'hex_'>) => {
-          return op(a.hex, b.hex);
+          return op(a.hex_, b.hex_);
         };
-        this.cards = tspGreedy(this.cards, dist, { hex: '#000' });
+        this.cards_ = tspGreedy(this.cards_, dist, { hex_: '#000' });
       }
       /**
        * Inversion will not change sortBy. For example, if cards are sorted
@@ -237,20 +237,20 @@ const usePltStore = defineStore('plt', {
       if (opIdx !== 2)
         // @ts-expect-error
         this.sortBy_ = sortBy;
-      forLoop(this.cards, (_, card, i) => card.order_ = i);
+      forLoop(this.cards_, (_, card, i) => card.order_ = i);
     },
     setIsLock_(idx: number) {
-      this.cards[idx].isLock_ = !this.cards[idx].isLock_;
+      this.cards_[idx].isLock_ = !this.cards_[idx].isLock_;
     },
-    setEditingIdx(idx?: number) {
+    setEditingIdx_(idx?: number) {
       idx ??= -1;
       this.editingIdx_ = this.editingIdx_ === idx ? -1 : idx;
     },
     moveCardOrder_(cardIdx: number, to: number) {
-      const initOrder = this.cards[cardIdx].order_;
+      const initOrder = this.cards_[cardIdx].order_;
       if (initOrder <= to) {
         forLoop(
-          this.cards,
+          this.cards_,
           (_, card) => {
             if (initOrder < card.order_ && card.order_ <= to)
               card.order_--;
@@ -258,53 +258,53 @@ const usePltStore = defineStore('plt', {
         );
       } else {
         forLoop(
-          this.cards,
+          this.cards_,
           (_, card) => {
             if (to <= card.order_ && card.order_ < initOrder)
               card.order_++;
           }
         );
       }
-      this.cards[cardIdx].order_ = to;
+      this.cards_[cardIdx].order_ = to;
       this.sortBy_ = 'random';
     },
     // Plt state
     resetOrder_() {
-      this.cards.sort((a, b) => a.order_ - b.order_);
-      forLoop(this.cards, (_, card, i) => card.order_ = i);
+      this.cards_.sort((a, b) => a.order_ - b.order_);
+      forLoop(this.cards_, (_, card, i) => card.order_ = i);
     },
     setIsPending_(newVal: boolean) {
       this.isPending_ = newVal;
     },
-    setIsAdjustingPlt(val: 'start' | 'reset' | 'cancel') {
+    setIsAdjustingPlt_(val: 'start' | 'reset' | 'cancel') {
       // start: Start adjusting and store origin color.
       // reset: Keep adjusting and reset color.
       // cancel: Keep adjusting and reset color.
-      this.isAdjustingPlt = val !== 'cancel';
+      this.isAdjustingPlt_ = val !== 'cancel';
       if (val === 'start') {
         forLoop(
-          this.cards,
+          this.cards_,
           (_, card) => {
-            card.originHex_ = card.hex;
-            card.originColor_ = [...card.color];
+            card.originHex_ = card.hex_;
+            card.originColor_ = [...card.color_];
           }
         );
       } else { // 'reset' and 'cancel'
         forLoop(
-          this.cards,
+          this.cards_,
           (_, card) => {
-            card.hex = card.originHex_;
-            card.color = [...card.originColor_];
+            card.hex_ = card.originHex_;
+            card.color_ = [...card.originColor_];
           }
         );
       }
     },
-    setPlt(plt: string[] | number[][]) {
+    setPlt_(plt: string[] | number[][]) {
       const { converter } = this.spaceInfos_;
       const callback = (color: string | number[]) => {
         return Array.isArray(color) ? color : converter(hex2rgb(color));
       };
-      this.cards = map<Card, string | number[]>(
+      this.cards_ = map<Card, string | number[]>(
         plt,
         (color, i) => newCard(
           i, this.colorSpace_, callback(color),
@@ -316,30 +316,30 @@ const usePltStore = defineStore('plt', {
       this.colorSpace_ = COLOR_SPACES[idx];
       const { converter } = this.spaceInfos_;
       forLoop(
-        this.cards,
+        this.cards_,
         (_, card) => {
-          const rgb = hex2rgb(card.hex) as number[];
-          card.color = converter(rgb);
+          const rgb = hex2rgb(card.hex_) as number[];
+          card.color_ = converter(rgb);
         },
       );
     },
     setBlendMode_(newBlendMode: Mixing) {
       this.mixMode_ = newBlendMode;
     },
-    adjustContrast(method: number, coeff?: number) {
-      if (!this.isAdjustingPlt) return;
+    adjustContrast_(method: number, coeff?: number) {
+      if (!this.isAdjustingPlt_) return;
       const { converter, inverter } = this.spaceInfos_;
 
       const arr = map(
-        this.cards,
+        this.cards_,
         card => inverter(card.originColor_)
       );
       const adjuster = getContrastAdjuster(CONTRAST_METHODS[method]);
 
       const newRgbs = adjuster(arr, coeff!);
-      forLoop(this.cards, (_, card, i) => {
-        card.color = converter(newRgbs[i]);
-        card.hex = rgb2hex(newRgbs[i]);
+      forLoop(this.cards_, (_, card, i) => {
+        card.color_ = converter(newRgbs[i]);
+        card.hex_ = rgb2hex(newRgbs[i]);
       });
     },
   },

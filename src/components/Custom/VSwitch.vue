@@ -4,14 +4,14 @@
   >
     <div class="field">
       <label
-        v-if="state.ariaLabel"
-        :for="state.id"
+        v-if="fieldState.ariaLabel_"
+        :for="fieldState.id_"
         @click.prevent="handleClick();switchRef?.focus()"
-      >{{ state.ariaLabel }}</label>
+      >{{ fieldState.ariaLabel_ }}</label>
       <input
-        :id="state.id"
-        :aria-label="state.ariaLabel"
-        :aria-labelledby="state.ariaLabelledby"
+        :id="fieldState.id_"
+        :aria-label="fieldState.ariaLabel_"
+        :aria-labelledby="fieldState.ariaLabelledby_"
         type="checkbox"
         inputmode="none"
         :checked="model"
@@ -24,7 +24,7 @@
       tabindex="0"
       role="switch"
       :aria-checked="model"
-      :aria-labelledby="state.ariaLabel"
+      :aria-labelledby="fieldState.ariaLabel_"
       @click="handleClick"
       @keydown="handleKeyDown"
     />
@@ -47,7 +47,7 @@ const props = withDefaults(defineProps<Props>(), {
 const switchRef = ref<HTMLDivElement>();
 
 // Handle form element
-const { state, cleanup } = useInputField(props.label, 'switch');
+const { state_: fieldState, cleanup } = useInputField(props.label, 'switch');
 onUnmounted(cleanup);
 
 

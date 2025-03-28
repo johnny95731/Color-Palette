@@ -139,9 +139,9 @@ const secondPickerRef = ref<HTMLDivElement>();
 /** wheel width/2 in percentage */
 const wheelHalfWidth = ref(0);
 const updateWheelHalfWidth = () => {
-  if (unref(variant) === 'wheel' && canvasPickerRef.value) {
+  if (unref(variant) === 'wheel' && unref(canvasPickerRef)) {
     wheelHalfWidth.value = toPercent(
-      getPropertyValue(dialogRef.value?.overlayContentRef, '--wheel-width') / (COLOR_PICKER_CANVAS_SIZE * 2),
+      getPropertyValue(unref(dialogRef)?.overlayContentRef, '--wheel-width') / (COLOR_PICKER_CANVAS_SIZE * 2),
       2
     );
   } else
@@ -150,7 +150,7 @@ const updateWheelHalfWidth = () => {
 
 watch(variant, () => updateWheelHalfWidth(), { flush: 'post' });
 onMounted(() => {
-  dialogRef.value?.overlayContentRef?.style
+  unref(dialogRef)?.overlayContentRef?.style
     .setProperty('--canvas-size', `${COLOR_PICKER_CANVAS_SIZE}px`);
   updateWheelHalfWidth();
 });
@@ -179,7 +179,7 @@ const hexColor = computed({
   },
   set(hex: string) {
     if (
-      hex !== hexColor.value && // Avoid updating `currentColor` recursively.
+      hex !== unref(hexColor) && // Avoid updating `currentColor` recursively.
       isValidHex(hex)
     ) {
       setCurrentColor(hex);
@@ -202,7 +202,7 @@ const canvasThumbStyle = reactive<ColorThumbStyle>({
   background: '',
 });
 const secondPickerStyle = computed(() => ({
-  background: `linear-gradient(0deg, #000, #0000), linear-gradient(90deg, #ffff, #fff0), ${pureColor.value}`
+  background: `linear-gradient(0deg, #000, #0000), linear-gradient(90deg, #ffff, #fff0), ${unref(pureColor)}`
 }));
 const secondThumbStyle = ref<Partial<ColorThumbStyle>>({});
 
@@ -223,7 +223,7 @@ const updaters = computed(() => {
         currentColor[0] = round(newVal, 2);
       },
       secondThumbStyle_: () =>({
-        background: pureColor.value,
+        background: unref(pureColor),
       })
     };
   else if (unref(variant) === 'rounded')
@@ -262,11 +262,11 @@ const updaters = computed(() => {
         currentColor[0] = mod(deg + 90, 360);
       },
       canvasThumbStyle_: () => {
-        const { x, y } = polar2cartesian(50 - wheelHalfWidth.value, currentColor[0] - 90); // 0deg at top
+        const { x, y } = polar2cartesian(50 - unref(wheelHalfWidth), currentColor[0] - 90); // 0deg at top
         return {
           top: (y + 50) + '%',
           left: (x + 50) + '%',
-          background: pureColor.value
+          background: unref(pureColor)
         };
       },
       secondPicker_: (pos: Position) => {
@@ -277,7 +277,7 @@ const updaters = computed(() => {
       secondThumbStyle_: () => ({
         left: rangeMapping(currentColor[1], 0, COLOR_MAXES.hsl[1], 0, 100, 2) + '%',
         top: rangeMapping(currentColor[2], 0, COLOR_MAXES.hsl[2], 100, 0, 2) + '%',
-        background: hexColor.value
+        background: unref(hexColor)
       }),
     };
 });
@@ -293,7 +293,7 @@ const canvasGrads: {
   hue_?: CanvasGradient,
 } = {};
 onMounted(() => {
-  const ctx = canvasPickerRef.value?.getContext('2d');
+  const ctx = unref(canvasPickerRef)?.getContext('2d');
   if (!ctx) return;
   //
   const grdWhite = ctx.createLinearGradient(0, 0, COLOR_PICKER_CANVAS_SIZE, 0);
@@ -319,21 +319,21 @@ onMounted(() => {
 });
 
 const clearCanvas = () => {
-  const ctx = canvasPickerRef.value?.getContext('2d');
+  const ctx = unref(canvasPickerRef)?.getContext('2d');
   if (!ctx) return;
   ctx.clearRect(0, 0, COLOR_PICKER_CANVAS_SIZE, COLOR_PICKER_CANVAS_SIZE);
 };
 const fillStyle = (
   style: MaybeRef<string | CanvasGradient | CanvasPattern>
 ) => {
-  const ctx = canvasPickerRef.value?.getContext('2d');
+  const ctx = unref(canvasPickerRef)?.getContext('2d');
   if (!ctx) return;
   ctx.fillStyle = unref(style);
   ctx.fillRect(0, 0, COLOR_PICKER_CANVAS_SIZE, COLOR_PICKER_CANVAS_SIZE);
 };
 
 const repainCanvas = computed(() => {
-  const ctx = canvasPickerRef.value?.getContext('2d');
+  const ctx = unref(canvasPickerRef)?.getContext('2d');
   if (!ctx) return;
   if (unref(variant) === 'rect')
     return () => {
@@ -374,9 +374,9 @@ const repainCanvas = computed(() => {
   }
 });
 const updateColorPicker = () => {
-  Object.assign(canvasThumbStyle, updaters.value.canvasThumbStyle_());
-  secondThumbStyle.value = updaters.value.secondThumbStyle_();
-  repainCanvas.value?.();
+  Object.assign(canvasThumbStyle, unref(updaters).canvasThumbStyle_());
+  secondThumbStyle.value = unref(updaters).secondThumbStyle_();
+  unref(repainCanvas)?.();
 };
 watch(
   () => [unref(variant), currentColor],
@@ -390,12 +390,12 @@ onMounted(() => {
 // Canvas event
 const canvasDraggingStart = toValue(() => {
   const update = (pos: Position) => {
-    updaters.value.canvas_(pos);
+    unref(updaters).canvas_(pos);
   };
   const { start } = useDragableElement(canvasPickerRef, {
-    containerElement: canvasPickerRef,
-    onStart: update,
-    onMove: update,
+    containerElement_: canvasPickerRef,
+    onStart_: update,
+    onMove_: update,
   });
   return start;
 });
@@ -403,12 +403,12 @@ const canvasDraggingStart = toValue(() => {
 // Slider events
 const sliderDraggingStart = toValue(() => {
   const update = (pos: Position) => {
-    updaters.value.secondPicker_!(pos);
+    unref(updaters).secondPicker_!(pos);
   };
   const { start } = useDragableElement(secondPickerRef, {
-    containerElement: secondPickerRef,
-    onStart: update,
-    onMove: update,
+    containerElement_: secondPickerRef,
+    onStart_: update,
+    onMove_: update,
   });
   return start;
 });

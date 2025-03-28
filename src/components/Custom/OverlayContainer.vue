@@ -130,25 +130,25 @@ const isActive = ref(false);
 const openedChild = ref(0);
 
 type OverlayProvided = {
-  zIndex?: number,
+  zIndex_?: number,
   /**
    * A submenu is opened.
    */
-  register: () => void,
+  register_: () => void,
   /**
    * A submenu is closed.
    */
-  unregister: () => void,
+  unregister_: () => void,
 };
 
 const parent = inject<OverlayProvided | null>(OVERLAY_SYMBOL, null);
-let zIndex = calcOverlayZIndex(props.type, parent?.zIndex);
+let zIndex = calcOverlayZIndex(props.type, parent?.zIndex_);
 provide<OverlayProvided>(OVERLAY_SYMBOL, {
-  zIndex,
-  register() {
+  zIndex_: zIndex,
+  register_() {
     openedChild.value++;
   },
-  unregister() {
+  unregister_() {
     openedChild.value--;
   },
 });
@@ -175,9 +175,9 @@ const handleAfterLeave = () => {
 watch(isOpened, (newVal) => {
   if (newVal) {
     isActive.value = true;
-    parent?.register();
+    parent?.register_();
   } else {
-    parent?.unregister();
+    parent?.unregister_();
   }
 }, { flush: 'post' });
 // flush: 'post' to maker container updated first when eager is false

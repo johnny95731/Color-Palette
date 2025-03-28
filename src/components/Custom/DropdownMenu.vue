@@ -193,9 +193,9 @@ const openedChild = ref(0);
  * The topmost layer activator that is not the last element of a menu.
  */
 const topNonLastActivator = () => {
-  return !parent || !parent.isLast(unref(activator)) ?
+  return !parent || !parent.isLast_(unref(activator)) ?
     unref(activator) :
-    parent.topNonLastActivator();
+    parent.topNonLastActivator_();
 };
 
 /**
@@ -217,7 +217,7 @@ const nestedClosing = async (target?: Element | EventTarget | null) => {
     invertBoolean(isOpened, false);
     await sleep(250);
     await nextTick();
-    parent?.nestedClosing(target);
+    parent?.nestedClosing_(target);
   }
 };
 
@@ -225,42 +225,42 @@ type MenuProvided = {
   /**
    * The most top activator that is not the last element of a menu.
    */
-  topActivator: () => HTMLElement,
+  topActivator_: () => HTMLElement,
   /**
    * The most top activator that is not the last element of a menu.
    */
-  topNonLastActivator: () => HTMLElement,
+  topNonLastActivator_: () => HTMLElement,
   /**
    * Check target is the last option of menu.
    */
-  isLast: (target: Element) => boolean | undefined,
+  isLast_: (target: Element) => boolean | undefined,
   /**
    * A submenu is opened.
    */
-  register: () => void,
+  register_: () => void,
   /**
    * A submenu is closed.
    */
-  unregister: () => void,
-  nestedClosing: (target?: Element | EventTarget | null) => void,
+  unregister_: () => void,
+  nestedClosing_: (target?: Element | EventTarget | null) => void,
 }
 const parent = inject<MenuProvided | null>(MENU_SYMBOL, null);
 provide<MenuProvided>(MENU_SYMBOL, {
-  topActivator() {
-    return parent?.topActivator() ?? unref(activator) as HTMLButtonElement;
+  topActivator_() {
+    return parent?.topActivator_() ?? unref(activator) as HTMLButtonElement;
   },
-  topNonLastActivator,
-  isLast(target: Element | null) {
+  topNonLastActivator_: topNonLastActivator,
+  isLast_(target: Element | null) {
     const menu = unref(contentRef)!;
     return menu.children[menu.children.length-1] === target;
   },
-  register() {
+  register_() {
     openedChild.value++;
   },
-  unregister() {
+  unregister_() {
     openedChild.value--;
   },
-  nestedClosing
+  nestedClosing_: nestedClosing
 });
 
 const { rect_: activatorRect } = useElementBounding(activator);
@@ -278,11 +278,11 @@ const menuContainerStyle = computed<CSSProperties>(() => {
 const resizeCallback = () => nestedClosing();
 watch(isOpened, (newVal) => {
   if (!newVal) {
-    parent?.unregister();
+    parent?.unregister_();
     removeEventListener('click', handleClickWindow, true);
     removeEventListener('resize', resizeCallback, true);
   } else {
-    parent?.register();
+    parent?.register_();
     addEventListener('click', handleClickWindow, true);
     removeEventListener('resize', resizeCallback, true);
   }

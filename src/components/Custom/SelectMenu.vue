@@ -7,8 +7,8 @@
     ]"
     :prepend-icon="prependIcon"
     :tooltip="tooltip"
-    :aria-label="fieldState.ariaLabel"
-    :aria-labelledby="fieldState.ariaLabelledby"
+    :aria-label="fieldState.ariaLabel_"
+    :aria-labelledby="fieldState.ariaLabelledby_"
     :aria-controls="eager || isOpened ? menuId : undefined"
     :aria-expanded="isOpened"
     data-haspopup="true"
@@ -20,13 +20,13 @@
       {{ btnLabel }}
       <div class="field">
         <label
-          v-if="fieldState.ariaLabel"
-          :for="fieldState.id"
-        >{{ fieldState.ariaLabel }}</label>
+          v-if="fieldState.ariaLabel_"
+          :for="fieldState.id_"
+        >{{ fieldState.ariaLabel_ }}</label>
         <input
-          :id="fieldState.id"
-          :aria-label="fieldState.ariaLabel"
-          :aria-labelledby="fieldState.ariaLabelledby"
+          :id="fieldState.id_"
+          :aria-label="fieldState.ariaLabel_"
+          :aria-labelledby="fieldState.ariaLabelledby_"
           type="text"
           inputmode="none"
           tabindex="-1"
@@ -116,7 +116,6 @@ type Props = {
   eager?: boolean
   items?: readonly (string | SelectItem)[];
   inputId?: string,
-  listboxId?:string,
   label?: string,
   text?: string,
   prependIcon?: string;
@@ -144,12 +143,10 @@ const activator = computed<Element>(() => unref(activatorRef)?.$el);
 
 
 // Handle form element
-const { state: fieldState, cleanup } = useInputField(props.label, 'select');
+const { state_: fieldState, cleanup } = useInputField(props.label, 'select');
 onUnmounted(cleanup);
 
-const menuId = computed<string>(() =>
-  props.listboxId ?? getComponentId('menu')
-);
+const menuId = computed<string>(() => getComponentId('menu'));
 
 
 const selectItems = computed(() => {

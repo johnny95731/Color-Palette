@@ -114,7 +114,7 @@ const { start: startDragging } = (() => {
   let divHeight: number | null = null; // in percentage
 
   const getIdx = (pos: Position) => {
-    return clip(Math.floor(pos.y / 100 * colors.value.length), 0, colors.value.length - 1);
+    return clip(Math.floor(pos.y / 100 * unref(colors).length), 0, unref(colors).length - 1);
   };
 
   const setPosition = (pos: Position) => {
@@ -122,33 +122,33 @@ const { start: startDragging } = (() => {
       divPosition.value.top = `${pos.y - initPos}%`;
   };
 
-  const onStart = (pos: Position) => {
+  const onStart_ = (pos: Position) => {
     draggingIdx.value = getIdx(pos);
-    divHeight = 100 / colors.value.length;
-    initPos = divHeight * (draggingIdx.value + 0.5);
+    divHeight = 100 / unref(colors).length;
+    initPos = divHeight * (unref(draggingIdx)! + 0.5);
     setPosition(pos);
   };
-  const onMove = (pos: Position) => {
+  const onMove_ = (pos: Position) => {
     if (isNullish(draggingIdx) || isNullish(initPos)) return;
     setPosition(pos);
     finalIdx.value = getIdx(pos);
   };
-  const onEnd = () => {
+  const onEnd_ = () => {
     if (isNullish(draggingIdx)) return;
-    if (draggingIdx.value !== finalIdx.value && !isNullish(finalIdx.value)) {
-      const color = colors.value.splice(draggingIdx.value!, 1)[0];
-      colors.value.splice(finalIdx.value!, 0, color);
+    if (unref(draggingIdx) !== finalIdx.value && !isNullish(finalIdx.value)) {
+      const color = unref(colors).splice(unref(draggingIdx)!, 1)[0];
+      unref(colors).splice(finalIdx.value!, 0, color);
     }
     draggingIdx.value = null;
     finalIdx.value = null;
     divPosition.value.top = 0;
   };
   return useDragableElement(contentRef, {
-    containerElement: contentRef,
-    binding: false,
-    onStart: onStart,
-    onMove: onMove,
-    onEnd: onEnd,
+    containerElement_: contentRef,
+    binding_: false,
+    onStart_,
+    onMove_,
+    onEnd_,
   });
 })();
 
@@ -157,14 +157,14 @@ const { start: startDragging } = (() => {
  * Preview the palette (will restore when dialog is closed).
  */
 const preview = () => {
-  pltState.setPlt(
+  pltState.setPlt_(
     unref(isPreview) ? unref(colors) : unref(original)
   );
 };
 
 /** Overwrite current palette and close. (will not restore when dialog is closed) */
 const comfirm = () => {
-  pltState.setPlt(unref(colors));
+  pltState.setPlt_(unref(colors));
   // Overwrite `originalPalette`. Because close dialog will restore palette from
   // `originalPalette`.
   saveOrininal();
@@ -175,17 +175,17 @@ const comfirm = () => {
  * To restore palette when close dialog.
  */
 const saveOrininal = () => {
-  original.value = map(pltState.cards, card => card.hex);
+  original.value = map(pltState.cards_, card => card.hex_);
 };
 
 watch(() => [unref(isPreview), unref(colors)], preview, { deep: true });
 watch(isOpened, (newVal) => {
   if (newVal) {
-    colors.value = map(pltState.cards, card => card.hex);
+    colors.value = map(pltState.cards_, card => card.hex_);
     saveOrininal();
     preview();
   } else
-    pltState.setPlt(unref(original)); // restore palette from `originalPalette`
+    pltState.setPlt_(unref(original)); // restore palette from `originalPalette`
 }, { immediate: true });
 
 /**
@@ -193,18 +193,18 @@ watch(isOpened, (newVal) => {
  */
 const handleHexEditingFinished = function(e: Event, idx: number) {
   const text = (e.currentTarget as HTMLInputElement).value;
-  if (text !== colors.value[idx] && isValidHex(text)) {
-    colors.value[idx] = text;
+  if (text !== unref(colors)[idx] && isValidHex(text)) {
+    unref(colors)[idx] = text;
   }
 };
 
 
 // Append and delete
 const addColor = () => {
-  colors.value.push(rgb2hex(randRgbGen()));
+  unref(colors).push(rgb2hex(randRgbGen()));
 };
 const deleteColor = (idx: number) => {
-  colors.value.splice(idx, 1);
+  unref(colors).splice(idx, 1);
 };
 
 const handlePaste = async (e: KeyboardEvent, idx: number) => {
@@ -215,10 +215,10 @@ const handlePaste = async (e: KeyboardEvent, idx: number) => {
       for (const str of text.split('-'))
         if (isValidHex(str)) palette.push(str.startsWith('#') ? str : '#' + str);
       do {
-        colors.value.splice(idx++, 1, palette.shift()!);
+        unref(colors).splice(idx++, 1, palette.shift()!);
       } while (idx < MAX_NUM_OF_CARDS && palette.length);
-      if (idx < colors.value.length) {
-        colors.value.splice(idx, colors.value.length - idx);
+      if (idx < unref(colors).length) {
+        unref(colors).splice(idx, unref(colors).length - idx);
       }
     }
   }

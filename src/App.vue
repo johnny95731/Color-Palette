@@ -10,7 +10,7 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, onMounted, computed, toValue } from 'vue';
+import { ref, onMounted, computed, toValue, unref } from 'vue';
 import VHeader from './components/Header/VHeader.vue';
 import VPalette from './components/Palette/VPalette.vue';
 import { HOTKEYS } from './utils/hotkeys';
@@ -23,7 +23,7 @@ const headerRef = ref<InstanceType<typeof VHeader>>();
 
 const pltState = usePltStore();
 const isOverlayOpened = computed(() =>
-  pltState.isEditing_ || headerRef.value?.isSomeDialogOpened_
+  pltState.isEditing_ || unref(headerRef)?.isSomeDialogOpened_
 );
 const isCardPending = computed(() => pltState.isEditing_ || pltState.isPending_);
 

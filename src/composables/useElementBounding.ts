@@ -16,25 +16,25 @@ export interface UseElementBoundingOptions<K> {
      *
      * @default true
      */
-    reset?: boolean;
+    reset_?: boolean;
     /**
      * Listen to window resize event
      *
      * @default true
      */
-    windowResize?: boolean;
+    windowResize_?: boolean;
     /**
      * Listen to window scroll event
      *
      * @default true
      */
-    windowScroll?: boolean;
+    windowScroll_?: boolean;
     /**
      * Immediately call update on component mounted
      *
      * @default true
      */
-    immediate?: boolean;
+    immediate_?: boolean;
     /**
      * Timing to recalculate the bounding box
      *
@@ -43,9 +43,9 @@ export interface UseElementBoundingOptions<K> {
      *
      * @default 'sync'
      */
-    updateTiming?: 'sync' | 'next-frame';
+    updateTiming_?: 'sync' | 'next-frame';
 
-    filter?: K[]
+    filter_?: K[]
 }
 
 const emptyRect = {
@@ -67,12 +67,12 @@ export const useElementBounding = <K extends RectKeys>(
   options: UseElementBoundingOptions<K> = {}
 ) => {
   const {
-    reset: reset_ = true,
-    windowResize: windowResize_ = true,
-    windowScroll: windowScroll_ = true,
-    immediate: immediate_ = true,
-    updateTiming: updateTiming_ = 'sync',
-    filter: filter_ = [
+    reset_: reset_ = true,
+    windowResize_: windowResize_ = true,
+    windowScroll_: windowScroll_ = true,
+    immediate_: immediate_ = true,
+    updateTiming_: updateTiming_ = 'sync',
+    filter_: filter_ = [
       'height', 'width', 'bottom', 'left', 'right', 'top', 'x', 'y'
     ],
   } = options;

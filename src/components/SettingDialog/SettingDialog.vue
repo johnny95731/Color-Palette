@@ -115,11 +115,11 @@
           id="transition-color"
         >Color(ms)</label>
         <VSlider
-          v-memo="[transition.color]"
+          v-memo="[transition.color_]"
           label="#transition-color"
           :max="TRANSITION_MAX_COLOR"
           step="50"
-          :model-value="transition.color"
+          :model-value="transition.color_"
           @update:model-value="handleTransitionChanged($event, 'color')"
           @keydown="handleFocusoutDialog"
         />
@@ -162,21 +162,21 @@ const settingsState = useSettingStore();
 // page 1: Card
 // -Transition states
 const transition = reactive<{
-  pos: number,
-  color: number,
+  pos_: number,
+  color_: number,
 }>({
-  pos: settingsState.transition.pos,
-  color: settingsState.transition.color,
+  pos_: settingsState.transition.pos,
+  color_: settingsState.transition.color,
 });
 
 const handleTransitionChanged = (
   val: number, attr: keyof TransitionStyle,
 ) => {
-  if (attr === 'pos') transition.pos = val;
-  else transition.color = val;
-  settingsState.setTransition(attr, val);
+  if (attr === 'pos') transition.pos_ = val;
+  else transition.color_ = val;
+  settingsState.setTransition_(attr, val);
 };
 
 // Update storage
-watch(settingsState.$state, settingsState.updateStorage, { deep: true });
+watch(settingsState.$state, settingsState.updateStorage_, { deep: true });
 </script>

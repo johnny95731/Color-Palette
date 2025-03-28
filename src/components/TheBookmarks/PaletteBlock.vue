@@ -87,8 +87,8 @@ const handleSetPlt = () => {
   for (const hex of pltColors) {
     if (!isValidHex(hex)) return;
   }
-  pltState.setPlt(pltColors);
+  pltState.setPlt_(pltColors);
 };
 
-const removeFavPlt = () => favState.favPltsChanged(props.plt);
+const removeFavPlt = () => favState.favPltsChanged_(props.plt);
 </script>

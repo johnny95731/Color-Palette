@@ -16,6 +16,7 @@ export type UseInputFieldOptions = {
   inputId?: MaybeRefOrGetter<string>,
 }
 
+
 const useInputField = (
   label?: MaybeRefOrGetter<string>,
   /**
@@ -32,11 +33,11 @@ const useInputField = (
    * Aria label for <input />
    */
   const state = shallowRef<{
-    id: string,
-    ariaLabelledby?: string,
-    ariaLabel?: string
+    id_: string,
+    ariaLabelledby_?: string,
+    ariaLabel_?: string
   }>({
-    id: toValue(idForInput),
+    id_: toValue(idForInput),
   });
   tryOnMounted(() => {
     if (isId(toValue(label)))
@@ -57,15 +58,15 @@ const useInputField = (
       }
       const labelIsId = isId(newVal[0]);
       state.value = {
-        id: unref(idForInput),
-        ariaLabelledby: labelIsId ? newVal[0].slice(1) : undefined,
-        ariaLabel: labelIsId ? undefined : newVal[0],
+        id_: unref(idForInput),
+        ariaLabelledby_: labelIsId ? newVal[0].slice(1) : undefined,
+        ariaLabel_: labelIsId ? undefined : newVal[0],
       };
     }
   );
 
   return {
-    state: state,
+    state_: state,
     cleanup: cleanup.stop,
   };
 };

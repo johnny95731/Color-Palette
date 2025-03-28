@@ -4,8 +4,8 @@
     :style="{
       background: trackerBackground,
     }"
-    :aria-label="state.ariaLabel"
-    :aria-labelledby="state.ariaLabelledby"
+    :aria-label="fieldState.ariaLabel_"
+    :aria-labelledby="fieldState.ariaLabelledby_"
     role="slider"
     :aria-valuemin="min_"
     :aria-valuemax="max_"
@@ -15,13 +15,13 @@
   >
     <div class="field">
       <label
-        v-if="state.ariaLabel"
-        :for="state.id"
-      >{{ state.ariaLabel }}</label>
+        v-if="fieldState.ariaLabel_"
+        :for="fieldState.id_"
+      >{{ fieldState.ariaLabel_ }}</label>
       <input
-        :id="state.id"
-        :aria-label="state.ariaLabel"
-        :aria-labelledby="state.ariaLabelledby"
+        :id="fieldState.id_"
+        :aria-label="fieldState.ariaLabel_"
+        :aria-labelledby="fieldState.ariaLabelledby_"
         type="range"
         inputmode="none"
         :min="min_"
@@ -60,7 +60,7 @@
 </template>
 
 <script setup lang="ts">
-import { watch, ref, computed, onUnmounted } from 'vue';
+import { watch, ref, computed, onUnmounted, unref } from 'vue';
 import VTooltip from './VTooltip.vue';
 import { useDragableElement } from '@/composables/useDragableElement';
 import useInputField from '@/composables/useInputField';
@@ -95,7 +95,7 @@ const trackerRef = ref<HTMLDivElement>();
 const thumbRef = ref<HTMLDivElement>();
 
 // Handle form element
-const { state, cleanup } = useInputField(props.label, 'slider');
+const { state_: fieldState, cleanup } = useInputField(props.label, 'slider');
 onUnmounted(cleanup);
 
 
@@ -115,19 +115,19 @@ const numStep = computed<number>(() => +props.step);
  * Decimals counts of display text.
  */
 const decimals = computed<number>(() =>
-  numStep.value > 0 ? countDecimals(numStep.value) : 0
+  unref(numStep) > 0 ? countDecimals(unref(numStep)) : 0
 );
 
 /**
  * Rounding the value to satify step.
  */
 const roundingValue = (newVal?: number) => {
-  newVal ??= model.value;
-  return numStep.value <= 0 ?
+  newVal ??= unref(model);
+  return unref(numStep) <= 0 ?
     newVal :
     round(
-      min_.value + Math.floor((newVal - min_.value) / numStep.value) * numStep.value,
-      decimals.value,
+      unref(min_) + Math.floor((newVal - unref(min_)) / unref(numStep)) * unref(numStep),
+      unref(decimals),
     );
 };
 
@@ -136,46 +136,46 @@ const roundingValue = (newVal?: number) => {
  */
 const updateModel = (newVal?: number) => {
   newVal = roundingValue(newVal);
-  if (!isSameFloat(newVal, model.value)) model.value = newVal;
+  if (!isSameFloat(newVal, unref(model))) model.value = newVal;
 };
 
 // Init model
 (() => {
-  model.value = roundingValue(model.value ?? (max_.value + min_.value) / 2);
+  model.value = roundingValue(unref(model) ?? (max_.value + unref(min_)) / 2);
 })();
 
 // Handle model, `props.min`, and `props.max` changed.
 watch(
   () => [props.min, props.max],
   () => {
-    updateModel(clip(model.value, min_.value, max_.value));
+    updateModel(clip(unref(model), unref(min_), max_.value));
   }, { immediate: true });
 
 // Step increment function. If num < 0, then becomes decrement.
 const increment = (num: number = 1) => {
   updateModel(
-    clip(model.value + num * numStep.value, min_.value, max_.value)
+    clip(unref(model) + num * unref(numStep), unref(min_), max_.value)
   );
 };
 
 watch(model, (newVal) => {
-  thumbPos.value = `${rangeMapping(newVal, min_.value, max_.value, 0, 100)}%`;
+  thumbPos.value = `${rangeMapping(newVal, unref(min_), max_.value, 0, 100)}%`;
 }, { immediate: true });
 
 // onChange event => Drag or key down.
 const { isDragging_ } = (() => {
   const update = (pos: Position) => {
-    updateModel(rangeMapping(pos.x, 0, 100, min_.value, max_.value));
+    updateModel(rangeMapping(pos.x, 0, 100, unref(min_), max_.value));
   };
   return useDragableElement(trackerRef, {
-    containerElement: trackerRef,
-    onStart: update,
-    onMove: update,
-    initialValue: {
-      x: rangeMapping(model.value, min_.value, max_.value, 0, 100),
+    containerElement_: trackerRef,
+    onStart_: update,
+    onMove_: update,
+    initialValue_: {
+      x: rangeMapping(unref(model), unref(min_), max_.value, 0, 100),
       y: 0,
     },
-    axis: 'x'
+    axis_: 'x'
   });
 })();
 // -Key down
@@ -187,7 +187,7 @@ const handleKeyDown = (e: KeyboardEvent) => {
     else // ArrorDown, ArrorLeft
       increment(-1);
   }
-  else if (key === 'Home') updateModel(min_.value);
+  else if (key === 'Home') updateModel(unref(min_));
   else if (key === 'End') updateModel(max_.value);
   else if (key === 'PageUp') increment(10);
   else if (key === 'PageDown') increment(-10);
