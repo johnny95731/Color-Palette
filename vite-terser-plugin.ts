@@ -3,7 +3,7 @@ import { minify } from 'terser';
 import type { PluginOption } from 'vite';
 import type { MinifyOptions } from 'terser';
 
-const options_ = {
+const options = {
   compress: {
     drop_console: ['log', 'time', 'timeEnd'],
     toplevel: true,
@@ -11,7 +11,7 @@ const options_ = {
   mangle: {
     toplevel: true,
     properties: {
-      regex: /_$/
+      regex: /[^_]_$/
     }
   },
   nameCache: {}
@@ -19,8 +19,7 @@ const options_ = {
 
 
 export default (
-  outDir = ['./dist'],
-  options: MinifyOptions = JSON.parse(JSON.stringify(options_))
+  outDir = ['./dist']
 ) => ({
   name: 'terser',
   enforce: 'post',
