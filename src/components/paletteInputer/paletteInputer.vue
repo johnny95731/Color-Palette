@@ -40,7 +40,8 @@
           @click="deleteColor(i)"
         />
         <VIcon
-          v-if="i !==draggingIdx && i === finalIdx"
+          v-if="i !== draggingIdx && i === finalIdx"
+          :style="arrowPos"
           type="arrow-left"
         />
       </div>
@@ -93,6 +94,7 @@ import { randRgbGen } from '@/utils/colors';
 // type
 import type { CSSProperties } from 'vue';
 import type { Position } from '@vueuse/core';
+import { computed } from 'vue';
 
 const isOpened = defineModel<boolean>(); // Show/Hide
 const isPreview = ref<boolean>(true);
@@ -151,6 +153,13 @@ const { start: startDragging } = (() => {
     onEnd_,
   });
 })();
+
+const arrowPos = computed<CSSProperties>(() => {
+  return {
+    // @ts-expect-error
+    top: unref(finalIdx) > unref(draggingIdx) ? '100%' : 0
+  };
+});
 
 
 /**
