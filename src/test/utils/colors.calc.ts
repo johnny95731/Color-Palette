@@ -1,15 +1,14 @@
 import { calc } from '../calc';
 import NamedColor from '@/assets/NamedColor.json';
-import { isSameFloat, l2DistSq, mod, rangeMapping, round } from '@/utils/numeric';
-import { COLOR_MAXES, COLOR_SPACES, getSpaceInfos, randRgbGen, rgb2hue } from '@/utils/colors';
-import { hex2rgb, rgb2hex } from '@/utils/colorModels/hex';
-import { getClosestNamed } from '@/utils/colorModels/named';
-import { rgb2xyz } from '@/utils/colorModels/ciexyz';
 import { forLoop } from '@/utils/helpers';
-import { luv2xyz, luv2xyz2, rgb2luv } from '@/utils/colorModels/cieluv';
+import { atan2Deg, l2DistSq, round } from '@/utils/numeric';
+import { COLOR_MAXES, getSpaceInfos, randRgbGen, rgb2hue } from '@/utils/colors';
+import { hex2rgb } from '@/utils/colorModels/hex';
+import { getClosestNamed } from '@/utils/colorModels/named';
+import { rgb2luv } from '@/utils/colorModels/cieluv';
+import { rgb2lab } from '@/utils/colorModels/cielab';
 
 /* v8 ignore start */
-
 const getEnumeratedRgb = () => {
   const rangeList = Array.from({ length: COLOR_MAXES.rgb + 1 }, (_, i) => i);
   const allRgbs: number[][] = [];
@@ -20,10 +19,21 @@ const getEnumeratedRgb = () => {
   return allRgbs;
 };
 
+const getEnumeratedXyz = () => {
+  const xyzMax = COLOR_MAXES.xyz;
+  const all: number[][] = [];
+  for (let x = 0; x < xyzMax[0]; x ++)
+    for (let y = 0; y < xyzMax[1]; y ++)
+      for (let z = 0; z < xyzMax[2]; z ++)
+        all.push([x, y, z]);
+  all.push([...COLOR_MAXES.xyz]);
+  return all;
+};
+
 /**
  * Minimum distance between two different css named-color
  */
-const namedColorMinDist = () => {
+const findNamedColorMinDist = () => {
   const keys = Object.keys(NamedColor);
   const rgbs = keys.map(key => hex2rgb(NamedColor[key as keyof typeof NamedColor]));
   let minDist = Infinity;
@@ -53,47 +63,87 @@ const getNamedColorTimeCost = (arrNum: number = 200, loopNum: number = 100) => {
   return round((performance.now() - t1) / (loopNum * arrNum), 3);
 };
 
-const atan2Deg = (() => {
-  const pi2 = 2 * Math.PI;
-  return (y: number, x: number) =>
-    mod(rangeMapping(Math.atan2(y,x), -pi2, pi2, -360, 360), 360);
-})();
+const findLabMax = () => {
+  const RGBs = getEnumeratedRgb();
+  const max = [
+    -Infinity,
+    -Infinity,
+    -Infinity,
+  ];
+  const min = [
+    Infinity,
+    Infinity,
+    Infinity,
+  ];
+  for (const rgb of RGBs) {
+    const luv = rgb2lab(rgb);
+    forLoop(
+      luv,
+      (_, v, i) => {
+        if (v > max[i]) max[i] = v;
+        if (v < min[i]) min[i] = v;
+      }
+    );
+  }
+  console.log('sRGB -> CIELAB');
+  console.log(`min: [${min}], max: [${max}]`);
+  console.log();
+};
+
+const findLuvMax = () => {
+  const RGBs = getEnumeratedRgb();
+  const max = [
+    -Infinity,
+    -Infinity,
+    -Infinity,
+  ];
+  const min = [
+    Infinity,
+    Infinity,
+    Infinity,
+  ];
+  for (const rgb of RGBs) {
+    const luv = rgb2luv(rgb);
+    forLoop(
+      luv,
+      (_, v, i) => {
+        if (v > max[i]) max[i] = v;
+        if (v < min[i]) min[i] = v;
+      }
+    );
+  }
+  console.log('sRGB -> CIELUV');
+  console.log(`min: [${min}], max: [${max}]`);
+  console.log();
+};
+
 
 /**
  * Test equivalent of 2 ways of hue calculation
  */
 const hueEquivalentTest = () => {
   const rgb = randRgbGen();
-  const [l,a,b] = getSpaceInfos(COLOR_SPACES.find(val => val.name_=== 'CIELAB')!).converter(rgb);
-  const [y,u,v] = getSpaceInfos(COLOR_SPACES.find(val => val.name_=== 'YUV')!).converter(rgb);
+  const [, a, b] = getSpaceInfos('CIELAB').converter(rgb);
+  const [, u, v] = getSpaceInfos('YUV').converter(rgb);
 
-  const [hue1] = rgb2hue(rgb);
-  const hue2 = atan2Deg(b, a);
-  console.log(rgb2hex(rgb));
-  console.log(hue1, hue2);
+  const [hueHsb] = rgb2hue(rgb);
+  const hueLab = atan2Deg(b, a);
+  const hueYuv = atan2Deg(v, u);
+  console.log(`Hue sample: [${rgb}]`);
+  console.log(`HSB sys: ${hueHsb}`);
+  console.log(`CIELAB sys: ${hueLab}`);
+  console.log(`YUV sys: ${hueYuv}`);
+  console.log();
 };
 
 
 const main = () => {
-  calc('Min dist between two css named-color', namedColorMinDist);
+  calc('Min dist between two css named-color', findNamedColorMinDist);
   calc('Time cost of `getClosestNamed` (ms)', getNamedColorTimeCost, 500, 100);
-  hueEquivalentTest();
 
-  const allRgbs = getEnumeratedRgb();
-  for (const space of COLOR_SPACES) {
-    const { converter, inverter } = getSpaceInfos(space);
-    if (space.name_ !== 'CIEXYZ') continue;
-    allRgbs.forEach((rgb) => {
-      const spaceColor = inverter(converter(rgb)).map(val => round(val));
-      for (let i = 0;i < 3; i++) {
-        if (!isSameFloat(spaceColor[i], rgb[i])) {
-          console.log(space, rgb, 'is not stable:', spaceColor);
-          break;
-        }
-      }
-    });
-  }
+  findLabMax();
+  findLuvMax();
+  hueEquivalentTest();
 };
 main();
-
 /* v8 ignore stop */

@@ -6,5 +6,6 @@ export const calc = (
 ) => {
   const result = fn(...args);
   console.log(`${name}: ${result}`);
+  console.log();
 };
 /* v8 ignore stop */
