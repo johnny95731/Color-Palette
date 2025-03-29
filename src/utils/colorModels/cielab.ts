@@ -1,4 +1,5 @@
 import { COLOR_MAXES } from '../colors';
+import { lcc2lch, lch2lcc } from './lch';
 import { cieTrans, cieTransInv, rgb2xyz, xyz2rgb } from './ciexyz';
 
 /**
@@ -49,4 +50,23 @@ export const rgb2lab = (rgb: number[]): number[] => {
  */
 export const lab2rgb = (lab: number[]): number[] => {
   return xyz2rgb(lab2xyz(lab));
+};
+
+
+/**
+ * Convert RGB to CIE LCh(ab).
+ * @param rgb RGB color array.
+ * @return CIE LCh(ab) color array.
+ */
+export const rgb2lchab = (rgb: number[]): number[] => {
+  return lcc2lch(rgb2lab(rgb));
+};
+
+/**
+ * Convert CIE LCh(ab) to RGB.
+ * @param lch CIE LCh(ab) color array.
+ * @return RGB color array.
+ */
+export const lchab2rgb = (lch: number[]): number[] => {
+  return lab2rgb(lch2lcc(lch));
 };

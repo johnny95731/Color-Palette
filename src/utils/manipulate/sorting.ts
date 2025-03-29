@@ -2,7 +2,7 @@ import { copyObj, map } from '../helpers';
 import { deg2rad, l2DistSq, mod } from '../numeric';
 import { rgb2gray } from '../colors';
 import { hex2lab, hex2rgb } from '../colorModels/hex';
-import { lab2lch } from '../colorModels/cielch';
+import { lcc2lch } from '../colorModels/lch';
 
 
 // # Constants
@@ -76,8 +76,8 @@ const distE00 = (hex1: string, hex2: string) => {
   // 'P' for prime.
   const a1P = a1 + a1 / 2 * aconst;
   const a2P = a2 + a2 / 2 * aconst;
-  const [c1P, h1P] = lab2lch([l1, a1P, b1]);
-  const [c2P, h2P] = lab2lch([l2, a2P, b2]);
+  const [c1P, h1P] = lcc2lch([l1, a1P, b1]);
+  const [c2P, h2P] = lcc2lch([l2, a2P, b2]);
 
   const cMeanP = (c1P + c2P) / 2;
   const hDist = Math.abs(h1P - h2P);

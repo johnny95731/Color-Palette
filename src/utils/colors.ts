@@ -6,10 +6,9 @@ import { hsl2rgb, rgb2hsl } from './colorModels/hsl';
 import { hsb2rgb, rgb2hsb } from './colorModels/hsb';
 import { hwb2rgb, rgb2hwb } from './colorModels/hwb';
 import { cmyk2rgb, rgb2cmyk } from './colorModels/cmyk';
-import { lab2rgb, rgb2lab } from './colorModels/cielab';
-import { lch2rgb, rgb2lch } from './colorModels/cielch';
+import { lab2rgb, lchab2rgb, rgb2lab, rgb2lchab } from './colorModels/cielab';
+import { lchuv2rgb, luv2rgb, rgb2lchuv, rgb2luv } from './colorModels/cieluv';
 import { rgb2yuv, yuv2rgb } from './colorModels/yuv';
-import { luv2rgb, rgb2luv } from './colorModels/cieluv';
 
 
 // # Constants
@@ -67,7 +66,11 @@ export const COLOR_SPACES = (() => {
       css_: 'luv'
     },
     {
-      name_: 'CIELCH',
+      name_: 'CIELCH(ab)',
+      css_: 'lch'
+    },
+    {
+      name_: 'CIELCH(uv)',
       css_: 'lch'
     },
     {
@@ -296,12 +299,19 @@ export const getSpaceInfos = (
       converter: rgb2luv,
       inverter: luv2rgb,
     };
-  case 'CIELCH':
+  case 'CIELCH(ab)':
     return {
       labels: ['L*', 'C*', 'h'],
       range: COLOR_MAXES.lch,
-      converter: rgb2lch,
-      inverter: lch2rgb,
+      converter: rgb2lchab,
+      inverter: lchab2rgb,
+    };
+  case 'CIELCH(uv)':
+    return {
+      labels: ['L*', 'C*', 'h'],
+      range: COLOR_MAXES.lch,
+      converter: rgb2lchuv,
+      inverter: lchuv2rgb,
     };
   case 'YUV':
     return {

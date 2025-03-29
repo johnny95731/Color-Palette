@@ -1,5 +1,6 @@
 import { COLOR_MAXES } from '../colors';
 import { dot } from '../numeric';
+import { lcc2lch, lch2lcc } from './lch';
 import { cieTrans, cieTransInv, rgb2xyz, xyz2rgb, XYZ_MAX_SCALING } from './ciexyz';
 
 
@@ -67,9 +68,30 @@ export const rgb2luv = (rgb: number[]): number[] => {
 
 /**
  * Convert CIE LUV to RGB.
+ * Note that the change of luminance may be non-intutive.
+ * For example, luv2rgb([14, -70, -90]) is [255, 0, 0], but
+ * luv2rgb([15, -70, -90]) is [0, 255, 255].
  * @param luv CIE LUV color array.
  * @return RGB color array.
  */
 export const luv2rgb = (luv: number[]): number[] => {
   return xyz2rgb(luv2xyz(luv));
+};
+
+/**
+ * Convert RGB to CIE LCh(uv).
+ * @param rgb RGB color array.
+ * @return CIE LCh(uv) color array.
+ */
+export const rgb2lchuv = (rgb: number[]): number[] => {
+  return lcc2lch(rgb2luv(rgb));
+};
+
+/**
+ * Convert CIE LCh(uv) to RGB.
+ * @param lch CIE LCh(uv) color array.
+ * @return RGB color array.
+ */
+export const lchuv2rgb = (lch: number[]): number[] => {
+  return luv2rgb(lch2lcc(lch));
 };
