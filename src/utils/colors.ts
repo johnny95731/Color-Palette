@@ -1,6 +1,6 @@
-import { map } from './helpers';
-import { dot, mod, randInt, round, toPercent } from './numeric';
-import { hex2rgb, rgb2hex } from './colorModels/hex';
+import { evalPosition, map } from './helpers';
+import { dot, mod, randInt, round } from './numeric';
+import { hex2rgb } from './colorModels/hex';
 import { rgb2xyz, RGB2XYZ_COEFF_ROW_SUM, xyz2rgb, XYZ_MAX_SCALING } from './colorModels/ciexyz';
 import { hsl2rgb, rgb2hsl } from './colorModels/hsl';
 import { hsb2rgb, rgb2hsb } from './colorModels/hsb';
@@ -108,8 +108,8 @@ export const COLOR_MAXES = {
  * If `checkSupport` and the brwoser does not support, then return rgb space.
  * @param color Array of values of color.
  * @param space Color space of color.
- * @param checkSupport Check the browser support or not.
- * @param sep Seperator of color function.
+ * @param checkSupport [checkSupport=false] Check the browser support or not.
+ * @param sep [sep=' '] Seperator of color function.
  * @returns
  */
 export const getColorFunction = (
@@ -338,41 +338,55 @@ export const getSpaceInfos = (
  */
 export const randRgbGen = () => map(3, () => randInt(COLOR_MAXES.rgb));
 
+
 /**
- * Generate a linear gradient along an axis for a given color and space.
- * TODO: color function隨空間改變，而不是固定為hex
+ * Generate a linear gradient along an axis/channel of given color and space.
+ * The color will change from minimum value to maximum value
+ * @param color Color array.
+ * @param axis Channel that will be changed.
+ * @param space Color space of `color`. If the browser is not support the space,
+ * the color will be convert to rgb.
+ * @param steps Segment of color change. For example, red -> green -> blue
+ * contains is two steps, red to green and green to blue.
+ * @param deg The direction of gradient.
+ * @returns CSS linear-gradient value.
  */
-export const gradientGen = (() => {
+export const gradientGen = (
+  color: number[],
+  axis: number,
+  space: ColorSpace,
+  steps: number = 8,
+  deg: string = '90deg',
+) => {
+  const isSupport_ = space.isSupport_;
+  const { inverter, range } = getSpaceInfos(space);
   /**
-   * Segment the gradient into several part. The Gradient in different space may
-   * not work as expect. So we join multiple gradient
-   * For example, red -> green -> blue contains two parts of gradient,
-   * red to green and green to blue.
+   * Range of space in specific axis (channel).
    */
-  const steps = 8;
-  return (
-    colors: number[],
-    axis: number,
-    space: ColorSpace,
-  ) => {
-    const { inverter, range } = getSpaceInfos(space);
-    /**
-     * Range of space in specific axis (channel).
-     */
-    const [min, max] = (
-      typeof range[axis] === 'number' ?
-        [0, range[axis]] :
-        [...range[axis]]
-    );
-    const unitIncreament = (max - min) / steps;
-    const arr = [...colors];
-    const grads = map(
+  const [min, max] = (
+    typeof range[axis] === 'number' ?
+      [0, range[axis]] :
+      [...range[axis]]
+  );
+  const unitIncreament = (max - min) / steps;
+  const arr = [...color];
+  let grads: string[];
+  if (isSupport_) {
+    grads = map(
       steps + 1,
       (_, i) => {
         arr.splice(axis, 1, min + i * unitIncreament);
-        return `${rgb2hex(inverter(arr))} ${toPercent(i/steps)}%`;
+        return `${getColorFunction(arr, space)} ${evalPosition(i, steps)}`;
       }
     );
-    return `linear-gradient(90deg, ${grads.join(', ')})`;
-  };
-})();
+  } else {
+    grads = map(
+      steps + 1,
+      (_, i) => {
+        arr.splice(axis, 1, min + i * unitIncreament);
+        return `${getColorFunction(inverter(arr), COLOR_SPACES[0])} ${evalPosition(i, steps)}`;
+      }
+    );
+  }
+  return `linear-gradient(${deg}, ${grads.join(', ')})`;
+};

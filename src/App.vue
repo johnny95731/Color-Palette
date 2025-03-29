@@ -32,7 +32,7 @@ const { sorting_: sortingHotkey, refresh_: refreshHotkey } = HOTKEYS;
 const keyDownEvent = (e: KeyboardEvent) => {
   const key = e.key.toLowerCase();
   if (
-  // Prevent trigger hotkey when editing or add/remove/move (transition) card.
+    // Prevent trigger hotkey when editing or add/remove/move (transition) card.
     toValue(isCardPending) || toValue(isOverlayOpened)
   ) return;
   if (key === refreshHotkey) {
