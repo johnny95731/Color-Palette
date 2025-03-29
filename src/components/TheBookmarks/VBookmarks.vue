@@ -44,7 +44,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, watch, nextTick, toValue, unref } from 'vue';
+import { ref, computed, watch, nextTick, unref } from 'vue';
 import $style from './VBookmarks.module.scss';
 import VBtn from '../Custom/VBtn.vue';
 import ColorBlock from './ColorBlock.vue';
@@ -74,7 +74,7 @@ watch(isOpened, async (newVal) => { // focus dialog when open it.
 const handleFocusoutDialog = (e: KeyboardEvent) => {
   if (isTabKey(e)) {
     e.preventDefault();
-    if (toValue(tabIdx) !== TabLabels.length - 1) {// switch to next tab page.
+    if (unref(tabIdx) !== TabLabels.length - 1) {// switch to next tab page.
       unref(dialogRef)?.tabRefs[++tabIdx.value]?.$el.focus();
     } else {
       isOpened.value = false;
@@ -91,7 +91,7 @@ const btnState = computed<{
   icon_: string,
   text_: string,
 }>(() => {
-  const isFavPlt = favState.plts_.includes(toValue(pltStrings));
+  const isFavPlt = favState.isFavPlt_(unref(pltStrings));
   return {
     icon_: `bookmark-${isFavPlt ? 'dash' : 'plus'}`,
     text_: `${isFavPlt ? 'Remove' : 'Append'} Pallete`,
@@ -99,7 +99,7 @@ const btnState = computed<{
 });
 
 const favPltChanged = () => {
-  favState.favPltsChanged_(toValue(pltStrings));
+  favState.favPltsChanged_(unref(pltStrings));
   tabIdx.value = 1;
 };
 </script>

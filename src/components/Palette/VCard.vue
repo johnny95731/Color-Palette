@@ -273,7 +273,7 @@ const roundedColor = computed({
 // States / Consts
 const favState = useFavStore();
 const isFav = computed(() => {
-  return favState.colors_.includes(unref(card).hex_);
+  return favState.isFavColor_(unref(card).hex_);
 });
 const showToolbar = computed(() => {
   return {

@@ -66,11 +66,11 @@ const pltState = usePltStore();
 const settingsState = useSettingStore();
 const favState = useFavStore();
 
-const init = [
+const init = Promise.all([
   settingsState.initializeSettings_(),
   favState.initializeColors_(),
   favState.initializePlts_()
-];
+]);
 
 const paletteGradient = computed(() => {
   if (settingsState.paletteDisplay === 'block') return;
@@ -318,11 +318,11 @@ watch(() => isInTrans.arr.some((val) => val),
   }
 );
 
-await Promise.all(init);
-
 /**
  * Style of insertion region.
  */
 const isShowingInsert = computed(() =>
   !(pltState.numOfCards_ === MAX_NUM_OF_CARDS || pltState.isPending_));
+
+await init;
 </script>
