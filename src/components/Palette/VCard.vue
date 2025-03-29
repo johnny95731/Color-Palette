@@ -315,7 +315,7 @@ const detail = asyncComputed<string>(
     return pltState.isInNamedSpace_ ?
       getClosestNamed(unref(card).color_)
         .then(str => unzipCssNamed(str)) :
-      getColorFunction(unref(roundedColor), pltState.colorSpace_);
+      getColorFunction(unref(roundedColor), pltState.colorSpace_, false, settingState.colorFunctioonSep_);
   },
   'white'
 );

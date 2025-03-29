@@ -81,6 +81,11 @@ const useSettingStore = defineStore('setting', {
       autoSort: false,
     };
   },
+  getters: {
+    colorFunctioonSep_(): string {
+      return this.colorSyntax === 'modern' ? ' ' : ',';
+    }
+  },
   actions: {
     initializeSettings_() {
       // Initialize Settings
