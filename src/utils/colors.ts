@@ -9,6 +9,7 @@ import { cmyk2rgb, rgb2cmyk } from './colorModels/cmyk';
 import { lab2rgb, rgb2lab } from './colorModels/cielab';
 import { lch2rgb, rgb2lch } from './colorModels/cielch';
 import { rgb2yuv, yuv2rgb } from './colorModels/yuv';
+import { luv2rgb, rgb2luv } from './colorModels/cieluv';
 
 
 // # Constants
@@ -62,6 +63,10 @@ export const COLOR_SPACES = (() => {
       css_: 'lab'
     },
     {
+      name_: 'CIELUV',
+      css_: 'luv'
+    },
+    {
       name_: 'CIELCH',
       css_: 'lch'
     },
@@ -69,9 +74,10 @@ export const COLOR_SPACES = (() => {
       name_: 'YUV',
     },
   ] as ColorSpace[];
+  const isInNode = typeof window === 'undefined';
   for (const space of spaces) {
     space.css_ ??= space.name_.toLowerCase();
-    space.isSupport_ = CSS.supports('color', `${space.css_}(0 0 0)`);
+    space.isSupport_ = isInNode || CSS?.supports('color', `${space.css_}(0 0 0)`);
   }
   return spaces;
 })();
@@ -89,6 +95,7 @@ export const COLOR_MAXES = {
   cmyk: 100,
   xyz: map(RGB2XYZ_COEFF_ROW_SUM, val => XYZ_MAX_SCALING * val) as readonly number[],
   lab: [100, [-125, 125], [-125, 125]] as const,
+  luv: [100, [-134, 220], [-140, 122]] as const,
   lch: [100, 100, 360] as const,
   yuv: 255
 };
@@ -281,6 +288,13 @@ export const getSpaceInfos = (
       range: COLOR_MAXES.lab,
       converter: rgb2lab,
       inverter: lab2rgb,
+    };
+  case 'CIELUV':
+    return {
+      labels: ['L*', 'u*', 'v*'],
+      range: COLOR_MAXES.luv,
+      converter: rgb2luv,
+      inverter: luv2rgb,
     };
   case 'CIELCH':
     return {

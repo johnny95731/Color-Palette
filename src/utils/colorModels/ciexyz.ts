@@ -36,6 +36,37 @@ export const RGB2XYZ_COEFF_ROW_SUM = map(
   )
 );
 
+
+/**
+ * Function that be used in the transformation from CIE XYZ to CIE LAB and to CIE LUV.
+ * The function maps [0, 1] into [4/29, 1] and is continuous.
+ */
+type cieTrans = (xyz: number[]) => number[];
+
+/**
+ * Function that be used in the transformation from CIE LAB to CIE XYZ and
+ * from CIE LUV to CIE XYZ.
+ * The function maps [4/29, 1] into [0, 1]
+ */
+type cieTransInv = (lab: number[]) => number[];
+
+const [cieTrans, cieTransInv] = (() => {
+  const threshInv = 6/29; // threshold for labFuncInv
+  const thresh = threshInv ** 3; // threshold for labFunc
+  const scaling = 903.3 / 116; // = 1 / (3 * threshInv**2)
+  const bias = 4 / 29; // = 16 / 116
+
+  const cieTrans = (val: number): number => {
+    return val > thresh ? Math.cbrt(val) : (scaling * val + bias);
+  };
+  const cieTransInv = (val: number) => {
+    return val > threshInv ? val ** 3 : ((val - bias) / scaling);
+  };
+  return [cieTrans, cieTransInv];
+})();
+export { cieTrans, cieTransInv };
+
+
 /**
  * Convert RGB to CIE XYZ.
  * @param rgb RGB color array.

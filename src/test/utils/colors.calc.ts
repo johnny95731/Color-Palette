@@ -1,7 +1,12 @@
 import { calc } from '../calc';
 import NamedColor from '@/assets/NamedColor.json';
 import { isSameFloat, l2DistSq, mod, rangeMapping, round } from '@/utils/numeric';
-import { COLOR_MAXES, COLOR_SPACES, getClosestNamed, getSpaceInfos, hex2rgb, randRgbGen, rgb2hex, rgb2hue } from '@/utils/colors';
+import { COLOR_MAXES, COLOR_SPACES, getSpaceInfos, randRgbGen, rgb2hue } from '@/utils/colors';
+import { hex2rgb, rgb2hex } from '@/utils/colorModels/hex';
+import { getClosestNamed } from '@/utils/colorModels/named';
+import { rgb2xyz } from '@/utils/colorModels/ciexyz';
+import { forLoop } from '@/utils/helpers';
+import { luv2xyz, luv2xyz2, rgb2luv } from '@/utils/colorModels/cieluv';
 
 /* v8 ignore start */
 
