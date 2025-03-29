@@ -16,11 +16,13 @@
   排序卡片。提供「依照亮度(Gray, 快捷鍵: `g`)」、「隨機排序(Random, 快捷鍵: `n`)」、「左右反轉(Inversion, 快捷鍵: `j`)」、「CIE76」、「CIE94」、「CIEDE2000」。
 
 - ### <img style="background:white;padding:1px" src="./src/assets/icons/file-earmark-plus.svg" alt="mixing"/> 混色方法 Color Mixing
-  新增卡片時的混色方法，提供平均值（Mean，預設）、更亮(brighter)、更暗(deeper)、soft light、隨機(Random)。<br/>
+  新增卡片時的混色方法，提供平均值（Mean，預設）、更亮(brighter)、更暗(deeper)、soft light、Additive(RGB加法計算)、隨機(Random)。<br/>
   平均值以指定的色彩空間計算。brighter與deeper先以RGB平均值計算，再透過HSL空間調整亮度與彩度。「[soft light](https://en.wikipedia.org/wiki/Blend_modes)」使用illusions.hu的公式(此方法非左右對稱)。
 
 - ### <img style="background:white;padding:1px" src="./src/assets/icons/sliders.svg" alt="space"/> 色彩空間 Color Space
-  展示模式及編輯模式中，使用的色彩空間。提供RGB、NAME（CSS named-color, 預設）、HSB、HSL、CMY、CMYK、CIE XYZ、CIE LAB、CIE YUV。
+  展示模式及編輯模式中，使用的色彩空間。提供sRGB、NAME（CSS named-color, 預設）、HSL、HSB、HWB、CMYK、CIEXYZ、CIELAB、CIELUV、CIELCH(ab)、CIELCH(uv)、YUV。
+
+  sRGB <-> CIEXYZ為D65光源的矩陣。
 
 - ### <img style="background:white;padding:1px" src="./src/assets/icons/circle-half.svg" alt="contrast"/> 對比 Contrast
   調整調色盤對比，可使用自動調整方法，或是透過線性轉換及gamma校正手動調整的。
@@ -36,12 +38,13 @@
     2. shades(亮度等差下降)
     3. tints(彩度等差下降)
     4. tones(亮度彩度等差下降)
-    5. triad(正三角形±120°)
-    6. complement(補色180°)
-    7. split complement (補色分割±150°)
-    8. tetrad(四邊形30°,180°,210°)
-    9. square(正四邊形90°,180°,270°)
-    10. compound(30°,180°,150°)
+    5. triadic(正三角形±120°)
+    6. square(正四邊形90°,180°,270°)
+    7. complement(補色180°)
+    8. split complement (補色分割±150°)
+    9. tetradic1(30°,180°,210°)
+    10. tetradic2(60°,180°,240°)
+    11. tetradic3(30°,180°,150°)
 
 - ### <img style="background:white;padding:1px" src="./src/assets/icons/bookmarks.svg" alt="bookmarks"/> 書籤頁 Bookmarks
   書籤頁，包括新增調色盤書籤、查看顏色及調色盤兩種書籤。
@@ -58,7 +61,7 @@
 
 
 ## 卡片 Card
-卡片數量預設5，可增減為2~8。鼠標移至卡片上會顯示工具，依序為<img style="background:white;padding:1px" src="./src/assets/icons/x-lg.svg" alt="delete"/>刪除、<img style="background:white;padding:1px" src="./src/assets/icons/unlock-fill.svg" alt="unlock"/> / <img style="background:white;padding:1px" src="./src/assets/icons/lock-fill.svg" alt="lock"/>鎖定、<img style="background:white;padding:1px" src="./src/assets/icons/star.svg" alt="isUnfavorite"/> / <img style="background:white;padding:1px" src="./src/assets/icons/star-fill.svg" alt="isFavorite"/>加入書籤、<img style="background:white;padding:1px" style="background:white;padding:1px" src="./src/assets/icons/arrows.svg" alt="fav"/>拖曳卡片、<img style="background:white;padding:1px" src="./src/assets/icons/arrow-clockwise.svg" alt="refresh"/></>刷新、<img style="background:white;padding:1px" src="./src/assets/icons/sliders.svg" alt="edit"/>編輯。鼠標在卡片邊緣會顯示<img style="background:white;padding:1px" src="./src/assets/icons/arrows-expand-vertical.svg" alt="expand"/>圖案，點選圖案即可插入卡片。
+卡片數量預設5，可增減為2~8。鼠標移至卡片上會顯示工具，依序為<img style="background:white;padding:1px" src="./src/assets/icons/x-lg.svg" alt="delete"/>刪除、<img style="background:white;padding:1px" src="./src/assets/icons/unlock-fill.svg" alt="unlock"/> / <img style="background:white;padding:1px" src="./src/assets/icons/lock-fill.svg" alt="lock"/>鎖定、<img style="background:white;padding:1px" src="./src/assets/icons/star.svg" alt="isUnfavorite"/> / <img style="background:white;padding:1px" src="./src/assets/icons/star-fill.svg" alt="isFavorite"/>加入書籤、<img style="background:white;padding:1px" style="background:white;padding:1px" src="./src/assets/icons/arrows.svg" alt="fav"/>拖曳卡片、<img style="background:white;padding:1px" src="./src/assets/icons/arrow-clockwise.svg" alt="refresh"/></->刷新、<img style="background:white;padding:1px" src="./src/assets/icons/sliders.svg" alt="edit"/>編輯。鼠標在卡片邊緣會顯示<img style="background:white;padding:1px" src="./src/assets/icons/arrows-expand-vertical.svg" alt="expand"/>圖案，點選圖案即可插入卡片。
 
 - ### <img style="background:white;padding:1px" src="./src/assets/icons/x-lg.svg" alt="delete"/> 刪除
   刪除卡片。卡片最小數量為2。
