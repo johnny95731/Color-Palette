@@ -108,8 +108,8 @@ export const COLOR_MAXES = {
  * If `checkSupport` and the brwoser does not support, then return rgb space.
  * @param color Array of values of color.
  * @param space Color space of color.
- * @param checkSupport [checkSupport=false] Check the browser support or not.
- * @param sep [sep=' '] Seperator of color function.
+ * @param checkSupport Default: `false`. Check the browser support or not.
+ * @param sep Default: `' '`. Seperator of color function.
  * @returns
  */
 export const getColorFunction = (
@@ -127,8 +127,13 @@ export const getColorFunction = (
   return `${colorFunc}(${color.join(sep)})`;
 };
 
-export const hueRotation = ([h, s, b]: number[], deg: number) => (
-  [mod(h + deg, 360), s, b]
+/**
+ * Rotate the hue of a HSB/HSL color by a given degree.
+ * @param hsb Color array
+ * @param deg Degree that rotation.
+ */
+export const hueRotation = (hsb: number[], deg: number) => (
+  [mod(hsb[0] + deg, 360), hsb[1], hsb[2]]
 );
 
 /**
@@ -137,7 +142,8 @@ export const hueRotation = ([h, s, b]: number[], deg: number) => (
  * @param rgb RGB array.
  * @return [hue, min(r,g,b), max(r,g,b)].
  */
-export const rgb2hue = ([r, g, b]: number[]): number[] => {
+export const rgb2hue = (rgb: number[]): number[] => {
+  const [r, g, b] = rgb;
   const max = Math.max(r, g, b);
   const min = Math.min(r, g, b);
   const delta = max - min;
@@ -346,9 +352,9 @@ export const randRgbGen = () => map(3, () => randInt(COLOR_MAXES.rgb));
  * @param axis Channel that will be changed.
  * @param space Color space of `color`. If the browser is not support the space,
  * the color will be convert to rgb.
- * @param steps Segment of color change. For example, red -> green -> blue
+ * @param steps Default: `8`. Segment of color change. For example, red -> green -> blue
  * contains is two steps, red to green and green to blue.
- * @param deg The direction of gradient.
+ * @param deg Default: `'90deg'`. The direction of gradient.
  * @returns CSS linear-gradient value.
  */
 export const gradientGen = (

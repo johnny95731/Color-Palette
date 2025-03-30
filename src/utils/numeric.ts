@@ -4,9 +4,9 @@ import { map, isNullish, forLoop } from './helpers';
  * The modulo function. Equivalent to
  *   `let a = n % m;
  *    if (a < 0) a += m;`
- * @param {Number} n Dividend.
- * @param {Number} m Divisor.
- * @return {Number} Signed remainder.
+ * @param n Dividend.
+ * @param m Divisor.
+ * @return Signed remainder.
  */
 export const mod = (n: number, m: number): number => {
   return ((n % m) + m) % m;
@@ -43,7 +43,7 @@ export const countDecimals = (num: number)  => {
 /**
  * Rounding a number to specifit place value.
  * @param num A number.
- * @param place [place=0] Rounding to specific place value. Positive means decimal places
+ * @param place Default: `0`. Rounding to specific place value. Positive means decimal places
  * and negative means whole number places.
  * @return Percentage number.
  */
@@ -53,7 +53,7 @@ export const round = (num: number, place: number = 0): number =>
 /**
  * Convert a number `num` to percentage form, that is, `num * 100%`.
  * @param num A number.
- * @param place [place=0] Rounding to specific place value. Positive means decimal places
+ * @param place Default: `0`. Rounding to specific place value. Positive means decimal places
  * and negative means whole number places.
  * @return Percentage number.
  */

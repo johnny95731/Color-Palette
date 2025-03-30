@@ -144,7 +144,7 @@ const usePltStore = defineStore('plt', {
         // Pick cards.
         let leftRgbColor;
         let rightRgbColor;
-        // -Add to thequallyLengthsition. Blending the first card and black.
+        // -Add to the fist position. Blending the first card and black.
         if (left < 0) leftRgbColor = [0, 0, 0];
         else leftRgbColor = inverter(this.cards_[left].color_);
         // -Add to the last position. Blending the last card and white.

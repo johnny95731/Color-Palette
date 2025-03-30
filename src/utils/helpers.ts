@@ -174,6 +174,10 @@ export const evalPosition = (idx: number, num: number): string => {
   return toPercent(idx / num, 2) + '%';
 };
 
+/**
+ * Return a Latin script (includes upper and lower) or a digit.
+ * @param noDigit Default: `fasle`. Without digit.
+ */
 export const randomCharacter = (noDigit: boolean = false) =>
   (
     'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz' + // 52letters
@@ -182,6 +186,7 @@ export const randomCharacter = (noDigit: boolean = false) =>
 
 /**
  * Convert a text to start case.
+ * For example, 'start case' => 'Start Case'.
  */
 const toStartCase = (text: string) => {
   const words = text.split(' ');
@@ -197,8 +202,5 @@ export const getLetterCaseConverter = (letterCase: 'start' | 'all-caps' | string
   else if (letterCase === 'start') return toStartCase;
   else return (x: string) => x;
 };
-
-// export const kebabize = (text: string) =>
-//   text.replace(/[A-Z]+(?![a-z])|[A-Z]/g, ($, ofs) => (ofs ? '-' : '') + $.toLowerCase());
 
 export const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
