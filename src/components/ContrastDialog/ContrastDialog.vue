@@ -39,9 +39,43 @@
       </div>
     </template>
     <template v-else-if="tabIdx === 1">
-      <div :class="$style2.region">
-        <h3 v-once>
+      <div
+        :class="$style2.region"
+      >
+        <h3
+          v-once
+        >
           對比值計算
+          <VTooltip>
+            <template #activator="{props: tooltipProps}">
+              <VIcon
+                v-bind="tooltipProps"
+                type="info-circle"
+              />
+            </template>
+            <template #text>
+              WCAG一般文字標準<br>
+              Level AA&ensp;&numsp;: &geq;4.5<br>
+              Level AAA&thinsp;&thinsp;: &geq;7<br>
+            </template>
+          </VTooltip>
+          <VTooltip>
+            <template #activator="{props: tooltipProps}">
+              <VIcon
+                v-bind="tooltipProps"
+                type="info-square"
+                style="margin-left: 4px;"
+              />
+            </template>
+            <template #text>
+              WCAG大型文字標準<br>
+              Level AA&ensp;&numsp;: &geq;3<br>
+              Level AAA&thinsp;&thinsp;: &geq;4.5
+              <div style="opacity: 0.8;">
+                文字≥18pt或粗體且≥14pt稱為大型文字。
+              </div>
+            </template>
+          </VTooltip>
         </h3>
         <label
           v-once
@@ -77,8 +111,6 @@
           範例
         </h3>
         <div
-          v-for="(i) in 5"
-          :key="i"
           v-memo="[bgColor, textColor]"
           :style="{
             background: bgColor,
@@ -86,7 +118,35 @@
           }"
           aria-hidden="true"
         >
-          Text
+          <div
+            v-once
+            v-text="'Text'"
+            :style="{
+              fontSize: '10pt',
+            }"
+          />
+          <div
+            v-once
+            v-text="'Text'"
+            :style="{
+              fontSize: '14pt',
+            }"
+          />
+          <div
+            v-once
+            v-text="'Large'"
+            :style="{
+              fontSize: '14pt',
+              fontWeight: 'bold',
+            }"
+          />
+          <div
+            v-once
+            v-text="'Large'"
+            :style="{
+              fontSize: '18pt',
+            }"
+          />
         </div>
       </div>
     </template>
@@ -125,6 +185,8 @@ import { CONTRAST_METHODS } from '@/utils/manipulate/contrast';
 import { GAMMA_MAX, MULTIPLICATION_MAX } from '@/utils/manipulate/mixing';
 // stores
 import usePltStore from '@/stores/usePltStore';
+import VIcon from '../Custom/VIcon.vue';
+import VTooltip from '../Custom/VTooltip.vue';
 
 const dialogRef = ref<InstanceType<typeof VDialog>>();
 
