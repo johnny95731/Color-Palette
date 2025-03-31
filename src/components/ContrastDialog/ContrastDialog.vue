@@ -81,28 +81,18 @@
           v-once
           for="contrast-ratio-bg"
         >背景顏色</label>
-        <input
+        <HexInputter
           v-model="bgColor"
           id="contrast-ratio-bg"
-          :class="$style1.hex"
-          maxlength="7"
-          size="7"
-          @input="hexTextEdited($event)"
-          @change="handleHexEditingFinished($event, 'bg')"
-        >
+        />
         <label
           v-once
           for="contrast-ratio-text"
         >文字顏色</label>
-        <input
+        <HexInputter
           v-model="textColor"
           id="contrast-ratio-text"
-          :class="$style1.hex"
-          maxlength="7"
-          size="7"
-          @input="hexTextEdited($event)"
-          @change="handleHexEditingFinished($event, 'fg')"
-        >
+        />
         <span>對比值</span>
         <div>{{ contrastRatio }}</div>
       </div>
@@ -178,15 +168,15 @@ import VSlider from '../Custom/VSlider.vue';
 import VDialog from '../Custom/VDialog.vue';
 // utils
 import { forLoop } from '@/utils/helpers';
-import { hexTextEdited, isTabKey } from '@/utils/browser';
+import { isTabKey } from '@/utils/browser';
 import { getContrastRatio } from '@/utils/colors';
-import { isValidHex } from '@/utils/colorModels/hex';
 import { CONTRAST_METHODS } from '@/utils/manipulate/contrast';
 import { GAMMA_MAX, MULTIPLICATION_MAX } from '@/utils/manipulate/mixing';
 // stores
 import usePltStore from '@/stores/usePltStore';
 import VIcon from '../Custom/VIcon.vue';
 import VTooltip from '../Custom/VTooltip.vue';
+import HexInputter from '../Custom/HexInputter.vue';
 
 const dialogRef = ref<InstanceType<typeof VDialog>>();
 
@@ -245,16 +235,6 @@ const contrastBtnEvent = (state: Parameters<typeof pltState.setIsAdjustingPlt_>[
 // # Page 1: Contrast Ratio
 const bgColor = ref<string>('#FFFFFF'); // background
 const textColor = ref<string>('#000000'); // foreground
-/**
- * Finish Hex editing when input is blurred or press 'Enter'
- */
-const handleHexEditingFinished = function(e: Event, idx: 'bg' | 'fg') {
-  const colorRef = idx === 'bg' ? bgColor : textColor;
-  const text = (e.currentTarget as HTMLInputElement).value;
-  if (text !== unref(colorRef) && isValidHex(text)) {
-    colorRef.value = text;
-  }
-};
 const contrastRatio = computed(() => getContrastRatio(unref(bgColor), unref(textColor)));
 
 

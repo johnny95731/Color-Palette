@@ -1,6 +1,5 @@
 import { getCurrentInstance } from 'vue';
 import { randomCharacter } from './helpers';
-import { removeNonHex } from './colorModels/hex';
 import type { Props as OverlayProps } from '@/components/Custom/OverlayContainer.vue';import type { Ref, ShallowRef, WritableComputedRef } from 'vue';
 
 
@@ -80,15 +79,6 @@ export const getComponentId = (() => {
 
 // Events
 /**
- * Remove non-hex text and add "#" to first word.
- */
-export const hexTextEdited: EventHandler = (e: Event) => {
-  const textInput = e!.currentTarget as HTMLInputElement;
-  const text = removeNonHex(textInput.value);
-  textInput.value = `#${text.toUpperCase()}`;
-};
-
-/**
  * Copy text to clipboard.
  */
 export const copyText = (text: string): void => {
@@ -98,18 +88,6 @@ export const copyText = (text: string): void => {
     console.error('Failed to copy:', err);
   }
 };
-
-/**
- * Paste text from clipboard.
- */
-export const pasteText = async () => {
-  try {
-    return await navigator.clipboard.readText();
-  } catch (err) {
-    console.error('Failed to copy:', err);
-  }
-};
-
 
 export const calcOverlayZIndex = (type: OverlayProps['type'], parent?: number) => {
   let zIndex: number;

@@ -70,12 +70,10 @@
           class="color-picker__hex-input"
         >
           Hex
-          <input
-            name="color-piker-hex"
-            maxlength="7"
-            size="7"
+          <HexInputter
             v-model.lazy="hexColor"
-          >
+            name="color-piker-hex"
+          />
         </label>
         <div class="color-picker__hsb-inputs">
           <label
@@ -123,6 +121,7 @@ import { useDragableElement } from '@/composables/useDragableElement';
 // types
 import type { MaybeRef, ModelRef } from 'vue';
 import type { Position } from '@vueuse/core';
+import HexInputter from './HexInputter.vue';
 
 
 const isOpened = defineModel<boolean>('show', { default: false });

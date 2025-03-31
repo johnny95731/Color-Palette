@@ -132,17 +132,12 @@
       >
         {{ card.hex_ }}
       </label>
-      <input
-        v-memo="[card.hex_]"
+      <HexInputter
         ref="hexInputRef"
-        :id="`card${cardIdx}-hex`"
-        :class="$style.hexInput"
-        type="text"
-        maxlength="7"
-        :value="card.hex_"
-        @input="hexTextEdited($event)"
+        v-memo="[card.hex_]"
+        :model-value="card.hex_"
         @change="handleHexEditingFinished($event)"
-      >
+      />
       <SelectMenu
         v-if="pltState.isInNamedSpace_"
         :class="$style.nameSelect"
@@ -211,7 +206,7 @@ import CondWrapper from '../Custom/CondWrapper.vue';
 import { map } from '@/utils/helpers';
 import { round, toPercent } from '@/utils/numeric';
 import { rgb2gray, gradientGen, getColorFunction } from '@/utils/colors';
-import { copyText, hexTextEdited, isTabKey } from '@/utils/browser';
+import { copyText, isTabKey } from '@/utils/browser';
 import { getClosestNamed, getNamedColorRgb, unzipCssNamed, unzipedNameList } from '@/utils/colorModels/named';
 import { hex2rgb, isValidHex } from '@/utils/colorModels/hex';
 // Stores
@@ -222,6 +217,7 @@ import media from '@/composables/useMedia';
 // Types
 import type { CSSProperties } from 'vue';
 import type { Card } from '@/stores/usePltStore';
+import HexInputter from '../Custom/HexInputter.vue';
 
 const cardContainerRef = ref<HTMLElement>();
 const hexTextRef = ref<InstanceType<typeof VBtn>>();
@@ -329,7 +325,7 @@ const cardStyle = computed<CSSProperties>(() => {
 
 
 // Editor position
-const hexInputRef = ref<HTMLInputElement>();
+const hexInputRef = ref<InstanceType<typeof HexInputter>>();
 const containerStyle = shallowReactive<Pick<CSSProperties, 'left' | 'right'>>({});
 watch(showEditor, async (newShow) => {
   if (newShow) {
@@ -352,7 +348,7 @@ watch(showEditor, async (newShow) => {
     Object.assign(containerStyle, { left, right });
     // Focus on input after opening dialog
     await nextTick();
-    unref(hexInputRef)?.focus();
+    unref(hexInputRef)?.$el.focus();
   } else {
     unref(hexTextRef)?.$el.focus();
   }

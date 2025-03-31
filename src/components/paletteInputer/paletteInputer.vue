@@ -24,15 +24,11 @@
           :for="`color${i+1}`"
           :style="{background: hex, color: hex}"
         >{{ `color${i+1}` }}</label>
-        <input
+        <HexInputter
           :id="`color${i+1}`"
-          maxlength="7"
-          size="7"
-          :value="hex"
-          @input="hexTextEdited($event)"
-          @change="handleHexEditingFinished($event, i)"
-          @keydown="handlePaste($event, i)"
-        >
+          v-model="colors[i]"
+          @paste="pasteColors($event, i)"
+        />
         <VBtn
           v-if="colors.length > 2"
           icon="x-lg"
@@ -78,14 +74,13 @@
 
 <script setup lang="ts">
 import { ref, unref, watch } from 'vue';
-import $style from './paletteInputer.module.scss';
+import $style from './PaletteInputter.module.scss';
 import VBtn from '../Custom/VBtn.vue';
 import VIcon from '../Custom/VIcon.vue';
 import VDialog from '../Custom/VDialog.vue';
 // utils
 import { invertBoolean, isNullish, map } from '@/utils/helpers';
 import { clip } from '@/utils/numeric';
-import { ctrlOnly, hexTextEdited, pasteText } from '@/utils/browser';
 import { isValidHex, rgb2hex } from '@/utils/colorModels/hex';
 import { useDragableElement } from '@/composables/useDragableElement';
 // store
@@ -95,6 +90,7 @@ import { randRgbGen } from '@/utils/colors';
 import type { CSSProperties } from 'vue';
 import type { Position } from '@vueuse/core';
 import { computed } from 'vue';
+import HexInputter from '../Custom/HexInputter.vue';
 
 const isOpened = defineModel<boolean>(); // Show/Hide
 const isPreview = ref<boolean>(true);
@@ -197,16 +193,6 @@ watch(isOpened, (newVal) => {
     pltState.setPlt_(unref(original)); // restore palette from `originalPalette`
 }, { immediate: true });
 
-/**
- * Finish Hex editing when input is blurred or press 'Enter'
- */
-const handleHexEditingFinished = function(e: Event, idx: number) {
-  const text = (e.currentTarget as HTMLInputElement).value;
-  if (text !== unref(colors)[idx] && isValidHex(text)) {
-    unref(colors)[idx] = text;
-  }
-};
-
 
 // Append and delete
 const addColor = () => {
@@ -216,20 +202,17 @@ const deleteColor = (idx: number) => {
   unref(colors).splice(idx, 1);
 };
 
-const handlePaste = async (e: KeyboardEvent, idx: number) => {
-  if (ctrlOnly(e) && e.key.toLowerCase() === 'v') {
-    const text = await pasteText();
-    if (text) {
-      const palette: string[] = [];
-      for (const str of text.split('-'))
-        if (isValidHex(str)) palette.push(str.startsWith('#') ? str : '#' + str);
-      do {
-        unref(colors).splice(idx++, 1, palette.shift()!);
-      } while (idx < MAX_NUM_OF_CARDS && palette.length);
-      if (idx < unref(colors).length) {
-        unref(colors).splice(idx, unref(colors).length - idx);
-      }
-    }
+const pasteColors = (e: ClipboardEvent, idx: number) => {
+  const text = e.clipboardData?.getData('text') ?? '';
+  const palette: string[] = [];
+  for (const str of text.split('-'))
+    if (isValidHex(str)) palette.push(str.startsWith('#') ? str : '#' + str);
+
+  do {
+    unref(colors).splice(idx++, 1, palette.shift()!);
+  } while (idx < MAX_NUM_OF_CARDS && palette.length);
+  if (idx < unref(colors).length) {
+    unref(colors).splice(idx, unref(colors).length - idx);
   }
 };
 </script>
