@@ -245,7 +245,6 @@ const contrastBtnEvent = (state: Parameters<typeof pltState.setIsAdjustingPlt_>[
 // # Page 1: Contrast Ratio
 const bgColor = ref<string>('#FFFFFF'); // background
 const textColor = ref<string>('#000000'); // foreground
-watch(bgColor, (n) => console.log(n));
 /**
  * Finish Hex editing when input is blurred or press 'Enter'
  */
