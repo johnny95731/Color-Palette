@@ -249,7 +249,7 @@
       v-if="inInit.contrast_ || isOpening.contrast_"
       v-model="isOpening.contrast_"
     />
-    <InputPaletteDialog
+    <PaletteInputter
       v-if="inInit.input_ || isOpening.input_"
       v-model="isOpening.input_"
     />
@@ -296,8 +296,8 @@ const ContrastDialog = defineAsyncComponent(
       return component;
     })
 );
-const InputPaletteDialog = defineAsyncComponent(
-  () => import('@/components/PaletteInputer/PaletteInputer.vue')
+const PaletteInputter = defineAsyncComponent(
+  () => import('@/components/PaletteInputter/PaletteInputter.vue')
     .then(component => {
       inInit.input_ = true;
       return component;
