@@ -235,7 +235,7 @@ const updateContrastResult = () => {
   );
 };
 
-const contrastBtnEvent = (state: 'start' | 'reset') => {
+const contrastBtnEvent = (state: Parameters<typeof pltState.setIsAdjustingPlt_>['0']) => {
   pltState.setIsAdjustingPlt_(state);
   contrastArgs[contrastArgs.method_] = 1;
   updateContrastResult();
