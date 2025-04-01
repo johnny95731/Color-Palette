@@ -6,10 +6,12 @@
     ]"
     :maxlength="maxLength"
     :size="size"
+    :autocomplete="autocomplete"
+    :pattern="pattern"
     :value="model"
-    @input="textInputed($event)"
-    @change="handleHexEditingFinished($event)"
-    @paste="handlePaste($event)"
+    @input="handleInput"
+    @change="handleChange"
+    @paste="handlePaste"
   >
 </template>
 
@@ -18,34 +20,41 @@ import { unref } from 'vue';
 import { isValidHex, removeNonHex } from '@/utils/colorModels/hex';
 
 type Props = {
+  autocomplete?: string,
   maxLength?: number | `${number}`,
   size?: number | `${number}`,
-  fontSize?: 'md' | 'lg'
+  pattern?: string,
+  fontSize?: 'md' | 'lg',
 }
 
 withDefaults(defineProps<Props>(), {
+  autocomplete: 'off',
   maxLength: 7,
   size: 6,
+  pattern: '#([0-9A-Fa-f]{3}){1,2}',
   fontSize: 'md'
 });
 
-const [model, modifiers] = defineModel<string>();
+const [model, modifiers] = defineModel({
+  type: String,
+  default: '#000000'
+});
 
-const textInputed = (e: Event) => {
+const handleInput = (e: Event) => {
+  const target = e!.currentTarget as HTMLInputElement;
+  const text = `#${removeNonHex(target.value).toUpperCase()}`;
+  target.value = text;
   if (!modifiers.lazy) {
-    const target = e!.currentTarget as HTMLInputElement;
-    const text = removeNonHex(target.value);
-    model.value = `#${text.toUpperCase()}`;
-    target.value = model.value;
+    model.value = text;
   }
 };
 
 /**
  * Finish Hex editing when input is blurred or press 'Enter'
  */
-const handleHexEditingFinished = (e: Event) => {
+const handleChange = (e: Event) => {
   const text = (e.currentTarget as HTMLInputElement).value;
-  if (text !== unref(model) && isValidHex(text)) {
+  if (text !== unref(model)) {
     model.value = text;
   }
 };
@@ -66,6 +75,10 @@ const handlePaste = (e: ClipboardEvent) => {
   padding: 2px 8px;
   border-radius: $radius-sm;
   font-size: $font-md;
+
+  &:invalid {
+    outline: 2px solid red;
+  }
 
   &--text-lg {
     font-size: $font-lg;

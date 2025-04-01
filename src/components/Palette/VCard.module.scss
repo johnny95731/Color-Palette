@@ -243,25 +243,6 @@
   }
 }
 
-.hexInput {
-  cursor: text;
-  user-select: text;
-
-  display: inline;
-
-  margin: 0 auto 6px;
-  padding: 0 8px;
-  border-width: 1px;
-  border-radius: $radius-md;
-
-  font-size: $font-lg;
-
-  @include small {
-    bottom: auto;
-    margin: 0 auto 7px;
-  }
-}
-
 .sliderContainer {
   display: inline-block;
   font-size: $font-sm;

@@ -134,7 +134,7 @@
       </label>
       <HexInputter
         ref="hexInputRef"
-        v-memo="[card.hex_]"
+        :id="`card${cardIdx}-hex`"
         :model-value="card.hex_"
         @change="handleHexEditingFinished($event)"
       />
