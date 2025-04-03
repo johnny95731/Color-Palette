@@ -319,7 +319,7 @@ const detail = asyncComputed<string>(
 const cardStyle = computed<CSSProperties>(() => {
   return {
     color: unref(isLight) ? '#000' : '#fff',
-    ...(settingState.paletteDisplay === 'block' && { background: toValue(card).hex_ })
+    ...(settingState.paletteDisplay === 'block' && { backgroundColor: toValue(card).hex_ })
   };
 });
 

@@ -39,7 +39,7 @@
       hide-value
       :fit-activator="false"
       :model-value="pltState.sortBy_"
-      @update:model-value="pltState.sortCards_($event as SortActions)"
+      @triggered="pltState.sortCards_($event as SortActions)"
     />
     <SelectMenu
       v-memo="[isSmall, pltState.mixMode_]"
@@ -274,6 +274,7 @@ import { createReusableTemplate, toValue } from '@vueuse/core';
 import $style from './VHeader.module.scss';
 import DropdownMenu from '../Custom/DropdownMenu.vue';
 import VBtn from '@/components/Custom/VBtn.vue';
+import SelectMenu from '../Custom/SelectMenu.vue';
 // utils
 import { HOTKEYS } from '@/utils/hotkeys';
 import { invertBoolean, map } from '@/utils/helpers';
@@ -285,9 +286,6 @@ import { SORTING_ACTIONS, type SortActions } from '@/utils/manipulate/sorting';
 import media from '@/composables/useMedia';
 import usePltStore from '@/stores/usePltStore';
 import useSettingStore from '@/stores/useSettingStore';
-// types
-import SelectMenu from '../Custom/SelectMenu.vue';
-
 
 const ContrastDialog = defineAsyncComponent(
   () => import('@/components/ContrastDialog/ContrastDialog.vue')

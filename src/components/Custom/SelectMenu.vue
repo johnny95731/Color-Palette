@@ -136,6 +136,14 @@ const props = withDefaults(defineProps<Props>(), {
   fitActivator: true,
 });
 
+const emits = defineEmits<{
+  /**
+   * Only trigger when click items. Will not emit when `model-value` is changed
+   * from other place.
+   */
+  triggered: [val: SelectItem['val']]
+}>();
+
 const activatorRef = ref<InstanceType<typeof VBtn>>();
 const containerRef = ref<HTMLDivElement>();
 
@@ -192,7 +200,10 @@ const handleNullishModel = (
   return true;
 };
 
-const handleSelect = (idx: number) => modelIndex.value = idx;
+const handleSelect = (idx: number) => {
+  modelIndex.value = idx;
+  emits('triggered', unref(selectItems)[idx].val);
+};
 const btnLabel = computed<string | undefined>(() =>
   props.hideValue ?
     props.text :
@@ -220,7 +231,7 @@ watch(
 // Option props
 const optionProps = ref<{
   class: (string | false)[],
-  onClick: () => number,
+  onClick: () => void,
     }[]>([]);
 watch(() => unref(selectItems).length, () => {
   optionProps.value = map(unref(selectItems), (_, i) => {

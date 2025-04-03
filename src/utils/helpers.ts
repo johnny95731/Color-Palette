@@ -21,7 +21,7 @@ export const objPick = <T extends object, K extends (string | number | symbol)>(
 /**
  * Simple way to deep copy entire object.
  */
-export const copyObj = (obj: unknown) => {
+export const copyObj = <T>(obj: T): T => {
   return JSON.parse(JSON.stringify(obj));
 };
 

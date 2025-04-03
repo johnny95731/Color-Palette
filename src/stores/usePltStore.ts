@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 // Utils
-import { map, forLoop, shuffle } from '@/utils/helpers.ts';
+import { map, forLoop, shuffle, copyObj } from '@/utils/helpers.ts';
 import { randRgbGen, getSpaceInfos, COLOR_SPACES } from '@/utils/colors.ts';
 import { hex2rgb, rgb2hex } from '@/utils/colorModels/hex';
 import { getMixer } from '@/utils/manipulate/mixing';
@@ -17,12 +17,21 @@ export const MIN_NUM_OF_CARDS = 2;
 export const MAX_NUM_OF_CARDS = 8;
 
 /**
+ * Storage of IDs. Get value when creating new card. Save to storage when delete
+ * card.
+ */
+const CARD_IDS = map(MAX_NUM_OF_CARDS, (_, i) => i);
+
+/**
  * The current order of cards.
  */
 export type OrderState = Exclude<SortActions, 'inversion'>;
 
-
 export type Card = {
+  /**
+   * Unique identity for controling the transition of card.
+   */
+  id_: number;
   /**
    * Order of card in palette.
    */
@@ -51,28 +60,6 @@ export type Card = {
    * The card is in bookmarks.
    */
   isFav_: boolean;
-};
-
-
-/**
- * Create a new state object.
- * @return {Card} State object.
- */
-const newCard = (
-  order: number, colorSpace: ColorSpace, color?: number[],
-): Card => {
-  const { converter, inverter } = getSpaceInfos(colorSpace);
-  if (!color) color = converter(randRgbGen());
-  const hex = rgb2hex(inverter(color));
-  return {
-    order_: order,
-    hex_: hex,
-    color_: color,
-    originHex_: hex,
-    originColor_: color,
-    isLock_: false,
-    isFav_: false,
-  };
 };
 
 
@@ -110,7 +97,7 @@ const usePltStore = defineStore('plt', {
   state(): State {
     const space = COLOR_SPACES.find(({ name_: name_ }) => name_ === 'Named')!;
     return {
-      cards_: map(5, (_, i) => newCard(i, space)),
+      cards_: [],
       sortBy_: 'random',
       isPending_: false,
       editingIdx_: -1,
@@ -134,6 +121,26 @@ const usePltStore = defineStore('plt', {
     },
   },
   actions: {
+    initCards_() {
+      this.cards_ = map(5, (_, i) => this.newCard_(i));
+    },
+    newCard_(
+      order: number, id?: Card['id_'], color?: number[]
+    ): Card {
+      const { converter, inverter } = this.spaceInfos_;
+      if (!color) color = converter(randRgbGen());
+      const hex = rgb2hex(inverter(color));
+      return {
+        id_: id ?? CARD_IDS.shift()!,
+        order_: order,
+        hex_: hex,
+        color_: color,
+        originHex_: hex,
+        originColor_: color,
+        isLock_: false,
+        isFav_: false,
+      };
+    },
     mixCard_(left: number, right?: number) {
       right ??= left + 1;
       // Evaluate new color.
@@ -159,25 +166,24 @@ const usePltStore = defineStore('plt', {
     addCard_(idx: number, rgb: number[]) {
       if (this.numOfCards_ == MAX_NUM_OF_CARDS) return;
       const tempSort = this.sortBy_;
-      const cards = this.cards_;
-      const cardState = newCard(idx, this.colorSpace_, this.spaceInfos_.converter(rgb));
-      forLoop(cards, (_, card) => {
-        if (card.order_ >= idx) card.order_++;
-      });
-      cards.splice(idx, 0, cardState);
+      const newCard = this.newCard_(
+        this.numOfCards_,
+        undefined,
+        this.spaceInfos_.converter(rgb)
+      );
+      this.cards_.splice(idx, 0, newCard);
       this.sortBy_ = 'random';
       if (useSettingStore().autoSort && tempSort !== 'random') {
         this.sortCards_(tempSort);
       }
+      this.resetOrder_();
     },
     delCard_(idx: number) {
       if (this.numOfCards_ === MIN_NUM_OF_CARDS) return;
       const tempSort = this.sortBy_;
-      const cards = this.cards_;
-      const removedOrder = cards.splice(idx, 1)[0].order_;
-      forLoop(cards, (_, card) => {
-        if (card.order_ > removedOrder) card.order_--;
-      });
+      const card = this.cards_.splice(idx, 1)[0];
+      CARD_IDS.push(card.id_);
+      this.resetOrder_();
       this.sortBy_ = 'random';
       if (useSettingStore().autoSort && tempSort !== 'random') {
         this.sortCards_(tempSort);
@@ -185,12 +191,11 @@ const usePltStore = defineStore('plt', {
     },
     refreshCard_(idx: number) {
       const tempSort = this.sortBy_;
-      if (idx >= 0) {
-        if (this.cards_[idx].isLock_) return;
-        this.cards_[idx] = newCard(idx, this.colorSpace_);
+      if (idx >= 0 && !this.cards_[idx].isLock_) {
+        this.cards_[idx] = this.newCard_(idx, this.cards_[idx].id_);
       } else if (idx === -1) {
-        forLoop(this.cards_, (_, card, i) =>
-          card.isLock_ || Object.assign(card, newCard(i, this.colorSpace_))
+        this.cards_ = map(this.cards_, (card, i) =>
+          card.isLock_ ? card : this.newCard_(i, card.id_)
         );
       }
       this.sortBy_ = 'random';
@@ -208,18 +213,17 @@ const usePltStore = defineStore('plt', {
     sortCards_(sortBy: SortActions) {
       const opIdx = SORTING_ACTIONS.indexOf(sortBy);
       const op = getDistOp(sortBy);
+      let cards = copyObj(this.cards_);
       if (opIdx === 1) { // random
-        shuffle(this.cards_);
+        shuffle(cards);
       } else if (
         opIdx === 2 || // inversion
         this.sortBy_ === SORTING_ACTIONS[opIdx]
       ) {
-        this.cards_.reverse();
+        cards.reverse();
       } else if (opIdx === 0) {
-        const distToBlack = map(this.cards_, ({ hex_: hex }) => {
-          return op(hex, '#000');
-        });
-        this.cards_.sort((a, b) => {
+        const distToBlack = map(this.cards_, ({ hex_ }) => op(hex_, '#000'));
+        cards.sort((a, b) => {
           return distToBlack[a.order_] - distToBlack[b.order_];
         });
       }
@@ -227,8 +231,10 @@ const usePltStore = defineStore('plt', {
         const dist = (a: Pick<Card, 'hex_'>, b: Pick<Card, 'hex_'>) => {
           return op(a.hex_, b.hex_);
         };
-        this.cards_ = tspGreedy(this.cards_, dist, { hex_: '#000' });
+        cards = tspGreedy(cards, dist, { hex_: '#000' });
       }
+      forLoop(cards, (_, card, i) => card.id_ = this.cards_[i].id_);
+      this.cards_ = cards;
       /**
        * Inversion will not change sortBy. For example, if cards are sorted
        * by gray, inversion just change the most lightest card on left side
@@ -237,7 +243,7 @@ const usePltStore = defineStore('plt', {
       if (opIdx !== 2)
         // @ts-expect-error
         this.sortBy_ = sortBy;
-      forLoop(this.cards_, (_, card, i) => card.order_ = i);
+      this.resetOrder_();
     },
     setIsLock_(idx: number) {
       this.cards_[idx].isLock_ = !this.cards_[idx].isLock_;
@@ -248,29 +254,26 @@ const usePltStore = defineStore('plt', {
     },
     moveCardOrder_(cardIdx: number, to: number) {
       const initOrder = this.cards_[cardIdx].order_;
-      if (initOrder <= to) {
-        forLoop(
-          this.cards_,
-          (_, card) => {
-            if (initOrder < card.order_ && card.order_ <= to)
-              card.order_--;
-          }
-        );
-      } else {
-        forLoop(
-          this.cards_,
-          (_, card) => {
-            if (to <= card.order_ && card.order_ < initOrder)
-              card.order_++;
-          }
-        );
-      }
+      forLoop(
+        this.cards_,
+        (_, card) => {
+          if (initOrder < card.order_ && card.order_ <= to)
+            card.order_--;
+          if (to <= card.order_ && card.order_ < initOrder)
+            card.order_++;
+        }
+      );
       this.cards_[cardIdx].order_ = to;
       this.sortBy_ = 'random';
     },
     // Plt state
-    resetOrder_() {
+    sortByOrder_() {
       this.cards_.sort((a, b) => a.order_ - b.order_);
+    },
+    /**
+     * Set card.order_ = index.
+     */
+    resetOrder_() {
       forLoop(this.cards_, (_, card, i) => card.order_ = i);
     },
     setIsPending_(newVal: boolean) {
@@ -304,11 +307,10 @@ const usePltStore = defineStore('plt', {
       const callback = (color: string | number[]) => {
         return Array.isArray(color) ? color : converter(hex2rgb(color));
       };
+      forLoop(this.cards_, (_, card) => CARD_IDS.unshift(card.id_));
       this.cards_ = map<Card, string | number[]>(
         plt,
-        (color, i) => newCard(
-          i, this.colorSpace_, callback(color),
-        )
+        (color, i) => this.newCard_(i, undefined, callback(color))
       );
       this.sortBy_ = 'random';
     },
