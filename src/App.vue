@@ -3,9 +3,7 @@
     ref="headerRef"
   />
   <main id="main">
-    <Suspense>
-      <VPalette />
-    </Suspense>
+    <VPalette />
   </main>
 </template>
 

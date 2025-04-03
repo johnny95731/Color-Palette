@@ -7,9 +7,19 @@ import '@/assets/transition.scss';
 
 import { createApp } from 'vue';
 import App from './App.vue';
+import useSettingStore from './stores/useSettingStore';
+import useFavStore from './stores/useFavStore';
+import usePltStore from './stores/usePltStore';
 
 const app = createApp(App);
 app.use(createPinia());
+
+await Promise.all([
+  useSettingStore().initializeSettings_(),
+  useFavStore().initializeColors_(),
+  useFavStore().initializePlts_(),
+  usePltStore().initCards_()
+]);
 
 app.mount('#app');
 

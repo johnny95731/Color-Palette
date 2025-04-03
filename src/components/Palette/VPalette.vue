@@ -57,7 +57,6 @@ import { rangeMapping, round, toPercent } from '@/utils/numeric';
 // Stores / Contexts
 import usePltStore, { MAX_NUM_OF_CARDS } from '@/stores/usePltStore';
 import useSettingStore from '@/stores/useSettingStore';
-import useFavStore from '@/stores/useFavStore';
 import media from '@/composables/useMedia';
 // Types
 import type { CSSProperties } from 'vue';
@@ -70,14 +69,7 @@ const cardRefs = ref<CardInstance[]>([]);
 
 const pltState = usePltStore();
 const settingsState = useSettingStore();
-const favState = useFavStore();
 
-const init = Promise.all([
-  settingsState.initializeSettings_(),
-  favState.initializeColors_(),
-  favState.initializePlts_(),
-  pltState.initCards_()
-]);
 
 const paletteGradient = computed(() => {
   if (settingsState.paletteDisplay === 'block') return;
@@ -299,6 +291,4 @@ watch(() => unref(isInTrans).some((val) => val),
  */
 const isShowingInsert = computed(() =>
   !(pltState.numOfCards_ === MAX_NUM_OF_CARDS || pltState.isPending_));
-
-await init;
 </script>
