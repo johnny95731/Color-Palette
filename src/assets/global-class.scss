@@ -6,12 +6,6 @@
   height: 100%;
 }
 
-#main {
-  width: 100%;
-  height: calc(var(--app-height) - var(--header-height));
-  margin-top: var(--header-height);
-}
-
 #overlay-container {
   @include overlay(fixed);
 

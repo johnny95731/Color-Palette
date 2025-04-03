@@ -1,5 +1,5 @@
 <template>
-  <div
+  <main
     ref="cardContainerRef"
     :class="$style.container"
     :style="paletteGradient"
@@ -42,7 +42,7 @@
         />
       </div>
     </div>
-  </div>
+  </main>
 </template>
 
 <script lang="ts" setup>

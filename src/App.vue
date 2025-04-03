@@ -2,9 +2,7 @@
   <VHeader
     ref="headerRef"
   />
-  <main id="main">
-    <VPalette />
-  </main>
+  <VPalette />
 </template>
 
 <script setup lang='ts'>
