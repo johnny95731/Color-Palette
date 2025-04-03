@@ -14,12 +14,10 @@ import usePltStore from './stores/usePltStore';
 const app = createApp(App);
 app.use(createPinia());
 
-await Promise.all([
-  useSettingStore().initializeSettings_(),
-  useFavStore().initializeColors_(),
-  useFavStore().initializePlts_(),
-  usePltStore().initCards_()
-]);
+useSettingStore().initializeSettings_();
+useFavStore().initializeColors_();
+useFavStore().initializePlts_();
+usePltStore().initCards_();
 
 app.mount('#app');
 
