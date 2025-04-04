@@ -10,7 +10,6 @@ import terserPlugin from './vite-terser-plugin';
 
 
 const noHashFile = [
-  'normalize.css',
   'bootstrap-icons.woff2',
   'bootstrap-icons.woff'
 ];
@@ -27,15 +26,6 @@ export default defineConfig({
     cssMinify: 'lightningcss',
     rollupOptions: {
       output: {
-        manualChunks: (id) => {
-          // console.log('id', id);
-          if (id.includes('bootstrap-icons')) {
-            return 'bootstrap-icons';
-          }
-          if (id.includes('normalize.css')) {
-            return 'normalize';
-          }
-        },
         assetFileNames: function (file) {
           return noHashFile.includes(file.name!)
             ? '[name].[ext]'
