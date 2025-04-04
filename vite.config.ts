@@ -8,6 +8,13 @@ import viteJoinMediaQueries from 'vite-join-media-queries';
 import { patchCssModules } from 'vite-css-modules';
 import terserPlugin from './vite-terser-plugin';
 
+
+const noHashFile = [
+  'normalize.css',
+  'bootstrap-icons.woff2',
+  'bootstrap-icons.woff'
+];
+
 const metaUrl = import.meta.url;
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -25,7 +32,15 @@ export default defineConfig({
           if (id.includes('bootstrap-icons')) {
             return 'bootstrap-icons';
           }
-        }
+          if (id.includes('normalize.css')) {
+            return 'normalize';
+          }
+        },
+        assetFileNames: function (file) {
+          return noHashFile.includes(file.name!)
+            ? '[name].[ext]'
+            : '[name]-[hash].[ext]';
+        },
       }
     }
   },
