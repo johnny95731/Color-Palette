@@ -122,7 +122,7 @@ const usePltStore = defineStore('plt', {
   },
   actions: {
     initCards_() {
-      this.cards_ = map(5, (_, i) => this.newCard_(i));
+      for (let i = 0; i < 5; i++) this.cards_.push(this.newCard_(i));
     },
     newCard_(
       order: number, id?: Card['id_'], color?: number[]
@@ -254,17 +254,16 @@ const usePltStore = defineStore('plt', {
     },
     moveCardOrder_(cardIdx: number, to: number) {
       const initOrder = this.cards_[cardIdx].order_;
-      forLoop(
-        this.cards_,
-        (_, card) => {
+      if (initOrder !== to) {
+        for (const card of this.cards_) {
           if (initOrder < card.order_ && card.order_ <= to)
             card.order_--;
-          if (to <= card.order_ && card.order_ < initOrder)
+          else if (to <= card.order_ && card.order_ < initOrder)
             card.order_++;
         }
-      );
-      this.cards_[cardIdx].order_ = to;
-      this.sortBy_ = 'random';
+        this.cards_[cardIdx].order_ = to;
+        this.sortBy_ = 'random';
+      }
     },
     // Plt state
     sortByOrder_() {

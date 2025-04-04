@@ -18,6 +18,16 @@ export default defineConfig({
     sourcemap: false,
     minify: false,
     cssMinify: 'lightningcss',
+    rollupOptions: {
+      output: {
+        manualChunks: (id) => {
+          // console.log('id', id);
+          if (id.includes('bootstrap-icons')) {
+            return 'bootstrap-icons';
+          }
+        }
+      }
+    }
   },
   plugins: [
     vue({

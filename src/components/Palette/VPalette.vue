@@ -52,7 +52,7 @@ import VBtn from '../Custom/VBtn.vue';
 import VCard from './VCard.vue';
 // utils
 import { useDragableElement } from '@/composables/useDragableElement';
-import { equallyLength, evalPosition, forLoop, isNullish, map } from '@/utils/helpers';
+import { frac2percentage, isNullish, map } from '@/utils/helpers';
 import { rangeMapping, round, toPercent } from '@/utils/numeric';
 // Stores / Contexts
 import usePltStore, { MAX_NUM_OF_CARDS } from '@/stores/usePltStore';
@@ -108,15 +108,15 @@ const settingStyle = computed<CSSProperties>(() => {
 const cardPosition = computed(
   () => map(
     pltState.numOfCards_ + 1,
-    (_, i) => evalPosition(i, pltState.numOfCards_)
+    (_, i) => frac2percentage(i, pltState.numOfCards_)
   )
 );
 
 const resetCardStyle = (transition: 'none' | '' = '') => {
-  const length = pltState.numOfCards_;
-  cardStyle.value = map(pltState.cards_, (_, i) => ({
-    [media.beginPos_]: evalPosition(i, length),
-    [media.cardAxis_]: equallyLength(length),
+  const pos = unref(cardPosition);
+  cardStyle.value = map(pltState.numOfCards_, (_, i) => ({
+    [media.beginPos_]: pos[i],
+    [media.cardAxis_]: pos[1],
     transitionProperty: transition
   }));
 };
@@ -134,26 +134,16 @@ const setSize = (idx: number, size: string) => {
 };
 
 const setPosition = (idx: number, pos?: string) => {
-  unref(cardStyle)[idx][media.beginPos_] = pos ?? unref(cardPosition)[pltState.cards_[idx].order_];
+  unref(cardStyle)[idx][media.beginPos_] = pos ??
+      unref(cardPosition)[pltState.cards_[idx].order_];
 };
 
-const setTransitionProperty = (newVal: 'none' | '', idx?: number) => {
-  const style = unref(cardStyle);
-  if (isNullish(idx)) {
-    forLoop(
-      pltState.cards_,
-      (_, __, i) => {
-        style[i].transitionProperty = newVal;
-      }
-    );
-  } else {
-    style[idx].transitionProperty = newVal;
-  }
+const setTransitionProperty = (idx: number, newVal: 'none' | '') => {
+  unref(cardStyle)[idx].transitionProperty = newVal;
 };
 
-watch(() => [pltState.numOfCards_, media.isSmall_], () => {
-  resetCardStyle();
-}, { flush: 'sync' });
+watch(() => pltState.numOfCards_, () => resetCardStyle(), { flush: 'sync' });
+watch(() => media.isSmall_, () => resetCardStyle());
 
 
 // Add card, remove card, and drag card trigger transition.
@@ -177,7 +167,7 @@ const addCard = async (idx: number) => {
   pltState.addCard_(idx, newRgb);
   if (settingsState.transition.pos) {
     setSize(idx, '0');
-    setPosition(idx, evalPosition(idx, pltState.numOfCards_-1));
+    setPosition(idx, frac2percentage(idx, pltState.numOfCards_-1));
     isInTrans.value = map(pltState.cards_, () => true);
     pltState.setIsPending_(true);
     eventInfo.value = { idx_: idx };
@@ -187,7 +177,7 @@ const addCard = async (idx: number) => {
 const onBeforeEnter = () => {
   if (!isNullish(eventInfo)) {
     const idx = unref(eventInfo)!.idx_!;
-    setSize(idx, equallyLength(pltState.numOfCards_));
+    setSize(idx, frac2percentage(1, pltState.numOfCards_));
     setPosition(idx);
   }
 };
@@ -206,8 +196,9 @@ const removeCard = (idx: number) => {
 const onBeforeLeave = (el: Element) => {
   if (!isNullish(eventInfo)) {
     const style = (el as HTMLElement).style;
+    const idx = unref(eventInfo)!.idx_!;
     style[media.cardAxis_] = '0';
-    style[media.beginPos_] = unref(cardPosition)[unref(eventInfo)!.idx_!];
+    style[media.beginPos_] = unref(cardPosition)[idx];
   }
 };
 
@@ -229,10 +220,8 @@ const { start: startDragging } = (() => {
   };
 
   const setNewPosition = (pos: Position) => {
-    forLoop(
-      pltState.cards_,
-      (_, __, i) => setPosition(i)
-    );
+    const len = pltState.numOfCards_;
+    for (let i = 0; i < len; i++) setPosition(i);
     setPosition(cardIdx!, `${round(getCoordinate(pos) - halfCardLength, 2)}%`);
   };
 
@@ -242,12 +231,12 @@ const { start: startDragging } = (() => {
     unref(isInTrans)[cardIdx] = true;
     pltState.setIsPending_(true);
     draggingIdx.value = cardIdx;
-    setTransitionProperty('none', cardIdx);
+    setTransitionProperty(cardIdx, 'none');
     setNewPosition(pos);
   };
   const onMove_ = (pos: Position) => {
     if (!isNullish(cardIdx)) {
-      pltState.moveCardOrder_(unref(draggingIdx)!, getIdx(pos));
+      pltState.moveCardOrder_(cardIdx, getIdx(pos));
       setNewPosition(pos);
     }
   };
@@ -257,7 +246,7 @@ const { start: startDragging } = (() => {
       if (!settingsState.transition.pos) {
         unref(isInTrans)[cardIdx] = false; // Triggering resetting order.
       }
-      setTransitionProperty('', cardIdx);
+      setTransitionProperty(cardIdx, '');
       setPosition(cardIdx);
       draggingIdx.value = cardIdx = null;
     }
@@ -275,11 +264,15 @@ const { start: startDragging } = (() => {
 watch(() => unref(isInTrans).some((val) => val),
   (someCardIsInTrans) => {
     if (someCardIsInTrans || !unref(eventInfo)) return;
-    if (unref(eventInfo)?.isDraggingEvent_) {
+    if (unref(eventInfo)!.isDraggingEvent_) {
       pltState.sortByOrder_();
       resetCardStyle('none');
       // update after 2 frames, 34 ~= 1000ms / 30ms
-      setTimeout(setTransitionProperty, 34, '');
+      setTimeout(() => {
+        for (let i = 0; i < pltState.numOfCards_; i++) {
+          setTransitionProperty(i, '');
+        }
+      }, 34);
     }
     pltState.setIsPending_(false);
     eventInfo.value = null;

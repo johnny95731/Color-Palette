@@ -1,0 +1,66 @@
+/*!
+ * Bootstrap Icons v1.11.3 (https://icons.getbootstrap.com/)
+ * Copyright 2019-2024 The Bootstrap Authors
+ * Licensed under MIT (https://github.com/twbs/icons/blob/main/LICENSE)
+ */
+
+$bootstrap-icons-font: "bootstrap-icons" !default;
+$bootstrap-icons-font-dir: "./fonts" !default;
+$bootstrap-icons-font-file: "#{$bootstrap-icons-font-dir}/#{$bootstrap-icons-font}" !default;
+$bootstrap-icons-font-src: url("#{$bootstrap-icons-font-file}.woff2") format("woff2"),
+                           url("#{$bootstrap-icons-font-file}.woff") format("woff") !default;
+
+@font-face {
+  font-family: $bootstrap-icons-font;
+  font-display: block;
+  src: $bootstrap-icons-font-src;
+}
+
+.bi::before,
+[class^="bi-"]::before,
+[class*=" bi-"]::before {
+  display: inline-block;
+
+  font-family: $bootstrap-icons-font !important;
+  font-weight: normal !important;
+  font-style: normal;
+  font-variant: normal;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1;
+  text-transform: none;
+  vertical-align: -.125em;
+}
+
+$bootstrap-icons-map: (
+  "arrow-clockwise": "\f116",
+  "arrow-left": "\f12f",
+  "arrows-expand-vertical": "\f695",
+  "arrows": "\f6a2",
+  "bookmark-dash": "\f198",
+  "bookmark-plus": "\f19d",
+  "bookmarks": "\f1a4",
+  "caret-down-fill": "\f229",
+  "circle-half": "\f288",
+  "copy": "\f759",
+  "eyedropper": "\f342",
+  "file-earmark-plus": "\f37d",
+  "gear": "\f3e5",
+  "github": "\f3ed",
+  "list": "\f479",
+  "lock-fill": "\f47a",
+  "palette": "\f4b1",
+  "pause-fill": "\f4c3",
+  "play": "\f4f5",
+  "sliders": "\f56b",
+  "sort-down-alt": "\f574",
+  "star-fill": "\f586",
+  "star": "\f588",
+  "unlock-fill": "\f5ff",
+  "upload": "\f603",
+  "x-lg": "\f659",
+);
+
+@each $icon, $codepoint in $bootstrap-icons-map {
+  .bi-#{$icon}::before { content: $codepoint; }
+}

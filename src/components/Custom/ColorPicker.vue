@@ -107,7 +107,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref, toValue, unref, watch } from 'vue';
+import { computed, onMounted, reactive, ref, unref, watch } from 'vue';
 import VSlider from './VSlider.vue';
 import SelectMenu from './SelectMenu.vue';
 import VDialog from './VDialog.vue';
@@ -387,7 +387,7 @@ onMounted(() => {
 });
 
 // Canvas event
-const canvasDraggingStart = toValue(() => {
+const canvasDraggingStart = (() => {
   const update = (pos: Position) => {
     unref(updaters).canvas_(pos);
   };
@@ -397,10 +397,10 @@ const canvasDraggingStart = toValue(() => {
     onMove_: update,
   });
   return start;
-});
+})();
 
 // Slider events
-const sliderDraggingStart = toValue(() => {
+const sliderDraggingStart = (() => {
   const update = (pos: Position) => {
     unref(updaters).secondPicker_!(pos);
   };
@@ -410,7 +410,7 @@ const sliderDraggingStart = toValue(() => {
     onMove_: update,
   });
   return start;
-});
+})();
 
 
 // models

@@ -6,7 +6,7 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, onMounted, computed, toValue, unref } from 'vue';
+import { ref, onMounted } from 'vue';
 import VHeader from './components/Header/VHeader.vue';
 import VPalette from './components/Palette/VPalette.vue';
 import { HOTKEYS } from './utils/hotkeys';
@@ -18,10 +18,6 @@ import type { SortActions } from './utils/manipulate/sorting';
 const headerRef = ref<InstanceType<typeof VHeader>>();
 
 const pltState = usePltStore();
-const isOverlayOpened = computed(() =>
-  pltState.isEditing_ || unref(headerRef)?.isSomeDialogOpened_
-);
-const isCardPending = computed(() => pltState.isEditing_ || pltState.isPending_);
 
 // Connect hotkey.
 const { sorting_: sortingHotkey, refresh_: refreshHotkey } = HOTKEYS;
@@ -29,7 +25,8 @@ const keyDownEvent = (e: KeyboardEvent) => {
   const key = e.key.toLowerCase();
   if (
     // Prevent trigger hotkey when editing or add/remove/move (transition) card.
-    toValue(isCardPending) || toValue(isOverlayOpened)
+    pltState.isEditing_ || pltState.isPending_ ||
+    headerRef.value?.isSomeDialogOpened_
   ) return;
   if (key === refreshHotkey) {
     pltState.refreshCard_(-1);

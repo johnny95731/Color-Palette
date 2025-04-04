@@ -28,7 +28,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch, toValue, getCurrentInstance, onMounted, unref } from 'vue';
+import { computed, ref, watch, getCurrentInstance, onMounted, unref } from 'vue';
 import { useEventListener } from '@vueuse/core';
 import OverlayContainer from './OverlayContainer.vue';
 import { useElementBounding } from '@/composables/useElementBounding';
@@ -95,7 +95,7 @@ const addAttributes = (el: HTMLElement | null, id: string) => {
 };
 
 watch(
-  () => [toValue(activatorEl), toValue(idForContainer)] as const,
+  () => [unref(activatorEl), unref(idForContainer)] as const,
   (newEl, oldEl) => {
     if (oldEl)
       removeAttributes(oldEl[0]);
@@ -160,9 +160,9 @@ const handleShow = (e: MouseEvent) => {
   // Clear timeout
   delayTimeoutId = clearTimeout(delayTimeoutId as number | undefined);
   // Set `isOpened`
-  if (toValue(openDelay_))
+  if (unref(openDelay_))
     delayTimeoutId = window.setTimeout(
-      invertBoolean, toValue(openDelay_), isOpened, true
+      invertBoolean, unref(openDelay_), isOpened, true
     );
   else
     invertBoolean(isOpened, true);
@@ -175,9 +175,9 @@ const handleHide = (e: MouseEvent) => {
   if (!isNullish(delayTimeoutId))
     (delayTimeoutId = clearTimeout(delayTimeoutId!));
   // Set `isOpened`
-  if (toValue(closeDelay_))
+  if (unref(closeDelay_))
     delayTimeoutId = window.setTimeout(
-      invertBoolean, toValue(closeDelay_), isOpened, false
+      invertBoolean, unref(closeDelay_), isOpened, false
     );
   else
     invertBoolean(isOpened, false);
@@ -192,7 +192,7 @@ const handleClick = (e: MouseEvent) => {
   // To get activator position.
   currentTarget.value = e.currentTarget as HTMLElement;
   clickTimeout = window.setTimeout(
-    invertBoolean, toValue(clickOpenDuration_) + toValue(closeDelay_), isOpened, false
+    invertBoolean, unref(clickOpenDuration_) + unref(closeDelay_), isOpened, false
   );
 };
 

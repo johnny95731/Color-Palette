@@ -1,4 +1,4 @@
-import { equallyLength, evalPosition, getLetterCaseConverter, invertBoolean, isNullish, objPick, randomCharacter, shuffle } from '@/utils/helpers';
+import { frac2percentage, getLetterCaseConverter, invertBoolean, isNullish, objPick, randomCharacter, shuffle } from '@/utils/helpers';
 import { describe, expect, test } from 'vitest';
 import { ref } from 'vue';
 
@@ -104,20 +104,6 @@ test('invertBoolean', () => {
   }
 });
 
-test('equallyLength', () => {
-  const cases = [
-    [[2], '50%'],
-    [[10], '10%'],
-    [[4], '25%'],
-    [[3], '33.33%'],
-    [[1], '100%'],
-    [[5], '20%'],
-  ];
-  for (const [args, expect_] of cases) {
-    // @ts-expect-error
-    expect(equallyLength(...args)).toBe(expect_);
-  }
-});
 
 test('evalPosition', () => {
   const cases = [
@@ -129,7 +115,7 @@ test('evalPosition', () => {
   ];
   for (const [args, expect_] of cases) {
     // @ts-expect-error
-    expect(evalPosition(...args)).toBe(expect_);
+    expect(frac2percentage(...args)).toBe(expect_);
   }
 });
 

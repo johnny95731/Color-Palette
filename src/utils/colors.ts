@@ -1,4 +1,4 @@
-import { evalPosition, map } from './helpers';
+import { frac2percentage, map } from './helpers';
 import { dot, mod, randInt, round } from './numeric';
 import { hex2rgb } from './colorModels/hex';
 import { rgb2xyz, RGB2XYZ_COEFF_ROW_SUM, xyz2rgb, XYZ_MAX_SCALING } from './colorModels/ciexyz';
@@ -382,7 +382,7 @@ export const gradientGen = (
       steps + 1,
       (_, i) => {
         arr.splice(axis, 1, min + i * unitIncreament);
-        return `${getColorFunction(arr, space)} ${evalPosition(i, steps)}`;
+        return `${getColorFunction(arr, space)} ${frac2percentage(i, steps)}`;
       }
     );
   } else {
@@ -390,7 +390,7 @@ export const gradientGen = (
       steps + 1,
       (_, i) => {
         arr.splice(axis, 1, min + i * unitIncreament);
-        return `${getColorFunction(inverter(arr), COLOR_SPACES[0])} ${evalPosition(i, steps)}`;
+        return `${getColorFunction(inverter(arr), COLOR_SPACES[0])} ${frac2percentage(i, steps)}`;
       }
     );
   }

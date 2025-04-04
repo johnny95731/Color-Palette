@@ -11,7 +11,12 @@
   >
     <div
       :class="$style.toolContainer"
-      :style="showToolbar"
+      :style="{
+        ...(pltState.isPending_ && {
+          opacity: 0,
+          pointerEvents: 'none'
+        })
+      }"
       role="toolbar"
       :aria-label="`卡片${cardIdx}工具列`"
     >
@@ -27,7 +32,6 @@
           @click="$emit('remove')"
         />
         <VBtn
-          v-memo="[card.isLock_]"
           :icon="isLock.icon"
           :aria-label="isLock.label"
           :ripple="false"
@@ -192,7 +196,7 @@
 
 <script lang="ts" setup>
 import { computed, nextTick, ref, shallowReactive, unref, watch } from 'vue';
-import { asyncComputed, toValue } from '@vueuse/core';
+import { asyncComputed } from '@vueuse/core';
 import $style from './VCard.module.scss';
 // Components
 import VTooltip from '../Custom/VTooltip.vue';
@@ -202,6 +206,7 @@ import SelectMenu from '../Custom/SelectMenu.vue';
 import VSlider from '../Custom/VSlider.vue';
 import OverlayContainer from '../Custom/OverlayContainer.vue';
 import CondWrapper from '../Custom/CondWrapper.vue';
+import HexInputter from '../Custom/HexInputter.vue';
 // Utils
 import { map } from '@/utils/helpers';
 import { round, toPercent } from '@/utils/numeric';
@@ -217,7 +222,6 @@ import media from '@/composables/useMedia';
 // Types
 import type { CSSProperties } from 'vue';
 import type { Card } from '@/stores/usePltStore';
-import HexInputter from '../Custom/HexInputter.vue';
 
 const cardContainerRef = ref<HTMLElement>();
 const hexTextRef = ref<InstanceType<typeof VBtn>>();
@@ -254,8 +258,6 @@ const space = computed(() => {
   };
 });
 
-const isLight = computed(() => rgb2gray(hex2rgb(unref(card).hex_)) > 127);
-
 const roundedColor = computed({
   get() {
     return map(unref(card).color_, (val) => round(val));
@@ -266,16 +268,7 @@ const roundedColor = computed({
 });
 
 // Toolbar
-// States / Consts
 const favState = useFavStore();
-const isFav = computed(() => {
-  return favState.isFavColor_(unref(card).hex_);
-});
-const showToolbar = computed(() => {
-  return {
-    opacity: pltState.isPending_ ? '0' : undefined
-  };
-});
 
 const closeIconStyle = computed<CSSProperties | undefined>(() => {
   return pltState.numOfCards_ === 2 ?
@@ -290,7 +283,7 @@ const isLock = computed(() => (
     { icon: 'unlock-fill', label: '鎖定刷新' } as const
 ));
 const isFavIcon = computed(() => (
-  unref(isFav) ?
+  favState.isFavColor_(unref(card).hex_) ?
     { icon: 'star-fill', label: '移出書籤' } as const :
     { icon: 'star', label: '加入書籤' } as const
 ));
@@ -317,9 +310,11 @@ const detail = asyncComputed<string>(
 );
 
 const cardStyle = computed<CSSProperties>(() => {
+  const hex = unref(card).hex_;
+  const isLight = rgb2gray(hex2rgb(hex)) > 127;
   return {
-    color: unref(isLight) ? '#000' : '#fff',
-    ...(settingState.paletteDisplay === 'block' && { backgroundColor: toValue(card).hex_ })
+    color: isLight ? '#000' : '#fff',
+    ...(settingState.paletteDisplay === 'block' && { backgroundColor: hex })
   };
 });
 

@@ -27,7 +27,7 @@
     />
     <SelectMenu
       v-memo="[isSmall, pltState.sortBy_]"
-      prepend-icon="sort-down"
+      prepend-icon="sort-down-alt"
       :class="[
         css,
         $style.btn
@@ -270,7 +270,7 @@
 
 <script setup lang='ts'>
 import { ref, computed, watch, defineAsyncComponent, reactive } from 'vue';
-import { createReusableTemplate, toValue } from '@vueuse/core';
+import { createReusableTemplate } from '@vueuse/core';
 import $style from './VHeader.module.scss';
 import DropdownMenu from '../Custom/DropdownMenu.vue';
 import VBtn from '@/components/Custom/VBtn.vue';
@@ -286,6 +286,7 @@ import { SORTING_ACTIONS, type SortActions } from '@/utils/manipulate/sorting';
 import media from '@/composables/useMedia';
 import usePltStore from '@/stores/usePltStore';
 import useSettingStore from '@/stores/useSettingStore';
+import { unref } from 'vue';
 
 const ContrastDialog = defineAsyncComponent(
   () => import('@/components/ContrastDialog/ContrastDialog.vue')
@@ -339,12 +340,10 @@ const inInit = reactive({
 const isOpening = reactive({ ...inInit });
 
 
-const isSomeDialogOpened_ = computed(() => {
-  return Object.values(isOpening).some((val) => val);
-});
-
 defineExpose({
-  isSomeDialogOpened_
+  isSomeDialogOpened_: computed(() => {
+    return Object.values(isOpening).some((val) => val);
+  })
 });
 
 
@@ -360,26 +359,26 @@ const intervalId = ref<number | null>(null);
 const delay = computed(() => Math.max(settingState.transition.color, 1000));
 const slidePlay = () => {
   intervalId.value = window.setInterval(
-    () => toValue(isRunning) && pltState.refreshCard_(-1),
-    toValue(delay)
+    () => unref(isRunning) && pltState.refreshCard_(-1),
+    unref(delay)
   );
 };
 const haldleClickSlides = () => {
-  if (toValue(isRunning)) { // play -> pause
-    window.clearInterval(toValue(intervalId) as number | undefined);
+  if (unref(isRunning)) { // play -> pause
+    window.clearInterval(unref(intervalId) as number | undefined);
     intervalId.value = null;
   } else { // pause -> play
     slidePlay();
     pltState.refreshCard_(-1);
   }
   invertBoolean(isRunning);
-  pltState.setIsPending_(toValue(isRunning));
+  pltState.setIsPending_(unref(isRunning));
 };
 watch(
   () => settingState.transition.color,
   () => {
-    if (toValue(isRunning)) {
-      window.clearInterval(toValue(intervalId) as number | undefined);
+    if (unref(isRunning)) {
+      window.clearInterval(unref(intervalId) as number | undefined);
       slidePlay();
     }
   },

@@ -48,7 +48,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, toValue } from 'vue';
+import { computed } from 'vue';
 import $style from './VBookmarks.module.scss';
 import VIcon from '../Custom/VIcon.vue';
 import VTooltip from '../Custom/VTooltip.vue';
@@ -66,12 +66,13 @@ type Props = {
 }
 const props = defineProps<Props>();
 const pltColors = map(props.plt.split('-'), (hex) => `#${hex}`);
-const diff = computed(() => toPercent(1 / pltColors.length, 2));
+
 const bgGrad = computed(() => {
+  const d = toPercent(1 / pltColors.length, 2);
   const midPoint = forLoop(
     pltColors,
     (acc, hex, i) => {
-      acc += `${hex} ${i * toValue(diff)}%,${hex} ${(i+1) * toValue(diff)}%,`;
+      acc += `${hex} ${i * d}%,${hex} ${(i+1) * d}%,`;
       return acc;
     },
     ''

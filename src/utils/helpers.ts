@@ -1,6 +1,6 @@
-import { toValue } from '@vueuse/core';
+import { unref } from 'vue';
 import { randInt, toPercent } from './numeric';
-import type { Ref, WritableComputedRef } from 'vue';
+import type { MaybeRef, Ref, WritableComputedRef } from 'vue';
 
 
 // ### Object helpers
@@ -129,13 +129,15 @@ export const forLoop: forLoop = <R, T>(
 ): R => {
   let s = init;
   if (typeof arr === 'number') {
-    len = arr;
-    arr = Array(len);
-  }
-  len ??= arr.length;
-  for (let i = 0; i < len; i++) {
-    // @ts-expect-error
-    s = callback(s, arr[i], i);
+    for (let i = 0; i < arr; i++)
+      // @ts-expect-error
+      s = callback(s, null, i);
+  } else {
+    len ??= arr.length;
+    for (let i = 0; i < len; i++)
+      // @ts-expect-error
+      s = callback(s, arr[i], i);
+
   }
   // @ts-expect-error
   return s;
@@ -147,8 +149,8 @@ export const forLoop: forLoop = <R, T>(
 /**
  * Check whether a value/ref is 'null' or 'undefined'.
  */
-export const isNullish = (val: unknown | Ref<unknown>): val is null | undefined =>
-  toValue(val) == null;
+export const isNullish = (val: MaybeRef<unknown>): val is null | undefined =>
+  unref(val) == null;
 
 /**
  * Invert the boolean value of a ref. If `newVal` is given, assign newVal to ref.
@@ -156,23 +158,19 @@ export const isNullish = (val: unknown | Ref<unknown>): val is null | undefined 
 export const invertBoolean = (
   ref: Ref<boolean | undefined> | WritableComputedRef<boolean | undefined>,
   newVal?: boolean
-) => ref.value = newVal ?? !toValue(ref);
+) => ref.value = newVal ?? !unref(ref);
 
 /**
- * Evaluate length that are divided evenly by `num`.
- * @param num Total number.
+ * Fraction to percentage.
+ * Return round(100 * idx / num, 2)%
+ * @param num Numerator.
+ * @param denom Denominator.
+ * @returns
  */
-export const equallyLength = (num: number): string => {
-  return toPercent(1 / num, 2) + '%';
+export const frac2percentage = (num: number, denom: number): string => {
+  return toPercent(num / denom, 2) + '%';
 };
 
-/**
- * Divide evenly by `num` and return the `idx`-th position.
- * @param num Total number.
- */
-export const evalPosition = (idx: number, num: number): string => {
-  return toPercent(idx / num, 2) + '%';
-};
 
 /**
  * Return a Latin script (includes upper and lower) or a digit.

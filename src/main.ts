@@ -1,9 +1,10 @@
 import { createPinia } from 'pinia';
 
 import 'normalize.css';
+import './assets/bootstrap-icons.scss';
 import './assets/main.scss';
-import '@/assets/global-class.scss';
-import '@/assets/transition.scss';
+import './assets/global-class.scss';
+import './assets/transition.scss';
 
 import { createApp } from 'vue';
 import App from './App.vue';

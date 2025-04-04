@@ -42,7 +42,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, toValue } from 'vue';
+import { computed } from 'vue';
 import $style from './VBookmarks.module.scss';
 import VBtn from '../Custom/VBtn.vue';
 import VTooltip from '../Custom/VTooltip.vue';
@@ -61,12 +61,10 @@ type Props = {
 }
 const props = defineProps<Props>();
 
-const isLight = computed(() => {
-  return rgb2gray(hex2rgb(props.hex) as number[]) > 127.5;
+const iconFilterStyle = computed<CSSProperties>(() => {
+  const isLight = rgb2gray(hex2rgb(props.hex)) > 127.5;
+  return { filter: isLight ? 'invert(1)' :  undefined };
 });
-const iconFilterStyle = computed<CSSProperties>(() => (
-  { filter: toValue(isLight) ? 'invert(1)' :  undefined }
-));
 
 const favState = useFavStore();
 const delFavColor = () => {
