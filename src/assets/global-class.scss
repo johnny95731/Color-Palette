@@ -1,11 +1,6 @@
 @use './variables.scss' as *;
 @use './transition.scss' as *;
 
-#app {
-  width: 100%;
-  height: 100%;
-}
-
 #overlay-container {
   @include overlay(fixed);
 
