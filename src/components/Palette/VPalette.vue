@@ -6,6 +6,8 @@
   >
     <TransitionGroup
       @before-enter="onBeforeEnter"
+      @enter="onEnter"
+      @after-enter="onAfterEnter"
       @before-leave="onBeforeLeave"
     >
       <VCard
@@ -26,12 +28,12 @@
       :class="$style.insertOverlay"
     >
       <div
-        v-memo="[pltState.numOfCards_, media.beginPos_]"
+        v-memo="[pltState.numOfCards_, media.cardPos_]"
         v-for="(val, i) in cardPosition"
         :key="`insert${i}`"
         :class="$style.insertWrapper"
         :style="{
-          [media.beginPos_]: val
+          [media.cardPos_]: val
         }"
       >
         <VBtn
@@ -46,7 +48,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, unref, watch } from 'vue';
+import { ref, computed, unref, watch, nextTick } from 'vue';
 import $style from './VPalette.module.scss';
 import VBtn from '../Custom/VBtn.vue';
 import VCard from './VCard.vue';
@@ -115,8 +117,8 @@ const cardPosition = computed(
 const resetCardStyle = (transition: 'none' | '' = '') => {
   const pos = unref(cardPosition);
   cardStyle.value = map(pltState.numOfCards_, (_, i) => ({
-    [media.beginPos_]: pos[i],
-    [media.cardAxis_]: pos[1],
+    [media.cardPos_]: pos[i],
+    [media.cardSize_]: pos[1],
     transitionProperty: transition
   }));
 };
@@ -130,11 +132,11 @@ const cardStyle = ref<{
 resetCardStyle();
 
 const setSize = (idx: number, size: string) => {
-  unref(cardStyle)[idx][media.cardAxis_] = size;
+  unref(cardStyle)[idx][media.cardSize_] = size;
 };
 
 const setPosition = (idx: number, pos?: string) => {
-  unref(cardStyle)[idx][media.beginPos_] = pos ??
+  unref(cardStyle)[idx][media.cardPos_] = pos ??
       unref(cardPosition)[pltState.cards_[idx].order_];
 };
 
@@ -174,11 +176,32 @@ const addCard = async (idx: number) => {
   }
 };
 
-const onBeforeEnter = () => {
+const onBeforeEnter = (el: Element) => {
   if (!isNullish(eventInfo)) {
     const idx = unref(eventInfo)!.idx_!;
     setSize(idx, frac2percentage(1, pltState.numOfCards_));
     setPosition(idx);
+  } else {
+    const style = (el as HTMLElement).style;
+    style[media.cardSize_] = '0';
+    style[media.cardPos_] = '100%';
+  }
+};
+
+const onEnter = (el: Element, done: () => void) => {
+  if (isNullish(eventInfo)) {
+    const style = (el as HTMLElement).style;
+    style[media.cardSize_] = '0';
+    style[media.cardPos_] = '100%';
+    nextTick().then(done);
+  }
+};
+const onAfterEnter = (el: Element) => {
+  if (isNullish(eventInfo)) {
+    const style = (el as HTMLElement).style;
+    const idx = [...unref(cardContainerRef)!.children].findIndex(child => child === el);
+    style[media.cardSize_] = frac2percentage(1, pltState.numOfCards_);
+    style[media.cardPos_] = frac2percentage(idx, pltState.numOfCards_);
   }
 };
 
@@ -194,12 +217,14 @@ const removeCard = (idx: number) => {
 };
 
 const onBeforeLeave = (el: Element) => {
+  const style = (el as HTMLElement).style;
+  const idx = [...unref(cardContainerRef)!.children].findIndex(child => child === el);
   if (!isNullish(eventInfo)) {
-    const style = (el as HTMLElement).style;
-    const idx = unref(eventInfo)!.idx_!;
-    style[media.cardAxis_] = '0';
-    style[media.beginPos_] = unref(cardPosition)[idx];
+    style[media.cardSize_] = '0';
+  } else {
+    style[media.cardSize_] = '100%'; // fill empty space.
   }
+  style[media.cardPos_] = frac2percentage(idx, pltState.numOfCards_);
 };
 
 

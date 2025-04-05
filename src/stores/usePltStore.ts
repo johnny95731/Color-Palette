@@ -303,10 +303,10 @@ const usePltStore = defineStore('plt', {
     },
     setPlt_(plt: string[] | number[][]) {
       const { converter } = this.spaceInfos_;
-      const callback = (color: string | number[]) => {
+      const callback = (color: string | number[]): number[] => {
         return Array.isArray(color) ? color : converter(hex2rgb(color));
       };
-      forLoop(this.cards_, (_, card) => CARD_IDS.unshift(card.id_));
+      CARD_IDS.unshift(...map(this.cards_, (card) => card.id_));
       this.cards_ = map<Card, string | number[]>(
         plt,
         (color, i) => this.newCard_(i, undefined, callback(color))

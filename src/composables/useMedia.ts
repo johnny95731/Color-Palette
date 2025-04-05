@@ -9,11 +9,11 @@ type MediaContext = {
   /**
    * Card pos along flow direction. For getting data from event.
    */
-  beginPos_: 'left' | 'top';
+  cardPos_: 'left' | 'top';
   /**
    * Main axis of card.
    */
-  cardAxis_: 'width' | 'height';
+  cardSize_: 'width' | 'height';
 }
 
 /**
@@ -23,8 +23,8 @@ const maxSmallSize = getPropertyValue('--small-view');
 
 const initialState: MediaContext = {
   isSmall_: true,
-  beginPos_: 'left',
-  cardAxis_: 'width'
+  cardPos_: 'left',
+  cardSize_: 'width'
 };
 
 const media = shallowReactive<MediaContext>(initialState);
@@ -37,8 +37,8 @@ const handleWindowResize = () => {
   // update
   Object.assign(media, {
     isSmall_,
-    beginPos_: isSmall_ ? 'top' : 'left',
-    cardAxis_: isSmall_ ? 'height' : 'width',
+    cardPos_: isSmall_ ? 'top' : 'left',
+    cardSize_: isSmall_ ? 'height' : 'width',
   } satisfies MediaContext);
 };
 

@@ -146,9 +146,7 @@ const preview = () => {
     unref(isPreview) ? unref(palette) : unref(originalPalette)
   );
 };
-watch(() => [unref(isPreview), unref(palette)],
-  preview
-);
+watch(() => [unref(isPreview), unref(palette)], preview);
 /** Overwrite current palette and close. (will not restore when dialog is closed) */
 const comfirm = () => {
   pltState.setPlt_(unref(palette));
