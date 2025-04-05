@@ -1,14 +1,19 @@
 import { forLoop, map } from '../helpers';
 import { clip, rangeMapping } from '../numeric';
 import { COLOR_MAXES } from '../colors';
-import { rgb2yuv, yuv2rgb } from '../colorModels/yuv';
+import { lab2rgb, rgb2lab } from '../colorModels/cielab';
 
 
 // # Constants
 /**
  * Methods of adjusting contrast.
  */
-export const CONTRAST_METHODS = ['linear', 'gamma', 'brightness scaling'] as const;
+export const CONTRAST_METHODS = [
+  'linear',
+  'gamma',
+  'auto enhancement',
+  'auto brightness'
+] as const;
 /**
  * Support contrast adjusting methods.
  */
@@ -21,7 +26,7 @@ export type ContrastMethods = typeof CONTRAST_METHODS[number];
  * @param c Scaling coefficient.
  * @return `rgb` after scaling.
  */
-const scaling = (rgbs: number[][], c: number): number[][] => {
+const scaling = (rgbs: number[][], c: number = 1): number[][] => {
   return map(
     rgbs,
     (rgb) => {
@@ -40,7 +45,7 @@ const scaling = (rgbs: number[][], c: number): number[][] => {
  * @return `rgb` after correction. The type is the
  * same as `rgb`.
  */
-const gammaCorrection = (rgbs: number[][], gamma: number): number[][] => {
+const gammaCorrection = (rgbs: number[][], gamma: number = 1): number[][] => {
   const normalizeCoeff = COLOR_MAXES.rgb ** (1 - gamma);
   return map(
     rgbs,
@@ -48,40 +53,63 @@ const gammaCorrection = (rgbs: number[][], gamma: number): number[][] => {
   );
 };
 
-/**
- * Scaling the range of brightness values of a color array in YUV space to a
- * larger range.
- */
-const brightnessScaling = (rgbs: number[][]): number[][] => {
-  const yuvs = map(
-    rgbs,
-    rgb => rgb2yuv(rgb),
-  );
 
+/**
+ * Enhance the contrast by scaling their luminance channel of CIELAB space.
+ * @param rgbs
+ * @returns
+ */
+const autoEnhancement = (rgbs: number[][]): number[][] => {
+  const labs = map(rgbs, rgb => rgb2lab(rgb));
   const [minY, maxY] = forLoop(
-    yuvs,
-    (prev, [y]) => {
-      if (y < prev[0]) prev[0] = y;
-      if (y > prev[1]) prev[1] = y;
+    labs,
+    (prev, [l]) => {
+      if (l < prev[0]) prev[0] = l;
+      if (l > prev[1]) prev[1] = l;
       return prev;
     },
-    [COLOR_MAXES.yuv, 0] as [number, number]
+    [COLOR_MAXES.lab[0], 0] as [number, number]
   );
-  const sqrtMinY = Math.sqrt(minY);
-
   return map(
-    yuvs,
-    yuv => {
-      yuv[0] = rangeMapping(yuv[0], minY, maxY, sqrtMinY, COLOR_MAXES.yuv);
-      return yuv2rgb(yuv);
+    labs,
+    lab => {
+      lab[0] = rangeMapping(lab[0], minY, maxY, 0, COLOR_MAXES.lab[0]);
+      return lab2rgb(lab);
     }
   );
 };
 
 
-export const getContrastAdjuster = (method: ContrastMethods) => {
+/**
+ * Contrast
+ * @param rgbs
+ * @param coeff
+ * @returns
+ */
+const autoBrightness = (rgbs: number[][], coeff: number = 0.7): number[][] => {
+  const labs = map(rgbs, rgb => rgb2lab(rgb));
+
+  const meanL = forLoop(labs, (acc, [l]) => acc + l, 0) / labs.length;
+  if (meanL < 1e-5 || coeff <= 1e-5) {
+    return map(rgbs, rgb => [...rgb]);
+  } else {
+    const gamma = (Math.log(coeff) / Math.log(meanL/COLOR_MAXES.lab[0]));
+    const c = COLOR_MAXES.lab[0] ** (1 - gamma);
+    return map(
+      labs,
+      lab => {
+        lab[0] = c * lab[0] ** gamma;
+        return lab2rgb(lab);
+      }
+    );
+  }
+};
+
+
+export const getAdjuster = (method: ContrastMethods) => {
   if (method === CONTRAST_METHODS[0]) return scaling;
   if (method === CONTRAST_METHODS[1]) return gammaCorrection;
-  if (method === CONTRAST_METHODS[2]) return brightnessScaling;
-  return brightnessScaling;
+  if (method === CONTRAST_METHODS[2]) return autoEnhancement;
+  if (method === CONTRAST_METHODS[3]) return autoBrightness;
+  return autoBrightness;
 };

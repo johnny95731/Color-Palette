@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import { COLOR_MAXES, COLOR_SPACES, getSpaceInfos, hueRotation, linearRgb2srgb, srgb2linearRgb } from '@/utils/colors';
 import { clip, randInt, round } from '@/utils/numeric';
-import { getContrastAdjuster } from '@/utils/manipulate/contrast';
+import { getAdjuster } from '@/utils/manipulate/contrast';
 
 
 const stdRgbs: number[][] = [
@@ -76,7 +76,7 @@ describe('linear rgb', () => {
 
 
 test('getContrastAdjuster("linear")', () => {
-  const converter = getContrastAdjuster('linear');
+  const converter = getAdjuster('linear');
   expect(converter(stdRgbs, 1)).toStrictEqual(stdRgbs);
   for (const rgb of stdRgbs) {
     const factor = randInt(3);
@@ -87,7 +87,7 @@ test('getContrastAdjuster("linear")', () => {
 });
 
 test('getContrastAdjuster("gamma")', () => {
-  const converter = getContrastAdjuster('gamma');
+  const converter = getAdjuster('gamma');
   expect(converter(stdRgbs, 1)).toStrictEqual(stdRgbs);
 });
 

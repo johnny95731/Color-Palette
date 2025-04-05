@@ -21,7 +21,7 @@
           :index="contrastArgs.method_"
           @update:idx="handleMethodChanged($event)"
         />
-        <template v-if="contrastArgs.method_ !== 2">
+        <template v-if="!isNullish(defaultParams[contrastArgs.method_])">
           <label
             id="contrast-coeff-name"
           >Coeff.</label>
@@ -82,7 +82,7 @@
           for="contrast-ratio-bg"
         >背景顏色</label>
         <HexInputter
-          v-model="bgColor"
+          v-model="ratioArgs.bg_"
           id="contrast-ratio-bg"
         />
         <label
@@ -90,7 +90,7 @@
           for="contrast-ratio-text"
         >文字顏色</label>
         <HexInputter
-          v-model="textColor"
+          v-model="ratioArgs.text_"
           id="contrast-ratio-text"
         />
         <span>對比值</span>
@@ -101,10 +101,9 @@
           範例
         </h3>
         <div
-          v-memo="[bgColor, textColor]"
           :style="{
-            background: bgColor,
-            color: textColor,
+            background: ratioArgs.bg_,
+            color: ratioArgs.text_,
           }"
           aria-hidden="true"
         >
@@ -167,7 +166,7 @@ import SelectMenu from '../Custom/SelectMenu.vue';
 import VSlider from '../Custom/VSlider.vue';
 import VDialog from '../Custom/VDialog.vue';
 // utils
-import { forLoop } from '@/utils/helpers';
+import { forLoop, getDefaultParams, isNullish, map } from '@/utils/helpers';
 import { isTabKey } from '@/utils/browser';
 import { getContrastRatio } from '@/utils/colors';
 import { CONTRAST_METHODS } from '@/utils/manipulate/contrast';
@@ -177,6 +176,7 @@ import usePltStore from '@/stores/usePltStore';
 import VIcon from '../Custom/VIcon.vue';
 import VTooltip from '../Custom/VTooltip.vue';
 import HexInputter from '../Custom/HexInputter.vue';
+import { getAdjuster } from '../../utils/manipulate/contrast';
 
 const dialogRef = ref<InstanceType<typeof VDialog>>();
 
@@ -197,19 +197,32 @@ const handleFocusoutDialog = (e: KeyboardEvent) => {
 };
 
 // # Page 0: Adjuster
+const defaultParams = map(
+  CONTRAST_METHODS,
+  (method) => (
+    getDefaultParams(getAdjuster(method))[1]
+  )
+) as (number | undefined)[];
+
 type ContrastArgs = {
   method_: number
 } & {
-  [key in number]: number;
+  [key in number]: number | undefined;
 }
-const contrastArgs = reactive<ContrastArgs>(
+const contrastArgs = reactive<ContrastArgs>({ method_: 0 } as ContrastArgs);
+const resetArgs = () => {
   forLoop(
     CONTRAST_METHODS,
-    (prev, _, i) => ((prev[i] = 1), prev),
-    { method_: 0 } as ContrastArgs
-  ));
+    (_, __, i) => contrastArgs[i] = defaultParams[i]
+  );
+};
+resetArgs();
+
+
 const contrastCoeffMax = computed(() => {
-  return contrastArgs.method_ ? GAMMA_MAX : MULTIPLICATION_MAX;
+  if (contrastArgs.method_ === 0) return MULTIPLICATION_MAX;
+  else if (contrastArgs.method_ === 1) return GAMMA_MAX;
+  else return 1;
 });
 
 const handleMethodChanged = (idx: number) => {
@@ -225,17 +238,21 @@ const updateContrastResult = () => {
   );
 };
 
-const contrastBtnEvent = (state: Parameters<typeof pltState.setIsAdjustingPlt_>['0']) => {
+const contrastBtnEvent = (
+  state: Parameters<typeof pltState.setIsAdjustingPlt_>['0']
+) => {
   pltState.setIsAdjustingPlt_(state);
-  contrastArgs[contrastArgs.method_] = 1;
+  contrastArgs[contrastArgs.method_] = defaultParams[contrastArgs.method_];
   updateContrastResult();
 };
 
 
 // # Page 1: Contrast Ratio
-const bgColor = ref<string>('#FFFFFF'); // background
-const textColor = ref<string>('#000000'); // foreground
-const contrastRatio = computed(() => getContrastRatio(unref(bgColor), unref(textColor)));
+const ratioArgs = reactive({
+  bg_: '#FFFFFF',
+  text_: '#000000'
+});
+const contrastRatio = computed(() => getContrastRatio(ratioArgs.bg_, ratioArgs.text_));
 
 
 // Show and Hide

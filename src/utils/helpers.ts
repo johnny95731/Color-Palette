@@ -171,6 +171,25 @@ export const frac2percentage = (num: number, denom: number): string => {
   return toPercent(num / denom, 2) + '%';
 };
 
+/**
+ * Get default parameters of a function.
+ * If a parameter has no default value, it will be `undefined`.
+ */
+export const getDefaultParams = (
+  fn: CallableFunction
+): (string | number | undefined)[] => {
+  let argString = /\(\s*([^)]+?)\s*\)/.exec(fn.toString())?.[1];
+  if (isNullish(argString)) return [];
+  argString = argString.replace(/ /g, '');
+  const arr: (string | number | undefined)[] = [];
+  const args = argString.split(',');
+  args.forEach((arg) => {
+    const val = arg.split('=')?.[1];
+    arr.push(isNaN(+val) ? val : +val);
+  });
+  return arr;
+};
+
 
 /**
  * Return a Latin script (includes upper and lower) or a digit.

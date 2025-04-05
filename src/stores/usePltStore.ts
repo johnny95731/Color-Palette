@@ -5,7 +5,7 @@ import { randRgbGen, getSpaceInfos, COLOR_SPACES } from '@/utils/colors.ts';
 import { hex2rgb, rgb2hex } from '@/utils/colorModels/hex';
 import { getMixer } from '@/utils/manipulate/mixing';
 import { getDistOp, SORTING_ACTIONS, tspGreedy } from '@/utils/manipulate/sorting';
-import { CONTRAST_METHODS, getContrastAdjuster } from '@/utils/manipulate/contrast';
+import { CONTRAST_METHODS, getAdjuster } from '@/utils/manipulate/contrast';
 import useSettingStore from './useSettingStore';
 // Types
 import type { ColorSpaceInfos, ColorSpace } from '@/utils/colors.ts';
@@ -335,7 +335,7 @@ const usePltStore = defineStore('plt', {
         this.cards_,
         card => inverter(card.originColor_)
       );
-      const adjuster = getContrastAdjuster(CONTRAST_METHODS[method]);
+      const adjuster = getAdjuster(CONTRAST_METHODS[method]);
 
       const newRgbs = adjuster(arr, coeff!);
       forLoop(this.cards_, (_, card, i) => {
