@@ -1,7 +1,7 @@
 <template>
   <i
     :class="[
-      getIcon(type)
+      getIcon(icon)
     ]"
     :aria-hidden="ariaHidden"
   />
@@ -11,7 +11,7 @@
 import { getIcon } from '@/utils/icons';
 
 type Prop = {
-  type: string;
+  icon: string;
   ariaHidden?: boolean | `${boolean}`
 }
 

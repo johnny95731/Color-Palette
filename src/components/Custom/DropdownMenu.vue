@@ -15,7 +15,7 @@
     <template #default>
       <VIcon
         v-if="icon"
-        :type="icon"
+        :icon="icon"
         class="triangle"
         aria-hidden="true"
       />
@@ -72,7 +72,7 @@
       #append
     >
       <VIcon
-        type="caret-down-fill"
+        icon="caret-down-fill"
         class="triangle"
       />
     </template>

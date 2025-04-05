@@ -38,7 +38,7 @@
         <VIcon
           v-if="i !== draggingIdx && i === finalIdx"
           :style="arrowPos"
-          type="arrow-left"
+          icon="arrow-left"
         />
       </div>
     </div>

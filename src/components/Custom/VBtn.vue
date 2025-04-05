@@ -30,7 +30,7 @@
       <slot name="prepend">
         <VIcon
           v-if="prependIcon"
-          :type="prependIcon"
+          :icon="prependIcon"
         />
       </slot>
     </div>
@@ -41,7 +41,7 @@
       <slot>
         <VIcon
           v-if="icon"
-          :type="icon"
+          :icon="icon"
         />
         <template v-else>
           {{ text }}
@@ -55,7 +55,7 @@
       <slot name="append">
         <VIcon
           v-if="appendIcon"
-          :type="appendIcon"
+          :icon="appendIcon"
         />
       </slot>
     </div>

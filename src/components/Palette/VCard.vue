@@ -93,7 +93,7 @@
           >
             <VIcon
               v-once
-              type="copy"
+              icon="copy"
             />
             <VBtn
               ref="hexTextRef"
@@ -110,7 +110,7 @@
           >
             <VIcon
               v-once
-              type="copy"
+              icon="copy"
             />
             <VBtn
               :ripple="false"

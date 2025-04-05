@@ -8,7 +8,7 @@
           @click="handleSetPlt"
         >
           <VIcon
-            type="caret-left-fill"
+            icon="caret-left-fill"
           />
         </button>
       </div>
@@ -19,7 +19,7 @@
           @click="removeFavPlt"
         >
           <VIcon
-            type="trash3-fill"
+            icon="trash3-fill"
           />
         </button>
       </span>

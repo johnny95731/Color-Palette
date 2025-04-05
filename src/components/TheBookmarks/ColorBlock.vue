@@ -34,7 +34,7 @@
         @click="delFavColor"
       >
         <VIcon
-          type="trash3-fill"
+          icon="trash3-fill"
         />
       </button>
     </span>

@@ -50,7 +50,7 @@
             <template #activator="{props: tooltipProps}">
               <VIcon
                 v-bind="tooltipProps"
-                type="info-circle"
+                icon="info-circle"
               />
             </template>
             <template #text>
@@ -63,7 +63,7 @@
             <template #activator="{props: tooltipProps}">
               <VIcon
                 v-bind="tooltipProps"
-                type="info-square"
+                icon="info-square"
                 style="margin-left: 4px;"
               />
             </template>
