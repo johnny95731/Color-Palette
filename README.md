@@ -25,12 +25,11 @@
   sRGB <-> CIEXYZ為D65光源的矩陣。
 
 - ### <img style="background:white;padding:1px" src="./src/assets/icons/circle-half.svg" alt="contrast"/> 對比 Contrast
-  調整調色盤對比，可使用自動調整方法，或是透過線性轉換及gamma校正手動調整的。
-
-  計算兩個顏色的[對比值](https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html#dfn-contrast-ratio)。
+  1. 調整調色盤對比，可使用自動調整方法，或是透過線性轉換及gamma校正手動調整的。
+  2. 計算兩個顏色的[對比值](https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html#dfn-contrast-ratio)，並用以檢驗使否符合WCAG AA或AAA標準。
 
 - ### <img style="background:white;padding:1px" src="./src/assets/icons/upload.svg" alt="bookmarks"/> 輸入調色盤 Harmony Generator
-  可同時顯示、修改所有HEX並更換順序，並可透過貼上一次輸入多個值，以`-`分隔HEX字串，格式與書籤頁相同。
+  可同時顯示、修改所有HEX並更換順序，以及透過貼上覆蓋多個值，格式與書籤頁相同，以`-`分隔HEX字串。
 
 - ### <img style="background:white;padding:1px" src="./src/assets/icons/palette.svg" alt="bookmarks"/> 調和調色盤 Harmony Generator
   透過色彩調和方法產生調色盤，方法包括（括號內為主色以外的hsb色相角度）：
