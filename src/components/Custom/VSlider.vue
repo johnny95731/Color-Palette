@@ -64,7 +64,8 @@ import { watch, ref, computed, onUnmounted, unref } from 'vue';
 import VTooltip from './VTooltip.vue';
 import { useDragableElement } from '@/composables/useDragableElement';
 import useInputField from '@/composables/useInputField';
-import { clip, countDecimals, round, rangeMapping, isSameFloat } from '@/utils/numeric';
+import { clip, rangeMapping, round } from '@johnny95731/color-utils';
+import { countDecimals, isSameFloat } from '@/utils/numeric';
 import type { ModelRef } from 'vue';
 import type { Position } from '@vueuse/core';
 
@@ -141,38 +142,38 @@ const updateModel = (newVal?: number) => {
 
 // Init model
 (() => {
-  model.value = roundingValue(unref(model) ?? (max_.value + unref(min_)) / 2);
+  model.value = roundingValue(unref(model) ?? (unref(max_) + unref(min_)) / 2);
 })();
 
 // Handle model, `props.min`, and `props.max` changed.
 watch(
   () => [props.min, props.max],
   () => {
-    updateModel(clip(unref(model), unref(min_), max_.value));
+    updateModel(clip(unref(model), unref(min_), unref(max_)));
   }, { immediate: true });
 
 // Step increment function. If num < 0, then becomes decrement.
 const increment = (num: number = 1) => {
   updateModel(
-    clip(unref(model) + num * unref(numStep), unref(min_), max_.value)
+    clip(unref(model) + num * unref(numStep), unref(min_), unref(max_))
   );
 };
 
 watch(model, (newVal) => {
-  thumbPos.value = `${rangeMapping(newVal, unref(min_), max_.value, 0, 100)}%`;
+  thumbPos.value = `${rangeMapping(newVal, unref(min_), unref(max_), 0, 100)}%`;
 }, { immediate: true });
 
 // onChange event => Drag or key down.
 const { isDragging_ } = (() => {
   const update = (pos: Position) => {
-    updateModel(rangeMapping(pos.x, 0, 100, unref(min_), max_.value));
+    updateModel(rangeMapping(pos.x, 0, 100, unref(min_), unref(max_)));
   };
   return useDragableElement(trackerRef, {
     containerElement_: trackerRef,
     onStart_: update,
     onMove_: update,
     initialValue_: {
-      x: rangeMapping(unref(model), unref(min_), max_.value, 0, 100),
+      x: rangeMapping(unref(model), unref(min_), unref(max_), 0, 100),
       y: 0,
     },
     axis_: 'x'
@@ -188,7 +189,7 @@ const handleKeyDown = (e: KeyboardEvent) => {
       increment(-1);
   }
   else if (key === 'Home') updateModel(unref(min_));
-  else if (key === 'End') updateModel(max_.value);
+  else if (key === 'End') updateModel(unref(max_));
   else if (key === 'PageUp') increment(10);
   else if (key === 'PageDown') increment(-10);
 };
@@ -196,7 +197,7 @@ const handleKeyDown = (e: KeyboardEvent) => {
 // Label/Tooltip
 const isShowingLabel = computed(() => {
   if (props.showVal === 'always') return true;
-  else return isDragging_.value;
+  else return unref(isDragging_);
 });
 </script>
 

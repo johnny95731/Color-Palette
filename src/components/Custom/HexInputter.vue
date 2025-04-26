@@ -16,8 +16,9 @@
 </template>
 
 <script setup lang="ts">
+import { removeNonHex } from '@/utils/colors';
+import { isValidHex } from '@johnny95731/color-utils';
 import { unref } from 'vue';
-import { isValidHex, removeNonHex } from '@/utils/colorModels/hex';
 
 type Props = {
   autocomplete?: string,

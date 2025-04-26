@@ -81,10 +81,10 @@ describe('props', () => {
       }
     });
     expect(withoutSlot.find('.btn__prepend > v-icon-stub').exists()).toBeTruthy();
-    expect(withoutSlot.find('.btn__prepend > v-icon-stub').attributes('type'))
+    expect(withoutSlot.find('.btn__prepend > v-icon-stub').attributes('icon'))
       .toBe('test prepend');
     expect(withoutSlot.find('.btn__append > v-icon-stub').exists()).toBeTruthy();
-    expect(withoutSlot.find('.btn__append > v-icon-stub').attributes('type'))
+    expect(withoutSlot.find('.btn__append > v-icon-stub').attributes('icon'))
       .toBe('test append');
     // Slot has higher priority than prop(prependIcon/appendIcon)
     testSlot(withoutSlot)
@@ -112,7 +112,7 @@ describe('props', () => {
     // No inner text when `icon` prop is set.
     expect(btn.find('.btn__content').text()).toBeFalsy();
     expect(btn.find('.btn__content v-icon-stub').exists()).toBeTruthy();
-    expect(btn.find('.btn__content v-icon-stub').attributes('type'))
+    expect(btn.find('.btn__content v-icon-stub').attributes('icon'))
       .toBe('test content');
     // Slot has higher than prop (icon and text)
     const withSlot = shallowMount(VBtn, {

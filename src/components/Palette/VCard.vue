@@ -170,14 +170,14 @@
         :class="$style.sliders"
       >
         <template
-          v-for="([min, max], i) in space.range"
+          v-for="([min, max], i) in space.range_"
           :key="`card${cardIdx}-label${i}`"
         >
           <div>
-            {{ `${space.labels[i]}: ${roundedColor[i]}` }}
+            {{ `${space.labels_[i]}: ${roundedColor[i]}` }}
           </div>
           <VSlider
-            :label="space.labels[i]"
+            :label="space.labels_[i]"
             :showRange="false"
             :showVal="false"
             :trackerBackground="gradientGen(roundedColor, i, pltState.colorSpace_)"
@@ -208,12 +208,10 @@ import OverlayContainer from '../Custom/OverlayContainer.vue';
 import CondWrapper from '../Custom/CondWrapper.vue';
 import HexInputter from '../Custom/HexInputter.vue';
 // Utils
-import { map } from '@/utils/helpers';
-import { round, toPercent } from '@/utils/numeric';
-import { rgb2gray, gradientGen, getColorFunction } from '@/utils/colors';
+import { rgb2named, named2rgb, hex2rgb, isValidHex, unzipCssNamed, unzipedNameList, map, rgb2gray, getCssColor, round } from '@johnny95731/color-utils';
+import { toPercent } from '@/utils/numeric';
+import { gradientGen } from '@/utils/colors';
 import { copyText, isTabKey } from '@/utils/browser';
-import { getClosestNamed, getNamedColorRgb, unzipCssNamed, unzipedNameList } from '@/utils/colorModels/named';
-import { hex2rgb, isValidHex } from '@/utils/colorModels/hex';
 // Stores
 import usePltStore from '@/stores/usePltStore';
 import useFavStore from '@/stores/useFavStore';
@@ -247,15 +245,7 @@ const order = computed(() => ({
 const card = computed<Card>(() => pltState.cards_[props.cardIdx]);
 
 const space = computed(() => {
-  const infos = pltState.spaceInfos_;
-  return {
-    ...infos,
-    range: map(infos.range, (vals) =>
-      Array.isArray(vals) ?
-        [...vals] :
-        [0, vals]
-    )
-  };
+  return pltState.editingDialogInfo_;
 });
 
 const roundedColor = computed({
@@ -302,9 +292,13 @@ const settingState = useSettingStore();
 const detail = asyncComputed<string>(
   () => {
     return pltState.isInNamedSpace_ ?
-      getClosestNamed(unref(card).color_)
-        .then(str => unzipCssNamed(str)) :
-      getColorFunction(unref(roundedColor), pltState.colorSpace_, false, settingState.colorFunctioonSep_);
+      unzipCssNamed(rgb2named(unref(card).color_)) :
+      getCssColor(
+        unref(roundedColor),
+        pltState.colorSpace_,
+        false,
+        settingState.colorFunctioonSep_
+      );
   },
   'white'
 );
@@ -362,14 +356,14 @@ const handleLeaveFocusing = (e: KeyboardEvent) => {
 const handleHexEditingFinished = (e: Event) => {
   const text = (e.currentTarget as HTMLInputElement).value;
   if (text !== unref(card).hex_ && isValidHex(text)) {
-    const newColor = unref(space).converter(hex2rgb(text));
+    const newColor = pltState.colorSpace_.fromRgb_(hex2rgb(text));
     roundedColor.value = newColor;
   }
 };
 
 const selectName = (name: string) => pltState.editCard_(
   props.cardIdx,
-  getNamedColorRgb(name.replaceAll(' ', ''))
+  named2rgb(name.replaceAll(' ', ''))
 );
 
 /**

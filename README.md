@@ -20,7 +20,7 @@
   平均值以指定的色彩空間計算。brighter與deeper先以RGB平均值計算，再透過HSL空間調整亮度與彩度。「[soft light](https://en.wikipedia.org/wiki/Blend_modes)」使用illusions.hu的公式(此方法非左右對稱)。
 
 - ### <img style="background:white;padding:1px" src="./src/assets/icons/sliders.svg" alt="space"/> 色彩空間 Color Space
-  展示模式及編輯模式中，使用的色彩空間。提供sRGB、NAME（CSS named-color, 預設）、HSL、HSB、HWB、CMYK、CIEXYZ、CIELAB、CIELUV、CIELCH(ab)、CIELCH(uv)、YUV。
+  展示模式及編輯模式中，使用的色彩空間。提供sRGB、NAME（CSS named-color, 預設）、HSL、HSB、HWB、CMYK、CIEXYZ、CIELAB、CIELUV、CIELCH(ab)、CIELCH(uv)。
 
   sRGB <-> CIEXYZ為D65光源的矩陣。
 
@@ -33,10 +33,10 @@
 
 - ### <img style="background:white;padding:1px" src="./src/assets/icons/palette.svg" alt="bookmarks"/> 調和調色盤 Harmony Generator
   透過色彩調和方法產生調色盤，方法包括（括號內為主色以外的hsb色相角度）：
-    1. analogous(相似色±30°)
-    2. shades(亮度等差下降)
-    3. tints(彩度等差下降)
-    4. tones(亮度彩度等差下降)
+    1. shades(亮度等差下降)
+    2. tints(彩度等差下降)
+    3. tones(亮度彩度等差下降)
+    4. analogous(相似色±30°)
     5. triadic(正三角形±120°)
     6. square(正四邊形90°,180°,270°)
     7. complement(補色180°)

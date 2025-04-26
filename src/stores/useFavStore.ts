@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
+import { cloneDeep } from '@johnny95731/color-utils';
 import { updateStore } from '@/utils/database.ts';
-import { copyObj } from '@/utils/helpers';
 
 
 export type State = {
@@ -46,7 +46,7 @@ const useFavStore = defineStore('favorites', {
       } else { // Non-Favoriting => Favoriting
         this.colors_.push(targetHex);
       }
-      updateStore('colors', () => copyObj(this.colors_));
+      updateStore('colors', () => cloneDeep(this.colors_));
     },
     favPltsChanged_(targetPlt: string) {
       if (this.plts_?.includes(targetPlt)) { // Favoriting => Non-Favoriting
@@ -54,7 +54,7 @@ const useFavStore = defineStore('favorites', {
       } else { // Non-Favoriting => Favoriting
         this.plts_?.push(targetPlt);
       }
-      updateStore('plts', () => copyObj(this.plts_));
+      updateStore('plts', () => cloneDeep(this.plts_));
     }
   },
 });

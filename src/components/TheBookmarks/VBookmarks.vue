@@ -51,8 +51,8 @@ import ColorBlock from './ColorBlock.vue';
 import PaletteBlock from './PaletteBlock.vue';
 import VDialog from '../Custom/VDialog.vue';
 // Utils
+import { map } from '@johnny95731/color-utils';
 import { isTabKey } from '@/utils/browser';
-import { map } from '@/utils/helpers';
 // Store
 import usePltStore from '@/stores/usePltStore';
 import useFavStore from '@/stores/useFavStore';

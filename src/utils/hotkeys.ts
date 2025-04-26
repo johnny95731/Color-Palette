@@ -1,10 +1,10 @@
-import type { SortActions } from '@/utils/manipulate/sorting';
+import type { Sort } from '@johnny95731/color-utils';
 
 export const HOTKEYS = {
   refresh_: 'r',
   sorting_: {
     luminance: 'g',
     random: 'n',
-    inversion: 'j',
-  } satisfies Partial<Record<SortActions, string>>
+    reversion: 'j',
+  } satisfies Partial<Record<Sort, string>>
 } as const;

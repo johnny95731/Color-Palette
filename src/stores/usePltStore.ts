@@ -1,31 +1,36 @@
 import { defineStore } from 'pinia';
 // Utils
-import { map, forLoop, shuffle, copyObj } from '@/utils/helpers.ts';
-import { randRgbGen, getSpaceInfos, COLOR_SPACES } from '@/utils/colors.ts';
-import { hex2rgb, rgb2hex } from '@/utils/colorModels/hex';
-import { getMixer } from '@/utils/manipulate/mixing';
-import { getDistOp, SORTING_ACTIONS, tspGreedy } from '@/utils/manipulate/sorting';
-import { CONTRAST_METHODS, getAdjuster } from '@/utils/manipulate/contrast';
+import { reduce } from '@/utils/helpers.ts';
+import { cloneDeep, map, COLOR_SPACES, randRgbGen, getSpaceRange, getColorSpace, hex2rgb, rgb2hex, mixColors, SORTING_ACTIONS, sortColors, adjContrast } from '@johnny95731/color-utils';
 import useSettingStore from './useSettingStore';
 // Types
-import type { ColorSpaceInfos, ColorSpace } from '@/utils/colors.ts';
-import type { Mixing } from '@/utils/manipulate/mixing';
-import type { SortActions } from '@/utils/manipulate/sorting';
+import type { ColorSpace, Mixing, Sort } from '@johnny95731/color-utils';
 
 
 export const MIN_NUM_OF_CARDS = 2;
 export const MAX_NUM_OF_CARDS = 8;
 
+
+export const SPACES = map(
+  COLOR_SPACES,
+  ({ name_ }) => ({
+    name: name_,
+    val: name_
+  })
+);
+SPACES.unshift(cloneDeep(SPACES[0]));
+SPACES[0].name = 'NAMED';
+
 /**
  * Storage of IDs. Get value when creating new card. Save to storage when delete
  * card.
  */
-const CARD_IDS = map(MAX_NUM_OF_CARDS, (_, i) => i);
+const CARD_IDS = map(MAX_NUM_OF_CARDS, i => i);
 
 /**
  * The current order of cards.
  */
-export type OrderState = Exclude<SortActions, 'inversion'>;
+export type OrderState = Exclude<Sort, 'reversion'>;
 
 export type Card = {
   /**
@@ -89,13 +94,13 @@ type State = {
    * Color space which will be displayed under hex code and be used in edit
    * mode.
    */
-  colorSpace_: ColorSpace;
+  spaceName_: string;
+  colorSpace_: ColorSpace
 }
 
 
 const usePltStore = defineStore('plt', {
   state(): State {
-    const space = COLOR_SPACES.find(({ name_: name_ }) => name_ === 'Named')!;
     return {
       cards_: [],
       sortBy_: 'random',
@@ -103,12 +108,13 @@ const usePltStore = defineStore('plt', {
       editingIdx_: -1,
       isAdjustingPlt_: false,
       mixMode_: 'mean',
-      colorSpace_: space,
+      spaceName_: 'NAMED',
+      colorSpace_: COLOR_SPACES[0]
     };
   },
   getters: {
     isInNamedSpace_(): boolean {
-      return this.colorSpace_.name_ === 'Named';
+      return this.spaceName_ === 'NAMED';
     },
     numOfCards_(): number {
       return this.cards_.length;
@@ -116,9 +122,15 @@ const usePltStore = defineStore('plt', {
     isEditing_(): boolean {
       return this.editingIdx_ !== -1;
     },
-    spaceInfos_(): ColorSpaceInfos  {
-      return getSpaceInfos(this.colorSpace_);
-    },
+    editingDialogInfo_(): {
+      labels_: string[],
+      range_: [number, number][]
+      } {
+      return {
+        labels_: this.colorSpace_.labels_,
+        range_: getSpaceRange(this.colorSpace_)
+      };
+    }
   },
   actions: {
     initCards_() {
@@ -127,9 +139,9 @@ const usePltStore = defineStore('plt', {
     newCard_(
       order: number, id?: Card['id_'], color?: number[]
     ): Card {
-      const { converter, inverter } = this.spaceInfos_;
-      if (!color) color = converter(randRgbGen());
-      const hex = rgb2hex(inverter(color));
+      const { fromRgb_, toRgb_ } = this.colorSpace_;
+      if (!color) color = fromRgb_(randRgbGen());
+      const hex = rgb2hex(toRgb_(color));
       return {
         id_: id ?? CARD_IDS.shift()!,
         order_: order,
@@ -141,27 +153,22 @@ const usePltStore = defineStore('plt', {
         isFav_: false,
       };
     },
-    mixCard_(left: number, right?: number) {
-      right ??= left + 1;
+    mixCard_(left: number, right: number = left + 1) {
       // Evaluate new color.
-      let rgb;
-      if (this.mixMode_ === 'random') rgb = randRgbGen();
-      else {
-        const { inverter } = this.spaceInfos_;
-        // Pick cards.
-        let leftRgbColor;
-        let rightRgbColor;
-        // -Add to the fist position. Blending the first card and black.
-        if (left < 0) leftRgbColor = [0, 0, 0];
-        else leftRgbColor = inverter(this.cards_[left].color_);
-        // -Add to the last position. Blending the last card and white.
-        if (right >= this.numOfCards_) rightRgbColor = [255, 255, 255];
-        else rightRgbColor = inverter(this.cards_[right].color_);
-        rgb = getMixer(this.mixMode_)(
-          leftRgbColor, rightRgbColor, this.colorSpace_,
-        );
-      }
-      return rgb;
+      const fromRgb = this.colorSpace_.fromRgb_;
+
+      // -Add to the fist position. Blending the first card and black.
+      const leftRgbColor =
+        left < 0 ? fromRgb([0, 0, 0]) : this.cards_[left].color_;
+
+      // -Add to the last position. Blending the last card and white.
+      const rightRgbColor =
+        right >= this.numOfCards_ ?
+          fromRgb([255, 255, 255]) :
+          this.cards_[right].color_;
+      return mixColors(
+        [leftRgbColor, rightRgbColor], this.mixMode_, this.colorSpace_,
+      );
     },
     addCard_(idx: number, rgb: number[]) {
       if (this.numOfCards_ == MAX_NUM_OF_CARDS) return;
@@ -169,7 +176,7 @@ const usePltStore = defineStore('plt', {
       const newCard = this.newCard_(
         this.numOfCards_,
         undefined,
-        this.spaceInfos_.converter(rgb)
+        this.colorSpace_.fromRgb_(rgb)
       );
       this.cards_.splice(idx, 0, newCard);
       this.sortBy_ = 'random';
@@ -204,37 +211,26 @@ const usePltStore = defineStore('plt', {
       }
     },
     editCard_(idx: number, color: number[]) {
-      const { inverter } = this.spaceInfos_;
+      const toRgb = this.colorSpace_.toRgb_;
       const card = this.cards_[idx];
       card.color_ = color;
-      card.hex_ = rgb2hex(inverter(color));
+      card.hex_ = rgb2hex(toRgb(color));
       this.sortBy_ = 'random';
     },
-    sortCards_(sortBy: SortActions) {
-      const opIdx = SORTING_ACTIONS.indexOf(sortBy);
-      const op = getDistOp(sortBy);
-      let cards = copyObj(this.cards_);
-      if (opIdx === 1) { // random
-        shuffle(cards);
-      } else if (
-        opIdx === 2 || // inversion
-        this.sortBy_ === SORTING_ACTIONS[opIdx]
-      ) {
-        cards.reverse();
-      } else if (opIdx === 0) {
-        const distToBlack = map(this.cards_, ({ hex_ }) => op(hex_, '#000'));
-        cards.sort((a, b) => {
-          return distToBlack[a.order_] - distToBlack[b.order_];
-        });
-      }
-      else {
-        const dist = (a: Pick<Card, 'hex_'>, b: Pick<Card, 'hex_'>) => {
-          return op(a.hex_, b.hex_);
-        };
-        cards = tspGreedy(cards, dist, { hex_: '#000' });
-      }
-      forLoop(cards, (_, card, i) => card.id_ = this.cards_[i].id_);
+    sortCards_(sortBy: Sort) {
+      let opIdx = SORTING_ACTIONS.indexOf(sortBy);
+      let cards = cloneDeep(this.cards_);
+      if (this.sortBy_ === SORTING_ACTIONS[opIdx]) opIdx = 2;
+      const { toRgb_: toRgb, fromRgb_: fromRgb } = this.colorSpace_;
+      const rgbGetter = (card: Card) => toRgb(card.color_);
+
+      // The first element will compare to the black in TSP sort.
+      if (opIdx > 2) cards.unshift(this.newCard_(-1, -1, fromRgb([0,0,0])));
+      cards = sortColors(cards, opIdx, rgbGetter);
+      if (opIdx > 2) cards.shift(); // TSP sort will not move first element.
+      reduce(cards, (_, card, i) => card.id_ = this.cards_[i].id_);
       this.cards_ = cards;
+
       /**
        * Inversion will not change sortBy. For example, if cards are sorted
        * by gray, inversion just change the most lightest card on left side
@@ -273,7 +269,7 @@ const usePltStore = defineStore('plt', {
      * Set card.order_ = index.
      */
     resetOrder_() {
-      forLoop(this.cards_, (_, card, i) => card.order_ = i);
+      reduce(this.cards_, (_, card, i) => card.order_ = i);
     },
     setIsPending_(newVal: boolean) {
       this.isPending_ = newVal;
@@ -284,7 +280,7 @@ const usePltStore = defineStore('plt', {
       // cancel: Keep adjusting and reset color.
       this.isAdjustingPlt_ = val !== 'cancel';
       if (val === 'start') {
-        forLoop(
+        reduce(
           this.cards_,
           (_, card) => {
             card.originHex_ = card.hex_;
@@ -292,7 +288,7 @@ const usePltStore = defineStore('plt', {
           }
         );
       } else { // 'reset' and 'cancel'
-        forLoop(
+        reduce(
           this.cards_,
           (_, card) => {
             card.hex_ = card.originHex_;
@@ -302,9 +298,9 @@ const usePltStore = defineStore('plt', {
       }
     },
     setPlt_(plt: string[] | number[][]) {
-      const { converter } = this.spaceInfos_;
+      const fromRgb = this.colorSpace_.fromRgb_;
       const callback = (color: string | number[]): number[] => {
-        return Array.isArray(color) ? color : converter(hex2rgb(color));
+        return Array.isArray(color) ? color : fromRgb(hex2rgb(color));
       };
       CARD_IDS.unshift(...map(this.cards_, (card) => card.id_));
       this.cards_ = map<Card, string | number[]>(
@@ -313,14 +309,15 @@ const usePltStore = defineStore('plt', {
       );
       this.sortBy_ = 'random';
     },
-    setColorSpace_(idx: number) {
-      this.colorSpace_ = COLOR_SPACES[idx];
-      const { converter } = this.spaceInfos_;
-      forLoop(
+    setColorSpace_(space: string) {
+      this.spaceName_ = space;
+      const toRgb = this.colorSpace_.toRgb_;
+      this.colorSpace_ = getColorSpace(space);
+      const fromRgb = this.colorSpace_.fromRgb_;
+      reduce(
         this.cards_,
         (_, card) => {
-          const rgb = hex2rgb(card.hex_) as number[];
-          card.color_ = converter(rgb);
+          card.color_ = fromRgb(toRgb(card.color_));
         },
       );
     },
@@ -329,18 +326,18 @@ const usePltStore = defineStore('plt', {
     },
     adjustContrast_(method: number, coeff?: number) {
       if (!this.isAdjustingPlt_) return;
-      const { converter, inverter } = this.spaceInfos_;
+      const toRgb = this.colorSpace_.toRgb_;
 
-      const arr = map(
-        this.cards_,
-        card => inverter(card.originColor_)
+      const arr = map(this.cards_, card => card.originColor_);
+      const newColors = adjContrast(
+        arr,
+        method,
+        this.colorSpace_,
+        coeff!
       );
-      const adjuster = getAdjuster(CONTRAST_METHODS[method]);
-
-      const newRgbs = adjuster(arr, coeff!);
-      forLoop(this.cards_, (_, card, i) => {
-        card.color_ = converter(newRgbs[i]);
-        card.hex_ = rgb2hex(newRgbs[i]);
+      reduce(this.cards_, (_, card, i) => {
+        card.color_ = newColors[i];
+        card.hex_ = rgb2hex(toRgb(newColors[i]));
       });
     },
   },

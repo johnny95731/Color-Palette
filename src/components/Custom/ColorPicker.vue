@@ -37,7 +37,7 @@
           v-if="variant !== 'wheel'"
           :showRange="false"
           min="0"
-          :max="variant === 'rect' ? COLOR_MAXES.hsl[0] : COLOR_MAXES.hsl[2]"
+          :max="variant === 'rect' ? 360 : 100"
           :trackerBackground="
             variant === 'rect' ?
               'linear-gradient(to right, #F00, #FF0, #0F0, #0FF, #00F, #F0F, #F00)' :
@@ -88,7 +88,7 @@
               type="number"
               inputmode="decimal"
               min="0"
-              :max="COLOR_MAXES.hsb[i]"
+              max="100"
               step="any"
               v-model.lazy="currentColor[i]"
             >
@@ -111,17 +111,17 @@ import { computed, onMounted, reactive, ref, unref, watch } from 'vue';
 import VSlider from './VSlider.vue';
 import SelectMenu from './SelectMenu.vue';
 import VDialog from './VDialog.vue';
+import HexInputter from './HexInputter.vue';
 // utils
-import { cartesian2polar, mod, polar2cartesian, rangeMapping, round, toPercent } from '@/utils/numeric';
-import { COLOR_MAXES } from '@/utils/colors';
-import { forLoop, isNullish, map } from '@/utils/helpers';
+import { cartesian2polar, mod, polar2cartesian, toPercent } from '@/utils/numeric';
+import { isValidHex, map, rangeMapping, round } from '@johnny95731/color-utils';
+import { reduce, isNullish } from '@/utils/helpers';
 import { COLOR_PICKER_CANVAS_SIZE, getPropertyValue } from '@/utils/browser';
-import { hex2hsb, hsb2hex, isValidHex } from '@/utils/colorModels/hex';
 import { useDragableElement } from '@/composables/useDragableElement';
 // types
 import type { MaybeRef, ModelRef } from 'vue';
 import type { Position } from '@vueuse/core';
-import HexInputter from './HexInputter.vue';
+import { hex2hsb, hsb2hex } from '@/utils/colors';
 
 
 const isOpened = defineModel<boolean>('show', { default: false });
@@ -155,7 +155,7 @@ onMounted(() => {
 });
 
 
-const currentColor = reactive<number[]>([0, COLOR_MAXES.hsl[1], COLOR_MAXES.hsl[2]]); // hsb color
+const currentColor = reactive<number[]>([0, 100, 100]); // hsb color
 const setCurrentColor = (
   color: MaybeRef<number[] | string>,
   rounding: boolean = true
@@ -187,7 +187,7 @@ const hexColor = computed({
 });
 /** Color with maximum saturation and brightness. */
 const pureColor = computed<string>(() =>
-  hsb2hex([currentColor[0], COLOR_MAXES.hsl[1], COLOR_MAXES.hsl[2]])
+  hsb2hex([currentColor[0], 100, 100])
 );
 
 type ColorThumbStyle = {
@@ -209,12 +209,12 @@ const updaters = computed(() => {
   if (unref(variant) === 'rect')
     return {
       canvas_: (pos: Position) => {
-        currentColor[1] = rangeMapping(pos.x, 0, 100, 0, COLOR_MAXES.hsl[1], 2);
+        currentColor[1] = round(pos.x, 2);
         // top is 100% brightness
-        currentColor[2] = rangeMapping(pos.y, 0, 100, COLOR_MAXES.hsl[2], 0, 2);
+        currentColor[2] = round(100 - pos.y, 2);
       },
       canvasThumbStyle_: () => ({
-        top: (COLOR_MAXES.hsl[2] - currentColor[2]) + '%',
+        top: (100 - currentColor[2]) + '%',
         left: currentColor[1] + '%',
         background: hsb2hex(currentColor),
       }),
@@ -233,13 +233,13 @@ const updaters = computed(() => {
           rangeMapping(pos.x, 0, 100, -1, 1, 4)
         );
         currentColor[0] = mod(deg + 90, 360); // rotate
-        currentColor[1] = rangeMapping(radius, 0, 1, 0, COLOR_MAXES.hsl[1], 2);
+        currentColor[1] = rangeMapping(radius, 0, 1, 0, 100, 2);
       },
       canvasThumbStyle_: () => {
         const { x, y } = polar2cartesian(currentColor[1], currentColor[0] - 90, 2); // 0deg at top
         return {
-          top: rangeMapping(y, -COLOR_MAXES.hsl[1], COLOR_MAXES.hsl[1], 0, 100, 1) + '%',
-          left: rangeMapping(x, -COLOR_MAXES.hsl[1], COLOR_MAXES.hsl[1], 0, 100, 1) + '%',
+          top: rangeMapping(y, -100, 100, 0, 100, 1) + '%',
+          left: rangeMapping(x, -100, 100, 0, 100, 1) + '%',
           background: hsb2hex(currentColor),
         };
       },
@@ -269,13 +269,13 @@ const updaters = computed(() => {
         };
       },
       secondPicker_: (pos: Position) => {
-        currentColor[1] = rangeMapping(pos.x, 0, 100, 0, COLOR_MAXES.hsl[1], 2);
+        currentColor[1] = round(pos.x, 2);
         // top is 100% brightness
-        currentColor[2] = rangeMapping(pos.y, 0, 100, COLOR_MAXES.hsl[2], 0, 2);
+        currentColor[2] = round(100 - pos.y, 2);
       },
       secondThumbStyle_: () => ({
-        left: rangeMapping(currentColor[1], 0, COLOR_MAXES.hsl[1], 0, 100, 2) + '%',
-        top: rangeMapping(currentColor[2], 0, COLOR_MAXES.hsl[2], 100, 0, 2) + '%',
+        left: round(currentColor[1], 2) + '%',
+        top: round(100 - currentColor[2], 2) + '%',
         background: unref(hexColor)
       }),
     };
@@ -310,7 +310,7 @@ onMounted(() => {
   const hexes = [
     '#f00', '#ff0', '#0f0', '#0ff', '#00f', '#f0f', '#f00'
   ] as const;
-  forLoop(
+  reduce(
     hexes,
     (_, hex, i)=>hueGrad.addColorStop(i / (hexes.length - 1), hex)
   );
@@ -353,7 +353,7 @@ const repainCanvas = computed(() => {
       // Brightness mask.
       fillStyle(
         '#000000' +
-        rangeMapping(currentColor[2], 0, COLOR_MAXES.hsl[2], 255, 0, 0).toString(16)
+        rangeMapping(currentColor[2], 0, 100, 255, 0, 0).toString(16)
       );
       // Saturation gradient
       const center = COLOR_PICKER_CANVAS_SIZE / 2;

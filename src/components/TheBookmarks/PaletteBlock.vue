@@ -53,10 +53,10 @@ import $style from './VBookmarks.module.scss';
 import VIcon from '../Custom/VIcon.vue';
 import VTooltip from '../Custom/VTooltip.vue';
 // utils
-import { map, forLoop } from '@/utils/helpers';
+import { isValidHex, map } from '@johnny95731/color-utils';
+import { reduce } from '@/utils/helpers';
 import { toPercent } from '@/utils/numeric';
 import { copyText } from '@/utils/browser';
-import { isValidHex } from '@/utils//colorModels/hex';
 // stores
 import useFavStore from '@/stores/useFavStore';
 import usePltStore from '@/stores/usePltStore';
@@ -69,11 +69,10 @@ const pltColors = map(props.plt.split('-'), (hex) => `#${hex}`);
 
 const bgGrad = computed(() => {
   const d = toPercent(1 / pltColors.length, 2);
-  const midPoint = forLoop(
+  const midPoint = reduce(
     pltColors,
     (acc, hex, i) => {
-      acc += `${hex} ${i * d}%,${hex} ${(i+1) * d}%,`;
-      return acc;
+      return acc + `${hex} ${i * d}%,${hex} ${(i+1) * d}%,`;
     },
     ''
   )

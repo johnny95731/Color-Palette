@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
+import { cloneDeep } from '@johnny95731/color-utils';
 import { updateStore } from '@/utils/database';
-import { copyObj } from '@/utils/helpers';
 
 
 // consts
@@ -90,7 +90,7 @@ const useSettingStore = defineStore('setting', {
     initializeSettings_() {
       // Initialize Settings
       return updateStore<State | undefined>('settings', (prev) => {
-        if (!prev) return copyObj(this.$state);
+        if (!prev) return cloneDeep(this.$state);
         for (const key of Object.keys(this.$state) as (keyof State)[]) {
           const initItem = this[key];
           let storageItem: typeof initItem;
@@ -114,7 +114,7 @@ const useSettingStore = defineStore('setting', {
             this[key] = storageItem;
           }
         }
-        return copyObj(this.$state);
+        return cloneDeep(this.$state);
       });
     },
     setBorder_(attr: keyof BorderStyle, val: number | string | boolean) {
@@ -126,7 +126,7 @@ const useSettingStore = defineStore('setting', {
     },
     updateStorage_() {
       updateStore('settings', () => {
-        return copyObj(this.$state);
+        return cloneDeep(this.$state);
       });
     }
   },

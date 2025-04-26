@@ -1,6 +1,6 @@
 {
   "name": "palette-vue",
-  "version": "0.0.8",
+  "version": "1.0.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -15,6 +15,7 @@
     "deploy": "gh-pages -d dist"
   },
   "dependencies": {
+    "@johnny95731/color-utils": "^1.0.5",
     "@vueuse/core": "^11.0.3",
     "bootstrap-icons": "^1.11.3",
     "idb-keyval": "^6.2.1",

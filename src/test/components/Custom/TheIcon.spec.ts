@@ -5,7 +5,7 @@ import { mount } from '@vue/test-utils';
 test('type', () => {
   const icon = mount(VIcon, {
     props: {
-      type: 'test'
+      icon: 'test'
     }
   });
   expect(icon.classes()).toContain('bi-test');

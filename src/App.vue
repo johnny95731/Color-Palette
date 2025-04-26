@@ -13,7 +13,7 @@ import { HOTKEYS } from './utils/hotkeys';
 // Store and Context
 import usePltStore from './stores/usePltStore';
 // types
-import type { SortActions } from './utils/manipulate/sorting';
+import type { Sort } from '@johnny95731/color-utils';
 
 const headerRef = ref<InstanceType<typeof VHeader>>();
 
@@ -34,7 +34,7 @@ const keyDownEvent = (e: KeyboardEvent) => {
   }
   for (const [sortBy, hotkey] of Object.entries(sortingHotkey)) {
     if (key === hotkey) {
-      pltState.sortCards_(sortBy as SortActions);
+      pltState.sortCards_(sortBy as Sort);
       return;
     }
   }

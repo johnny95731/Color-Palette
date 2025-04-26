@@ -53,9 +53,10 @@ import $style from './VPalette.module.scss';
 import VBtn from '../Custom/VBtn.vue';
 import VCard from './VCard.vue';
 // utils
+import { map, rangeMapping, round } from '@johnny95731/color-utils';
 import { useDragableElement } from '@/composables/useDragableElement';
-import { frac2percentage, isNullish, map } from '@/utils/helpers';
-import { rangeMapping, round, toPercent } from '@/utils/numeric';
+import { isNullish } from '@/utils/helpers';
+import { frac2percentage, toPercent } from '@/utils/numeric';
 // Stores / Contexts
 import usePltStore, { MAX_NUM_OF_CARDS } from '@/stores/usePltStore';
 import useSettingStore from '@/stores/useSettingStore';
@@ -110,13 +111,13 @@ const settingStyle = computed<CSSProperties>(() => {
 const cardPosition = computed(
   () => map(
     pltState.numOfCards_ + 1,
-    (_, i) => frac2percentage(i, pltState.numOfCards_)
+    i => frac2percentage(i, pltState.numOfCards_)
   )
 );
 
 const resetCardStyle = (transition: 'none' | '' = '') => {
   const pos = unref(cardPosition);
-  cardStyle.value = map(pltState.numOfCards_, (_, i) => ({
+  cardStyle.value = map(pltState.numOfCards_, i => ({
     [media.cardPos_]: pos[i],
     [media.cardSize_]: pos[1],
     transitionProperty: transition

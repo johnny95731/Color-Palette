@@ -1,5 +1,5 @@
 import { unref } from 'vue';
-import { randInt, toPercent } from './numeric';
+import { map, randInt } from '@johnny95731/color-utils';
 import type { MaybeRef, Ref, WritableComputedRef } from 'vue';
 
 
@@ -18,74 +18,7 @@ export const objPick = <T extends object, K extends (string | number | symbol)>(
   ) as {[key in K]: key extends keyof T ? T[key] : undefined}
   );
 
-/**
- * Simple way to deep copy entire object.
- */
-export const copyObj = <T>(obj: T): T => {
-  return JSON.parse(JSON.stringify(obj));
-};
-
-/**
- * Shuffle an array by Fisher-Yates shuffle. The process will change the input
- * array.
- */
-export const shuffle = <T>(arr: T[]): T[] => {
-  let j: number;
-  for (let i = arr.length - 1; i > 0; i--) {
-    j = randInt(i);
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-  }
-  return arr;
-};
-
-
-type map = {
-  /**
-   * Generate an array with specific length.
-   *
-   * Faster than Array.prototype.map about 10%-22% on Edge and 7%-15% on Firefox.
-   */
-  <R>(
-    len: number,
-    callback: (val: null, i: number) => R
-  ): R[];
-  /**
-   * Similar to Array.prototype.map but more generalize.
-   * But with an argument to restrict the length of returned array.
-   *
-   * Faster than Array.prototype.map about 10%-22% on Edge and 7%-15% on Firefox.
-   */
-  <R, T>(
-    arr: readonly T[],
-    callback: (val: T, i: number) => R,
-    len?: number,
-  ): R[]
-}
-export const map: map = <R, T>(
-  arr: number | readonly T[],
-  callback:
-    typeof arr extends number ?
-      ((val: null, i: number) => R) :
-      ((val: T, i: number) => R),
-  len?: number,
-): R[] => {
-  const result = [];
-  if (typeof arr === 'number') {
-    len = arr;
-    for (let i = 0; i < len; i++) {
-      // @ts-expect-error
-      result.push(callback(null, i));
-    }
-  } else {
-    len ??= arr.length;
-    for (let i = 0; i < len; i++) {
-      result.push(callback(arr[i], i));
-    }
-  }
-  return result;
-};
-
-type forLoop = {
+type reduce = {
   <R>(
     len: number,
     callback: (acc: R, val: null, i: number) => R,
@@ -118,7 +51,19 @@ type forLoop = {
  * @param len Length of returened
  * @returns
  */
-export const forLoop: forLoop = <R, T>(
+/**
+ * Same as Array.prototype.reduce but with for-loop.
+ * Default to have same length as arr.
+ *
+ * The performance (ops/sec) is slightly better than prototype method (less
+ * than 5%). But this function can specify the length of returned array.
+ * @param arr Array
+ * @param callback Callback function.
+ * @param init Initial value
+ * @param len Length of returened
+ * @returns
+ */
+export const reduce: reduce = <R, T>(
   arr: readonly T[] | string | number,
   callback:
     typeof arr extends number ?
@@ -128,16 +73,18 @@ export const forLoop: forLoop = <R, T>(
   len?: number,
 ): R => {
   let s = init;
+  let i = 0;
   if (typeof arr === 'number') {
-    for (let i = 0; i < arr; i++)
+    for (; i < arr;) {
       // @ts-expect-error
-      s = callback(s, null, i);
+      s = callback(s, null, i++);
+    }
   } else {
     len ??= arr.length;
-    for (let i = 0; i < len; i++)
+    for (; i < len;) {
       // @ts-expect-error
-      s = callback(s, arr[i], i);
-
+      s = callback(s, arr[i], i++);
+    }
   }
   // @ts-expect-error
   return s;
@@ -159,17 +106,6 @@ export const invertBoolean = (
   ref: Ref<boolean | undefined> | WritableComputedRef<boolean | undefined>,
   newVal?: boolean
 ) => ref.value = newVal ?? !unref(ref);
-
-/**
- * Fraction to percentage.
- * Return round(100 * idx / num, 2)%
- * @param num Numerator.
- * @param denom Denominator.
- * @returns
- */
-export const frac2percentage = (num: number, denom: number): string => {
-  return toPercent(num / denom, 2) + '%';
-};
 
 /**
  * Get default parameters of a function.

@@ -79,13 +79,11 @@ import VBtn from '../Custom/VBtn.vue';
 import VIcon from '../Custom/VIcon.vue';
 import VDialog from '../Custom/VDialog.vue';
 // utils
-import { invertBoolean, isNullish, map } from '@/utils/helpers';
-import { clip } from '@/utils/numeric';
-import { isValidHex, rgb2hex } from '@/utils/colorModels/hex';
+import { isValidHex, rgb2hex, map, randRgbGen, clip } from '@johnny95731/color-utils';
+import { invertBoolean, isNullish } from '@/utils/helpers';
 import { useDragableElement } from '@/composables/useDragableElement';
 // store
 import usePltStore, { MAX_NUM_OF_CARDS } from '@/stores/usePltStore';
-import { randRgbGen } from '@/utils/colors';
 // type
 import type { CSSProperties } from 'vue';
 import type { Position } from '@vueuse/core';

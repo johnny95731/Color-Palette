@@ -1,6 +1,7 @@
 import { expect, test } from 'vitest';
-import { cartesian2polar, clip, countDecimals, deg2rad, dot, elementwiseMean, isSameFloat, l2DistSq, mod, polar2cartesian, rad2deg, randInt, rangeMapping, round, toPercent } from '@/utils/numeric';
+import { cartesian2polar, countDecimals, frac2percentage, isSameFloat, mod, polar2cartesian, toPercent } from '@/utils/numeric';
 import { describe } from 'node:test';
+import { randInt } from '@johnny95731/color-utils';
 
 test('mod', () => {
   const cases = [ // mod 10
@@ -16,15 +17,17 @@ test('mod', () => {
   }
 });
 
-test('randInt', () => {
-  const testNum = 100;
-  const max = 10;
-  for (let i = 0; i < testNum; i++) {
-    const rand = randInt(max);
-    expect(rand, `${rand} should in the range [0, 10]`)
-      .toBeGreaterThanOrEqual(0);
-    expect(rand, `${rand} should in the range [0, 10]`)
-      .toBeLessThanOrEqual(max);
+
+test('frac2percentage', () => {
+  const cases = [
+    [[0, 2], '0%'],
+    [[1, 2], '50%'],
+    [[5, 10], '50%'],
+    [[3, 4], '75%'],
+    [[0, 3], '0%'],
+  ] as const;
+  for (const [[num, denom], expect_] of cases) {
+    expect(frac2percentage(num, denom)).toBe(expect_);
   }
 });
 
@@ -76,38 +79,6 @@ test('countDecimals', () => {
   }
 });
 
-test('round', () => {
-  const cases = [
-  // [arg1, arg2, expect]
-    [1, 0, 1],
-    [5, 0, 5],
-    [-5.15, 0, -5],
-    [-2.1546, 0, -2],
-    [-1.15, 0, -1],
-    [-5.1546, 0, -5],
-    // specific digit
-    [1, 2, 1],
-    [5, 2, 5],
-    [-5.15, 2, -5.15],
-    [-2.1546, 2, -2.15],
-    [-1.15, 2, -1.15],
-    [-5.1546, 2, -5.15],
-    [1.959, 2, 1.96],
-    [5.789, 2, 5.79],
-    [5.799, 2, 5.8],
-  ];
-  // eslint-disable-next-line
-  for (let [arg1, arg2, expect_] of cases) {
-    const result = round(arg1, arg2);
-    if (!arg2) expect_ = round(arg1);
-    expect(
-      result,
-      `round(${arg1}, ${arg2}) should be ${expect_}, not ${result}.`
-    )
-      .toBe(expect_);
-  }
-});
-
 test('toPercent', () => {
   const cases = [
   // [arg1, arg2, expect]
@@ -128,103 +99,6 @@ test('toPercent', () => {
     )
       .toBe(expect_);
   }
-});
-
-test('clip', () => {
-  const cases = [
-  // [args, expect]
-    [[1], 1],
-    [[1, 0, 2], 1],
-    [[1, 2, 3], 2],
-    [[1, 0, 0.5], 0.5],
-    [[1, 1, 0], 0],
-  ] as const;
-  for (const [args, expect_] of cases) {
-    // @ts-expect-error
-    const result = clip(...args);
-    expect(
-      result,
-      `clip(${args.join(',')}) should be ${expect_}, not ${result}.`
-    )
-      .toBe(expect_);
-  }
-});
-
-test('rangeMapping', () => {
-  const cases = [
-  // [args, expect]
-    [[1, 0, 1, -100, 100], 100],
-    [[1, 1, 2, -100, 100], -100],
-    [[1, 0, 2, -100, 100], 0],
-    [[1, 2, 3, -100, 100], -100],
-    [[1, -1, 0, -100, 100], 100],
-    [[0, -1, 1, 0, 0.01, 3], 0.005],
-  ] as const;
-  for (const [args, expect_] of cases) {
-    // @ts-expect-error
-    const result = rangeMapping(...args);
-    expect(
-      result,
-      `rangeMapping(${args.join(',')}) should be ${expect_}, not ${result}.`
-    )
-      .toBe(expect_);
-  }
-});
-
-describe('degree and radian', () => {
-  test('deg2rad', () => {
-    const cases = [
-    // [arg1, expect]
-      [0, 0],
-      [180, Math.PI],
-      [360, 2 * Math.PI],
-      [90, Math.PI / 2],
-    ] as const;
-    for (const [arg, expect_] of cases) {
-      const result = deg2rad(arg);
-      expect(
-        result,
-        `deg2rad(${arg}) should be ${expect_}, not ${result}.`
-      )
-        .toBe(expect_);
-    }
-  });
-
-  test('rad2deg', () => {
-    const cases = [
-    // [arg1, expect]
-      [0, 0],
-      [Math.PI, 180],
-      [2 * Math.PI, 360],
-      [Math.PI / 2, 90],
-    ] as const;
-    for (const [arg, expect_] of cases) {
-      const result = rad2deg(arg);
-      expect(
-        result,
-        `deg2rad(${arg}) should be ${expect_}, not ${result}.`
-      )
-        .toBe(expect_);
-    }
-  });
-
-  test('stability', () => {
-    const testNum = 100;
-    for (let i = 0; i < testNum; i++) {
-      const deg = randInt(359);
-      const rad = deg2rad(deg);
-      expect(
-        rad2deg(deg2rad(deg)),
-        `Degree ${deg} is not stable in rad2deg(deg2rad())`
-      )
-        .toBeCloseTo(deg);
-      expect(
-        deg2rad(rad2deg(rad)),
-        `Radian ${deg} is not stable in deg2rad(rad2deg())`
-      )
-        .toBeCloseTo(rad);
-    }
-  });
 });
 
 describe('Coordinate system', () => {
@@ -294,66 +168,4 @@ describe('Coordinate system', () => {
         .toStrictEqual(newPolar);
     }
   });
-});
-
-test('dot', () => {
-  const cases = [
-    // [arr1, arr2, expect]
-    [[1], [1], 1],
-    [[1,1,1], [1,1,1], 3],
-    [[1,1,1], [0,0,0], 0],
-    [[1,1,1], [1,2,3], 6],
-    [[1,2,3], [1,2,3], 14],
-  ] as const;
-  for (const [arr1, arr2, expect_] of cases) {
-    const result = dot(arr1, arr2);
-    expect(
-      result,
-      `dot([${arr1.join(',')}], [${arr2.join(',')}]) should be ${expect_}, not ${result}.`
-    )
-      .toBeCloseTo(expect_);
-  }
-});
-
-
-test('l2Dist', () => {
-  const cases = [
-    // [arr1, arr2, expect]
-    [[1], [1], 0],
-    [[1,1,1], [1,1,1], 0],
-    [[1,1,1], [0,0,0], 3],
-    [[1,1,1], [1,2,3], 5],
-    [[1,2,3], [1,2,3], 0],
-    [[2,1], [1,2], 2],
-  ] as const;
-  for (const [arr1, arr2, expect_] of cases) {
-    // @ts-expect-error
-    const result = l2DistSq(arr1, arr2);
-    expect(
-      result,
-      `l2Dist([${arr1.join(',')}], [${arr2.join(',')}]) should be ${expect_}, not ${result}.`
-    )
-      .toBeCloseTo(expect_);
-  }
-});
-
-test('elementwiseMean', () => {
-  const cases = [
-    // [arr1, arr2, expect]
-    [[1], [1], [1]],
-    [[1,1,1], [1,1,1], [1,1,1]],
-    [[1,1,1], [0,0,0], [.5,.5,.5]],
-    [[1,1,1], [1,2,3], [1,1.5,2]],
-    [[1,2,3], [1,2,3], [1,2,3]],
-    [[7,1], [1,3], [4,2]],
-  ] as const;
-  for (const [arr1, arr2, expect_] of cases) {
-    // @ts-expect-error
-    const result = elementwiseMean(arr1, arr2);
-    expect(
-      result,
-      `elementwiseMean([${arr1.join(',')}], [${arr2.join(',')}]) should be [${expect_.join(',')}], not [${result.join(',')}].`
-    )
-      .toStrictEqual(expect_);
-  }
 });

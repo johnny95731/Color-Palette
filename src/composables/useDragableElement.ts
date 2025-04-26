@@ -1,9 +1,9 @@
 import { computed, ref, toValue, unref, watch } from 'vue';
 import { useEventListener } from '@vueuse/core';
-import { forLoop } from '@/utils/helpers';
-import { clip, rangeMapping } from '@/utils/numeric';
+import { reduce } from '@/utils/helpers';
 import type { MaybeRef, MaybeRefOrGetter } from 'vue';
 import type { Position } from '@vueuse/core';
+import { clip, rangeMapping } from '@johnny95731/color-utils';
 
 // A Modified of vueuse/useDraggable
 
@@ -176,7 +176,7 @@ export const useDragableElement = (
   };
   const end = (e: PointerEvent) => {
     isDragging_.value = false;
-    forLoop(cleanups, (_, fn) => fn());
+    reduce(cleanups, (_, fn) => fn());
     unref(onEnd_)?.(unref(position_), e);
     handleEvent(e);
   };

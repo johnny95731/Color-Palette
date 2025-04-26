@@ -39,7 +39,7 @@
       hide-value
       :fit-activator="false"
       :model-value="pltState.sortBy_"
-      @triggered="pltState.sortCards_($event as SortActions)"
+      @triggered="pltState.sortCards_($event as Sort)"
     />
     <SelectMenu
       v-memo="[isSmall, pltState.mixMode_]"
@@ -58,7 +58,7 @@
       @update:model-value="pltState.setBlendMode_($event as Mixing)"
     />
     <SelectMenu
-      v-memo="[isSmall, pltState.colorSpace_]"
+      v-memo="[isSmall]"
       prepend-icon="sliders"
       :class="[
         css,
@@ -68,11 +68,10 @@
       :text="isSmall ? '色彩空間' : undefined"
       :tooltip="isSmall ? false : true"
       letter-case="origin"
-      :items="spaceMenuItems"
+      :items="SPACES"
       hide-value
       :fit-activator="false"
-      :model-value="pltState.colorSpace_.name_"
-      @update:idx="pltState.setColorSpace_($event)"
+      @update:model-value="pltState.setColorSpace_($event)"
     />
     <div
       v-if="!isSmall"
@@ -269,7 +268,7 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, computed, watch, defineAsyncComponent, reactive } from 'vue';
+import { ref, computed, watch, defineAsyncComponent, reactive, unref } from 'vue';
 import { createReusableTemplate } from '@vueuse/core';
 import $style from './VHeader.module.scss';
 import DropdownMenu from '../Custom/DropdownMenu.vue';
@@ -277,16 +276,12 @@ import VBtn from '@/components/Custom/VBtn.vue';
 import SelectMenu from '../Custom/SelectMenu.vue';
 // utils
 import { HOTKEYS } from '@/utils/hotkeys';
-import { invertBoolean, map } from '@/utils/helpers';
-import { COLOR_SPACES } from '@/utils/colors';
-// constants
-import { MIXING_MODES, type Mixing } from '@/utils/manipulate/mixing';
-import { SORTING_ACTIONS, type SortActions } from '@/utils/manipulate/sorting';
+import { invertBoolean } from '@/utils/helpers';
 // stores
 import media from '@/composables/useMedia';
-import usePltStore from '@/stores/usePltStore';
+import usePltStore, { SPACES } from '@/stores/usePltStore';
 import useSettingStore from '@/stores/useSettingStore';
-import { unref } from 'vue';
+import { map, MIXING_MODES, SORTING_ACTIONS, type Mixing, type Sort } from '@johnny95731/color-utils';
 
 const ContrastDialog = defineAsyncComponent(
   () => import('@/components/ContrastDialog/ContrastDialog.vue')
@@ -391,14 +386,6 @@ const sortingMenuItems = map(
     val: name,
     // @ts-expect-error
     hotkey: HOTKEYS.sorting_[name],
-  })
-);
-
-const spaceMenuItems = map(
-  COLOR_SPACES,
-  ({ name_: name_ }) => ({
-    name_,
-    val: name_,
   })
 );
 

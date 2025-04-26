@@ -36,7 +36,7 @@
     <VBtn
       v-memo="[palette[0]]"
       :style="{
-        color: rgb2gray(hex2rgb(palette[0])) > 127 ? '#000' : '#FFF',
+        color: isLight(palette[0]) ? '#000' : '#FFF',
         background: palette[0],
       }"
       prepend-icon="eyedropper"
@@ -56,7 +56,7 @@
     </div>
     <!-- shades, tints, and tones. -->
     <div
-      v-if="1 <= harmonyArgs.method_ && harmonyArgs.method_ <= 3"
+      v-if="harmonyArgs.method_ < 3"
       v-memo="[harmonyArgs]"
       :class="$style.numbers"
     >
@@ -98,16 +98,13 @@ import VDialog from '../Custom/VDialog.vue';
 import VBtn from '../Custom/VBtn.vue';
 import VTooltip from '../Custom/VTooltip.vue';
 // utils
-import { invertBoolean, map } from '@/utils/helpers';
-import { COLOR_MAXES, rgb2gray } from '@/utils/colors';
+import { harmonize, HARMONY_METHODS, isLight, map, rgb2hex } from '@johnny95731/color-utils';
+import { invertBoolean } from '@/utils/helpers';
 import { copyText } from '@/utils/browser';
-import { getHarmonize, HARMONY_METHODS } from '@/utils/manipulate/harmony';
 // stores
 import usePltStore, { MAX_NUM_OF_CARDS, MIN_NUM_OF_CARDS } from '@/stores/usePltStore';
 // types
 import type { ModelRef } from 'vue';
-import { hex2rgb, rgb2hex } from '@/utils/colorModels/hex';
-import { hsb2rgb } from '@/utils/colorModels/hsb';
 
 const isOpened = defineModel<boolean>() as ModelRef<boolean>;
 
@@ -116,20 +113,22 @@ const showColorPicker = ref(false);
 // palette and color picker
 const pltState = usePltStore();
 
-const currentColor = ref<number[]>([0, COLOR_MAXES.hsl[1], COLOR_MAXES.hsl[2]]); // hsb color
+/**
+ * HSB color
+ */
+const currentColor = ref<number[]>([0, 100, 100]);
 const harmonyArgs = reactive<{
   method_: number,
   num_: number,
 }>({
-  method_: 0,
+  method_: 3,
   num_: 6,
 });
 
 const palette = computed<string[]>(() => {
-  const generator = getHarmonize(HARMONY_METHODS[harmonyArgs.method_]);
   return map(
-    generator([...unref(currentColor)], harmonyArgs.num_),
-    hsb => rgb2hex(hsb2rgb(hsb))
+    harmonize(unref(currentColor), harmonyArgs.method_, harmonyArgs.num_),
+    rgb => rgb2hex(rgb)
   );
 });
 

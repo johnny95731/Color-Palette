@@ -166,17 +166,14 @@ import SelectMenu from '../Custom/SelectMenu.vue';
 import VSlider from '../Custom/VSlider.vue';
 import VDialog from '../Custom/VDialog.vue';
 // utils
-import { forLoop, getDefaultParams, isNullish, map } from '@/utils/helpers';
+import { CONTRAST_METHODS, getAdjuster, getContrastRatio, map } from '@johnny95731/color-utils';
+import { reduce, getDefaultParams, isNullish } from '@/utils/helpers';
 import { isTabKey } from '@/utils/browser';
-import { getContrastRatio } from '@/utils/colors';
-import { CONTRAST_METHODS } from '@/utils/manipulate/contrast';
-import { GAMMA_MAX, MULTIPLICATION_MAX } from '@/utils/manipulate/mixing';
 // stores
 import usePltStore from '@/stores/usePltStore';
 import VIcon from '../Custom/VIcon.vue';
 import VTooltip from '../Custom/VTooltip.vue';
 import HexInputter from '../Custom/HexInputter.vue';
-import { getAdjuster } from '../../utils/manipulate/contrast';
 
 const dialogRef = ref<InstanceType<typeof VDialog>>();
 
@@ -211,7 +208,7 @@ type ContrastArgs = {
 }
 const contrastArgs = reactive<ContrastArgs>({ method_: 0 } as ContrastArgs);
 const resetArgs = () => {
-  forLoop(
+  reduce(
     CONTRAST_METHODS,
     (_, __, i) => contrastArgs[i] = defaultParams[i]
   );
@@ -220,8 +217,8 @@ resetArgs();
 
 
 const contrastCoeffMax = computed(() => {
-  if (contrastArgs.method_ === 0) return MULTIPLICATION_MAX;
-  else if (contrastArgs.method_ === 1) return GAMMA_MAX;
+  if (contrastArgs.method_ === 0) return 10;
+  else if (contrastArgs.method_ === 1) return 5;
   else return 1;
 });
 

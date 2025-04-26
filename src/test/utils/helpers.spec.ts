@@ -1,4 +1,4 @@
-import { frac2percentage, getLetterCaseConverter, invertBoolean, isNullish, objPick, randomCharacter, shuffle } from '@/utils/helpers';
+import { getLetterCaseConverter, invertBoolean, isNullish, objPick, randomCharacter } from '@/utils/helpers';
 import { describe, expect, test } from 'vitest';
 import { ref } from 'vue';
 
@@ -58,19 +58,6 @@ test('objPick', () => {
   }
 });
 
-test('shuffle', () => {
-  const cases = [
-    Array.from({ length: 100 }, (_,i) => i),
-    Array.from({ length: 100 }, (_,i) => 2*i),
-  ];
-  for (const args of cases) {
-    const shuffled = shuffle(JSON.parse(JSON.stringify(args)));
-    for (const val of shuffled) {
-      expect(args).toContain(val);
-    }
-  }
-});
-
 test('isNullish', () => {
   const cases = [
     [null, true],
@@ -104,26 +91,13 @@ test('invertBoolean', () => {
   }
 });
 
-
-test('evalPosition', () => {
-  const cases = [
-    [[0, 2], '0%'],
-    [[1, 2], '50%'],
-    [[5, 10], '50%'],
-    [[3, 4], '75%'],
-    [[0, 3], '0%'],
-  ];
-  for (const [args, expect_] of cases) {
-    // @ts-expect-error
-    expect(frac2percentage(...args)).toBe(expect_);
-  }
-});
-
 test('randomCharacter', () => {
   const testNum = 200;
   for (let i = 0; i < testNum; i++) {
     expect('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz')
       .contain(randomCharacter(true));
+    expect('0123456789')
+      .not.contain(randomCharacter(true));
     expect('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789')
       .contain(randomCharacter());
   }
