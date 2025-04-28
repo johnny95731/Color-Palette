@@ -166,8 +166,8 @@ const eventInfo = ref<{
 
 
 const addCard = async (idx: number) => {
-  const newRgb = pltState.mixCard_(idx - 1);
-  pltState.addCard_(idx, newRgb);
+  const newColor = pltState.mixCard_(idx - 1);
+  pltState.addCard_(idx, newColor);
   if (settingsState.transition.pos) {
     setSize(idx, '0');
     setPosition(idx, frac2percentage(idx, pltState.numOfCards_-1));

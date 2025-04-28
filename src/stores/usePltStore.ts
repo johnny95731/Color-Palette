@@ -141,7 +141,7 @@ const usePltStore = defineStore('plt', {
       order: number, id?: Card['id_'], color?: number[]
     ): Card {
       const { fromRgb_, toRgb_ } = this.colorSpace_;
-      if (!color) color = fromRgb_(randRgbGen());
+      color ??= fromRgb_(randRgbGen());
       const hex = rgb2hex(toRgb_(color));
       return {
         id_: id ?? CARD_IDS.shift()!,
@@ -156,28 +156,28 @@ const usePltStore = defineStore('plt', {
     },
     mixCard_(left: number, right: number = left + 1) {
       // Evaluate new color.
-      const fromRgb = this.colorSpace_.fromRgb_;
+      const { fromRgb_ } = this.colorSpace_;
 
       // -Add to the fist position. Blending the first card and black.
-      const leftRgbColor =
-        left < 0 ? fromRgb([0, 0, 0]) : this.cards_[left].color_;
+      const leftColor =
+        left < 0 ? fromRgb_([0, 0, 0]) : this.cards_[left].color_;
 
       // -Add to the last position. Blending the last card and white.
-      const rightRgbColor =
+      const rightColor =
         right >= this.numOfCards_ ?
-          fromRgb([255, 255, 255]) :
+          fromRgb_([255, 255, 255]) :
           this.cards_[right].color_;
       return mixColors(
-        [leftRgbColor, rightRgbColor], this.mixMode_, this.colorSpace_,
+        [leftColor, rightColor], this.mixMode_, this.colorSpace_,
       );
     },
-    addCard_(idx: number, rgb: number[]) {
+    addCard_(idx: number, color: number[]) {
       if (this.numOfCards_ == MAX_NUM_OF_CARDS) return;
       const tempSort = this.sortBy_;
       const newCard = this.newCard_(
         this.numOfCards_,
         undefined,
-        this.colorSpace_.fromRgb_(rgb)
+        color
       );
       this.cards_.splice(idx, 0, newCard);
       this.sortBy_ = 'random';
