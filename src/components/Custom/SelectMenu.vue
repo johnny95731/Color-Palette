@@ -96,6 +96,7 @@ import VBtn from './VBtn.vue';
 import VIcon from './VIcon.vue';
 // utils
 import useInputField from '@/composables/useInputField';
+import { map } from '@johnny95731/color-utils';
 import { isNullish, invertBoolean, getLetterCaseConverter } from '@/utils/helpers';
 import { getComponentId } from '@/utils/browser';
 import { mod } from '@/utils/numeric';
@@ -104,7 +105,6 @@ import { noModifierKey, shiftOnly } from '@/utils/browser';
 import type { CSSProperties, MaybeRefOrGetter, ModelRef } from 'vue';
 import type { Props as VBtnProps } from './VBtn.vue';
 import type { VueClass } from '@/utils/browser';
-import { map } from '@johnny95731/color-utils';
 
 type SelectItem = {
   val: string,

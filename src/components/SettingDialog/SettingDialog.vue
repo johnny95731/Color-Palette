@@ -108,7 +108,7 @@
           :max="TRANSITION_MAX_POS"
           step="50"
           :model-value="settingsState.transition.pos"
-          @update:model-value="handleTransitionChanged($event, 'pos')"
+          @update:model-value="handleTransitionChanged($event!, 'pos')"
         />
         <label
           v-once
@@ -120,7 +120,7 @@
           :max="TRANSITION_MAX_COLOR"
           step="50"
           :model-value="transition.color_"
-          @update:model-value="handleTransitionChanged($event, 'color')"
+          @update:model-value="handleTransitionChanged($event!, 'color')"
           @keydown="handleFocusoutDialog"
         />
       </div>

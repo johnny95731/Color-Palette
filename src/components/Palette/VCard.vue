@@ -208,9 +208,9 @@ import OverlayContainer from '../Custom/OverlayContainer.vue';
 import CondWrapper from '../Custom/CondWrapper.vue';
 import HexInputter from '../Custom/HexInputter.vue';
 // Utils
-import { rgb2named, named2rgb, hex2rgb, isValidHex, unzipCssNamed, unzipedNameList, map, rgb2gray, getCssColor, round } from '@johnny95731/color-utils';
+import { rgb2named, named2rgb, hex2rgb, isValidHex, map, rgb2gray, getCssColor, round } from '@johnny95731/color-utils';
 import { toPercent } from '@/utils/numeric';
-import { gradientGen } from '@/utils/colors';
+import { gradientGen, unzipedNameList } from '@/utils/colors';
 import { copyText, isTabKey } from '@/utils/browser';
 // Stores
 import usePltStore from '@/stores/usePltStore';
@@ -292,13 +292,13 @@ const settingState = useSettingStore();
 const detail = asyncComputed<string>(
   () => {
     return pltState.isInNamedSpace_ ?
-      unzipCssNamed(rgb2named(unref(card).color_)) :
+      rgb2named(unref(card).color_) :
       getCssColor(
         unref(roundedColor),
         pltState.colorSpace_,
         false,
         settingState.colorFunctioonSep_
-      );
+      ).toLowerCase();
   },
   'white'
 );
@@ -369,9 +369,9 @@ const selectName = (name: string) => pltState.editCard_(
 /**
  * Slider changed event.
  */
-const handleSliderChange = (newVal: number, idx: number) => {
+const handleSliderChange = (newVal: number | undefined, idx: number) => {
   const newColor = [...unref(card).color_];
-  newColor[idx] = newVal;
+  newColor[idx] = newVal!;
   roundedColor.value = newColor;
 };
 </script>

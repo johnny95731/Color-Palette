@@ -117,7 +117,7 @@ const useSettingStore = defineStore('setting', {
         return cloneDeep(this.$state);
       });
     },
-    setBorder_(attr: keyof BorderStyle, val: number | string | boolean) {
+    setBorder_(attr: keyof BorderStyle, val?: number | string | boolean) {
       // @ts-expect-error.
       this.border[attr] = val;
     },

@@ -1,4 +1,4 @@
-import { COLOR_SPACES, getColorSpace, getCssColor, getSpaceRange, hex2rgb, hsb2rgb, map, rgb2hex, rgb2hsb, type ColorSpace } from '@johnny95731/color-utils';
+import { COLOR_SPACES, getColorSpace, getCssColor, getSpaceRange, hex2rgb, hsb2rgb, map, namedColor, rgb2hex, rgb2hsb, type ColorSpace } from '@johnny95731/color-utils';
 import { frac2percentage } from './numeric';
 
 /** Remove Non-hex characters */
@@ -11,6 +11,20 @@ export const hsb2hex = (hsb: number[]) => {
 export const hex2hsb = (hex: string) => {
   return rgb2hsb(hex2rgb(hex));
 };
+
+/**
+* Add a white space before capital letters except the first letter.
+*/
+export const unzipCssNamed = (name: string) => name.replace(/([A-Z])/g, ' $1').trim();
+
+/**
+* All names of CSS <named-color> (removed synonym name) with sapce between words.
+*/
+export const unzipedNameList: string[] = [];
+
+namedColor.forEach((hex, name) => {
+  unzipedNameList.push(name);
+});
 
 
 /**

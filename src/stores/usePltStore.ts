@@ -20,6 +20,7 @@ export const SPACES = map(
 );
 SPACES.unshift(cloneDeep(SPACES[0]));
 SPACES[0].name = 'NAMED';
+SPACES[0].val = 'NAMED';
 
 /**
  * Storage of IDs. Get value when creating new card. Save to storage when delete

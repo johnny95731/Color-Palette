@@ -71,7 +71,7 @@
       :items="SPACES"
       hide-value
       :fit-activator="false"
-      @update:model-value="pltState.setColorSpace_($event)"
+      @update:model-value="pltState.setColorSpace_($event!)"
     />
     <div
       v-if="!isSmall"
