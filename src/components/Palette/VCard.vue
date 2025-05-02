@@ -139,6 +139,9 @@
       <HexInputter
         ref="hexInputRef"
         :id="`card${cardIdx}-hex`"
+        :style="pltState.isInNamedSpace_ || {
+          marginBottom: '8px'
+        }"
         :model-value="card.hex_"
         @change="handleHexEditingFinished($event)"
       />
@@ -166,27 +169,28 @@
           />
         </template>
       </SelectMenu>
-      <div
-        :class="$style.sliders"
-      >
+      <div>
         <template
-          v-for="([min, max], i) in space.range_"
+          v-for="([min, max], i) in pltState.editingDialogInfo_.displayedRange_"
           :key="`card${cardIdx}-label${i}`"
         >
-          <div>
-            {{ `${space.labels_[i]}: ${roundedColor[i]}` }}
+          <div
+            style="margin-bottom: -4px"
+          >
+            {{ sliderLabels[i] }}
           </div>
           <VSlider
-            :label="space.labels_[i]"
+            :label="pltState.editingDialogInfo_.labels_[i]"
             :showRange="false"
             :showVal="false"
-            :trackerBackground="gradientGen(roundedColor, i, pltState.colorSpace_)"
+            :trackerBackground="gradientGen(unref(card).color_, i, pltState.colorSpace_)"
             :thumbBackground="card.hex_"
             :min="min"
             :max="max"
-            :model-value="roundedColor[i]"
+            step="0.1"
+            :model-value="sliderVals[i]"
             @update:model-value="handleSliderChange($event, i)"
-            @keydown="i === roundedColor.length - 1 && handleLeaveFocusing($event)"
+            @keydown="i === sliderVals.length - 1 && handleLeaveFocusing($event)"
           />
         </template>
       </div>
@@ -208,7 +212,7 @@ import OverlayContainer from '../Custom/OverlayContainer.vue';
 import CondWrapper from '../Custom/CondWrapper.vue';
 import HexInputter from '../Custom/HexInputter.vue';
 // Utils
-import { rgb2named, named2rgb, hex2rgb, isValidHex, map, rgb2gray, getCssColor, round } from '@johnny95731/color-utils';
+import { rgb2named, named2rgb, hex2rgb, isValidHex, map, getCssColor, round, isLight } from '@johnny95731/color-utils';
 import { toPercent } from '@/utils/numeric';
 import { gradientGen, unzipedNameList } from '@/utils/colors';
 import { copyText, isTabKey } from '@/utils/browser';
@@ -244,17 +248,27 @@ const order = computed(() => ({
 
 const card = computed<Card>(() => pltState.cards_[props.cardIdx]);
 
-const space = computed(() => {
-  return pltState.editingDialogInfo_;
+const sliderVals = computed({
+  get() {
+    const max = pltState.editingDialogInfo_.max_;
+    return map(unref(card).color_, (val, i) => {
+      if (max[i] === 360) {
+        return round(val, 1);
+      } else {
+        return toPercent(val / max[i], 1);
+      }
+    });
+  },
+  set(newColor: number[]) {
+    pltState.editCard_(props.cardIdx, newColor);
+  }
 });
 
-const roundedColor = computed({
-  get() {
-    return map(unref(card).color_, (val) => round(val));
-  },
-  set(newColorArr: number[]) {
-    pltState.editCard_(props.cardIdx, newColorArr);
-  }
+const sliderLabels = computed<string[]>(() => {
+  const { max_, labels_ } = pltState.editingDialogInfo_;
+  return map(unref(sliderVals), (val, i) => {
+    return `${labels_[i]}: ${val}${max_[i] === 360 ? '' : '%'}`;
+  });
 });
 
 // Toolbar
@@ -294,10 +308,12 @@ const detail = asyncComputed<string>(
     return pltState.isInNamedSpace_ ?
       rgb2named(unref(card).color_) :
       getCssColor(
-        unref(roundedColor),
+        unref(card).color_,
         pltState.colorSpace_,
-        false,
-        settingState.colorFunctioonSep_
+        {
+          sep_: settingState.colorFunctioonSep_,
+          place_: 1
+        }
       ).toLowerCase();
   },
   'white'
@@ -305,9 +321,8 @@ const detail = asyncComputed<string>(
 
 const cardStyle = computed<CSSProperties>(() => {
   const hex = unref(card).hex_;
-  const isLight = rgb2gray(hex2rgb(hex)) > 127;
   return {
-    color: isLight ? '#000' : '#fff',
+    color: isLight(hex) ? '#000' : '#fff',
     ...(settingState.paletteDisplay === 'block' && { backgroundColor: hex })
   };
 });
@@ -356,8 +371,7 @@ const handleLeaveFocusing = (e: KeyboardEvent) => {
 const handleHexEditingFinished = (e: Event) => {
   const text = (e.currentTarget as HTMLInputElement).value;
   if (text !== unref(card).hex_ && isValidHex(text)) {
-    const newColor = pltState.colorSpace_.fromRgb_(hex2rgb(text));
-    roundedColor.value = newColor;
+    sliderVals.value = pltState.colorSpace_.fromRgb_(hex2rgb(text));
   }
 };
 
@@ -370,8 +384,13 @@ const selectName = (name: string) => pltState.editCard_(
  * Slider changed event.
  */
 const handleSliderChange = (newVal: number | undefined, idx: number) => {
+  const max = pltState.editingDialogInfo_.max_;
   const newColor = [...unref(card).color_];
-  newColor[idx] = newVal!;
-  roundedColor.value = newColor;
+  newColor[idx] = (
+    max[idx] === 360 ?
+      newVal! :
+      newVal! / 100 * max[idx]
+  );
+  sliderVals.value = newColor;
 };
 </script>

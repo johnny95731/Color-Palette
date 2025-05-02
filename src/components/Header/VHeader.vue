@@ -54,8 +54,7 @@
       :items="MIXING_MODES"
       hide-value
       :fit-activator="false"
-      :model-value="pltState.mixMode_"
-      @update:model-value="pltState.setBlendMode_($event as Mixing)"
+      v-model:idx="pltState.mixMode_"
     />
     <SelectMenu
       v-memo="[isSmall]"
@@ -281,7 +280,7 @@ import { invertBoolean } from '@/utils/helpers';
 import media from '@/composables/useMedia';
 import usePltStore, { SPACES } from '@/stores/usePltStore';
 import useSettingStore from '@/stores/useSettingStore';
-import { map, MIXING_MODES, SORTING_ACTIONS, type Mixing, type Sort } from '@johnny95731/color-utils';
+import { map, MIXING_MODES, SORTING_ACTIONS, type Sort } from '@johnny95731/color-utils';
 
 const ContrastDialog = defineAsyncComponent(
   () => import('@/components/ContrastDialog/ContrastDialog.vue')

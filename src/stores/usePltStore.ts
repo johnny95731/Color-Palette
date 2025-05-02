@@ -1,10 +1,10 @@
 import { defineStore } from 'pinia';
 // Utils
 import { reduce } from '@/utils/helpers.ts';
-import { cloneDeep, map, COLOR_SPACES, randRgbGen, getSpaceRange, getColorSpace, hex2rgb, rgb2hex, mixColors, SORTING_ACTIONS, sortColors, adjContrast } from '@johnny95731/color-utils';
+import { cloneDeep, map, COLOR_SPACES, randRgbGen, getSpaceRange, getColorSpace, hex2rgb, rgb2hex, mixColors, SORTING_ACTIONS, sortColors, adjContrast, meanMix } from '@johnny95731/color-utils';
 import useSettingStore from './useSettingStore';
 // Types
-import type { ColorSpace, Mixing, Sort } from '@johnny95731/color-utils';
+import type { ColorSpace, Sort } from '@johnny95731/color-utils';
 
 
 export const MIN_NUM_OF_CARDS = 2;
@@ -18,7 +18,7 @@ export const SPACES = map(
     val: name_
   })
 );
-SPACES.unshift(cloneDeep(SPACES[0]));
+SPACES.unshift({ ...SPACES[0] });
 SPACES[0].name = 'NAMED';
 SPACES[0].val = 'NAMED';
 
@@ -88,9 +88,9 @@ type State = {
    */
   isAdjustingPlt_: boolean;
   /**
-   * How to evaluate a new color when insert a new card.
+   * Method of card color mix.
    */
-  mixMode_: Mixing;
+  mixMode_: number;
   /**
    * Color space which will be displayed under hex code and be used in edit
    * mode.
@@ -108,7 +108,7 @@ const usePltStore = defineStore('plt', {
       isPending_: false,
       editingIdx_: -1,
       isAdjustingPlt_: false,
-      mixMode_: 'mean',
+      mixMode_: 0,
       spaceName_: 'NAMED',
       colorSpace_: COLOR_SPACES[0]
     };
@@ -125,11 +125,16 @@ const usePltStore = defineStore('plt', {
     },
     editingDialogInfo_(): {
       labels_: string[],
-      range_: [number, number][]
+      max_: number[],
+      displayedRange_: [number, number][],
       } {
+      const range = getSpaceRange(this.colorSpace_);
       return {
         labels_: this.colorSpace_.labels_,
-        range_: getSpaceRange(this.colorSpace_)
+        max_: map(range, bound => bound[1]),
+        displayedRange_: map(range, (r) => {
+          return r[1] === 360 ? r : [r[0] === 0 ? 0 : -100, 100];
+        })
       };
     }
   },
@@ -154,22 +159,28 @@ const usePltStore = defineStore('plt', {
         isFav_: false,
       };
     },
-    mixCard_(left: number, right: number = left + 1) {
+    mixCard_(rIdx: number) {
+      const lIdx = rIdx - 1;
       // Evaluate new color.
-      const { fromRgb_ } = this.colorSpace_;
+      const { fromRgb_, toRgb_ } = this.colorSpace_;
 
-      // -Add to the fist position. Blending the first card and black.
-      const leftColor =
-        left < 0 ? fromRgb_([0, 0, 0]) : this.cards_[left].color_;
-
-      // -Add to the last position. Blending the last card and white.
-      const rightColor =
-        right >= this.numOfCards_ ?
-          fromRgb_([255, 255, 255]) :
-          this.cards_[right].color_;
-      return mixColors(
-        [leftColor, rightColor], this.mixMode_, this.colorSpace_,
-      );
+      let leftColor: number[];
+      let rightColor: number[];
+      if (!this.mixMode_) {
+        leftColor = this.cards_[lIdx]?.color_ ?? fromRgb_([0, 0, 0]);
+        rightColor = this.cards_[rIdx]?.color_ ?? fromRgb_([255, 255, 255]);
+        return meanMix(leftColor, rightColor);
+      } else { // Conver to RGB.
+        // -Add to the fist position. Blending the first card and black.
+        leftColor =
+          lIdx < 0 ? [0, 0, 0] : toRgb_(this.cards_[lIdx].color_);
+        // -Add to the last position. Blending the last card and white.
+        rightColor =
+          rIdx >= this.numOfCards_ ?
+            [255, 255, 255] :
+            toRgb_(this.cards_[rIdx].color_);
+        return fromRgb_(mixColors([leftColor, rightColor], this.mixMode_));
+      }
     },
     addCard_(idx: number, color: number[]) {
       if (this.numOfCards_ == MAX_NUM_OF_CARDS) return;
@@ -322,25 +333,19 @@ const usePltStore = defineStore('plt', {
         },
       );
     },
-    setBlendMode_(newBlendMode: Mixing) {
-      this.mixMode_ = newBlendMode;
-    },
     adjustContrast_(method: number, coeff?: number) {
       if (!this.isAdjustingPlt_) return;
-      const toRgb = this.colorSpace_.toRgb_;
+      const { fromRgb_, toRgb_ } = this.colorSpace_;
 
-      const arr = map(this.cards_, card => card.originColor_);
-      const newColors = adjContrast(
-        arr,
-        method,
-        this.colorSpace_,
-        coeff!
-      );
+      const rgbs = map(this.cards_, card => toRgb_(card.originColor_));
+      const newRgbs = adjContrast(rgbs, method, coeff!);
       reduce(this.cards_, (_, card, i) => {
-        card.color_ = newColors[i];
-        card.hex_ = rgb2hex(toRgb(newColors[i]));
+        card.color_ = fromRgb_(newRgbs[i]);
+        card.hex_ = rgb2hex(newRgbs[i]);
       });
     },
+    // helpers
+
   },
 });
 export default usePltStore;
