@@ -1,9 +1,16 @@
 # Color-Palette
-[React版本連結](https://github.com/johnny95731/Color-Palette-React-)。
 產生調色盤用於設計，為你的專案擬定色彩計畫。<br>
-提供8種色彩空間（含css named-color）、書籤紀錄、幻燈片切換等功能。其他包括成自動排序、新增卡片時的多種混色方式、調整亮度對比，以及卡片增加border以降低對比引起的視錯覺、調整顏色的過渡時間避免閃爍或欣賞漸變幻燈片。
+- 提供13種色彩空間、書籤紀錄、幻燈片切換。
+- 多種排序，包含透過亮度及CIE color difference排序。
+- 多種混色方式。
+- 調整亮度對比。
+- 調和調色盤生成。
+- WCAG對比值計算。
+- 開關無彩色邊界。
 
-色彩相關函數使用另一個專案[color-utils](https://github.com/johnny95731/color-utils?tab=readme-ov-file#benchmark)。
+詳細的色彩相關介紹參照repo: [color-utils](https://github.com/johnny95731/color-utils?tab=readme-ov-file#benchmark)。
+
+[React版本連結\(deprecated\)](https://github.com/johnny95731/Color-Palette-React-)
 
 ## Header工具列
 上方工具列依序為刷新、幻燈片播放/暫停、排序、混色方法、色彩空間、調和調色盤、書籤頁以及設定。
@@ -19,7 +26,7 @@
 
 - ### <img style="background:white;padding:1px" src="./md-assets/icons/file-earmark-plus.svg" alt="mixing"/> 混色方法 Color Mixing
   新增卡片時的混色方法，提供平均值（Mean，預設）、更亮(brighter)、更暗(deeper)、soft light、Additive(RGB加法計算)、隨機(Random)。<br/>
-  平均值受選取的色彩空間影響。
+  平均值受選取的色彩空間影響，其餘方法不受影響。
 
 - ### <img style="background:white;padding:1px" src="./md-assets/icons/sliders.svg" alt="space"/> 色彩空間 Color Space
   展示及編輯的色彩模式，
