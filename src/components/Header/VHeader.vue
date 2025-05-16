@@ -51,7 +51,7 @@
       aria-label="混色"
       :text="isSmall ? '混色' : undefined"
       :tooltip="isSmall ? false : true"
-      :items="MIXING_MODES"
+      :items="MIXING_MODES.slice(0, MIXING_MODES.length)"
       hide-value
       :fit-activator="false"
       v-model:idx="pltState.mixMode_"
