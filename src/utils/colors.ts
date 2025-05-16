@@ -1,4 +1,4 @@
-import { COLOR_SPACES, getColorSpace, getCssColor, getSpaceRange, hex2rgb, hsb2rgb, map, namedColor, rgb2hex, rgb2hsb, type ColorSpace, type CssColorOptions } from '@johnny95731/color-utils';
+import { COLOR_SPACES, getColorSpace, getCssColor, hex2rgb, hsb2rgb, map, namedColor, rgb2hex, rgb2hsb, type ColorSpace, type CssColorOptions } from '@johnny95731/color-utils';
 import { frac2percentage } from './numeric';
 
 /** Remove Non-hex characters */
@@ -50,7 +50,7 @@ export const gradientGen = (
   deg: string = '90deg',
 ) => {
   space = getColorSpace(space);
-  const [min, max] = getSpaceRange(space)[axis];
+  const [min, max] = space.max_[axis];
   const unitIncreament = (max - min) / steps;
   // console.log(color, min, max, unitIncreament, isSupported_);
   const arr = [...color];

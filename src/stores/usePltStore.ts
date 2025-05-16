@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 // Utils
 import { reduce } from '@/utils/helpers.ts';
-import { cloneDeep, map, COLOR_SPACES, randRgbGen, getSpaceRange, getColorSpace, hex2rgb, rgb2hex, mixColors, SORTING_ACTIONS, sortColors, adjContrast, meanMix } from '@johnny95731/color-utils';
+import { cloneDeep, map, COLOR_SPACES, randRgbGen, getColorSpace, hex2rgb, rgb2hex, mixColors, SORTING_ACTIONS, sortColors, adjContrast, meanMix } from '@johnny95731/color-utils';
 import useSettingStore from './useSettingStore';
 // Types
 import type { ColorSpace, Sort } from '@johnny95731/color-utils';
@@ -126,9 +126,9 @@ const usePltStore = defineStore('plt', {
     editingDialogInfo_(): {
       labels_: string[],
       max_: number[],
-      displayedRange_: [number, number][],
+      displayedRange_: (readonly [number, number])[],
       } {
-      const range = getSpaceRange(this.colorSpace_);
+      const range = this.colorSpace_.max_;
       return {
         labels_: this.colorSpace_.labels_,
         max_: map(range, bound => bound[1]),
