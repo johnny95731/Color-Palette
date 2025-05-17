@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 // Utils
 import { reduce } from '@/utils/helpers.ts';
-import { cloneDeep, map, COLOR_SPACES, randRgbGen, getColorSpace, hex2rgb, rgb2hex, mixColors, SORTING_ACTIONS, sortColors, adjContrast, meanMix } from '@johnny95731/color-utils';
+import { cloneDeep, map, COLOR_SPACES, randRgbGen, getColorSpace, hex2rgb, rgb2hex, mixColors, SORTING_ACTIONS, sortColors, adjContrast, meanMix, toSpace } from '@johnny95731/color-utils';
 import useSettingStore from './useSettingStore';
 // Types
 import type { ColorSpace, Sort } from '@johnny95731/color-utils';
@@ -26,7 +26,7 @@ SPACES[0].val = 'NAMED';
  * Storage of IDs. Get value when creating new card. Save to storage when delete
  * card.
  */
-const CARD_IDS = map(MAX_NUM_OF_CARDS, i => i);
+const cardIDs = map(MAX_NUM_OF_CARDS, i => i);
 
 /**
  * The current order of cards.
@@ -128,11 +128,11 @@ const usePltStore = defineStore('plt', {
       max_: number[],
       displayedRange_: (readonly [number, number])[],
       } {
-      const range = this.colorSpace_.max_;
+      const { max_, labels_ } = this.colorSpace_;
       return {
-        labels_: this.colorSpace_.labels_,
-        max_: map(range, bound => bound[1]),
-        displayedRange_: map(range, (r) => {
+        labels_,
+        max_: map(max_, bound => bound[1]),
+        displayedRange_: map(max_, (r) => {
           return r[1] === 360 ? r : [r[0] === 0 ? 0 : -100, 100];
         })
       };
@@ -149,7 +149,7 @@ const usePltStore = defineStore('plt', {
       color ??= fromRgb_(randRgbGen());
       const hex = rgb2hex(toRgb_(color));
       return {
-        id_: id ?? CARD_IDS.shift()!,
+        id_: id ?? cardIDs.shift()!,
         order_: order,
         hex_: hex,
         color_: color,
@@ -163,83 +163,93 @@ const usePltStore = defineStore('plt', {
       const lIdx = rIdx - 1;
       // Evaluate new color.
       const { fromRgb_, toRgb_ } = this.colorSpace_;
+      const cards = this.cards_;
 
       let leftColor: number[];
       let rightColor: number[];
-      if (!this.mixMode_) {
-        leftColor = this.cards_[lIdx]?.color_ ?? fromRgb_([0, 0, 0]);
-        rightColor = this.cards_[rIdx]?.color_ ?? fromRgb_([255, 255, 255]);
+      if (!this.mixMode_) { // In original space
+        leftColor = cards[lIdx]?.color_ ?? fromRgb_([0, 0, 0]);
+        rightColor = cards[rIdx]?.color_ ?? fromRgb_([255, 255, 255]);
         return meanMix(leftColor, rightColor);
       } else { // Conver to RGB.
         // -Add to the fist position. Blending the first card and black.
         leftColor =
-          lIdx < 0 ? [0, 0, 0] : toRgb_(this.cards_[lIdx].color_);
+          lIdx < 0 ? [0, 0, 0] : toRgb_(cards[lIdx].color_);
         // -Add to the last position. Blending the last card and white.
         rightColor =
           rIdx >= this.numOfCards_ ?
             [255, 255, 255] :
-            toRgb_(this.cards_[rIdx].color_);
+            toRgb_(cards[rIdx].color_);
         return fromRgb_(mixColors([leftColor, rightColor], this.mixMode_));
       }
     },
     addCard_(idx: number, color: number[]) {
       if (this.numOfCards_ == MAX_NUM_OF_CARDS) return;
-      const tempSort = this.sortBy_;
+
       const newCard = this.newCard_(
         this.numOfCards_,
         undefined,
         color
       );
       this.cards_.splice(idx, 0, newCard);
-      this.sortBy_ = 'random';
-      if (useSettingStore().autoSort && tempSort !== 'random') {
-        this.sortCards_(tempSort);
-      }
+
       this.resetOrder_();
+      this.checkAutoSort_();
     },
     delCard_(idx: number) {
       if (this.numOfCards_ === MIN_NUM_OF_CARDS) return;
-      const tempSort = this.sortBy_;
+
       const card = this.cards_.splice(idx, 1)[0];
-      CARD_IDS.push(card.id_);
+      cardIDs.push(card.id_);
+
       this.resetOrder_();
-      this.sortBy_ = 'random';
-      if (useSettingStore().autoSort && tempSort !== 'random') {
-        this.sortCards_(tempSort);
-      }
+      this.checkAutoSort_();
     },
     refreshCard_(idx: number) {
-      const tempSort = this.sortBy_;
-      if (idx >= 0 && !this.cards_[idx].isLock_) {
-        this.cards_[idx] = this.newCard_(idx, this.cards_[idx].id_);
-      } else if (idx === -1) {
-        this.cards_ = map(this.cards_, (card, i) =>
+      const cards = this.cards_;
+      if (idx >= 0 && !cards[idx].isLock_) {
+        cards[idx] = this.newCard_(idx, cards[idx].id_);
+      } else if (idx < 0) {
+        this.cards_ = map(cards, (card, i) =>
           card.isLock_ ? card : this.newCard_(i, card.id_)
         );
       }
-      this.sortBy_ = 'random';
-      if (useSettingStore().autoSort && tempSort !== 'random') {
-        this.sortCards_(tempSort);
-      }
+
+      this.checkAutoSort_();
     },
     editCard_(idx: number, color: number[]) {
       const toRgb = this.colorSpace_.toRgb_;
+
       const card = this.cards_[idx];
       card.color_ = color;
       card.hex_ = rgb2hex(toRgb(color));
+
       this.sortBy_ = 'random';
     },
-    sortCards_(sortBy: Sort) {
-      let opIdx = SORTING_ACTIONS.indexOf(sortBy);
+    checkAutoSort_() {
+      const oldSortBy = this.sortBy_;
+      // Prevent trigger reversion: when newSortBy === oldSortBy
+      this.sortBy_ = 'random';
+      if (useSettingStore().autoSort && oldSortBy !== 'random') {
+        this.sortCards_(oldSortBy);
+      }
+    },
+    sortCards_(sortBy?: Sort) {
+      sortBy ??= this.sortBy_;
       let cards = cloneDeep(this.cards_);
-      if (this.sortBy_ === SORTING_ACTIONS[opIdx]) opIdx = 2;
-      const { toRgb_: toRgb, fromRgb_: fromRgb } = this.colorSpace_;
-      const rgbGetter = (card: Card) => toRgb(card.color_);
 
+      let opIdx = SORTING_ACTIONS.indexOf(sortBy);
+      if (opIdx !== 1 && this.sortBy_ === sortBy) opIdx = 2;
+
+      const { toRgb_, fromRgb_ } = this.colorSpace_;
+      const rgbGetter = (card: Card) => toRgb_(card.color_);
+
+      // OpIdx > 2 <=> TSP sort.
       // The first element will compare to the black in TSP sort.
-      if (opIdx > 2) cards.unshift(this.newCard_(-1, -1, fromRgb([0,0,0])));
+      if (opIdx > 2) cards.unshift(this.newCard_(-1, -1, fromRgb_([0,0,0])));
       cards = sortColors(cards, opIdx, rgbGetter);
       if (opIdx > 2) cards.shift(); // TSP sort will not move first element.
+
       reduce(cards, (_, card, i) => card.id_ = this.cards_[i].id_);
       this.cards_ = cards;
 
@@ -314,7 +324,8 @@ const usePltStore = defineStore('plt', {
       const callback = (color: string | number[]): number[] => {
         return Array.isArray(color) ? color : fromRgb(hex2rgb(color));
       };
-      CARD_IDS.unshift(...map(this.cards_, (card) => card.id_));
+      // newCard_ will take first value of cardIDs
+      cardIDs.unshift(...map(this.cards_, (card) => card.id_));
       this.cards_ = map<Card, string | number[]>(
         plt,
         (color, i) => this.newCard_(i, undefined, callback(color))
@@ -322,15 +333,14 @@ const usePltStore = defineStore('plt', {
       this.sortBy_ = 'random';
     },
     setColorSpace_(space: string) {
+      const oldSpace = this.colorSpace_;
+      const newSpace =  getColorSpace(space);
       this.spaceName_ = space;
-      const toRgb = this.colorSpace_.toRgb_;
-      this.colorSpace_ = getColorSpace(space);
-      const fromRgb = this.colorSpace_.fromRgb_;
+      this.colorSpace_ = newSpace;
       reduce(
         this.cards_,
-        (_, card) => {
-          card.color_ = fromRgb(toRgb(card.color_));
-        },
+        (_, card) =>
+          card.color_ = toSpace(card.color_, oldSpace, newSpace),
       );
     },
     adjustContrast_(method: number, coeff?: number) {
@@ -344,8 +354,6 @@ const usePltStore = defineStore('plt', {
         card.hex_ = rgb2hex(newRgbs[i]);
       });
     },
-    // helpers
-
   },
 });
 export default usePltStore;
