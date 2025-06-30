@@ -166,7 +166,7 @@ import SelectMenu from '../Custom/SelectMenu.vue';
 import VSlider from '../Custom/VSlider.vue';
 import VDialog from '../Custom/VDialog.vue';
 // utils
-import { CONTRAST_METHODS, getAdjuster, getContrastRatio, map } from '@johnny95731/color-utils';
+import { CONTRAST_METHODS, getAdjuster, rgb2contrast, map } from '@johnny95731/color-utils';
 import { reduce, getDefaultParams, isNullish } from '@/utils/helpers';
 import { isTabKey } from '@/utils/browser';
 // stores
@@ -249,7 +249,7 @@ const ratioArgs = reactive({
   bg_: '#FFFFFF',
   text_: '#000000'
 });
-const contrastRatio = computed(() => getContrastRatio(ratioArgs.bg_, ratioArgs.text_));
+const contrastRatio = computed(() => rgb2contrast(ratioArgs.bg_, ratioArgs.text_));
 
 
 // Show and Hide
