@@ -209,8 +209,5 @@ const pasteColors = (e: ClipboardEvent, idx: number) => {
   do {
     unref(colors)[idx++] = palette.shift()!;
   } while (idx < MAX_NUM_OF_CARDS && palette.length);
-  if (idx < unref(colors).length) {
-    unref(colors).splice(idx, unref(colors).length - idx);
-  }
 };
 </script>
