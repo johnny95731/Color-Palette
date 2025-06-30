@@ -127,6 +127,7 @@ const usePltStore = defineStore('plt', {
       labels_: string[],
       max_: number[],
       displayedRange_: (readonly [number, number])[],
+      len_: number
       } {
       const { max_, labels_ } = this.colorSpace_;
       return {
@@ -134,7 +135,8 @@ const usePltStore = defineStore('plt', {
         max_: map(max_, bound => bound[1]),
         displayedRange_: map(max_, (r) => {
           return r[1] === 360 ? r : [r[0] === 0 ? 0 : -100, 100];
-        })
+        }),
+        len_: labels_.length
       };
     }
   },

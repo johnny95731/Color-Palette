@@ -13,21 +13,11 @@ export const hex2hsb = (hex: string) => {
 };
 
 /**
-* Add a white space before capital letters except the first letter.
-*/
-export const unzipCssNamed = (name: string) => name.replace(/([A-Z])/g, ' $1').trim();
-
-/**
 * All names of CSS <named-color> (removed synonym name) with sapce between words.
 */
-export const unzipedNameList: string[] = [];
-
-namedColor.forEach((hex, name) => {
-  unzipedNameList.push(name);
-});
+export const nameColorList = Array.from(namedColor.keys());
 
 const gradOption = {
-  percent_: false,
   place_: false
 } satisfies CssColorOptions;
 /**
@@ -50,7 +40,8 @@ export const gradientGen = (
   deg: string = '90deg',
 ) => {
   space = getColorSpace(space);
-  const [min, max] = space.max_[axis];
+  const isAlpha = space.max_.length === axis;
+  const [min, max] = isAlpha ? [0, 1] : space.max_[axis];
   const unitIncreament = (max - min) / steps;
   // console.log(color, min, max, unitIncreament, isSupported_);
   const arr = [...color];

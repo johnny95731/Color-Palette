@@ -30,9 +30,9 @@ type Props = {
 
 withDefaults(defineProps<Props>(), {
   autocomplete: 'off',
-  maxLength: 7,
+  maxLength: 9,
   size: 6,
-  pattern: '#([0-9A-Fa-f]{3}){1,2}',
+  pattern: '#?([0-9A-Fa-f]{3,4}){1,2}',
   fontSize: 'md'
 });
 

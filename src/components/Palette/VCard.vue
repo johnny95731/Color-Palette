@@ -149,7 +149,7 @@
         v-if="pltState.isInNamedSpace_"
         :class="$style.nameSelect"
         aria-label="CSS named-color選單"
-        :items="unzipedNameList"
+        :items="nameColorList"
         :contentClass="$style.nameSelectContent"
         :model-value="detail"
       >
@@ -157,7 +157,7 @@
           <!-- v-once cause vscode vue extension crashed -->
           <button
             v-once
-            v-for="(name, i) in unzipedNameList"
+            v-for="(name, i) in nameColorList"
             :key="`Option${name}`"
             v-bind="optionProps[i]"
             :style="{
@@ -165,7 +165,7 @@
             }"
             :title="name"
             type="button"
-            @click="selectName(unzipedNameList[i]);"
+            @click="selectName(nameColorList[i]);"
           />
         </template>
       </SelectMenu>
@@ -183,16 +183,31 @@
             :label="pltState.editingDialogInfo_.labels_[i]"
             :showRange="false"
             :showVal="false"
-            :trackerBackground="gradientGen(unref(card).color_, i, pltState.colorSpace_)"
+            :trackerBackground="gradientGen(card.color_, i, pltState.colorSpace_)"
             :thumbBackground="card.hex_"
             :min="min"
             :max="max"
             step="0.1"
             :model-value="sliderVals[i]"
             @update:model-value="handleSliderChange($event, i)"
-            @keydown="i === sliderVals.length - 1 && handleLeaveFocusing($event)"
           />
         </template>
+        <div style="margin-bottom: -4px">
+          {{ sliderLabels[pltState.editingDialogInfo_.len_] }}
+        </div>
+        <VSlider
+          label="Alpha"
+          :showRange="false"
+          :showVal="false"
+          :trackerBackground="gradientGen(card.color_, pltState.editingDialogInfo_.len_, pltState.colorSpace_)"
+          :thumbBackground="card.hex_"
+          min="0"
+          max="100"
+          step="0.1"
+          :model-value="sliderVals[pltState.editingDialogInfo_.len_]"
+          @update:model-value="handleSliderChange($event, pltState.editingDialogInfo_.len_)"
+          @keydown="handleLeaveFocusing($event)"
+        />
       </div>
     </OverlayContainer>
   </div>
@@ -214,7 +229,7 @@ import HexInputter from '../Custom/HexInputter.vue';
 // Utils
 import { rgb2named, named2rgb, hex2rgb, isValidHex, map, getCssColor, round, isLight } from '@johnny95731/color-utils';
 import { toPercent } from '@/utils/numeric';
-import { gradientGen, unzipedNameList } from '@/utils/colors';
+import { gradientGen, nameColorList } from '@/utils/colors';
 import { copyText, isTabKey } from '@/utils/browser';
 // Stores
 import usePltStore from '@/stores/usePltStore';
@@ -250,13 +265,11 @@ const card = computed<Card>(() => pltState.cards_[props.cardIdx]);
 
 const sliderVals = computed({
   get() {
-    const max = pltState.editingDialogInfo_.max_;
+    const { max_, len_ } = pltState.editingDialogInfo_;
     return map(unref(card).color_, (val, i) => {
-      if (max[i] === 360) {
-        return round(val, 1);
-      } else {
-        return toPercent(val / max[i], 1);
-      }
+      if (i === len_) return toPercent(val, 1);
+      if (max_[i] === 360) return round(val, 1);
+      return toPercent(val / max_[i], 1);
     });
   },
   set(newColor: number[]) {
@@ -265,9 +278,13 @@ const sliderVals = computed({
 });
 
 const sliderLabels = computed<string[]>(() => {
-  const { max_, labels_ } = pltState.editingDialogInfo_;
-  return map(unref(sliderVals), (val, i) => {
-    return `${labels_[i]}: ${val}${max_[i] === 360 ? '' : '%'}`;
+  const { max_, labels_, len_ } = pltState.editingDialogInfo_;
+  const vals = unref(sliderVals);
+  return map(len_ + 1, i => {
+    if (i < len_)
+      return `${labels_[i]}: ${vals[i]}${max_[i] === 360 ? 'deg' : '%'}`;
+    else
+      return `Alpha: ${vals[i]}%`;
   });
 });
 
@@ -384,12 +401,14 @@ const selectName = (name: string) => pltState.editCard_(
  * Slider changed event.
  */
 const handleSliderChange = (newVal: number | undefined, idx: number) => {
-  const max = pltState.editingDialogInfo_.max_;
+  const { max_, len_ } = pltState.editingDialogInfo_;
   const newColor = [...unref(card).color_];
   newColor[idx] = (
-    max[idx] === 360 ?
-      newVal! :
-      newVal! / 100 * max[idx]
+    idx === len_ ?
+      newVal! / 100 :
+      max_[idx] === 360 ?
+        newVal! :
+        newVal! / 100 * max_[idx]
   );
   sliderVals.value = newColor;
 };
