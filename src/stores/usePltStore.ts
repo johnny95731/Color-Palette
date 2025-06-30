@@ -328,7 +328,7 @@ const usePltStore = defineStore('plt', {
       };
       // newCard_ will take first value of cardIDs
       cardIDs.unshift(...map(this.cards_, (card) => card.id_));
-      this.cards_ = map<Card, string | number[]>(
+      this.cards_ = map(
         plt,
         (color, i) => this.newCard_(i, undefined, callback(color))
       );
