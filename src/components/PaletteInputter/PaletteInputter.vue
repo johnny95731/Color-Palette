@@ -207,7 +207,7 @@ const pasteColors = (e: ClipboardEvent, idx: number) => {
     if (isValidHex(str)) palette.push(str.startsWith('#') ? str : '#' + str);
 
   do {
-    unref(colors).splice(idx++, 1, palette.shift()!);
+    unref(colors)[idx++] = palette.shift()!;
   } while (idx < MAX_NUM_OF_CARDS && palette.length);
   if (idx < unref(colors).length) {
     unref(colors).splice(idx, unref(colors).length - idx);

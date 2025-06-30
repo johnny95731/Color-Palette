@@ -49,13 +49,13 @@ export const gradientGen = (
     steps + 1,
     space.isSupported_ ?
       i => {
-        arr.splice(axis, 1, min + i * unitIncreament);
+        arr[axis] = min + i * unitIncreament;
         return `${
           getCssColor(arr, space, gradOption)} ${
           frac2percentage(i, steps)}`;
       } :
       i => {
-        arr.splice(axis, 1, min + i * unitIncreament);
+        arr[axis] = min + i * unitIncreament;
         return `${
           getCssColor(space.toRgb_(arr), COLOR_SPACES[0], gradOption)} ${
           frac2percentage(i, steps)}`;
