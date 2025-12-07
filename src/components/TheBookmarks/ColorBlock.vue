@@ -42,26 +42,27 @@
 </template>
 
 <script lang="ts" setup>
+import { isLight } from '@johnny95731/color-utils';
 import { computed } from 'vue';
+
+import useFavStore from '@/stores/useFavStore';
+import { copyText } from '@/utils/browser';
+
 import $style from './VBookmarks.module.scss';
 import VBtn from '../Custom/VBtn.vue';
-import VTooltip from '../Custom/VTooltip.vue';
 import VIcon from '../Custom/VIcon.vue';
-// utils
-import { isLight } from '@johnny95731/color-utils';
-import { copyText } from '@/utils/browser';
-// stores
-import useFavStore from '@/stores/useFavStore';
-// types
+import VTooltip from '../Custom/VTooltip.vue';
+
 import type { CSSProperties } from 'vue';
 
+
 type Props = {
-  hex: string;
-}
+  hex: string
+};
 const props = defineProps<Props>();
 
 const iconFilterStyle = computed<CSSProperties>(() => {
-  return { filter: isLight(props.hex) ? 'invert(1)' :  undefined };
+  return { filter: isLight(props.hex) ? 'invert(1)' : undefined };
 });
 
 const favState = useFavStore();

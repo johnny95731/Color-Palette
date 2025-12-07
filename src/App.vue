@@ -1,19 +1,18 @@
 <template>
-  <VHeader
-    ref="headerRef"
-  />
+  <VHeader ref="headerRef" />
   <VPalette />
 </template>
 
-<script setup lang='ts'>
-import { ref, onMounted } from 'vue';
+<script setup lang="ts">
+import { onMounted, ref } from 'vue';
+
 import VHeader from './components/Header/VHeader.vue';
 import VPalette from './components/Palette/VPalette.vue';
-import { HOTKEYS } from './utils/hotkeys';
-// Store and Context
 import usePltStore from './stores/usePltStore';
-// types
+import { HOTKEYS } from './utils/hotkeys';
+
 import type { Sort } from '@johnny95731/color-utils';
+
 
 const headerRef = ref<InstanceType<typeof VHeader>>();
 
@@ -25,9 +24,11 @@ const keyDownEvent = (e: KeyboardEvent) => {
   const key = e.key.toLowerCase();
   if (
     // Prevent trigger hotkey when editing or add/remove/move (transition) card.
-    pltState.isEditing_ || pltState.isPending_ ||
-    headerRef.value?.isSomeDialogOpened_
-  ) return;
+    pltState.isEditing_
+    || pltState.isPending_
+    || headerRef.value?.isSomeDialogOpened_
+  )
+    return;
   if (key === refreshHotkey) {
     pltState.refreshCard_(-1);
     return;

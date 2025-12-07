@@ -13,7 +13,7 @@
       <VCard
         v-for="(card, i) in pltState.cards_"
         :key="card.id_"
-        :ref="(el) => cardRefs[i] = (el as CardInstance)"
+        :ref="(el) => (cardRefs[i] = el as CardInstance)"
         :class="draggingIdx === i && $style.dragging"
         :style="[settingStyle, cardStyle[i]]"
         :cardIdx="i"
@@ -33,7 +33,7 @@
         :key="`insert${i}`"
         :class="$style.insertWrapper"
         :style="{
-          [media.cardPos_]: val
+          [media.cardPos_]: val,
         }"
       >
         <VBtn
@@ -48,22 +48,23 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, unref, watch, nextTick } from 'vue';
-import $style from './VPalette.module.scss';
-import VBtn from '../Custom/VBtn.vue';
-import VCard from './VCard.vue';
-// utils
 import { map, rangeMapping, round } from '@johnny95731/color-utils';
+import { computed, nextTick, ref, unref, watch } from 'vue';
+
 import { useDragableElement } from '@/composables/useDragableElement';
-import { isNullish } from '@/utils/helpers';
-import { frac2percentage, toPercent } from '@/utils/numeric';
-// Stores / Contexts
+import media from '@/composables/useMedia';
 import usePltStore, { MAX_NUM_OF_CARDS } from '@/stores/usePltStore';
 import useSettingStore from '@/stores/useSettingStore';
-import media from '@/composables/useMedia';
-// Types
-import type { CSSProperties } from 'vue';
+import { isNullish } from '@/utils/helpers';
+import { frac2percentage, toPercent } from '@/utils/numeric';
+
+import VCard from './VCard.vue';
+import $style from './VPalette.module.scss';
+import VBtn from '../Custom/VBtn.vue';
+
 import type { Position } from '@vueuse/core';
+import type { CSSProperties } from 'vue';
+
 
 type CardInstance = InstanceType<typeof VCard>;
 
@@ -73,46 +74,43 @@ const cardRefs = ref<CardInstance[]>([]);
 const pltState = usePltStore();
 const settingsState = useSettingStore();
 
-
 const paletteGradient = computed(() => {
   if (settingsState.paletteDisplay === 'block') return;
   else {
     const direction = `${media.isSmall_ ? 180 : 90}deg`;
     const step = 1 / pltState.numOfCards_;
     const half = step / 2;
-    const cards = map(pltState.cards_, (card) => ({ hex_: card.hex_, order_: card.order_ }));
-    cards.sort((a,b) => a.order_ - b.order_); // Works only when dragging
+    const cards = map(pltState.cards_, card => ({
+      hex_: card.hex_,
+      order_: card.order_,
+    }));
+    cards.sort((a, b) => a.order_ - b.order_); // Works only when dragging
     const colorStops = map(
       cards,
-      (card, i) => `${card.hex_} ${toPercent(half + i * step, 0)}%`
+      (card, i) => `${card.hex_} ${toPercent(half + i * step, 0)}%`,
     );
     return {
-      background: `linear-gradient(${direction},${colorStops.join()})`
+      background: `linear-gradient(${direction},${colorStops.join()})`,
     };
   }
 });
-
 
 const settingStyle = computed<CSSProperties>(() => {
   const pos = settingsState.transition.pos;
   const color = settingsState.transition.color;
   return {
-    ...(
-      settingsState.paletteDisplay === 'block' && {
-        borderWidth: `${settingsState.border.width / 2}px`,
-        borderColor: settingsState.border.show ? settingsState.border.color : ''
-      }
-    ),
+    ...(settingsState.paletteDisplay === 'block' && {
+      borderWidth: `${settingsState.border.width / 2}px`,
+      borderColor: settingsState.border.show ? settingsState.border.color : '',
+    }),
     transitionDuration: `${pos}ms, ${pos}ms, ${color}ms`,
   };
 });
 
-
-const cardPosition = computed(
-  () => map(
-    pltState.numOfCards_ + 1,
-    i => frac2percentage(i, pltState.numOfCards_)
-  )
+const cardPosition = computed(() =>
+  map(pltState.numOfCards_ + 1, i =>
+    frac2percentage(i, pltState.numOfCards_),
+  ),
 );
 
 const resetCardStyle = (transition: 'none' | '' = '') => {
@@ -120,16 +118,18 @@ const resetCardStyle = (transition: 'none' | '' = '') => {
   cardStyle.value = map(pltState.numOfCards_, i => ({
     [media.cardPos_]: pos[i],
     [media.cardSize_]: pos[1],
-    transitionProperty: transition
+    transitionProperty: transition,
   }));
 };
-const cardStyle = ref<{
-  top?: CSSProperties['top']
-  left?: CSSProperties['left']
-  height?: CSSProperties['height']
-  width?: CSSProperties['width']
-  transitionProperty?: CSSProperties['transitionProperty']
-}[]>([]);
+const cardStyle = ref<
+  {
+    top?: CSSProperties['top']
+    left?: CSSProperties['left']
+    height?: CSSProperties['height']
+    width?: CSSProperties['width']
+    transitionProperty?: CSSProperties['transitionProperty']
+  }[]
+>([]);
 resetCardStyle();
 
 const setSize = (idx: number, size: string) => {
@@ -137,39 +137,42 @@ const setSize = (idx: number, size: string) => {
 };
 
 const setPosition = (idx: number, pos?: string) => {
-  unref(cardStyle)[idx][media.cardPos_] = pos ??
-      unref(cardPosition)[pltState.cards_[idx].order_];
+  unref(cardStyle)[idx][media.cardPos_]
+    = pos ?? unref(cardPosition)[pltState.cards_[idx].order_];
 };
 
 const setTransitionProperty = (idx: number, newVal: 'none' | '') => {
   unref(cardStyle)[idx].transitionProperty = newVal;
 };
 
-watch(() => pltState.numOfCards_, () => resetCardStyle(), { flush: 'sync' });
-watch(() => media.isSmall_, () => resetCardStyle());
-
+watch(
+  () => pltState.numOfCards_,
+  () => resetCardStyle(),
+  { flush: 'sync' },
+);
+watch(
+  () => media.isSmall_,
+  () => resetCardStyle(),
+);
 
 // Add card, remove card, and drag card trigger transition.
 // The state is for checking the transition is end.
 const isInTrans = ref<boolean[]>(map(pltState.cards_, () => false));
-
 
 /**
  * Infomation that be used in some events like mouseup(dragging end), add a
  * card, or remove card.
  */
 const eventInfo = ref<{
-  isDraggingEvent_?: boolean;
-  idx_?: number;
-    } | null
-    >(null);
-
+  isDraggingEvent_?: boolean
+  idx_?: number
+} | null>(null);
 
 const addCard = async (idx: number) => {
   pltState.addCard_(idx, pltState.mixCard_(idx));
   if (settingsState.transition.pos) {
     setSize(idx, '0');
-    setPosition(idx, frac2percentage(idx, pltState.numOfCards_-1));
+    setPosition(idx, frac2percentage(idx, pltState.numOfCards_ - 1));
     isInTrans.value = map(pltState.cards_, () => true);
     pltState.setIsPending_(true);
     eventInfo.value = { idx_: idx };
@@ -181,7 +184,8 @@ const onBeforeEnter = (el: Element) => {
     const idx = unref(eventInfo)!.idx_!;
     setSize(idx, frac2percentage(1, pltState.numOfCards_));
     setPosition(idx);
-  } else {
+  }
+  else {
     const style = (el as HTMLElement).style;
     style[media.cardSize_] = '0';
     style[media.cardPos_] = '100%';
@@ -199,12 +203,13 @@ const onEnter = (el: Element, done: () => void) => {
 const onAfterEnter = (el: Element) => {
   if (isNullish(eventInfo)) {
     const style = (el as HTMLElement).style;
-    const idx = [...unref(cardContainerRef)!.children].findIndex(child => child === el);
+    const idx = [...unref(cardContainerRef)!.children].findIndex(
+      child => child === el,
+    );
     style[media.cardSize_] = frac2percentage(1, pltState.numOfCards_);
     style[media.cardPos_] = frac2percentage(idx, pltState.numOfCards_);
   }
 };
-
 
 const removeCard = (idx: number) => {
   if (pltState.numOfCards_ === 2) return;
@@ -218,29 +223,33 @@ const removeCard = (idx: number) => {
 
 const onBeforeLeave = (el: Element) => {
   const style = (el as HTMLElement).style;
-  const idx = [...unref(cardContainerRef)!.children].findIndex(child => child === el);
+  const idx = [...unref(cardContainerRef)!.children].findIndex(
+    child => child === el,
+  );
   if (!isNullish(eventInfo)) {
     style[media.cardSize_] = '0';
-  } else {
+  }
+  else {
     style[media.cardSize_] = '100%'; // fill empty space.
   }
   style[media.cardPos_] = frac2percentage(idx, pltState.numOfCards_);
 };
-
 
 const draggingIdx = ref<number | null>(null);
 const { start: startDragging } = (() => {
   let cardIdx: number | null;
   let halfCardLength: number = 50 / pltState.numOfCards_;
   /** Get mouse position along specific axis. */
-  const getCoordinate = (pos: Position) => media.isSmall_ ? pos.y : pos.x;
+  const getCoordinate = (pos: Position) => (media.isSmall_ ? pos.y : pos.x);
   /** Get index of card that cursor on  */
   const getIdx = (pos: Position) => {
     return rangeMapping(
       getCoordinate(pos),
-      0, 100,
-      -0.49, pltState.numOfCards_-0.51,
-      0 // rounding to integer
+      0,
+      100,
+      -0.49,
+      pltState.numOfCards_ - 0.51,
+      0, // rounding to integer
     );
   };
 
@@ -286,7 +295,8 @@ const { start: startDragging } = (() => {
 })();
 
 // Side effect when transition is over.
-watch(() => unref(isInTrans).some((val) => val),
+watch(
+  () => unref(isInTrans).some(val => val),
   (someCardIsInTrans) => {
     if (someCardIsInTrans || !unref(eventInfo)) return;
     if (unref(eventInfo)!.isDraggingEvent_) {
@@ -301,12 +311,13 @@ watch(() => unref(isInTrans).some((val) => val),
     }
     pltState.setIsPending_(false);
     eventInfo.value = null;
-  }
+  },
 );
 
 /**
  * Style of insertion region.
  */
-const isShowingInsert = computed(() =>
-  !(pltState.numOfCards_ === MAX_NUM_OF_CARDS || pltState.isPending_));
+const isShowingInsert = computed(
+  () => !(pltState.numOfCards_ === MAX_NUM_OF_CARDS || pltState.isPending_),
+);
 </script>

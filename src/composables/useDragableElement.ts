@@ -1,9 +1,11 @@
-import { computed, ref, toValue, unref, watch } from 'vue';
-import { useEventListener } from '@vueuse/core';
-import { reduce } from '@/utils/helpers';
-import type { MaybeRef, MaybeRefOrGetter } from 'vue';
-import type { Position } from '@vueuse/core';
 import { clip, rangeMapping } from '@johnny95731/color-utils';
+import { useEventListener } from '@vueuse/core';
+import { computed, ref, toValue, unref, watch } from 'vue';
+
+import { reduce } from '@/utils/helpers';
+
+import type { Position } from '@vueuse/core';
+import type { MaybeRef, MaybeRefOrGetter } from 'vue';
 
 // A Modified of vueuse/useDraggable
 
@@ -35,7 +37,8 @@ export interface UseDraggableOptions {
    *
    * @default undefined
    */
-  containerElement_?: MaybeRefOrGetter<HTMLElement | SVGElement | null | undefined>
+  containerElement_?:
+  MaybeRefOrGetter<HTMLElement | SVGElement | null | undefined>
 
   /**
    * Initial position of the element.
@@ -89,7 +92,7 @@ export interface UseDraggableOptions {
  */
 export const useDragableElement = (
   target: MaybeRefOrGetter<HTMLElement | null | undefined>,
-  options: UseDraggableOptions = { capture_: true }
+  options: UseDraggableOptions = { capture_: true },
 ) => {
   const {
     preventDefault_: preventDefault_ = false,
@@ -109,7 +112,9 @@ export const useDragableElement = (
    * Cursor coordinate on screen. If `container` is specific, position is
    * bounding by the container and the top-left of the container is the origin.
    */
-  const position_ = ref<Position>(Object.assign({ x: 0, y: 0 }, toValue(initialValue_)));
+  const position_ = ref<Position>(
+    Object.assign({ x: 0, y: 0 }, toValue(initialValue_)),
+  );
 
   const handleEvent = (e: PointerEvent) => {
     if (toValue(preventDefault_))
@@ -126,9 +131,9 @@ export const useDragableElement = (
    * Bounding the value by container and mapping to percentage (if specific).
    */
   const posConverter = (val: number, start: number, end: number) => {
-    return toRatio_ ?
-      rangeMapping(val, start, end, 0, 100) :
-      clip(val, start, end) - start;
+    return toRatio_
+      ? rangeMapping(val, start, end, 0, 100)
+      : clip(val, start, end) - start;
   };
 
   /** Calculate cursor position. */

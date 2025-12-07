@@ -1,18 +1,21 @@
-import { describe, expect, test } from 'vitest';
 import { shallowMount, mount } from '@vue/test-utils';
+import { describe, expect, test } from 'vitest';
+
 import VBtn from '@/components/Custom/VBtn.vue';
+
 import type { VueWrapper } from '@vue/test-utils';
+
 
 const text = 'TestBtn';
 const createBtn = <T extends Record<string, unknown>>(
   options?: T,
-  shallow: boolean = true
+  shallow: boolean = true,
 ) => {
   return (shallow ? shallowMount : mount)(VBtn, {
     props: {
       text,
     },
-    ...options
+    ...options,
   });
 };
 
@@ -33,10 +36,10 @@ describe('props', () => {
     const btn = createBtn();
     // Has markup
     expect(
-      btn.text() ||
-      btn.attributes('title') ||
-      btn.attributes('aria-label') ||
-      btn.attributes('aria-labelledby')
+      btn.text()
+      || btn.attributes('title')
+      || btn.attributes('aria-label')
+      || btn.attributes('aria-labelledby'),
     ).toBeTruthy();
   });
 
@@ -78,26 +81,30 @@ describe('props', () => {
       props: {
         prependIcon: 'test prepend',
         appendIcon: 'test append',
-      }
+      },
     });
-    expect(withoutSlot.find('.btn__prepend > v-icon-stub').exists()).toBeTruthy();
+    expect(withoutSlot.find('.btn__prepend > v-icon-stub').exists())
+      .toBeTruthy();
     expect(withoutSlot.find('.btn__prepend > v-icon-stub').attributes('icon'))
       .toBe('test prepend');
-    expect(withoutSlot.find('.btn__append > v-icon-stub').exists()).toBeTruthy();
+    expect(withoutSlot.find('.btn__append > v-icon-stub').exists())
+      .toBeTruthy();
     expect(withoutSlot.find('.btn__append > v-icon-stub').attributes('icon'))
       .toBe('test append');
     // Slot has higher priority than prop(prependIcon/appendIcon)
     testSlot(withoutSlot)
       // slot will cover prop content
       .then((withSlot) => {
-        expect(withSlot.find('.btn__prepend > v-icon-stub').exists()).toBeFalsy();
-        expect(withSlot.find('.btn__append > v-icon-stub').exists()).toBeFalsy();
+        expect(withSlot.find('.btn__prepend > v-icon-stub').exists())
+          .toBeFalsy();
+        expect(withSlot.find('.btn__append > v-icon-stub').exists())
+          .toBeFalsy();
       });
   });
 
   test('variant', async () => {
     const btn = createBtn({
-      props: { variant: 'flat' }
+      props: { variant: 'flat' },
     }, false);
     expect(btn.find('.btn__overlay').exists()).toBeFalsy();
     await btn.setProps({ variant: 'std' });
@@ -106,7 +113,7 @@ describe('props', () => {
 
   test('icon', async () => {
     const btn = createBtn({
-      props: { icon: 'test content' }
+      props: { icon: 'test content' },
     });
     expect(btn.find('.btn--icon').exists()).toBeTruthy();
     // No inner text when `icon` prop is set.
@@ -121,7 +128,7 @@ describe('props', () => {
       },
       slots: {
         default: '<div id="test">test default</div>',
-      }
+      },
     });
     expect(withSlot.find('.btn--icon').exists()).toBeTruthy();
     expect(withSlot.find('.btn__content').html())

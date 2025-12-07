@@ -17,9 +17,7 @@
     :content-style="tooltipStyle"
     v-model="isOpened"
   >
-    <div
-      v-bind="$attrs"
-    >
+    <div v-bind="$attrs">
       <slot name="text">
         {{ text }}
       </slot>
@@ -28,27 +26,38 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch, getCurrentInstance, onMounted, unref } from 'vue';
 import { useEventListener } from '@vueuse/core';
-import OverlayContainer from './OverlayContainer.vue';
+import {
+  computed,
+  ref,
+  watch,
+  getCurrentInstance,
+  onMounted,
+  unref,
+} from 'vue';
+
 import { useElementBounding } from '@/composables/useElementBounding';
-import { isNullish, invertBoolean } from '@/utils/helpers';
 import { getComponentId } from '@/utils/browser';
+import { isNullish, invertBoolean } from '@/utils/helpers';
+
+import OverlayContainer from './OverlayContainer.vue';
+
 import type { CSSProperties, Component } from 'vue';
 
+
 export type Props = {
-  activator?: string | 'parent' | 'DomParent' | HTMLElement | Component,
-  id?: string,
-  eager?: boolean,
-  text?: string | number,
-  transition?: string,
-  openOnHover?: boolean,
-  closeDelay?: string | number,
-  openDelay?: string | number,
-  openOnClick?: boolean,
-  clickOpenDuration?: string | number,
-  location?: 'top' | 'bottom' | 'left' | 'right',
-}
+  activator?: string | 'parent' | 'DomParent' | HTMLElement | Component
+  id?: string
+  eager?: boolean
+  text?: string | number
+  transition?: string
+  openOnHover?: boolean
+  closeDelay?: string | number
+  openDelay?: string | number
+  openOnClick?: boolean
+  clickOpenDuration?: string | number
+  location?: 'top' | 'bottom' | 'left' | 'right'
+};
 
 const props = withDefaults(defineProps<Props>(), {
   location: 'bottom',
@@ -58,7 +67,7 @@ const props = withDefaults(defineProps<Props>(), {
   openDelay: 300,
   closeDelay: 200,
   openOnClick: false,
-  clickOpenDuration: 700
+  clickOpenDuration: 700,
 });
 
 const tooltipRef = ref<InstanceType<typeof OverlayContainer>>();
@@ -69,8 +78,7 @@ const instance = getCurrentInstance();
 const activatorEl = computed<HTMLElement | null>(() => {
   // eslint-disable-next-line
   refreshActivatorElKey.value;
-  if (props.activator === 'parent')
-    return instance?.parent?.proxy?.$el;
+  if (props.activator === 'parent') return instance?.parent?.proxy?.$el;
   if (props.activator === 'DomParent') {
     return instance?.proxy?.$el.previousElementSibling;
   }
@@ -84,8 +92,8 @@ onMounted(() => {
   invertBoolean(refreshActivatorElKey); // trigger computed
 });
 
-const idForContainer = computed<string>(() =>
-  props.id ?? getComponentId('tooltip')
+const idForContainer = computed<string>(
+  () => props.id ?? getComponentId('tooltip'),
 );
 const removeAttributes = (el: HTMLElement | null) => {
   el?.removeAttribute('aria-describedby');
@@ -97,24 +105,24 @@ const addAttributes = (el: HTMLElement | null, id: string) => {
 watch(
   () => [unref(activatorEl), unref(idForContainer)] as const,
   (newEl, oldEl) => {
-    if (oldEl)
-      removeAttributes(oldEl[0]);
+    if (oldEl) removeAttributes(oldEl[0]);
     addAttributes(newEl[0], newEl[1]);
-  }, { immediate: true, flush: 'post' });
-
+  },
+  { immediate: true, flush: 'post' },
+);
 
 const openDelay_ = computed<number>(() =>
-  Number.isNaN(+props.openDelay) ? 100 : +props.openDelay
+  Number.isNaN(+props.openDelay) ? 100 : +props.openDelay,
 );
 const closeDelay_ = computed<number>(() =>
-  Number.isNaN(+props.closeDelay) ? 200 : +props.closeDelay
+  Number.isNaN(+props.closeDelay) ? 200 : +props.closeDelay,
 );
 const clickOpenDuration_ = computed<number>(() =>
-  isNaN(+props.clickOpenDuration) ? 700 : +props.clickOpenDuration
+  isNaN(+props.clickOpenDuration) ? 700 : +props.clickOpenDuration,
 );
 
 // Tooltip position
-//** Current activator */
+//* * Current activator */
 const currentTarget = ref<HTMLElement | null>(null);
 const { rect_ } = useElementBounding(currentTarget);
 const tooltipStyle = computed<CSSProperties>(() => {
@@ -162,10 +170,12 @@ const handleShow = (e: MouseEvent) => {
   // Set `isOpened`
   if (unref(openDelay_))
     delayTimeoutId = window.setTimeout(
-      invertBoolean, unref(openDelay_), isOpened, true
+      invertBoolean,
+      unref(openDelay_),
+      isOpened,
+      true,
     );
-  else
-    invertBoolean(isOpened, true);
+  else invertBoolean(isOpened, true);
   // To get activator position.
   currentTarget.value = e.currentTarget as HTMLElement;
 };
@@ -173,14 +183,16 @@ const handleHide = (e: MouseEvent) => {
   if (!props.openOnHover && e?.type === 'mouseleave') return;
   // Clear timeout
   if (!isNullish(delayTimeoutId))
-    (delayTimeoutId = clearTimeout(delayTimeoutId!));
+    delayTimeoutId = clearTimeout(delayTimeoutId!);
   // Set `isOpened`
   if (unref(closeDelay_))
     delayTimeoutId = window.setTimeout(
-      invertBoolean, unref(closeDelay_), isOpened, false
+      invertBoolean,
+      unref(closeDelay_),
+      isOpened,
+      false,
     );
-  else
-    invertBoolean(isOpened, false);
+  else invertBoolean(isOpened, false);
 };
 
 let clickTimeout: number | void;
@@ -192,7 +204,10 @@ const handleClick = (e: MouseEvent) => {
   // To get activator position.
   currentTarget.value = e.currentTarget as HTMLElement;
   clickTimeout = window.setTimeout(
-    invertBoolean, unref(clickOpenDuration_) + unref(closeDelay_), isOpened, false
+    invertBoolean,
+    unref(clickOpenDuration_) + unref(closeDelay_),
+    isOpened,
+    false,
   );
 };
 
@@ -201,24 +216,23 @@ useEventListener(activatorEl, 'mouseenter', handleShow);
 useEventListener(activatorEl, 'mouseleave', handleHide);
 useEventListener(activatorEl, 'click', handleClick);
 const activatorProps = computed(() => ({
-  onMouseenter: handleShow,
-  onMouseleave: handleHide,
-  onClick: handleClick,
+  'onMouseenter': handleShow,
+  'onMouseleave': handleHide,
+  'onClick': handleClick,
   'aria-describedby': unref(idForContainer),
 }));
 </script>
 
 <style lang="scss">
-@use '@/assets/variables.scss' as *;
+@use "@/assets/variables.scss" as *;
 
-.tooltip .overlay__content{
+.tooltip .overlay__content {
   padding: 8px 12px;
   border-radius: $radius-md;
 
   color: #fff;
   text-wrap: nowrap;
 
-  background: #000B;
+  background: #000b;
 }
-
 </style>

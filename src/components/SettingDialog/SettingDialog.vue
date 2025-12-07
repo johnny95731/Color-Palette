@@ -130,16 +130,21 @@
 
 <script setup lang="ts">
 import { ref, reactive, watch } from 'vue';
+
+import useSettingStore, {
+  BORDER_COLOR, BORDER_MAX_WIDTH, COLOR_SYNTAX, PALETTE_DISPLAY,
+  TRANSITION_MAX_COLOR, TRANSITION_MAX_POS,
+} from '@/stores/useSettingStore';
+import { isTabKey } from '@/utils/browser';
+
 import $style from './SettingDialog.module.scss';
 import SelectMenu from '../Custom/SelectMenu.vue';
-import VSwitch from '../Custom/VSwitch.vue';
-import VSlider from '../Custom/VSlider.vue';
 import VDialog from '../Custom/VDialog.vue';
-import { isTabKey } from '@/utils/browser';
-// stores
-import useSettingStore, { BORDER_COLOR, BORDER_MAX_WIDTH, COLOR_SYNTAX, PALETTE_DISPLAY, TRANSITION_MAX_COLOR, TRANSITION_MAX_POS } from '@/stores/useSettingStore';
-// types
+import VSlider from '../Custom/VSlider.vue';
+import VSwitch from '../Custom/VSwitch.vue';
+
 import type { TransitionStyle } from '@/stores/useSettingStore';
+
 
 const isOpened = defineModel<boolean>(); // Show/Hide
 
@@ -153,7 +158,7 @@ const handleFocusoutDialog = (e: KeyboardEvent) => {
 };
 
 const tabLabels = [
-  '展示', '卡片'
+  '展示', '卡片',
 ];
 const tabIdx = ref<number>(0);
 
@@ -162,8 +167,8 @@ const settingsState = useSettingStore();
 // page 1: Card
 // -Transition states
 const transition = reactive<{
-  pos_: number,
-  color_: number,
+  pos_: number
+  color_: number
 }>({
   pos_: settingsState.transition.pos,
   color_: settingsState.transition.color,

@@ -158,22 +158,25 @@
 </template>
 
 <script setup lang="ts">
+import {
+  CONTRAST_METHODS, getAdjuster, rgb2contrast, map,
+} from '@johnny95731/color-utils';
 import { computed, ref, reactive, watch, nextTick, unref } from 'vue';
-import $style1 from './ContrastDialog.module.scss';
-import $style2 from '../SettingDialog/SettingDialog.module.scss';
-import VBtn from '../Custom/VBtn.vue';
-import SelectMenu from '../Custom/SelectMenu.vue';
-import VSlider from '../Custom/VSlider.vue';
-import VDialog from '../Custom/VDialog.vue';
-// utils
-import { CONTRAST_METHODS, getAdjuster, rgb2contrast, map } from '@johnny95731/color-utils';
-import { reduce, getDefaultParams, isNullish } from '@/utils/helpers';
-import { isTabKey } from '@/utils/browser';
-// stores
+
 import usePltStore from '@/stores/usePltStore';
-import VIcon from '../Custom/VIcon.vue';
-import VTooltip from '../Custom/VTooltip.vue';
+import { isTabKey } from '@/utils/browser';
+import { reduce, getDefaultParams, isNullish } from '@/utils/helpers';
+
+import $style1 from './ContrastDialog.module.scss';
 import HexInputter from '../Custom/HexInputter.vue';
+import SelectMenu from '../Custom/SelectMenu.vue';
+import VBtn from '../Custom/VBtn.vue';
+import VDialog from '../Custom/VDialog.vue';
+import VIcon from '../Custom/VIcon.vue';
+import VSlider from '../Custom/VSlider.vue';
+import VTooltip from '../Custom/VTooltip.vue';
+import $style2 from '../SettingDialog/SettingDialog.module.scss';
+
 
 const dialogRef = ref<InstanceType<typeof VDialog>>();
 
@@ -196,21 +199,21 @@ const handleFocusoutDialog = (e: KeyboardEvent) => {
 // # Page 0: Adjuster
 const defaultParams = map(
   CONTRAST_METHODS,
-  (method) => (
+  method => (
     getDefaultParams(getAdjuster(method))[1]
-  )
+  ),
 ) as (number | undefined)[];
 
 type ContrastArgs = {
   method_: number
 } & {
   [key in number]: number | undefined;
-}
+};
 const contrastArgs = reactive<ContrastArgs>({ method_: 0 } as ContrastArgs);
 const resetArgs = () => {
   reduce(
     CONTRAST_METHODS,
-    (_, __, i) => contrastArgs[i] = defaultParams[i]
+    (_, __, i) => contrastArgs[i] = defaultParams[i],
   );
 };
 resetArgs();
@@ -231,12 +234,12 @@ const handleMethodChanged = (idx: number) => {
 const updateContrastResult = () => {
   pltState.adjustContrast_(
     contrastArgs.method_,
-    contrastArgs[contrastArgs.method_]
+    contrastArgs[contrastArgs.method_],
   );
 };
 
 const contrastBtnEvent = (
-  state: Parameters<typeof pltState.setIsAdjustingPlt_>['0']
+  state: Parameters<typeof pltState.setIsAdjustingPlt_>['0'],
 ) => {
   pltState.setIsAdjustingPlt_(state);
   contrastArgs[contrastArgs.method_] = defaultParams[contrastArgs.method_];
@@ -247,9 +250,11 @@ const contrastBtnEvent = (
 // # Page 1: Contrast Ratio
 const ratioArgs = reactive({
   bg_: '#FFFFFF',
-  text_: '#000000'
+  text_: '#000000',
 });
-const contrastRatio = computed(() => rgb2contrast(ratioArgs.bg_, ratioArgs.text_));
+const contrastRatio = computed(
+  () => rgb2contrast(ratioArgs.bg_, ratioArgs.text_),
+);
 
 
 // Show and Hide
@@ -260,7 +265,8 @@ watch(isOpened, async (newVal) => {
     // Start adjusting when open dialog and in 2nd tab
     pltState.setIsAdjustingPlt_('start');
     updateContrastResult();
-  } else if (!newVal && pltState.isAdjustingPlt_)
+  }
+  else if (!newVal && pltState.isAdjustingPlt_)
     pltState.setIsAdjustingPlt_('cancel');
   // Focusing on tab after opening the dialog.
   unref(dialogRef)?.tabRefs[unref(tabIdx)]?.$el.focus();
@@ -270,7 +276,8 @@ watch(tabIdx, (newVal, oldVal) => {
   if (newVal === 0) { // Switch to tab 0
     pltState.setIsAdjustingPlt_('start');
     updateContrastResult();
-  } else if (oldVal === 0) // From tab 0 switch to another tab.
+  }
+  else if (oldVal === 0) // From tab 0 switch to another tab.
     pltState.setIsAdjustingPlt_('cancel');
 }, { flush: 'post', immediate: true });
 </script>

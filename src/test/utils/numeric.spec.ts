@@ -1,7 +1,13 @@
-import { expect, test } from 'vitest';
-import { cartesian2polar, countDecimals, frac2percentage, isSameFloat, mod, polar2cartesian, toPercent } from '@/utils/numeric';
 import { describe } from 'node:test';
+
 import { randInt } from '@johnny95731/color-utils';
+import { expect, test } from 'vitest';
+
+import {
+  cartesian2polar, countDecimals, frac2percentage, isSameFloat, mod,
+  polar2cartesian, toPercent,
+} from '@/utils/numeric';
+
 
 test('mod', () => {
   const cases = [ // mod 10
@@ -36,9 +42,9 @@ test('isSameFloat', () => {
   // [val1, val2, expect]
     [10, 0, false],
     [0, 0, true],
-    [1, 1 - Number.EPSILON/2, true],
-    [3, 3 - Number.EPSILON/2, true],
-    [0.0001, 0.0001 - Number.EPSILON/2, true],
+    [1, 1 - Number.EPSILON / 2, true],
+    [3, 3 - Number.EPSILON / 2, true],
+    [0.0001, 0.0001 - Number.EPSILON / 2, true],
     [1.00001, 1, false],
     [1.00001, 1.0001, false],
     [1.0000000001, 0.999999999999, false],
@@ -46,7 +52,9 @@ test('isSameFloat', () => {
   for (const [val1, val2, expect_] of cases) {
     expect(
       isSameFloat(val1, val2),
-      `${val1} and ${val2} are ${!expect_ ? 'same' : 'different'}, but get ${expect_}.`
+      `${val1} and ${val2} are ${
+        !expect_ ? 'same' : 'different'
+      }, but get ${expect_}.`,
     )
       .toBe(expect_);
   }
@@ -73,7 +81,7 @@ test('countDecimals', () => {
     const result = countDecimals(val);
     expect(
       result,
-      `${val} should have ${expect_} decimals.`
+      `${val} should have ${expect_} decimals.`,
     )
       .toBe(expect_);
   }
@@ -95,7 +103,7 @@ test('toPercent', () => {
     const result = toPercent(arg1, arg2);
     expect(
       result,
-      `toPercent(${arg1}, ${arg2}) should be ${expect_}, not ${result}.`
+      `toPercent(${arg1}, ${arg2}) should be ${expect_}, not ${result}.`,
     )
       .toBe(expect_);
   }
@@ -115,7 +123,7 @@ describe('Coordinate system', () => {
       const result = cartesian2polar(...args);
       expect(
         result,
-        `deg2rad(${args}) should be ${expect_}, not ${result}.`
+        `deg2rad(${args}) should be ${expect_}, not ${result}.`,
       )
         .toStrictEqual(expect_);
     }
@@ -157,13 +165,17 @@ describe('Coordinate system', () => {
       }
       expect(
         cartesian,
-        `(x,y)=(${cartesian.x},${cartesian.y}) is not stable in coordinate tranformation.`
+        `(x,y)=(${
+          cartesian.x},${cartesian.y
+        }) is not stable in coordinate tranformation.`,
       )
         .toStrictEqual(newCartesian);
 
       expect(
         polar,
-        `(r,theta)=(${polar.radius},${polar.deg}) is not stable in coordinate tranformation.`
+        `(r,theta)=(${
+          polar.radius},${polar.deg
+        }) is not stable in coordinate tranformation.`,
       )
         .toStrictEqual(newPolar);
     }

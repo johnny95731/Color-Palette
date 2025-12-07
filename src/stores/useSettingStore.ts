@@ -1,5 +1,6 @@
-import { defineStore } from 'pinia';
 import { cloneDeep } from '@johnny95731/color-utils';
+import { defineStore } from 'pinia';
+
 import { updateStore } from '@/utils/database';
 
 
@@ -18,21 +19,21 @@ export type BorderStyle = {
   /**
    * Show border or not.
    */
-  show: boolean;
-  width: number;
-  color: typeof BORDER_COLOR[number];
+  show: boolean
+  width: number
+  color: typeof BORDER_COLOR[number]
 };
 
 export type TransitionStyle = {
   /**
    * Position transition (happens only when dragging) duration (in `ms`).
    */
-  pos: number;
+  pos: number
   /**
    * Background-color transition duration (in `ms`).
    */
   color: number
-}
+};
 
 type PrimitiveValState = {
   /**
@@ -45,22 +46,22 @@ type PrimitiveValState = {
    * or
    * legacy syntaxL `rgb(0,0,0)`
    */
-  colorSyntax: typeof COLOR_SYNTAX[number],
+  colorSyntax: typeof COLOR_SYNTAX[number]
   /**
    * Auto sorting after operations such as refresh, add, and delete.
    */
-  autoSort: boolean,
-}
+  autoSort: boolean
+};
 
 export type State = {
   /**
    * Border of cards.
    */
-  border: BorderStyle;
+  border: BorderStyle
   /**
    * Transition of cards
    */
-  transition: TransitionStyle;
+  transition: TransitionStyle
 } & PrimitiveValState;
 
 
@@ -84,7 +85,7 @@ const useSettingStore = defineStore('setting', {
   getters: {
     colorFunctioonSep_(): string {
       return this.colorSyntax === 'modern' ? ' ' : ',';
-    }
+    },
   },
   actions: {
     initializeSettings_() {
@@ -96,20 +97,25 @@ const useSettingStore = defineStore('setting', {
           let storageItem: typeof initItem;
           try {
             storageItem = prev[key];
-          } catch {
+          }
+          catch {
             continue;
           }
           // Updating versions may cause different keys.
           // Pick and assign the common part.
           if (typeof initItem === 'object' && typeof storageItem === 'object') {
             // Assign previous value to current state for common attributes.
-            for (const itemKey of Object.keys(initItem) as (keyof typeof initItem)[]) {
+            for (
+              const itemKey of
+              Object.keys(initItem) as (keyof typeof initItem)[]
+            ) {
               if (
                 typeof initItem[itemKey] === typeof storageItem[itemKey]
               )
                 initItem[itemKey] = storageItem[itemKey];
             }
-          } else if (typeof initItem !== 'object') {
+          }
+          else if (typeof initItem !== 'object') {
             // @ts-expect-error
             this[key] = storageItem;
           }
@@ -128,7 +134,7 @@ const useSettingStore = defineStore('setting', {
       updateStore('settings', () => {
         return cloneDeep(this.$state);
       });
-    }
+    },
   },
 });
 export default useSettingStore;

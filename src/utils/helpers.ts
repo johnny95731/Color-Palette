@@ -1,22 +1,23 @@
-import { unref } from 'vue';
 import { map, randInt } from '@johnny95731/color-utils';
+import { unref } from 'vue';
+
 import type { MaybeRef, Ref, WritableComputedRef } from 'vue';
 
 
 // ### Object helpers
 export const objPick = <T extends object, K extends (string | number | symbol)>(
   obj: T,
-  keys: K[]
+  keys: K[],
 ) => (
   Object.fromEntries(
     map(
       keys,
       (key) => {
         return [key, obj[key as unknown as keyof T]];
-      }
+      },
     ),
-  ) as {[key in K]: key extends keyof T ? T[key] : undefined}
-  );
+  ) as { [key in K]: key extends keyof T ? T[key] : undefined }
+);
 
 type reduce = {
   <R>(
@@ -24,20 +25,20 @@ type reduce = {
     callback: (acc: R, val: null, i: number) => R,
     init?: R,
     _?: number
-  ): R;
+  ): R
   <R, T extends string>(
     arr: T,
     callback: (acc: R, val: T, i: number) => R,
     init?: R,
     len?: number,
-  ): R;
+  ): R
   <R, T>(
     arr: readonly T[],
     callback: (acc: R, val: T, i: number) => R,
     init?: R,
     len?: number,
-  ): R;
-}
+  ): R
+};
 
 /**
  * Same as Array.prototype.reduce but with for-loop.
@@ -66,9 +67,9 @@ type reduce = {
 export const reduce: reduce = <R, T>(
   arr: readonly T[] | string | number,
   callback:
-    typeof arr extends number ?
-      ((acc: R, val: null, i: number) => R) :
-      ((acc: R, val: T, i: number) => R),
+    typeof arr extends number
+      ? ((acc: R, val: null, i: number) => R)
+      : ((acc: R, val: T, i: number) => R),
   init?: R,
   len?: number,
 ): R => {
@@ -79,7 +80,8 @@ export const reduce: reduce = <R, T>(
       // @ts-expect-error
       s = callback(s, null, i++);
     }
-  } else {
+  }
+  else {
     len ??= arr.length;
     for (; i < len;) {
       // @ts-expect-error
@@ -89,7 +91,6 @@ export const reduce: reduce = <R, T>(
   // @ts-expect-error
   return s;
 };
-
 
 
 // ### Value helpers
@@ -104,7 +105,7 @@ export const isNullish = (val: MaybeRef<unknown>): val is null | undefined =>
  */
 export const invertBoolean = (
   ref: Ref<boolean | undefined> | WritableComputedRef<boolean | undefined>,
-  newVal?: boolean
+  newVal?: boolean,
 ) => ref.value = newVal ?? !unref(ref);
 
 /**
@@ -112,7 +113,7 @@ export const invertBoolean = (
  * If a parameter has no default value, it will be `undefined`.
  */
 export const getDefaultParams = (
-  fn: CallableFunction
+  fn: CallableFunction,
 ): (string | number | undefined)[] => {
   let argString = /\(\s*([^)]+?)\s*\)/.exec(fn.toString())?.[1];
   if (isNullish(argString)) return [];
@@ -133,8 +134,8 @@ export const getDefaultParams = (
  */
 export const randomCharacter = (noDigit: boolean = false) =>
   (
-    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz' + // 52letters
-    (noDigit ? '' : '0123456789')
+    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz' // 52letters
+    + (noDigit ? '' : '0123456789')
   ).charAt(randInt(noDigit ? 51 : 61)); // randInt is inclusive
 
 /**
@@ -149,11 +150,14 @@ const toStartCase = (text: string) => {
   return words.join(' ');
 };
 
-export const getLetterCaseConverter = (letterCase: 'start' | 'all-caps' | string) => {
+export const getLetterCaseConverter = (
+  letterCase: 'start' | 'all-caps' | string,
+) => {
   if (letterCase === 'all-caps')
     return (str: string) => str.toUpperCase();
   else if (letterCase === 'start') return toStartCase;
   else return (x: string) => x;
 };
 
-export const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+export const sleep = (ms: number) =>
+  new Promise(resolve => setTimeout(resolve, ms));

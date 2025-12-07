@@ -44,18 +44,18 @@
 </template>
 
 <script lang="ts" setup>
+import { map } from '@johnny95731/color-utils';
 import { ref, computed, watch, nextTick, unref } from 'vue';
-import $style from './VBookmarks.module.scss';
-import VBtn from '../Custom/VBtn.vue';
+
+import useFavStore from '@/stores/useFavStore';
+import usePltStore from '@/stores/usePltStore';
+import { isTabKey } from '@/utils/browser';
+
 import ColorBlock from './ColorBlock.vue';
 import PaletteBlock from './PaletteBlock.vue';
+import $style from './VBookmarks.module.scss';
+import VBtn from '../Custom/VBtn.vue';
 import VDialog from '../Custom/VDialog.vue';
-// Utils
-import { map } from '@johnny95731/color-utils';
-import { isTabKey } from '@/utils/browser';
-// Store
-import usePltStore from '@/stores/usePltStore';
-import useFavStore from '@/stores/useFavStore';
 
 
 const isOpened = defineModel<boolean>();
@@ -74,9 +74,10 @@ watch(isOpened, async (newVal) => { // focus dialog when open it.
 const handleFocusoutDialog = (e: KeyboardEvent) => {
   if (isTabKey(e)) {
     e.preventDefault();
-    if (unref(tabIdx) !== TabLabels.length - 1) {// switch to next tab page.
+    if (unref(tabIdx) !== TabLabels.length - 1) { // switch to next tab page.
       unref(dialogRef)?.tabRefs[++tabIdx.value]?.$el.focus();
-    } else {
+    }
+    else {
       isOpened.value = false;
     }
   }
@@ -88,8 +89,8 @@ const pltStrings = computed(() => (
   map(pltState.cards_, ({ hex_ }) => hex_.slice(1)).join('-')
 ));
 const btnState = computed<{
-  icon_: string,
-  text_: string,
+  icon_: string
+  text_: string
 }>(() => {
   const isFavPlt = favState.isFavPlt_(unref(pltStrings));
   return {

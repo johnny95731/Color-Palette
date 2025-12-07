@@ -89,22 +89,26 @@
 </template>
 
 <script setup lang="ts">
+import {
+  harmonize, HARMONY_METHODS, isLight, map, rgb2hex,
+} from '@johnny95731/color-utils';
 import { computed, reactive, ref, watch, unref } from 'vue';
-import $style from './HarmonyGenerator.module.scss';
-// components
-import SelectMenu from '../Custom/SelectMenu.vue';
-import ColorPicker from '../Custom/ColorPicker.vue';
-import VDialog from '../Custom/VDialog.vue';
-import VBtn from '../Custom/VBtn.vue';
-import VTooltip from '../Custom/VTooltip.vue';
-// utils
-import { harmonize, HARMONY_METHODS, isLight, map, rgb2hex } from '@johnny95731/color-utils';
-import { invertBoolean } from '@/utils/helpers';
+
+import usePltStore, {
+  MAX_NUM_OF_CARDS, MIN_NUM_OF_CARDS,
+} from '@/stores/usePltStore';
 import { copyText } from '@/utils/browser';
-// stores
-import usePltStore, { MAX_NUM_OF_CARDS, MIN_NUM_OF_CARDS } from '@/stores/usePltStore';
-// types
+import { invertBoolean } from '@/utils/helpers';
+
+import $style from './HarmonyGenerator.module.scss';
+import ColorPicker from '../Custom/ColorPicker.vue';
+import SelectMenu from '../Custom/SelectMenu.vue';
+import VBtn from '../Custom/VBtn.vue';
+import VDialog from '../Custom/VDialog.vue';
+import VTooltip from '../Custom/VTooltip.vue';
+
 import type { ModelRef } from 'vue';
+
 
 const isOpened = defineModel<boolean>() as ModelRef<boolean>;
 
@@ -118,8 +122,8 @@ const pltState = usePltStore();
  */
 const currentColor = ref<number[]>([0, 100, 100]);
 const harmonyArgs = reactive<{
-  method_: number,
-  num_: number,
+  method_: number
+  num_: number
 }>({
   method_: 3,
   num_: 6,
@@ -128,7 +132,7 @@ const harmonyArgs = reactive<{
 const palette = computed<string[]>(() => {
   return map(
     harmonize(unref(currentColor), harmonyArgs.method_, harmonyArgs.num_),
-    rgb => rgb2hex(rgb)
+    rgb => rgb2hex(rgb),
   );
 });
 
@@ -142,7 +146,7 @@ const isPreview = ref(true);
  */
 const preview = () => {
   pltState.setPlt_(
-    unref(isPreview) ? unref(palette) : unref(originalPalette)
+    unref(isPreview) ? unref(palette) : unref(originalPalette),
   );
 };
 watch(() => [unref(isPreview), unref(palette)], preview);
@@ -167,7 +171,8 @@ watch(isOpened, (newVal) => {
   if (newVal) {
     saveOrininal();
     preview();
-  } else
+  }
+  else
     pltState.setPlt_(unref(originalPalette)); // restore palette from `originalPalette`
 }, { immediate: true });
 </script>

@@ -40,7 +40,8 @@
           :max="variant === 'rect' ? 360 : 100"
           :trackerBackground="
             variant === 'rect' ?
-              'linear-gradient(to right, #F00, #FF0, #0F0, #0FF, #00F, #F0F, #F00)' :
+              'linear-gradient(to right, \
+#F00, #FF0, #0F0, #0FF, #00F, #F0F, #F00)' :
               'linear-gradient(to right, #000, #fff)'
           "
           :thumbBackground="secondThumbStyle.background"
@@ -107,21 +108,27 @@
 </template>
 
 <script setup lang="ts">
+import { isValidHex, map, rangeMapping, round } from '@johnny95731/color-utils';
 import { computed, onMounted, reactive, ref, unref, watch } from 'vue';
-import VSlider from './VSlider.vue';
+
+import { useDragableElement } from '@/composables/useDragableElement';
+import { COLOR_PICKER_CANVAS_SIZE, getPropertyValue } from '@/utils/browser';
+import { hex2hsb, hsb2hex } from '@/utils/colors';
+import { reduce, isNullish } from '@/utils/helpers';
+import {
+  cartesian2polar, mod, polar2cartesian, toPercent,
+} from '@/utils/numeric';
+
+import HexInputter from './HexInputter.vue';
 import SelectMenu from './SelectMenu.vue';
 import VDialog from './VDialog.vue';
-import HexInputter from './HexInputter.vue';
+import VSlider from './VSlider.vue';
+
 // utils
-import { cartesian2polar, mod, polar2cartesian, toPercent } from '@/utils/numeric';
-import { isValidHex, map, rangeMapping, round } from '@johnny95731/color-utils';
-import { reduce, isNullish } from '@/utils/helpers';
-import { COLOR_PICKER_CANVAS_SIZE, getPropertyValue } from '@/utils/browser';
-import { useDragableElement } from '@/composables/useDragableElement';
+
 // types
-import type { MaybeRef, ModelRef } from 'vue';
 import type { Position } from '@vueuse/core';
-import { hex2hsb, hsb2hex } from '@/utils/colors';
+import type { MaybeRef, ModelRef } from 'vue';
 
 
 const isOpened = defineModel<boolean>('show', { default: false });
@@ -140,10 +147,13 @@ const wheelHalfWidth = ref(0);
 const updateWheelHalfWidth = () => {
   if (unref(variant) === 'wheel' && unref(canvasPickerRef)) {
     wheelHalfWidth.value = toPercent(
-      getPropertyValue(unref(dialogRef)?.overlayContentRef, '--wheel-width') / (COLOR_PICKER_CANVAS_SIZE * 2),
-      2
+      getPropertyValue(
+        unref(dialogRef)?.overlayContentRef, '--wheel-width')
+      / (COLOR_PICKER_CANVAS_SIZE * 2),
+      2,
     );
-  } else
+  }
+  else
     wheelHalfWidth.value = 0;
 };
 
@@ -158,16 +168,16 @@ onMounted(() => {
 const currentColor = reactive<number[]>([0, 100, 100]); // hsb color
 const setCurrentColor = (
   color: MaybeRef<number[] | string>,
-  rounding: boolean = true
+  rounding: boolean = true,
 ) => {
   color = unref(color);
-  const hsb =  map(
-    typeof color === 'string' ?
-      hex2hsb(color) :
-      color,
-    rounding ?
-      val => round(val, 2) :
-      x => x
+  const hsb = map(
+    typeof color === 'string'
+      ? hex2hsb(color)
+      : color,
+    rounding
+      ? val => round(val, 2)
+      : x => x,
   );
   Object.assign(currentColor, hsb);
 };
@@ -178,30 +188,32 @@ const hexColor = computed({
   },
   set(hex: string) {
     if (
-      hex !== unref(hexColor) && // Avoid updating `currentColor` recursively.
-      isValidHex(hex)
+      hex !== unref(hexColor) // Avoid updating `currentColor` recursively.
+      && isValidHex(hex)
     ) {
       setCurrentColor(hex);
     }
-  }
+  },
 });
 /** Color with maximum saturation and brightness. */
 const pureColor = computed<string>(() =>
-  hsb2hex([currentColor[0], 100, 100])
+  hsb2hex([currentColor[0], 100, 100]),
 );
 
 type ColorThumbStyle = {
-  top: string,
-  left: string,
-  background: string,
-}
+  top: string
+  left: string
+  background: string
+};
 const canvasThumbStyle = reactive<ColorThumbStyle>({
   top: '0',
   left: '0',
   background: '',
 });
 const secondPickerStyle = computed(() => ({
-  background: `linear-gradient(0deg, #000, #0000), linear-gradient(90deg, #ffff, #fff0), ${unref(pureColor)}`
+  background:
+  `linear-gradient(0deg, #000, #0000), linear-gradient(90deg, #ffff, #fff0), ${
+    unref(pureColor)}`,
 }));
 const secondThumbStyle = ref<Partial<ColorThumbStyle>>({});
 
@@ -221,22 +233,24 @@ const updaters = computed(() => {
       slider_: (newVal: number) => {
         currentColor[0] = round(newVal, 2);
       },
-      secondThumbStyle_: () =>({
+      secondThumbStyle_: () => ({
         background: unref(pureColor),
-      })
+      }),
     };
   else if (unref(variant) === 'rounded')
     return {
       canvas_: (pos: Position) => {
         const { deg, radius } = cartesian2polar(
           rangeMapping(pos.y, 0, 100, -1, 1, 4),
-          rangeMapping(pos.x, 0, 100, -1, 1, 4)
+          rangeMapping(pos.x, 0, 100, -1, 1, 4),
         );
         currentColor[0] = mod(deg + 90, 360); // rotate
         currentColor[1] = rangeMapping(radius, 0, 1, 0, 100, 2);
       },
       canvasThumbStyle_: () => {
-        const { x, y } = polar2cartesian(currentColor[1], currentColor[0] - 90, 2); // 0deg at top
+        const { x, y } = polar2cartesian(
+          currentColor[1], currentColor[0] - 90, 2,
+        ); // 0deg at top
         return {
           top: rangeMapping(y, -100, 100, 0, 100, 1) + '%',
           left: rangeMapping(x, -100, 100, 0, 100, 1) + '%',
@@ -256,16 +270,18 @@ const updaters = computed(() => {
         const { deg } = cartesian2polar(
           rangeMapping(pos.y, 0, 100, -1, 1, 4),
           rangeMapping(pos.x, 0, 100, -1, 1, 4),
-          2
+          2,
         );
         currentColor[0] = mod(deg + 90, 360);
       },
       canvasThumbStyle_: () => {
-        const { x, y } = polar2cartesian(50 - unref(wheelHalfWidth), currentColor[0] - 90); // 0deg at top
+        const { x, y } = polar2cartesian(
+          50 - unref(wheelHalfWidth), currentColor[0] - 90,
+        ); // 0deg at top
         return {
           top: (y + 50) + '%',
           left: (x + 50) + '%',
-          background: unref(pureColor)
+          background: unref(pureColor),
         };
       },
       secondPicker_: (pos: Position) => {
@@ -276,7 +292,7 @@ const updaters = computed(() => {
       secondThumbStyle_: () => ({
         left: round(currentColor[1], 2) + '%',
         top: round(100 - currentColor[2], 2) + '%',
-        background: unref(hexColor)
+        background: unref(hexColor),
       }),
     };
 });
@@ -285,11 +301,11 @@ const updaters = computed(() => {
 /** Gradients that are not depend on `currentColor` */
 const canvasGrads: {
   /** White to transparent. Left to right. */
-  white_?: CanvasGradient,
+  white_?: CanvasGradient
   /** Transparent to black. Top to bottom. */
-  black_?: CanvasGradient,
+  black_?: CanvasGradient
   /** Hue conic gradient. 0 deg (red) on top. */
-  hue_?: CanvasGradient,
+  hue_?: CanvasGradient
 } = {};
 onMounted(() => {
   const ctx = unref(canvasPickerRef)?.getContext('2d');
@@ -305,14 +321,14 @@ onMounted(() => {
   canvasGrads.black_ = grdBlack;
   // Hue
   const hueGrad = ctx.createConicGradient(
-    -Math.PI/2, COLOR_PICKER_CANVAS_SIZE/2, COLOR_PICKER_CANVAS_SIZE/2
+    -Math.PI / 2, COLOR_PICKER_CANVAS_SIZE / 2, COLOR_PICKER_CANVAS_SIZE / 2,
   );
   const hexes = [
-    '#f00', '#ff0', '#0f0', '#0ff', '#00f', '#f0f', '#f00'
+    '#f00', '#ff0', '#0f0', '#0ff', '#00f', '#f0f', '#f00',
   ] as const;
   reduce(
     hexes,
-    (_, hex, i)=>hueGrad.addColorStop(i / (hexes.length - 1), hex)
+    (_, hex, i) => hueGrad.addColorStop(i / (hexes.length - 1), hex),
   );
   canvasGrads.hue_ = hueGrad;
 });
@@ -323,7 +339,7 @@ const clearCanvas = () => {
   ctx.clearRect(0, 0, COLOR_PICKER_CANVAS_SIZE, COLOR_PICKER_CANVAS_SIZE);
 };
 const fillStyle = (
-  style: MaybeRef<string | CanvasGradient | CanvasPattern>
+  style: MaybeRef<string | CanvasGradient | CanvasPattern>,
 ) => {
   const ctx = unref(canvasPickerRef)?.getContext('2d');
   if (!ctx) return;
@@ -352,17 +368,17 @@ const repainCanvas = computed(() => {
       fillStyle(canvasGrads.hue_!);
       // Brightness mask.
       fillStyle(
-        '#000000' +
-        rangeMapping(currentColor[2], 0, 100, 255, 0, 0).toString(16)
+        '#000000'
+        + rangeMapping(currentColor[2], 0, 100, 255, 0, 0).toString(16),
       );
       // Saturation gradient
       const center = COLOR_PICKER_CANVAS_SIZE / 2;
       const satGrad = ctx.createRadialGradient(
-        center, center, 0, center, center, center
+        center, center, 0, center, center, center,
       );
       const grayHex = hsb2hex([0, 0, currentColor[2]]);
       satGrad.addColorStop(0, grayHex);
-      satGrad.addColorStop(1, grayHex+'00');
+      satGrad.addColorStop(1, grayHex + '00');
       fillStyle(satGrad);
     };
   else {
@@ -380,7 +396,7 @@ const updateColorPicker = () => {
 watch(
   () => [unref(variant), currentColor],
   updateColorPicker,
-  { deep: true, flush: 'post' }
+  { deep: true, flush: 'post' },
 );
 onMounted(() => {
   updateColorPicker();

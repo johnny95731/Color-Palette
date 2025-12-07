@@ -50,35 +50,38 @@
 
 <script setup lang="ts">
 import { inject, onMounted, provide, ref, unref, watch } from 'vue';
-import { invertBoolean } from '@/utils/helpers';
+
 import { useElementBounding } from '@/composables/useElementBounding';
 import { calcOverlayZIndex } from '@/utils/browser';
 import { OVERLAY_SYMBOL } from '@/utils/componentSymbols';
+import { invertBoolean } from '@/utils/helpers';
+
+import type { VueClass } from '@/utils/browser';
 import type { CSSProperties } from 'vue';
 import type { ModelRef } from 'vue';
-import type { VueClass } from '@/utils/browser';
+
 
 export type Props = {
   /**
    * Forces the component’s content to render when it mounts.
    */
-  eager?: boolean,
+  eager?: boolean
   /**
    * Transparent background
    */
-  transparent?: boolean,
-  hideScrim?: boolean,
-  role?: string,
+  transparent?: boolean
+  hideScrim?: boolean
+  role?: string
   type?: 'menu' | 'dialog' | 'tooltip'
-  ariaModal?: boolean,
-  transition?: string,
+  ariaModal?: boolean
+  transition?: string
   contentClass?: VueClass
   contentStyle?: CSSProperties
   /**
    * Adding listener to closing overlay when pressing Escape.
    */
-  escEvent?: boolean,
-}
+  escEvent?: boolean
+};
 
 const props = withDefaults(defineProps<Props>(), {
   type: 'dialog',
@@ -89,8 +92,8 @@ const contentRef = ref<HTMLDivElement>();
 const { rect_ } = useElementBounding(contentRef);
 
 const emit = defineEmits<{
-  'update:modelValue': [newVal: boolean],
-  'transitionEnd': [],
+  'update:modelValue': [newVal: boolean]
+  'transitionEnd': []
 }>();
 
 // TODO: 合併OverlayContainer、DropdownMenu、SelectMenu的clickOutside
@@ -103,8 +106,8 @@ const handleKeydown = (e: KeyboardEvent) => {
 const { mousedown_, clickOutside_ } = (() => {
   const isClickOutside = (e: PointerEvent | MouseEvent) => (
     !(
-      rect_.top <= e.clientY && e.clientY <= rect_.bottom &&
-    rect_.left <= e.clientX && e.clientX <= rect_.right
+      rect_.top <= e.clientY && e.clientY <= rect_.bottom
+      && rect_.left <= e.clientX && e.clientX <= rect_.right
     )
   );
   let pointerdownOutside: boolean = false;
@@ -130,15 +133,15 @@ const isActive = ref(false);
 const openedChild = ref(0);
 
 type OverlayProvided = {
-  zIndex_?: number,
+  zIndex_?: number
   /**
    * A submenu is opened.
    */
-  register_: () => void,
+  register_: () => void
   /**
    * A submenu is closed.
    */
-  unregister_: () => void,
+  unregister_: () => void
 };
 
 const parent = inject<OverlayProvided | null>(OVERLAY_SYMBOL, null);
@@ -176,7 +179,8 @@ watch(isOpened, (newVal) => {
   if (newVal) {
     isActive.value = true;
     parent?.register_();
-  } else {
+  }
+  else {
     parent?.unregister_();
   }
 }, { flush: 'post' });
@@ -188,11 +192,11 @@ onMounted(() => {
 
 
 defineOptions({
-  inheritAttrs: false
+  inheritAttrs: false,
 });
 
 defineExpose({
-  contentRef
+  contentRef,
 });
 </script>
 

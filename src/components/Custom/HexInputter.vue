@@ -16,29 +16,31 @@
 </template>
 
 <script setup lang="ts">
-import { removeNonHex } from '@/utils/colors';
 import { isValidHex } from '@johnny95731/color-utils';
 import { unref } from 'vue';
 
+import { removeNonHex } from '@/utils/colors';
+
+
 type Props = {
-  autocomplete?: string,
-  maxLength?: number | `${number}`,
-  size?: number | `${number}`,
-  pattern?: string,
-  fontSize?: 'md' | 'lg',
-}
+  autocomplete?: string
+  maxLength?: number | `${number}`
+  size?: number | `${number}`
+  pattern?: string
+  fontSize?: 'md' | 'lg'
+};
 
 withDefaults(defineProps<Props>(), {
   autocomplete: 'off',
   maxLength: 9,
   size: 6,
   pattern: '#?([0-9A-Fa-f]{3,4}){1,2}',
-  fontSize: 'md'
+  fontSize: 'md',
 });
 
 const [model, modifiers] = defineModel({
   type: String,
-  default: '#000000'
+  default: '#000000',
 });
 
 const handleInput = (e: Event) => {

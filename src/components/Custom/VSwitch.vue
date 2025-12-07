@@ -33,13 +33,16 @@
 
 <script setup lang="ts">
 import { ref, onUnmounted } from 'vue';
+
 import useInputField from '@/composables/useInputField';
 import { invertBoolean } from '@/utils/helpers';
+
 import type { ModelRef } from 'vue';
 
+
 type Props = {
-  label?: string,
-}
+  label?: string
+};
 
 const props = withDefaults(defineProps<Props>(), {
 });
@@ -134,8 +137,10 @@ $switch-md: ("h": 20px, "w": 35px);
         // distance betewwn left: $slider-margin; and right: $slider-margin; is
         //   dist = map.get($switch-md, "w") - 2 * $slider-margin
         // thumb diameter, diam = map.get($switch-md, "h") - 2 * $slider-margin
-        // translate = dist - diam = map.get($switch-md, "w") - map.get($switch-md, "h")
-        transform: translate(map.get($switch-md, "w") - map.get($switch-md, "h"))
+        // translate = dist - diam
+        //           = map.get($switch-md, "w") - map.get($switch-md, "h")
+        transform:
+         translate(map.get($switch-md, "w") - map.get($switch-md, "h"))
       }
     }
   }

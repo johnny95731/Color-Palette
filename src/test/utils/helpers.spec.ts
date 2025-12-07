@@ -1,7 +1,9 @@
-import { getLetterCaseConverter, invertBoolean, isNullish, objPick, randomCharacter } from '@/utils/helpers';
 import { describe, expect, test } from 'vitest';
 import { ref } from 'vue';
 
+import {
+  getLetterCaseConverter, invertBoolean, isNullish, objPick, randomCharacter,
+} from '@/utils/helpers';
 
 
 test('objPick', () => {

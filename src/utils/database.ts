@@ -15,17 +15,17 @@ const STORE_KEYS = {
   /**
    * Settings
    */
-  settings: 'Settings'
+  settings: 'Settings',
 } as const;
 
 export const updateStore = <T>(
   key: keyof typeof STORE_KEYS,
-  callback: (prev: T | undefined) => T
+  callback: (prev: T | undefined) => T,
 ) => {
   return update<T>(
     STORE_KEYS[key],
     callback,
-    favStore
+    favStore,
   )
-    .catch((e) => console.error(e));
+    .catch(e => console.error(e));
 };

@@ -64,23 +64,26 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import VIcon from '@/components/Custom/VIcon.vue';
+
+import VIcon from './VIcon.vue';
 import VTooltip from './VTooltip.vue';
+
 import type { Props as TooltipProps } from './VTooltip.vue';
 
+
 export type Props = {
-  type?: 'button' | 'submit' | 'reset',
-  text?: string,
-  ariaLabel?: string,
-  tooltip?: string | boolean | Exclude<TooltipProps, 'activator'>,
-  variant?: 'std' | 'flat',
-  icon?: string,
-  prependIcon?: string,
-  href?: string,
-  appendIcon?: string,
-  ripple?: boolean,
+  type?: 'button' | 'submit' | 'reset'
+  text?: string
+  ariaLabel?: string
+  tooltip?: string | boolean | Exclude<TooltipProps, 'activator'>
+  variant?: 'std' | 'flat'
+  icon?: string
+  prependIcon?: string
+  href?: string
+  appendIcon?: string
+  ripple?: boolean
   disabled?: boolean
-}
+};
 const props = withDefaults(defineProps<Props>(), {
   type: 'button',
   variant: 'std',
@@ -92,9 +95,12 @@ const tooltip_ = computed(() => {
   else if (typeof props.tooltip === 'string' || props.tooltip === true) {
     return {
       location: 'bottom',
-      text: props.tooltip === true ? props.ariaLabel ?? props.text : props.tooltip
+      text: props.tooltip === true
+        ? props.ariaLabel ?? props.text
+        : props.tooltip,
     } satisfies TooltipProps;
-  } else {
+  }
+  else {
     return props.tooltip;
   }
 });

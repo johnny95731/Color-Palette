@@ -267,58 +267,65 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, computed, watch, defineAsyncComponent, reactive, unref } from 'vue';
+import { map, MIXING_MODES, SORTING_ACTIONS } from '@johnny95731/color-utils';
 import { createReusableTemplate } from '@vueuse/core';
-import $style from './VHeader.module.scss';
-import DropdownMenu from '../Custom/DropdownMenu.vue';
+import {
+  ref, computed, watch, defineAsyncComponent, reactive, unref,
+} from 'vue';
+
+
 import VBtn from '@/components/Custom/VBtn.vue';
-import SelectMenu from '../Custom/SelectMenu.vue';
-// utils
-import { HOTKEYS } from '@/utils/hotkeys';
-import { invertBoolean } from '@/utils/helpers';
-// stores
 import media from '@/composables/useMedia';
 import usePltStore, { SPACES } from '@/stores/usePltStore';
 import useSettingStore from '@/stores/useSettingStore';
-import { map, MIXING_MODES, SORTING_ACTIONS, type Sort } from '@johnny95731/color-utils';
+import { invertBoolean } from '@/utils/helpers';
+import { HOTKEYS } from '@/utils/hotkeys';
+
+import $style from './VHeader.module.scss';
+import DropdownMenu from '../Custom/DropdownMenu.vue';
+import SelectMenu from '../Custom/SelectMenu.vue';
+
+import type { Sort } from '@johnny95731/color-utils';
+
 
 const ContrastDialog = defineAsyncComponent(
   () => import('@/components/ContrastDialog/ContrastDialog.vue')
-    .then(component => {
+    .then((component) => {
       inInit.contrast_ = true;
       return component;
-    })
+    }),
 );
 const PaletteInputter = defineAsyncComponent(
   () => import('@/components/PaletteInputter/PaletteInputter.vue')
-    .then(component => {
+    .then((component) => {
       inInit.input_ = true;
       return component;
-    })
+    }),
 );
 const HarmonyGenDialog = defineAsyncComponent(
   () => import('@/components/HarmonyGenerator/HarmonyGenerator.vue')
-    .then(component => {
+    .then((component) => {
       inInit.harmony_ = true;
       return component;
-    })
+    }),
 );
 const VBookmarks = defineAsyncComponent(
   () => import('@/components/TheBookmarks/VBookmarks.vue')
-    .then(component => {
+    .then((component) => {
       inInit.fav_ = true;
       return component;
-    })
+    }),
 );
 const SettingDialog = defineAsyncComponent(
   () => import('@/components/SettingDialog/SettingDialog.vue')
-    .then(component => {
+    .then((component) => {
       inInit.setting_ = true;
       return component;
-    })
+    }),
 );
 
-const [DefineHeaderBtns, HeaderBtns] = createReusableTemplate<{css?: string}>();
+const [DefineHeaderBtns, HeaderBtns]
+  = createReusableTemplate<{ css?: string }>();
 
 
 // Show/Hide dialogs
@@ -336,8 +343,8 @@ const isOpening = reactive({ ...inInit });
 
 defineExpose({
   isSomeDialogOpened_: computed(() => {
-    return Object.values(isOpening).some((val) => val);
-  })
+    return Object.values(isOpening).some(val => val);
+  }),
 });
 
 
@@ -354,14 +361,15 @@ const delay = computed(() => Math.max(settingState.transition.color, 1000));
 const slidePlay = () => {
   intervalId.value = window.setInterval(
     () => unref(isRunning) && pltState.refreshCard_(-1),
-    unref(delay)
+    unref(delay),
   );
 };
 const haldleClickSlides = () => {
   if (unref(isRunning)) { // play -> pause
     window.clearInterval(unref(intervalId) as number | undefined);
     intervalId.value = null;
-  } else { // pause -> play
+  }
+  else { // pause -> play
     slidePlay();
     pltState.refreshCard_(-1);
   }
@@ -380,12 +388,12 @@ watch(
 
 const sortingMenuItems = map(
   SORTING_ACTIONS,
-  (name) => ({
+  name => ({
     name,
     val: name,
     // @ts-expect-error
     hotkey: HOTKEYS.sorting_[name],
-  })
+  }),
 );
 
 </script>

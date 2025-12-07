@@ -1,6 +1,8 @@
-import { computed, shallowRef, toValue, unref, watch } from 'vue';
 import { tryOnMounted } from '@vueuse/core';
+import { computed, shallowRef, toValue, unref, watch } from 'vue';
+
 import { getComponentId, isId } from '@/utils/browser';
+
 import type { MaybeRefOrGetter } from 'vue';
 
 
@@ -8,13 +10,13 @@ export type UseInputFieldOptions = {
   /**
    * Component name for generate input id.
    */
-  componentName?: string,
+  componentName?: string
   /**
    * Specific the input id.
    * Has higher priority than `componentName`.
    */
-  inputId?: MaybeRefOrGetter<string>,
-}
+  inputId?: MaybeRefOrGetter<string>
+};
 
 
 const useInputField = (
@@ -22,9 +24,8 @@ const useInputField = (
   /**
    * Component name for generate input id.
    */
-  componentName?: string
+  componentName?: string,
 ) => {
-
   /**
    * Create Id for input
    */
@@ -33,8 +34,8 @@ const useInputField = (
    * Aria label for <input />
    */
   const state = shallowRef<{
-    id_: string,
-    ariaLabelledby_?: string,
+    id_: string
+    ariaLabelledby_?: string
     ariaLabel_?: string
   }>({
     id_: toValue(idForInput),
@@ -62,7 +63,7 @@ const useInputField = (
         ariaLabelledby_: labelIsId ? newVal[0].slice(1) : undefined,
         ariaLabel_: labelIsId ? undefined : newVal[0],
       };
-    }
+    },
   );
 
   return {

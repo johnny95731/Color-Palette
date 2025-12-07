@@ -48,33 +48,34 @@
 </template>
 
 <script lang="ts" setup>
+import { isValidHex, map } from '@johnny95731/color-utils';
 import { computed } from 'vue';
+
+import useFavStore from '@/stores/useFavStore';
+import usePltStore from '@/stores/usePltStore';
+import { copyText } from '@/utils/browser';
+import { reduce } from '@/utils/helpers';
+import { toPercent } from '@/utils/numeric';
+
 import $style from './VBookmarks.module.scss';
 import VIcon from '../Custom/VIcon.vue';
 import VTooltip from '../Custom/VTooltip.vue';
-// utils
-import { isValidHex, map } from '@johnny95731/color-utils';
-import { reduce } from '@/utils/helpers';
-import { toPercent } from '@/utils/numeric';
-import { copyText } from '@/utils/browser';
-// stores
-import useFavStore from '@/stores/useFavStore';
-import usePltStore from '@/stores/usePltStore';
+
 
 type Props = {
-  plt: string;
-}
+  plt: string
+};
 const props = defineProps<Props>();
-const pltColors = map(props.plt.split('-'), (hex) => `#${hex}`);
+const pltColors = map(props.plt.split('-'), hex => `#${hex}`);
 
 const bgGrad = computed(() => {
   const d = toPercent(1 / pltColors.length, 2);
   const midPoint = reduce(
     pltColors,
     (acc, hex, i) => {
-      return acc + `${hex} ${i * d}%,${hex} ${(i+1) * d}%,`;
+      return acc + `${hex} ${i * d}%,${hex} ${(i + 1) * d}%,`;
     },
-    ''
+    '',
   )
     .slice(0, -1);
   return `linear-gradient(90deg, ${midPoint})`;

@@ -17,7 +17,9 @@
       <label
         v-if="fieldState.ariaLabel_"
         :for="fieldState.id_"
-      >{{ fieldState.ariaLabel_ }}</label>
+      >{{
+        fieldState.ariaLabel_
+      }}</label>
       <input
         :id="fieldState.id_"
         :aria-label="fieldState.ariaLabel_"
@@ -60,30 +62,34 @@
 </template>
 
 <script setup lang="ts">
-import { watch, ref, computed, onUnmounted, unref } from 'vue';
-import VTooltip from './VTooltip.vue';
+import { clip, rangeMapping, round } from '@johnny95731/color-utils';
+import { computed, onUnmounted, ref, unref, watch } from 'vue';
+
 import { useDragableElement } from '@/composables/useDragableElement';
 import useInputField from '@/composables/useInputField';
-import { clip, rangeMapping, round } from '@johnny95731/color-utils';
 import { countDecimals, isSameFloat } from '@/utils/numeric';
-import type { ModelRef } from 'vue';
+
+import VTooltip from './VTooltip.vue';
+
 import type { Position } from '@vueuse/core';
+import type { ModelRef } from 'vue';
+
 
 type Props = {
-  label?: string,
+  label?: string
   // input attrs
-  min?: number | `${number}`,
-  max?: number | `${number}`,
+  min?: number | `${number}`
+  max?: number | `${number}`
   /**
    * The value of slider will be restrict to min + n * step for some integer n.
    * If step < 0, it will not apply.
    */
-  step?: number | `${number}`,
-  showRange?: boolean,
-  showVal?: boolean | 'always',
-  trackerBackground?: string,
-  thumbBackground?: string,
-}
+  step?: number | `${number}`
+  showRange?: boolean
+  showVal?: boolean | 'always'
+  trackerBackground?: string
+  thumbBackground?: string
+};
 const props = withDefaults(defineProps<Props>(), {
   min: 0,
   max: 100,
@@ -99,9 +105,8 @@ const thumbRef = ref<HTMLDivElement>();
 const { state_: fieldState, cleanup } = useInputField(props.label, 'slider');
 onUnmounted(cleanup);
 
-
-const min_ = computed(() => isNaN(+props.min) ? 0 : +props.min);
-const max_ = computed(() => isNaN(+props.max) ? 100 : +props.max);
+const min_ = computed(() => (isNaN(+props.min) ? 0 : +props.min));
+const max_ = computed(() => (isNaN(+props.max) ? 100 : +props.max));
 
 // Handle values
 const model = defineModel<number>() as ModelRef<number>;
@@ -116,7 +121,7 @@ const numStep = computed<number>(() => +props.step);
  * Decimals counts of display text.
  */
 const decimals = computed<number>(() =>
-  unref(numStep) > 0 ? countDecimals(unref(numStep)) : 0
+  unref(numStep) > 0 ? countDecimals(unref(numStep)) : 0,
 );
 
 /**
@@ -124,10 +129,11 @@ const decimals = computed<number>(() =>
  */
 const roundingValue = (newVal?: number) => {
   newVal ??= unref(model);
-  return unref(numStep) <= 0 ?
-    newVal :
-    round(
-      unref(min_) + Math.floor((newVal - unref(min_)) / unref(numStep)) * unref(numStep),
+  return unref(numStep) <= 0
+    ? newVal
+    : round(
+      unref(min_)
+      + Math.floor((newVal - unref(min_)) / unref(numStep)) * unref(numStep),
       unref(decimals),
     );
 };
@@ -150,18 +156,26 @@ watch(
   () => [props.min, props.max],
   () => {
     updateModel(clip(unref(model), unref(min_), unref(max_)));
-  }, { immediate: true });
+  },
+  { immediate: true },
+);
 
 // Step increment function. If num < 0, then becomes decrement.
 const increment = (num: number = 1) => {
   updateModel(
-    clip(unref(model) + num * unref(numStep), unref(min_), unref(max_))
+    clip(unref(model) + num * unref(numStep), unref(min_), unref(max_)),
   );
 };
 
-watch(model, (newVal) => {
-  thumbPos.value = `${rangeMapping(newVal, unref(min_), unref(max_), 0, 100)}%`;
-}, { immediate: true });
+watch(
+  model,
+  (newVal) => {
+    thumbPos.value = `${
+      rangeMapping(newVal, unref(min_), unref(max_), 0, 100)
+    }%`;
+  },
+  { immediate: true },
+);
 
 // onChange event => Drag or key down.
 const { isDragging_ } = (() => {
@@ -176,17 +190,21 @@ const { isDragging_ } = (() => {
       x: rangeMapping(unref(model), unref(min_), unref(max_), 0, 100),
       y: 0,
     },
-    axis_: 'x'
+    axis_: 'x',
   });
 })();
 // -Key down
 const handleKeyDown = (e: KeyboardEvent) => {
   const key = e.key;
   if (key.startsWith('Arrow')) {
-    if (['U', 'R'].includes(key[5])) // ArrorUp, ArrorRight
+    if (['U', 'R'].includes(key[5])) {
+      // ArrorUp, ArrorRight
       increment();
-    else // ArrorDown, ArrorLeft
+    }
+    else {
+      // ArrorDown, ArrorLeft
       increment(-1);
+    }
   }
   else if (key === 'Home') updateModel(unref(min_));
   else if (key === 'End') updateModel(unref(max_));
@@ -225,8 +243,8 @@ $thumb-radius: math.div($thumb-size, 2);
 
   background-color: $color5;
 
-  >input,
-  >label {
+  > input,
+  > label {
     pointer-events: none;
 
     display: block;
@@ -267,7 +285,7 @@ $thumb-radius: math.div($thumb-size, 2);
 
       @supports not selector(:focus-visible) {
         #{$root}:focus #{$root}__thumb {
-            outline-width: 2px;
+          outline-width: 2px;
         }
       }
     }
@@ -279,7 +297,7 @@ $thumb-radius: math.div($thumb-size, 2);
     display: inline-block;
     font-size: $font-sm;
 
-    &:first-of-type{
+    &:first-of-type {
       left: 0;
     }
 

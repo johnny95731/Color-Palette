@@ -56,34 +56,39 @@
 
 <script setup lang="ts">
 import { computed, nextTick, ref, unref, watch } from 'vue';
+
 import OverlayContainer from '@/components/Custom/OverlayContainer.vue';
 import VBtn from '@/components/Custom/VBtn.vue';
 import { V_DIALOG_OVERLAY_PROPS } from '@/utils/browser';
-import type { ModelRef } from 'vue';
-import type { Props as OverlayProps } from '@/components/Custom/OverlayContainer.vue';
+
+import type {
+  Props as OverlayProps,
+} from '@/components/Custom/OverlayContainer.vue';
 import type { VueClass } from '@/utils/browser';
+import type { ModelRef } from 'vue';
+
 
 type Props = {
   overlayProps?: Omit<OverlayProps, 'type'>
-  title?: string,
-  tabs?: readonly string[];
+  title?: string
+  tabs?: readonly string[]
   contentTag?: string
   contentClass?: VueClass
-}
+};
 
 const props = withDefaults(defineProps<Props>(), {
-  contentTag: 'div'
+  contentTag: 'div',
 });
 
 const overlayProps_ = computed(() => {
   const contentClass = [
     'dialog',
-    props.overlayProps?.contentClass
+    props.overlayProps?.contentClass,
   ];
   return {
     ...V_DIALOG_OVERLAY_PROPS,
     ...props.overlayProps,
-    contentClass
+    contentClass,
   };
 });
 
@@ -93,7 +98,7 @@ const overlayRef = ref<InstanceType<typeof OverlayContainer>>();
 const contentRef = ref<HTMLElement>();
 
 const tabRefs = ref<InstanceType<typeof VBtn>[]>([]);
-const tabIdx = defineModel<number>('tabIdx') as ModelRef<number>;;
+const tabIdx = defineModel<number>('tabIdx') as ModelRef<number>; ;
 tabIdx.value ??= 0;
 
 const closeBtnRef = ref<InstanceType<typeof VBtn>>();

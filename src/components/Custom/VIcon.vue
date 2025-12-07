@@ -10,12 +10,13 @@
 <script setup lang='ts'>
 import { getIcon } from '@/utils/icons';
 
+
 type Prop = {
-  icon: string;
+  icon: string
   ariaHidden?: boolean | `${boolean}`
-}
+};
 
 withDefaults(defineProps<Prop>(), {
-  ariaHidden: true
+  ariaHidden: true,
 });
 </script>

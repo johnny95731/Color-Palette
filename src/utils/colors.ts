@@ -1,5 +1,13 @@
-import { COLOR_SPACES, getColorSpace, getCssColor, hex2rgb, hsb2rgb, map, namedColor, rgb2hex, rgb2hsb, type ColorSpace, type CssColorOptions } from '@johnny95731/color-utils';
+import {
+  COLOR_SPACES,
+  getColorSpace, getCssColor,
+  hex2rgb, hsb2rgb, map, namedColor, rgb2hex, rgb2hsb,
+} from '@johnny95731/color-utils';
+
 import { frac2percentage } from './numeric';
+
+import type { ColorSpace, CssColorOptions } from '@johnny95731/color-utils';
+
 
 /** Remove Non-hex characters */
 export const removeNonHex = (str: string) => str.replace(/[^0-9A-F]/ig, '');
@@ -13,12 +21,13 @@ export const hex2hsb = (hex: string) => {
 };
 
 /**
-* All names of CSS <named-color> (removed synonym name) with sapce between words.
+* All names of CSS <named-color> (removed synonym name) with sapce between
+* words.
 */
 export const nameColorList = Array.from(namedColor.keys());
 
 const gradOption = {
-  place_: false
+  place_: false,
 } satisfies CssColorOptions;
 /**
  * Generate a linear gradient along an axis/channel of given color and space.
@@ -27,8 +36,8 @@ const gradOption = {
  * @param axis Channel that will be changed.
  * @param space Color space of `color`. If the browser is not support the space,
  * the color will be convert to rgb.
- * @param steps Default: `8`. Segment of color change. For example, red -> green -> blue
- * contains is two steps, red to green and green to blue.
+ * @param steps Default: `8`. Segment of color change. For example,
+ * red -> green -> blue contains is two steps, red to green and green to blue.
  * @param deg Default: `'90deg'`. The direction of gradient.
  * @returns CSS linear-gradient value.
  */
@@ -47,19 +56,18 @@ export const gradientGen = (
   const arr = [...color];
   const grads = map(
     steps + 1,
-    space.isSupported_ ?
-      i => {
+    space.isSupported_
+      ? (i) => {
         arr[axis] = min + i * unitIncreament;
         return `${
-          getCssColor(arr, space, gradOption)} ${
-          frac2percentage(i, steps)}`;
-      } :
-      i => {
+          getCssColor(arr, space, gradOption)} ${frac2percentage(i, steps)}`;
+      }
+      : (i) => {
         arr[axis] = min + i * unitIncreament;
         return `${
           getCssColor(space.toRgb_(arr), COLOR_SPACES[0], gradOption)} ${
           frac2percentage(i, steps)}`;
-      }
+      },
   );
   return `linear-gradient(${deg}, ${grads.join(', ')})`;
 };

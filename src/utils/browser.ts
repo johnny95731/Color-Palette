@@ -1,6 +1,11 @@
 import { getCurrentInstance } from 'vue';
+
 import { randomCharacter } from './helpers';
-import type { Props as OverlayProps } from '@/components/Custom/OverlayContainer.vue';import type { Ref, ShallowRef, WritableComputedRef } from 'vue';
+
+import type {
+  Props as OverlayProps,
+} from '@/components/Custom/OverlayContainer.vue';
+import type { Ref, ShallowRef, WritableComputedRef } from 'vue';
 
 
 // # Constants
@@ -19,28 +24,29 @@ export const V_DIALOG_OVERLAY_PROPS = {
 export type EventHandler<E extends Event = Event> = (
   (evt?: E) => void | unknown | Promise<void | unknown>) | (
   (evt: E) => void | unknown | Promise<void | unknown>
-)
+);
 
-export type MaybeRef <T = unknown> = T | Ref<T> | ShallowRef<T> | WritableComputedRef<T>
-
+export type MaybeRef<T = unknown> = (
+  T | Ref<T> | ShallowRef<T> | WritableComputedRef<T>
+);
 export type WindowEventName = keyof WindowEventMap;
 
-export type VueClass = string | unknown[] | {[key in string]: unknown}
+export type VueClass = string | unknown[] | { [key in string]: unknown };
 
 
 type getPropertyValue = {
   /**
    * Get CSS property of a given elemnt.
    */
-  (el: HTMLElement | null | undefined, property: string): number;
+  (el: HTMLElement | null | undefined, property: string): number
   /**
    * Get CSS property of document.documentElement.
    */
-  (property: string): number;
-}
+  (property: string): number
+};
 const getPropertyValue = (
   el: HTMLElement | string | null | undefined,
-  property?: string
+  property?: string,
 ) => {
   if (typeof el === 'string') {
     property = el;
@@ -49,7 +55,7 @@ const getPropertyValue = (
   if (!el) el = document.documentElement;
   const num = parseFloat(
     getComputedStyle(el!)
-      .getPropertyValue(property ?? 'width' as string)
+      .getPropertyValue(property ?? 'width' as string),
   );
   return Number.isNaN(num) ? 0 : num;
 };
@@ -71,8 +77,11 @@ export const getComponentId = (() => {
   };
   return (prefix: string = 'component') => {
     const thisInstance = getCurrentInstance();
-    if (!thisInstance || document.getElementById(`${prefix}-${thisInstance.uid}`))
-      return getRandomId(prefix+'-');
+    if (
+      !thisInstance
+      || document.getElementById(`${prefix}-${thisInstance.uid}`)
+    )
+      return getRandomId(prefix + '-');
     return `${prefix}-${thisInstance.uid}`;
   };
 })();
@@ -84,12 +93,15 @@ export const getComponentId = (() => {
 export const copyText = (text: string): void => {
   try {
     navigator.clipboard.writeText(text);
-  } catch (err) {
+  }
+  catch (err) {
     console.error('Failed to copy:', err);
   }
 };
 
-export const calcOverlayZIndex = (type: OverlayProps['type'], parent?: number) => {
+export const calcOverlayZIndex = (
+  type: OverlayProps['type'], parent?: number,
+) => {
   let zIndex: number;
   if (parent) // not outermost node.
     zIndex = parent + 1;

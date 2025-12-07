@@ -1,20 +1,22 @@
 import { shallowReactive } from 'vue';
+
 import { getPropertyValue } from '@/utils/browser';
+
 
 type MediaContext = {
   /**
    * The device is small (width <= 900px) or not.
    */
-  isSmall_: boolean;
+  isSmall_: boolean
   /**
    * Card pos along flow direction. For getting data from event.
    */
-  cardPos_: 'left' | 'top';
+  cardPos_: 'left' | 'top'
   /**
    * Main axis of card.
    */
-  cardSize_: 'width' | 'height';
-}
+  cardSize_: 'width' | 'height'
+};
 
 /**
  * Device is small if device width <= (maxSmallSize)px.
@@ -24,7 +26,7 @@ const maxSmallSize = getPropertyValue('--small-view');
 const initialState: MediaContext = {
   isSmall_: true,
   cardPos_: 'left',
-  cardSize_: 'width'
+  cardSize_: 'width',
 };
 
 const media = shallowReactive<MediaContext>(initialState);

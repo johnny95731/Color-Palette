@@ -1,17 +1,19 @@
 import { fileURLToPath, URL } from 'node:url';
-import { defineConfig } from 'vite';
+
 import vue from '@vitejs/plugin-vue';
 import autoprefixer from 'autoprefixer';
-import lightningcss from 'vite-plugin-lightningcss';
+import { defineConfig } from 'vite';
+import { patchCssModules } from 'vite-css-modules';
 // @ts-expect-error
 import viteJoinMediaQueries from 'vite-join-media-queries';
-import { patchCssModules } from 'vite-css-modules';
+import lightningcss from 'vite-plugin-lightningcss';
+
 import terserPlugin from './vite-terser-plugin';
 
 
 const noHashFile = [
   'bootstrap-icons.woff2',
-  'bootstrap-icons.woff'
+  'bootstrap-icons.woff',
 ];
 
 const metaUrl = import.meta.url;
@@ -31,19 +33,19 @@ export default defineConfig({
             ? '[name].[ext]'
             : '[name]-[hash].[ext]';
         },
-      }
-    }
+      },
+    },
   },
   plugins: [
     vue({
       template: {
         compilerOptions: {
-          isCustomElement: (tag) => tag.includes('-'),
+          isCustomElement: tag => tag.includes('-'),
         },
       },
     }),
     viteJoinMediaQueries({
-      paths2css: ['./dist']
+      paths2css: ['./dist'],
     }),
     lightningcss(),
     patchCssModules(),
@@ -58,7 +60,7 @@ export default defineConfig({
   css: {
     postcss: {
       plugins: [
-        autoprefixer()
+        autoprefixer(),
       ],
     },
   },

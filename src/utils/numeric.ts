@@ -1,5 +1,7 @@
 import { deg2rad, rad2deg, round } from '@johnny95731/color-utils';
+
 import { isNullish } from './helpers';
+
 
 /**
  * The modulo function. Equivalent to
@@ -19,11 +21,10 @@ export const mod = (n: number, m: number): number => {
 export const isSameFloat = (num1: number, num2: number): boolean =>
   Math.abs(num1 - num2) < Number.EPSILON;
 
-
 /**
  * Count the length of decimals.
  */
-export const countDecimals = (num: number)  => {
+export const countDecimals = (num: number) => {
   if (Math.floor(num) === num) return 0;
   let str = Math.abs(num).toString();
   let counts = 0;
@@ -56,7 +57,6 @@ export const frac2percentage = (num: number, denom: number): string => {
   return toPercent(num / denom, 2) + '%';
 };
 
-
 /** A variant of Math.atan2 function. Return degree instead of radian. */
 export const atan2Deg = (y: number, x: number) => {
   // short: (rad2deg(Math.atan2(y,x)) + 360) % 360;
@@ -64,11 +64,10 @@ export const atan2Deg = (y: number, x: number) => {
   return deg < 0 ? deg + 360 : deg;
 };
 
-
 /** Polar coordinate to Cartesian coordinate */
 export const cartesian2polar = (y: number, x: number, place?: number) => {
   let deg = atan2Deg(y, x),
-    radius = Math.sqrt(x*x + y*y);
+    radius = Math.sqrt(x * x + y * y);
   if (!isNullish(place)) {
     deg = round(deg, place);
     radius = round(radius, place);

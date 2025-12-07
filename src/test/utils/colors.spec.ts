@@ -1,5 +1,6 @@
-import { removeNonHex } from '@/utils/colors';
 import { expect, test } from 'vitest';
+
+import { removeNonHex } from '@/utils/colors';
 
 
 test('removeNonHex', () => {

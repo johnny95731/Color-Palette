@@ -1,41 +1,47 @@
-import { shallowReactive, watch } from 'vue';
 import {
-  tryOnMounted, unrefElement, useEventListener, useMutationObserver, useResizeObserver,
+  tryOnMounted, unrefElement, useEventListener, useMutationObserver,
+  useResizeObserver,
 } from '@vueuse/core';
+import { shallowReactive, watch } from 'vue';
+
 import { objPick } from '../utils/helpers';
+
 import type {
-  MaybeComputedElementRef
+  MaybeComputedElementRef,
 } from '@vueuse/core';
 
-type RectKeys = 'height' | 'width' | 'bottom' | 'left' | 'right' | 'top' | 'x' | 'y';
+
+type RectKeys = (
+  'height' | 'width' | 'bottom' | 'left' | 'right' | 'top' | 'x' | 'y'
+);
 
 type Rect<K extends string = RectKeys> = Record<K, number>;
 export interface UseElementBoundingOptions<K> {
-    /**
+  /**
      * Reset values to 0 on component unmounted
      *
      * @default true
      */
-    reset_?: boolean;
-    /**
+  reset_?: boolean
+  /**
      * Listen to window resize event
      *
      * @default true
      */
-    windowResize_?: boolean;
-    /**
+  windowResize_?: boolean
+  /**
      * Listen to window scroll event
      *
      * @default true
      */
-    windowScroll_?: boolean;
-    /**
+  windowScroll_?: boolean
+  /**
      * Immediately call update on component mounted
      *
      * @default true
      */
-    immediate_?: boolean;
-    /**
+  immediate_?: boolean
+  /**
      * Timing to recalculate the bounding box
      *
      * Setting to `next-frame` can be useful when using this together with something like {@link useBreakpoints}
@@ -43,9 +49,9 @@ export interface UseElementBoundingOptions<K> {
      *
      * @default 'sync'
      */
-    updateTiming_?: 'sync' | 'next-frame';
+  updateTiming_?: 'sync' | 'next-frame'
 
-    filter_?: K[]
+  filter_?: K[]
 }
 
 const emptyRect = {
@@ -64,7 +70,7 @@ const emptyRect = {
  */
 export const useElementBounding = <K extends RectKeys>(
   target: MaybeComputedElementRef,
-  options: UseElementBoundingOptions<K> = {}
+  options: UseElementBoundingOptions<K> = {},
 ) => {
   const {
     reset_: reset_ = true,
@@ -73,12 +79,12 @@ export const useElementBounding = <K extends RectKeys>(
     immediate_: immediate_ = true,
     updateTiming_: updateTiming_ = 'sync',
     filter_: filter_ = [
-      'height', 'width', 'bottom', 'left', 'right', 'top', 'x', 'y'
+      'height', 'width', 'bottom', 'left', 'right', 'top', 'x', 'y',
     ],
   } = options;
 
-  const rectObj: Rect<K> =
-    shallowReactive<Rect>(objPick(emptyRect, filter_));
+  const rectObj: Rect<K>
+    = shallowReactive<Rect>(objPick(emptyRect, filter_));
 
   const recalculate = () => {
     const el = unrefElement(target);

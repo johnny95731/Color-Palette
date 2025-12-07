@@ -14,8 +14,8 @@
       :style="{
         ...(pltState.isPending_ && {
           opacity: 0,
-          pointerEvents: 'none'
-        })
+          pointerEvents: 'none',
+        }),
       }"
       role="toolbar"
       :aria-label="`卡片${cardIdx}工具列`"
@@ -41,7 +41,7 @@
           :icon="isFavIcon.icon"
           :aria-label="isFavIcon.label"
           :ripple="false"
-          @click="favState.favColorsChanged_(card.hex_);"
+          @click="favState.favColorsChanged_(card.hex_)"
         />
       </CondWrapper>
       <CondWrapper
@@ -51,7 +51,7 @@
         <VBtn
           v-once
           icon="arrows"
-          style="touch-action: none;cursor: grab;"
+          style="touch-action: none; cursor: grab"
           aria-label="拖動"
           :ripple="false"
           @pointerdown="$emit('dragging', $event)"
@@ -73,9 +73,7 @@
         />
       </CondWrapper>
     </div>
-    <div
-      :class="$style.textDisplay"
-    >
+    <div :class="$style.textDisplay">
       <VTooltip
         location="top"
         text="Copied"
@@ -83,12 +81,12 @@
         openOnClick
         :eager="false"
       >
-        <template #activator="{handleClick}">
+        <template #activator="{ handleClick }">
           <div
             :class="$style.hexText"
             @click="
               copyText(card.hex_.slice(1));
-              handleClick($event)
+              handleClick($event);
             "
           >
             <VIcon
@@ -105,7 +103,7 @@
             :class="$style.detailText"
             @click="
               copyText(detail);
-              handleClick($event)
+              handleClick($event);
             "
           >
             <VIcon
@@ -132,16 +130,18 @@
     >
       <label
         :for="`card${cardIdx}-hex`"
-        :style="{backgroundColor: card.hex_}"
+        :style="{ backgroundColor: card.hex_ }"
       >
         {{ card.hex_ }}
       </label>
       <HexInputter
         ref="hexInputRef"
         :id="`card${cardIdx}-hex`"
-        :style="pltState.isInNamedSpace_ || {
-          marginBottom: '8px'
-        }"
+        :style="
+          pltState.isInNamedSpace_ || {
+            marginBottom: '8px',
+          }
+        "
         :model-value="card.hex_"
         @change="handleHexEditingFinished($event)"
       />
@@ -153,7 +153,7 @@
         :contentClass="$style.nameSelectContent"
         :model-value="detail"
       >
-        <template #items="{props: optionProps}">
+        <template #items="{ props: optionProps }">
           <!-- v-once cause vscode vue extension crashed -->
           <button
             v-once
@@ -165,7 +165,7 @@
             }"
             :title="name"
             type="button"
-            @click="selectName(nameColorList[i]);"
+            @click="selectName(nameColorList[i])"
           />
         </template>
       </SelectMenu>
@@ -174,16 +174,16 @@
           v-for="([min, max], i) in pltState.editingDialogInfo_.displayedRange_"
           :key="`card${cardIdx}-label${i}`"
         >
-          <div
-            style="margin-bottom: -4px"
-          >
+          <div style="margin-bottom: -4px">
             {{ sliderLabels[i] }}
           </div>
           <VSlider
             :label="pltState.editingDialogInfo_.labels_[i]"
             :showRange="false"
             :showVal="false"
-            :trackerBackground="gradientGen(card.color_, i, pltState.colorSpace_)"
+            :trackerBackground="
+              gradientGen(card.color_, i, pltState.colorSpace_)
+            "
             :thumbBackground="card.hex_"
             :min="min"
             :max="max"
@@ -199,13 +199,21 @@
           label="Alpha"
           :showRange="false"
           :showVal="false"
-          :trackerBackground="gradientGen(card.color_, pltState.editingDialogInfo_.len_, pltState.colorSpace_)"
+          :trackerBackground="
+            gradientGen(
+              card.color_,
+              pltState.editingDialogInfo_.len_,
+              pltState.colorSpace_,
+            )
+          "
           :thumbBackground="card.hex_"
           min="0"
           max="100"
           step="0.1"
           :model-value="sliderVals[pltState.editingDialogInfo_.len_]"
-          @update:model-value="handleSliderChange($event, pltState.editingDialogInfo_.len_)"
+          @update:model-value="
+            handleSliderChange($event, pltState.editingDialogInfo_.len_)
+          "
           @keydown="handleLeaveFocusing($event)"
         />
       </div>
@@ -214,43 +222,52 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, nextTick, ref, shallowReactive, unref, watch } from 'vue';
+import {
+  getCssColor,
+  hex2rgb,
+  isLight,
+  isValidHex,
+  map,
+  named2rgb,
+  rgb2named,
+  round,
+} from '@johnny95731/color-utils';
 import { asyncComputed } from '@vueuse/core';
-import $style from './VCard.module.scss';
-// Components
-import VTooltip from '../Custom/VTooltip.vue';
+import { computed, nextTick, ref, shallowReactive, unref, watch } from 'vue';
+
 import VBtn from '@/components/Custom/VBtn.vue';
-import VIcon from '../Custom/VIcon.vue';
-import SelectMenu from '../Custom/SelectMenu.vue';
-import VSlider from '../Custom/VSlider.vue';
-import OverlayContainer from '../Custom/OverlayContainer.vue';
+import media from '@/composables/useMedia';
+import useFavStore from '@/stores/useFavStore';
+import usePltStore from '@/stores/usePltStore';
+import useSettingStore from '@/stores/useSettingStore';
+import { copyText, isTabKey } from '@/utils/browser';
+import { gradientGen, nameColorList } from '@/utils/colors';
+import { toPercent } from '@/utils/numeric';
+
+import $style from './VCard.module.scss';
 import CondWrapper from '../Custom/CondWrapper.vue';
 import HexInputter from '../Custom/HexInputter.vue';
-// Utils
-import { rgb2named, named2rgb, hex2rgb, isValidHex, map, getCssColor, round, isLight } from '@johnny95731/color-utils';
-import { toPercent } from '@/utils/numeric';
-import { gradientGen, nameColorList } from '@/utils/colors';
-import { copyText, isTabKey } from '@/utils/browser';
-// Stores
-import usePltStore from '@/stores/usePltStore';
-import useFavStore from '@/stores/useFavStore';
-import useSettingStore from '@/stores/useSettingStore';
-import media from '@/composables/useMedia';
-// Types
-import type { CSSProperties } from 'vue';
+import OverlayContainer from '../Custom/OverlayContainer.vue';
+import SelectMenu from '../Custom/SelectMenu.vue';
+import VIcon from '../Custom/VIcon.vue';
+import VSlider from '../Custom/VSlider.vue';
+import VTooltip from '../Custom/VTooltip.vue';
+
 import type { Card } from '@/stores/usePltStore';
+import type { CSSProperties } from 'vue';
+
 
 const cardContainerRef = ref<HTMLElement>();
 const hexTextRef = ref<InstanceType<typeof VBtn>>();
 
 type Props = {
-  cardIdx: number;
+  cardIdx: number
 };
 const props = defineProps<Props>();
 
 defineEmits<{
-  (e: 'transitionend'): void,
-  (e: 'remove'): void,
+  (e: 'transitionend'): void
+  (e: 'remove'): void
   (e: 'dragging', val: PointerEvent): void
 }>();
 
@@ -258,7 +275,7 @@ const pltState = usePltStore();
 
 const order = computed(() => ({
   isFirst_: props.cardIdx === 0,
-  isLast_: props.cardIdx === pltState.numOfCards_ - 1
+  isLast_: props.cardIdx === pltState.numOfCards_ - 1,
 }));
 
 const card = computed<Card>(() => pltState.cards_[props.cardIdx]);
@@ -274,17 +291,16 @@ const sliderVals = computed({
   },
   set(newColor: number[]) {
     pltState.editCard_(props.cardIdx, newColor);
-  }
+  },
 });
 
 const sliderLabels = computed<string[]>(() => {
   const { max_, labels_, len_ } = pltState.editingDialogInfo_;
   const vals = unref(sliderVals);
-  return map(len_ + 1, i => {
+  return map(len_ + 1, (i) => {
     if (i < len_)
       return `${labels_[i]}: ${vals[i]}${max_[i] === 360 ? 'deg' : '%'}`;
-    else
-      return `Alpha: ${vals[i]}%`;
+    else return `Alpha: ${vals[i]}%`;
   });
 });
 
@@ -292,23 +308,23 @@ const sliderLabels = computed<string[]>(() => {
 const favState = useFavStore();
 
 const closeIconStyle = computed<CSSProperties | undefined>(() => {
-  return pltState.numOfCards_ === 2 ?
-    {
+  return pltState.numOfCards_ === 2
+    ? {
       opacity: '0',
       cursor: 'default',
-    } : undefined;
+    }
+    : undefined;
 });
-const isLock = computed(() => (
-  unref(card).isLock_ ?
-    { icon: 'lock-fill', label: '解鎖刷新' } as const :
-    { icon: 'unlock-fill', label: '鎖定刷新' } as const
-));
-const isFavIcon = computed(() => (
-  favState.isFavColor_(unref(card).hex_) ?
-    { icon: 'star-fill', label: '移出書籤' } as const :
-    { icon: 'star', label: '加入書籤' } as const
-));
-
+const isLock = computed(() =>
+  unref(card).isLock_
+    ? ({ icon: 'lock-fill', label: '解鎖刷新' } as const)
+    : ({ icon: 'unlock-fill', label: '鎖定刷新' } as const),
+);
+const isFavIcon = computed(() =>
+  favState.isFavColor_(unref(card).hex_)
+    ? ({ icon: 'star-fill', label: '移出書籤' } as const)
+    : ({ icon: 'star', label: '加入書籤' } as const),
+);
 
 const showEditor = computed({
   get() {
@@ -316,53 +332,50 @@ const showEditor = computed({
   },
   set() {
     pltState.setEditingIdx_(props.cardIdx);
-  }
+  },
 });
 
 const settingState = useSettingStore();
-const detail = asyncComputed<string>(
-  () => {
-    return pltState.isInNamedSpace_ ?
-      rgb2named(unref(card).color_) :
-      getCssColor(
-        unref(card).color_,
-        pltState.colorSpace_,
-        {
-          sep_: settingState.colorFunctioonSep_,
-          place_: 1
-        }
-      ).toLowerCase();
-  },
-  'white'
-);
+const detail = asyncComputed<string>(() => {
+  return pltState.isInNamedSpace_
+    ? rgb2named(unref(card).color_)
+    : getCssColor(unref(card).color_, pltState.colorSpace_, {
+      sep_: settingState.colorFunctioonSep_,
+      place_: 1,
+    }).toLowerCase();
+}, 'white');
 
 const cardStyle = computed<CSSProperties>(() => {
   const hex = unref(card).hex_;
   return {
     color: isLight(hex) ? '#000' : '#fff',
-    ...(settingState.paletteDisplay === 'block' && { backgroundColor: hex })
+    ...(settingState.paletteDisplay === 'block' && { backgroundColor: hex }),
   };
 });
 
-
 // Editor position
 const hexInputRef = ref<InstanceType<typeof HexInputter>>();
-const containerStyle = shallowReactive<Pick<CSSProperties, 'left' | 'right'>>({});
+const containerStyle = shallowReactive<Pick<CSSProperties, 'left' | 'right'>>(
+  {},
+);
 watch(showEditor, async (newShow) => {
   if (newShow) {
     // Dialog position
     let left: string | undefined, right: string | undefined;
     if (!media.isSmall_) {
       // dialogWidth = 150px, 75 = 150 / 2
-      const halfDialogWidth =  75 / document.body.offsetWidth; // to percent
+      const halfDialogWidth = 75 / document.body.offsetWidth; // to percent
       const center = (props.cardIdx + 0.5) / pltState.numOfCards_;
-      if (center - halfDialogWidth < 0) { // left pos of dialog is out of viewport
+      if (center - halfDialogWidth < 0) {
+        // left pos of dialog is out of viewport
         left = '0';
-      } else if (center + halfDialogWidth > 1) {
+      }
+      else if (center + halfDialogWidth > 1) {
         // right pos of dialog is out of viewport
         left = 'auto';
         right = '0';
-      } else {
+      }
+      else {
         left = `${toPercent(center - halfDialogWidth)}%`;
       }
     }
@@ -370,7 +383,8 @@ watch(showEditor, async (newShow) => {
     // Focus on input after opening dialog
     await nextTick();
     unref(hexInputRef)?.$el.focus();
-  } else {
+  }
+  else {
     unref(hexTextRef)?.$el.focus();
   }
 });
@@ -392,10 +406,8 @@ const handleHexEditingFinished = (e: Event) => {
   }
 };
 
-const selectName = (name: string) => pltState.editCard_(
-  props.cardIdx,
-  named2rgb(name.replaceAll(' ', ''))
-);
+const selectName = (name: string) =>
+  pltState.editCard_(props.cardIdx, named2rgb(name.replaceAll(' ', '')));
 
 /**
  * Slider changed event.
@@ -403,13 +415,12 @@ const selectName = (name: string) => pltState.editCard_(
 const handleSliderChange = (newVal: number | undefined, idx: number) => {
   const { max_, len_ } = pltState.editingDialogInfo_;
   const newColor = [...unref(card).color_];
-  newColor[idx] = (
-    idx === len_ ?
-      newVal! / 100 :
-      max_[idx] === 360 ?
-        newVal! :
-        newVal! / 100 * max_[idx]
-  );
+  newColor[idx]
+    = idx === len_
+      ? newVal! / 100
+      : max_[idx] === 360
+        ? newVal!
+        : (newVal! / 100) * max_[idx];
   sliderVals.value = newColor;
 };
 </script>
