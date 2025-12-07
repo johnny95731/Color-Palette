@@ -284,12 +284,14 @@ const sliderLabels = computed<string[]>(() => {
   const { max_, labels_, len_ } = pltState.editingDialogInfo_;
   return map(unref(card).color_, (val, i) => {
     if (i < len_) {
-      const scaled
-        = max_[i] === 360
-          ? val
-          : val / max_[i] * 100;
-      const unit = max_[i] === 360 ? 'deg' : '%';
-      return `${labels_[i]}: ${round(scaled, 2)}${unit}`;
+      const unit = (
+        max_[i] === 360
+          ? 'deg'
+          : max_[i] === 100
+            ? '%'
+            : ''
+      );
+      return `${labels_[i]}: ${round(val, 2)}${unit}`;
     }
     else return `Alpha: ${round(val * 100, 2)}%`;
   });
