@@ -188,7 +188,7 @@
             :min="min"
             :max="max"
             step="0.1"
-            :model-value="sliderVals[i]"
+            :model-value="card.color_[i]"
             @update:model-value="handleSliderChange($event, i)"
           />
         </template>
@@ -208,9 +208,9 @@
           "
           :thumbBackground="card.hex_"
           min="0"
-          max="100"
-          step="0.1"
-          :model-value="sliderVals[pltState.editingDialogInfo_.len_]"
+          max="1"
+          step="0.0001"
+          :model-value="card.color_[pltState.editingDialogInfo_.len_]"
           @update:model-value="
             handleSliderChange($event, pltState.editingDialogInfo_.len_)
           "
@@ -280,27 +280,18 @@ const order = computed(() => ({
 
 const card = computed<Card>(() => pltState.cards_[props.cardIdx]);
 
-const sliderVals = computed({
-  get() {
-    const { max_, len_ } = pltState.editingDialogInfo_;
-    return map(unref(card).color_, (val, i) => {
-      if (i === len_) return toPercent(val, 1);
-      if (max_[i] === 360) return round(val, 1);
-      return toPercent(val / max_[i], 1);
-    });
-  },
-  set(newColor: number[]) {
-    pltState.editCard_(props.cardIdx, newColor);
-  },
-});
-
 const sliderLabels = computed<string[]>(() => {
   const { max_, labels_, len_ } = pltState.editingDialogInfo_;
-  const vals = unref(sliderVals);
-  return map(len_ + 1, (i) => {
-    if (i < len_)
-      return `${labels_[i]}: ${vals[i]}${max_[i] === 360 ? 'deg' : '%'}`;
-    else return `Alpha: ${vals[i]}%`;
+  return map(unref(card).color_, (val, i) => {
+    if (i < len_) {
+      const scaled
+        = max_[i] === 360
+          ? val
+          : val / max_[i] * 100;
+      const unit = max_[i] === 360 ? 'deg' : '%';
+      return `${labels_[i]}: ${round(scaled, 2)}${unit}`;
+    }
+    else return `Alpha: ${round(val * 100, 2)}%`;
   });
 });
 
@@ -402,7 +393,8 @@ const handleLeaveFocusing = (e: KeyboardEvent) => {
 const handleHexEditingFinished = (e: Event) => {
   const text = (e.currentTarget as HTMLInputElement).value;
   if (text !== unref(card).hex_ && isValidHex(text)) {
-    sliderVals.value = pltState.colorSpace_.fromRgb_(hex2rgb(text));
+    const newColor = pltState.colorSpace_.fromRgb_(hex2rgb(text));
+    pltState.editCard_(props.cardIdx, newColor);
   }
 };
 
@@ -413,14 +405,10 @@ const selectName = (name: string) =>
  * Slider changed event.
  */
 const handleSliderChange = (newVal: number | undefined, idx: number) => {
-  const { max_, len_ } = pltState.editingDialogInfo_;
-  const newColor = [...unref(card).color_];
-  newColor[idx]
-    = idx === len_
-      ? newVal! / 100
-      : max_[idx] === 360
-        ? newVal!
-        : (newVal! / 100) * max_[idx];
-  sliderVals.value = newColor;
+  if (newVal !== undefined) {
+    const newColor = [...unref(card).color_];
+    newColor[idx] = newVal!;
+    pltState.editCard_(props.cardIdx, newColor);
+  }
 };
 </script>

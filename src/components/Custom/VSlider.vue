@@ -162,8 +162,8 @@ watch(
 
 // Step increment function. If num < 0, then becomes decrement.
 const increment = (num: number = 1) => {
-  updateModel(
-    clip(unref(model) + num * unref(numStep), unref(min_), unref(max_)),
+  model.value = clip(
+    unref(model) + num * unref(numStep), unref(min_), unref(max_),
   );
 };
 

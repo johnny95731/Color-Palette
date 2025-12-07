@@ -139,9 +139,7 @@ const usePltStore = defineStore('plt', {
       return {
         labels_,
         max_: map(max_, bound => bound[1]),
-        displayedRange_: map(max_, (r) => {
-          return r[1] === 360 ? r : [r[0] === 0 ? 0 : -100, 100];
-        }),
+        displayedRange_: [...max_],
         len_: labels_.length,
       };
     },
